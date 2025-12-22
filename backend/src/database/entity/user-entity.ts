@@ -8,8 +8,6 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "varchar" })
     fullName!: string;
 
-    @Column({ type: "varchar" })
-    sufix!: string;
 
     @Column({ unique: true, type: "varchar" })
     email!: string;

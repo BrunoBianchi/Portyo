@@ -8,9 +8,7 @@ export const findUserByEmail = async (email: string):  Promise<UserType | null> 
 }
 
 export const createNewUser = async (user: Partial<UserType>):Promise<string | Error>=> {
-
     const userExist = await findUserByEmail(user.email!);
-    console.log(userExist)
     if(userExist){ 
         throw new Error("User already exist");
     }else {
