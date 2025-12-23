@@ -11,6 +11,8 @@ import Navbar from "./components/navbar-component";
 import Footer from "./components/footer-section";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AuthProvider } from "./contexts/auth.context";
+import { CookiesProvider } from 'react-cookie';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -32,8 +34,13 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const isLoginPage = pathname === "/login";
+  const isDashboard = pathname.startsWith("/dashboard");
 
   return (
+    <CookiesProvider>
+
+
+    <AuthProvider>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -42,13 +49,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
- <Navbar />
+       {!isDashboard && <Navbar />}
         {children}
-        <Footer />
+        {!isDashboard && <Footer />}
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
+    </AuthProvider>
+        </CookiesProvider>
   );
 }
 

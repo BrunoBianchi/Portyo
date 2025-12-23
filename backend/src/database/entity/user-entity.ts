@@ -1,5 +1,6 @@
-import { BeforeInsert, Column, Entity } from "typeorm";
+import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
 import { BaseEntity } from "./base-entity";
+import { BioEntity } from "./bio-entity";
 import * as bcrypt from "bcrypt";
 
 @Entity()
@@ -19,6 +20,17 @@ export class UserEntity extends BaseEntity {
         this.password = bcrypt.hashSync(this.password, 10);
     }
 
+    @Column({type:"varchar"})
+    provider!:string;
 
+    @Column({type:"boolean"})
+    verified!:boolean;
+    @BeforeInsert()
+    VerifyProvider() {
+        this.verified = this.provider === "email"?true:false
+    }
+
+    @OneToMany(() => BioEntity, (bio) => bio.user)
+    bios!: BioEntity[];
 
 }

@@ -4,9 +4,16 @@ import apiController from "./controllers/api.controller";
 import { decryptToken } from "./shared/services/jwt.service";
 import * as session from "express-session"
 import { UserType } from "./shared/types/user.type";
+import { errorMiddleware } from "./middlewares/error.middleware";
+import cors from "cors"
 dotenv.config();
 
 const app = express();
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+}))
 app.use(express.json());
 app.use(session.default({
     secret: process.env.SESSION_SECRET || 'secret',
@@ -34,7 +41,10 @@ app.use(async (req, res, next) => {
     next()
 })
 
+
+
 app.use(apiController);
+app.use(errorMiddleware);
 export const InitializateServer = () => {
     app.listen(process.env.PORT || 3000, () => {
         console.log(`Server is running on port ${process.env.PORT || 3000}`);

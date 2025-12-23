@@ -1,28 +1,28 @@
 import { Router } from "express";
 import z from "zod";
 import { createNewUser } from "../../../shared/services/user.service";
+import { createNewBio } from "../../../shared/services/bio.service";
 const router: Router = Router();
-router.post("/", async (req, res) => {
-    try {
-        const body = z.object({
-            email: z.string().email(),
-            fullname: z.string(),
-            password: z.string(),
-        }).parse(req.body)
-        const token = await createNewUser({
+router.post("/", async (req, res, next) => {
+
+    const body = z.object({
+        email: z.string().email(),
+        fullname: z.string(),
+        sufix: z.string(),
+        password: z.string(),
+    }).parse(req.body)
+    const payload = {
+       authentification: await createNewUser({
             email: body.email,
             fullName: body.fullname,
-            password: body.password
-        })
-        const payload = {
-            fullname: body.fullname,
-            email: body.email,
-            token: token
-        }
-        res.status(200).json(payload)
-    } catch (error: any) {
-        res.status(500).json({ message: error.message || "Internal Server Error" });
+            password: body.password,
+            provider: "password",
+            verified: false,
+        }),
+        bio: await createNewBio(body.sufix,body.email)
     }
+    res.status(200).json(payload)
+
 
 });
 

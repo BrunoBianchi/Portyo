@@ -1,6 +1,7 @@
 
-import { useEffect, useId, useRef, useState, type JSX } from "react";
+import { useContext, useEffect, useId, useRef, useState, type JSX } from "react";
 import { Link } from "react-router";
+import AuthContext from "~/contexts/auth.context";
 
 type DropdownSectionItem = {
   title: string;
@@ -307,7 +308,204 @@ function ProductsDropdown() {
   );
 }
 
+function IconLayoutDashboard(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <rect width="7" height="9" x="3" y="3" rx="1" />
+      <rect width="7" height="5" x="14" y="3" rx="1" />
+      <rect width="7" height="9" x="14" y="12" rx="1" />
+      <rect width="7" height="5" x="3" y="16" rx="1" />
+    </svg>
+  );
+}
+
+function IconSettings(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconLogOut(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </svg>
+  );
+}
+
+function UserDropdown({ user, logout }: { user: { fullname: string; email: string; plan?: 'free' | 'standard' | 'pro' }; logout: () => void }) {
+  const buttonId = useId();
+  const panelId = useId();
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+
+  function closeIfFocusLeft(currentTarget: HTMLElement) {
+    const active = document.activeElement;
+    if (active && active instanceof Node && currentTarget.contains(active)) return;
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(e: PointerEvent) {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      if (e.target instanceof Node && !wrapper.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        queueMicrotask(() => buttonRef.current?.focus());
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  function clearCloseTimer() {
+    if (closeTimerRef.current == null) return;
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+  }
+
+  function scheduleClose() {
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+    }, 120);
+  }
+
+  const planColors = {
+    free: "bg-gray-100 text-gray-700 border-gray-200",
+    standard: "bg-blue-50 text-blue-700 border-blue-200",
+    pro: "bg-primary/20 text-primary-dark border-primary/30"
+  };
+
+  const userPlan = user.plan || 'free';
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="relative"
+      onPointerEnter={() => {
+        clearCloseTimer();
+        setOpen(true);
+      }}
+      onPointerLeave={() => scheduleClose()}
+      onFocusCapture={() => setOpen(true)}
+      onBlurCapture={(e) => closeIfFocusLeft(e.currentTarget)}
+    >
+      <button
+        ref={buttonRef}
+        id={buttonId}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
+      >
+        <div className="w-9 h-9 rounded-full bg-[#E8F0B8] flex items-center justify-center text-[#A3B808] font-bold text-sm border border-[#D2E823]/30">
+            {user.fullname.charAt(0).toUpperCase()}
+        </div>
+        <span className="hidden sm:inline font-semibold text-[#A3B808]">{user.fullname}</span>
+        <ChevronDown
+          className={`h-4 w-4 text-text-muted transition-transform ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-50 pt-3 min-w-[260px]">
+          <div
+            id={panelId}
+            role="menu"
+            aria-labelledby={buttonId}
+            onPointerEnter={() => clearCloseTimer()}
+            onPointerLeave={() => scheduleClose()}
+            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-200"
+          >
+            <div className="px-5 py-4 border-b border-border/50">
+                <p className="text-base font-bold text-text-main truncate">{user.fullname}</p>
+                <p className="text-xs text-text-muted truncate mb-3 font-medium">{user.email}</p>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${planColors[userPlan]}`}>
+                    {userPlan} Plan
+                </span>
+            </div>
+            
+            <div className="py-2">
+                <Link to="/dashboard" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
+                    <IconLayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                </Link>
+                <Link to="/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
+                    <IconSettings className="w-4 h-4" />
+                    Settings
+                </Link>
+            </div>
+
+            <div className="border-t border-border/50 py-2">
+                <button 
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+                >
+                    <IconLogOut className="w-4 h-4" />
+                    Sign out
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
+  const {user, logout} = useContext(AuthContext)
   return (
          <header className="w-full p-6 flex justify-between items-start z-10 max-w-7xl mx-auto">
         <div className="flex flex-col items-start">
@@ -324,12 +522,16 @@ export default function Navbar() {
         </div>
         
         <div className="flex items-center gap-6 pt-2">
-
-
-            <Link  to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
-            <Link to="/signup" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
-                Start For Free
-            </Link>
+            {!user ? (
+                <>
+                    <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
+                    <Link to="/signup" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
+                        Start For Free
+                    </Link>
+                </>
+            ) : (
+              <UserDropdown user={user} logout={logout} />
+            )}
         </div>
       </header>
   );

@@ -1,7 +1,8 @@
 import type { Route } from "./+types/signup";
 import { Link, useSearchParams, useNavigate } from "react-router";
-import { use, useEffect, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { AuthBackground } from "~/components/auth-background";
+import AuthContext from "~/contexts/auth.context";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Sign Up - Portyo" }];
@@ -12,10 +13,14 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   
   const step = searchParams.get("step") || "1";
-  const [username, setUsername] = useState(searchParams.get("username") || "");
-
+  const [username, setUsername] = useState( "");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [sufix, setSufix] = useState(searchParams.get("sufix") || "");
+  const navigate = useNavigate()
+  const {register} = useContext(AuthContext);
   useEffect(() => {
-    setUsername(searchParams.get("username") || "");
+    setSufix(searchParams.get("sufix") || "");
   }, [searchParams]);
 
   function normalizeUsername(value: string) {
@@ -26,11 +31,13 @@ export default function Signup() {
   const handleContinue = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (step === "1") {
-        setUsername(e.currentTarget.username?.value.replace(/\s+/g, "-").toLowerCase().trim() || "");
-        console.log(username)
-        setSearchParams({ step: "2", username: username });
+        setSufix(searchParams.get("sufix")?sufix:username);
+        setSearchParams({ step: "2", sufix: sufix});
     } else {
-        console.log("Form submitted", { username });
+        register(email, password, username, sufix).catch((e)=>{
+            console.log(e)
+        })
+        navigate("/verify-email")
     }
   };
 
@@ -55,7 +62,7 @@ export default function Signup() {
                         <div>
                             <input 
                                 type="text" 
-                                defaultValue={username}
+                                value={username}
                                 placeholder="Full Name" 
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                 required
@@ -65,6 +72,8 @@ export default function Signup() {
                         <div>
                             <input 
                                 type="text" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter Email / Phone No" 
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                 required
@@ -73,6 +82,8 @@ export default function Signup() {
                         <div className="relative">
                             <input 
                                 type={showPassword ? "text" : "password"} 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Passcode" 
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                 required
@@ -91,18 +102,19 @@ export default function Signup() {
                         <div className="flex items-center justify-center w-full px-4 py-6 rounded-xl border border-border bg-surface-alt/30 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all">
                              <div className="flex items-center text-xl font-semibold tracking-tight whitespace-nowrap overflow-x-auto max-w-full scrollbar-hide">
                                 <input
-                                    defaultValue={username}
+                                    defaultValue={sufix}
                                     className="min-w-[2ch] bg-transparent p-0 text-text-main placeholder:text-text-muted/50 focus:outline-none text-center"
                                     placeholder="yourname"
                                     autoFocus
+                                    onChange={(e)=>setSufix(e.target.value)}
                                     spellCheck={false}
-                                    style={{ width: Math.max(username.length, 8) + 'ch' }}
+                                    style={{ width: Math.max(sufix.length, 8) + 'ch' }}
                                 />
                                 <span className="text-text-muted/80">.portyo.me</span>
                             </div>
                         </div>
                         <p className="text-xs text-center text-text-muted">
-                            This will be your public profile URL. You can change it later.
+                            This will be your public profile URL. You can't change it later !
                         </p>
                     </div>
                 )}

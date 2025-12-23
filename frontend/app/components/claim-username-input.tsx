@@ -6,7 +6,7 @@ export default function ClaimUsernameInput() {
   const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) { 
-    navigate('/signup?step=1&username=' +username);
+    navigate('/signup?step=1&sufix=' +username);
   }
 
   function normalizeUsername(value: string) {

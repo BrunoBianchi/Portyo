@@ -1,15 +1,24 @@
 import type { Route } from "./+types/login";
-import { Link } from "react-router";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useContext, useState } from "react";
 import { AuthBackground } from "~/components/auth-background";
+import AuthContext from "~/contexts/auth.context";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Login - Portyo" }];
 }
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-
+    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [email,setEmail] = useState("");
+    const [password,setPassword] = useState("");
+    const authContext = useContext(AuthContext)
+    async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        await authContext.login(email,password)
+        navigate("/")
+    }
   return (
     <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
       <AuthBackground />
@@ -23,11 +32,13 @@ export default function Login() {
                 </p>
             </div>
 
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleLogin}>
                 <div>
                     <input 
                         type="text" 
-                        placeholder="Enter Email / Phone No" 
+                        placeholder="Enter Email" 
+                        value={email}
+                        onChange={(e)=>setEmail(e.target.value)}
                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                     />
                 </div>
@@ -35,11 +46,14 @@ export default function Login() {
                     <input 
                         type={showPassword ? "text" : "password"} 
                         placeholder="Passcode" 
+                        value={password}
+                        onChange={(e)=>setPassword(e.target.value)}
                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                     />
                     <button 
                         type="button" 
                         onClick={() => setShowPassword(!showPassword)}
+                        
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-text-main hover:text-primary transition-colors"
                     >
                         {showPassword ? "Hide" : "Show"}

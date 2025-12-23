@@ -1,5 +1,7 @@
 import * as jose from 'jose';
 import { UserType } from '../types/user.type';
+import { ApiError, APIErrors } from '../errors/api-error';
+
 export const generateToken = async (payload: object): Promise<string> => {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'default_secret');
     const token = await new jose.SignJWT(payload as jose.JWTPayload)
@@ -16,8 +18,7 @@ export const decryptToken = async (token: string): Promise<Partial<UserType> | E
         const { payload } = await jose.jwtVerify(token, secret);
         return payload as Partial<UserType>
     } catch (err: any) {
-        console.log(err)
-        return null
+        throw new ApiError(APIErrors.unauthorizedError, "Invalid or expired token", 401);
     }
 
 }
