@@ -1,7 +1,6 @@
-import { useContext, useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { useContext, useEffect, useMemo, useState, useRef } from "react";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
-import BlockItem from "~/components/dashboard-editor/block-item";
 
 const palette: Array<{ type: BioBlock["type"]; label: string; icon: React.ReactNode; category: string }> = [
   { 
@@ -166,16 +165,13 @@ const blockToHtml = (block: BioBlock): string => {
   }
 
   if (block.type === "heading") {
-    const titleColor = block.textColor || "#0f172a";
-    const bodyColor = block.textColor ? `${block.textColor}b3` : "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:16px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:28px; font-weight:700; color:${titleColor};">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:16px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:28px; font-weight:700; color:#0f172a;">${escapeHtml(
       block.title || "Heading"
-    )}</h2>\n  ${block.body ? `<p style="margin:8px 0 0; color:${bodyColor};">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
+    )}</h2>\n  ${block.body ? `<p style="margin:8px 0 0; color:#475569;">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
   }
 
   if (block.type === "text") {
-    const textColor = block.textColor || "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.6;">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:#475569; line-height:1.6;">${escapeHtml(
       block.body || ""
     )}</p>\n</section>`;
   }
@@ -1388,11 +1384,11 @@ export default function DashboardEditor() {
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
-  const toggleCategory = useCallback((category: string) => {
+  const toggleCategory = (category: string) => {
     setCollapsedCategories((prev) =>
       prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
     );
-  }, []);
+  };
 
   const filteredPalette = useMemo(() => {
     if (!searchQuery) return palette;
@@ -1458,7 +1454,7 @@ export default function DashboardEditor() {
     };
   }, []);
 
-  const handleDrop = useCallback((index?: number, event?: React.DragEvent) => {
+  const handleDrop = (index?: number, event?: React.DragEvent) => {
     event?.preventDefault();
     event?.stopPropagation();
     if (!dragItem) return;
@@ -1533,9 +1529,9 @@ export default function DashboardEditor() {
       return next;
     });
     setDragItem(null);
-  }, [dragItem]);
+  };
 
-  const handleSave = useCallback(async () => {
+  const handleSave = async () => {
     if (!bio) return;
     setIsSaving(true);
     setStatus("idle");
@@ -1549,43 +1545,15 @@ export default function DashboardEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, updateBio]);
+  };
 
-  const handleFieldChange = useCallback((id: string, key: keyof BioBlock, value: any) => {
+  const handleFieldChange = (id: string, key: keyof BioBlock, value: any) => {
     setBlocks((prev) => prev.map((block) => (block.id === id ? { ...block, [key]: value } : block)));
-  }, []);
+  };
 
-  const handleRemove = useCallback((id: string) => {
+  const handleRemove = (id: string) => {
     setBlocks((prev) => prev.filter((block) => block.id !== id));
-  }, []);
-
-  const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
-    setDragItem({ source: "canvas", id });
-  }, []);
-
-  const handleDragEnd = useCallback(() => {
-    setDragItem(null);
-  }, []);
-
-  const handleDragEnter = useCallback((e: React.DragEvent, id: string) => {
-    e.preventDefault();
-    if (dragItem?.source === "canvas" && dragItem.id !== id) {
-      setBlocks((prev) => {
-        const dragIndex = prev.findIndex((b) => b.id === dragItem.id);
-        const hoverIndex = prev.findIndex((b) => b.id === id);
-        if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) return prev;
-        
-        const next = [...prev];
-        const [moved] = next.splice(dragIndex, 1);
-        next.splice(hoverIndex, 0, moved);
-        return next;
-      });
-    }
-  }, [dragItem]);
-
-  const handleToggleExpand = useCallback((id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  }, []);
+  };
 
   const previewBlocks = useMemo(() => blocks, [blocks]);
 
@@ -1652,8 +1620,8 @@ export default function DashboardEditor() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr_300px] gap-5 items-start">
-          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-[520px] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr_360px] gap-5 items-start">
+          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-auto max-h-[500px] lg:max-h-none lg:h-[calc(100vh-140px)] overflow-y-auto relative lg:sticky top-0 lg:top-24 scrollbar-hide">
             <div className="flex p-1 bg-gray-100 rounded-xl mb-4">
               <button
                 onClick={() => setActiveTab("blocks")}
@@ -1925,7 +1893,7 @@ export default function DashboardEditor() {
             )}
           </section>
 
-          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-[520px] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
+          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-text-main">Layout</h2>
               <span className="text-xs text-text-muted">Drag to reorder</span>
@@ -1959,22 +1927,1141 @@ export default function DashboardEditor() {
               )}
 
               {blocks.map((block, index) => (
-                <BlockItem
-                  key={block.id}
-                  block={block}
-                  index={index}
-                  isExpanded={expandedId === block.id}
-                  isDragging={dragItem?.id === block.id}
-                  isDragOver={false}
-                  dragItem={dragItem}
-                  onToggleExpand={handleToggleExpand}
-                  onRemove={handleRemove}
-                  onChange={handleFieldChange}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onDrop={(e, i) => handleDrop(i, e)}
-                  onDragEnter={handleDragEnter}
-                />
+                <div key={block.id} className="group">
+                  <div
+                    className={`rounded-xl mb-3 overflow-hidden transition-all duration-300 ${
+                      dragItem?.id === block.id 
+                        ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100" 
+                        : "border-2 border-transparent hover:border-primary/40 bg-white shadow-sm"
+                    }`}
+                    draggable
+                    onDragStart={() => setDragItem({ source: "canvas", id: block.id })}
+                    onDragEnd={() => setDragItem(null)}
+                    onDrop={(event) => handleDrop(index, event)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDragEnter={(event) => {
+                      event.preventDefault();
+                      if (dragItem?.source === "canvas" && dragItem.id !== block.id) {
+                        setBlocks((prev) => {
+                          const dragIndex = prev.findIndex((b) => b.id === dragItem.id);
+                          const hoverIndex = prev.findIndex((b) => b.id === block.id);
+                          if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) return prev;
+                          
+                          const next = [...prev];
+                          const [moved] = next.splice(dragIndex, 1);
+                          next.splice(hoverIndex, 0, moved);
+                          return next;
+                        });
+                      }
+                    }}
+                  >
+                    {dragItem?.id === block.id ? (
+                      <div className="h-16 flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary/60">Drop here</span>
+                      </div>
+                    ) : (
+                      <div 
+                        className="flex items-center justify-between gap-3 p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors"
+                        onClick={() => setExpandedId(expandedId === block.id ? null : block.id)}
+                      >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gray-100 text-gray-500">
+                          {/* Icon based on type */}
+                          {block.type === 'heading' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 12h12"/><path d="M6 20V4"/><path d="M18 20V4"/></svg>}
+                          {block.type === 'text' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></svg>}
+                          {block.type === 'button' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
+                          {block.type === 'image' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>}
+                          {block.type === 'socials' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>}
+                          {block.type === 'video' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" ry="2"/><polygon points="10 9 15 12 10 15 10 9"/></svg>}
+                          {block.type === 'divider' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" x2="19" y1="12" y2="12"/></svg>}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-text-main">{block.title || block.type.charAt(0).toUpperCase() + block.type.slice(1)}</p>
+                          <p className="text-xs text-text-muted">{block.type.toUpperCase()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemove(block.id);
+                          }}
+                          type="button"
+                          title="Remove block"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                        <div className={`transform transition-transform duration-200 ${expandedId === block.id ? 'rotate-180' : ''}`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </div>
+                      </div>
+                      </div>
+                    )}
+
+                    {expandedId === block.id && dragItem?.id !== block.id && (
+                      <div className="p-4 pt-0 border-t border-gray-100 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                        {block.type === "heading" && (
+                          <div className="space-y-3 pt-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                              <input
+                                value={block.title || ""}
+                                onChange={(event) => handleFieldChange(block.id, "title", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Title"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Subtitle</label>
+                              <textarea
+                                value={block.body || ""}
+                                onChange={(event) => handleFieldChange(block.id, "body", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Subtitle"
+                                rows={2}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="color"
+                                  value={block.textColor || "#000000"}
+                                  onChange={(event) => handleFieldChange(block.id, "textColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Animation</label>
+                              <div className="flex gap-2">
+                                <select
+                                  value={block.animation || "none"}
+                                  onChange={(event) => handleFieldChange(block.id, "animation", event.target.value)}
+                                  className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="none">None</option>
+                                  <option value="bounce">Bounce</option>
+                                  <option value="pulse">Pulse</option>
+                                  <option value="shake">Shake</option>
+                                  <option value="wobble">Wobble</option>
+                                </select>
+                                {block.animation && block.animation !== "none" && (
+                                  <select
+                                    value={block.animationTrigger || "loop"}
+                                    onChange={(event) => handleFieldChange(block.id, "animationTrigger", event.target.value)}
+                                    className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  >
+                                    <option value="loop">Loop</option>
+                                    <option value="once">Once</option>
+                                    <option value="hover">Hover</option>
+                                  </select>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "text" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Content</label>
+                              <textarea
+                                value={block.body || ""}
+                                onChange={(event) => handleFieldChange(block.id, "body", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Write your text"
+                                rows={3}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="color"
+                                  value={block.textColor || "#4b5563"}
+                                  onChange={(event) => handleFieldChange(block.id, "textColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Animation</label>
+                              <div className="flex gap-2">
+                                <select
+                                  value={block.animation || "none"}
+                                  onChange={(event) => handleFieldChange(block.id, "animation", event.target.value)}
+                                  className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="none">None</option>
+                                  <option value="bounce">Bounce</option>
+                                  <option value="pulse">Pulse</option>
+                                  <option value="shake">Shake</option>
+                                  <option value="wobble">Wobble</option>
+                                </select>
+                                {block.animation && block.animation !== "none" && (
+                                  <select
+                                    value={block.animationTrigger || "loop"}
+                                    onChange={(event) => handleFieldChange(block.id, "animationTrigger", event.target.value)}
+                                    className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  >
+                                    <option value="loop">Loop</option>
+                                    <option value="once">Once</option>
+                                    <option value="hover">Hover</option>
+                                  </select>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "button" && (
+                          <div className="space-y-3 pt-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Label</label>
+                              <input
+                                value={block.title || ""}
+                                onChange={(event) => handleFieldChange(block.id, "title", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Button text"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">URL</label>
+                              <input
+                                value={block.href || ""}
+                                onChange={(event) => handleFieldChange(block.id, "href", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Image URL (Optional)</label>
+                              <input
+                                value={block.buttonImage || ""}
+                                onChange={(event) => handleFieldChange(block.id, "buttonImage", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://... (icon or photo)"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Text Alignment</label>
+                              <div className="flex bg-gray-100 p-1 rounded-lg">
+                                {(['left', 'center', 'right'] as const).map((align) => (
+                                  <button
+                                    key={align}
+                                    onClick={() => handleFieldChange(block.id, "buttonTextAlign", align)}
+                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                      (block.buttonTextAlign || 'center') === align 
+                                        ? 'bg-white text-gray-900 shadow-sm' 
+                                        : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                  >
+                                    {align.charAt(0).toUpperCase() + align.slice(1)}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Style</label>
+                                <select
+                                  value={block.buttonStyle || "solid"}
+                                  onChange={(event) => handleFieldChange(block.id, "buttonStyle", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="solid">Solid</option>
+                                  <option value="outline">Outline</option>
+                                  <option value="ghost">Ghost</option>
+                                  <option value="hard-shadow">Retro (Hard Shadow)</option>
+                                  <option value="soft-shadow">Soft Shadow</option>
+                                  <option value="3d">3D</option>
+                                  <option value="glass">Glassmorphism</option>
+                                  <option value="gradient">Gradient</option>
+                                  <option value="neumorphism">Neumorphism</option>
+                                  <option value="clay">Claymorphism</option>
+                                  <option value="cyberpunk">Cyberpunk / Glitch</option>
+                                  <option value="pixel">Pixel Art (8-bit)</option>
+                                  <option value="neon">Neon Glow</option>
+                                  <option value="sketch">Sketch / Hand-Drawn</option>
+                                  <option value="gradient-border">Gradient Border</option>
+                                  <option value="minimal-underline">Minimal Underline</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Shape</label>
+                                <select
+                                  value={block.buttonShape || "rounded"}
+                                  onChange={(event) => handleFieldChange(block.id, "buttonShape", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="pill">Pill</option>
+                                  <option value="rounded">Rounded</option>
+                                  <option value="square">Square</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={block.accent || "#111827"}
+                                    onChange={(event) => handleFieldChange(block.id, "accent", event.target.value)}
+                                    className="h-9 w-full rounded cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={block.textColor || "#ffffff"}
+                                    onChange={(event) => handleFieldChange(block.id, "textColor", event.target.value)}
+                                    className="h-9 w-full rounded cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                              {["hard-shadow", "soft-shadow", "3d", "gradient", "cyberpunk", "gradient-border", "neon", "pixel", "sketch", "neumorphism", "clay"].includes(block.buttonStyle || "") && (
+                                <div className="col-span-2">
+                                  <label className="text-xs font-medium text-gray-700 mb-1 block">Secondary / Shadow Color</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={block.buttonShadowColor || block.accent || "#111827"}
+                                      onChange={(event) => handleFieldChange(block.id, "buttonShadowColor", event.target.value)}
+                                      className="h-9 w-full rounded cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                              <div className="col-span-2">
+                                <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={block.isNsfw || false}
+                                    onChange={(event) => handleFieldChange(block.id, "isNsfw", event.target.checked as any)}
+                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                  />
+                                  Sensitive Content (+18)
+                                </label>
+                              </div>
+                              <div className="col-span-2">
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Animation</label>
+                                <div className="flex gap-2">
+                                  <select
+                                    value={block.animation || "none"}
+                                    onChange={(event) => handleFieldChange(block.id, "animation", event.target.value)}
+                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  >
+                                    <option value="none">None</option>
+                                    <option value="bounce">Bounce</option>
+                                    <option value="pulse">Pulse</option>
+                                    <option value="shake">Shake</option>
+                                    <option value="wobble">Wobble</option>
+                                  </select>
+                                  {block.animation && block.animation !== "none" && (
+                                    <select
+                                      value={block.animationTrigger || "loop"}
+                                      onChange={(event) => handleFieldChange(block.id, "animationTrigger", event.target.value)}
+                                      className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    >
+                                      <option value="loop">Loop</option>
+                                      <option value="once">Once</option>
+                                      <option value="hover">Hover</option>
+                                    </select>
+                                  )}
+                                </div>
+                              </div>                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "socials" && (
+                          <div className="space-y-3 pt-3">
+                            <p className="text-xs text-gray-500">Add your social media links below.</p>
+                            
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                                <select
+                                  value={block.socialsLayout || "row"}
+                                  onChange={(event) => handleFieldChange(block.id, "socialsLayout", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="row">Inline (Row)</option>
+                                  <option value="column">List (Column)</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Style</label>
+                                <div className="flex items-center h-[38px]">
+                                  <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                                    <input
+                                      type="checkbox"
+                                      checked={block.socialsLabel || false}
+                                      onChange={(event) => handleFieldChange(block.id, "socialsLabel", event.target.checked as any)}
+                                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    Show Text
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+
+                            {['instagram', 'twitter', 'linkedin', 'youtube', 'github'].map((platform) => (
+                              <div key={platform}>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block capitalize">{platform}</label>
+                                <input
+                                  value={block.socials?.[platform as keyof typeof block.socials] || ""}
+                                  onChange={(event) => {
+                                    const newSocials = { ...block.socials, [platform]: event.target.value };
+                                    handleFieldChange(block.id, "socials", newSocials as any);
+                                  }}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder={`https://${platform}.com/...`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {block.type === "video" && (
+                          <div className="pt-3">
+                            <label className="text-xs font-medium text-gray-700 mb-1 block">YouTube URL</label>
+                            <input
+                              value={block.mediaUrl || ""}
+                              onChange={(event) => handleFieldChange(block.id, "mediaUrl", event.target.value)}
+                              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              placeholder="https://youtube.com/watch?v=..."
+                            />
+                          </div>
+                        )}
+
+                        {block.type === "image" && (
+                          <div className="pt-3">
+                            <label className="text-xs font-medium text-gray-700 mb-1 block">Image URL</label>
+                            <input
+                              value={block.mediaUrl || ""}
+                              onChange={(event) => handleFieldChange(block.id, "mediaUrl", event.target.value)}
+                              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              placeholder="https://..."
+                            />
+                          </div>
+                        )}
+
+                        {block.type === "blog" && (
+                          <div className="pt-3 space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                                <select
+                                  value={block.blogLayout || "carousel"}
+                                  onChange={(event) => handleFieldChange(block.id, "blogLayout", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="carousel">Carousel</option>
+                                  <option value="list">List</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Card Style</label>
+                                <select
+                                  value={block.blogCardStyle || "featured"}
+                                  onChange={(event) => handleFieldChange(block.id, "blogCardStyle", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                >
+                                  <option value="featured">Featured</option>
+                                  <option value="minimal">Minimal</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Number of Posts: {block.blogPostCount || 3}</label>
+                              <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                step="1"
+                                value={block.blogPostCount || 3}
+                                onChange={(event) => handleFieldChange(block.id, "blogPostCount", event.target.value as any)}
+                                className="w-full accent-primary cursor-pointer"
+                              />
+                              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>1</span>
+                                <span>5</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "product" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                              <select
+                                value={block.productLayout || "grid"}
+                                onChange={(event) => handleFieldChange(block.id, "productLayout", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              >
+                                <option value="grid">Grid</option>
+                                <option value="list">List</option>
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium text-gray-700 block">Products</label>
+                              {(block.products || []).map((product, index) => (
+                                <div key={product.id} className="p-2 border border-gray-200 rounded-lg space-y-2">
+                                  <input
+                                    value={product.title}
+                                    onChange={(e) => {
+                                      const newProducts = [...(block.products || [])];
+                                      newProducts[index] = { ...product, title: e.target.value };
+                                      handleFieldChange(block.id, "products", newProducts as any);
+                                    }}
+                                    className="w-full rounded border border-gray-200 px-2 py-1 text-xs"
+                                    placeholder="Product Title"
+                                  />
+                                  <div className="flex gap-2">
+                                    <input
+                                      value={product.price}
+                                      onChange={(e) => {
+                                        const newProducts = [...(block.products || [])];
+                                        newProducts[index] = { ...product, price: e.target.value };
+                                        handleFieldChange(block.id, "products", newProducts as any);
+                                      }}
+                                      className="w-1/3 rounded border border-gray-200 px-2 py-1 text-xs"
+                                      placeholder="Price"
+                                    />
+                                    <input
+                                      value={product.url}
+                                      onChange={(e) => {
+                                        const newProducts = [...(block.products || [])];
+                                        newProducts[index] = { ...product, url: e.target.value };
+                                        handleFieldChange(block.id, "products", newProducts as any);
+                                      }}
+                                      className="w-2/3 rounded border border-gray-200 px-2 py-1 text-xs"
+                                      placeholder="URL"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => {
+                                  const newProduct = { id: makeId(), title: "New Product", price: "$0.00", image: "https://placehold.co/300x300", url: "#" };
+                                  handleFieldChange(block.id, "products", [...(block.products || []), newProduct] as any);
+                                }}
+                                className="w-full py-1.5 text-xs font-medium text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+                              >
+                                + Add Product
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "calendar" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                              <input
+                                value={block.calendarTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "calendarTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Book a Call"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Booking URL</label>
+                              <input
+                                value={block.calendarUrl || ""}
+                                onChange={(event) => handleFieldChange(block.id, "calendarUrl", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://calendly.com/..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
+                                <input
+                                  type="color"
+                                  value={block.calendarColor || "#ffffff"}
+                                  onChange={(event) => handleFieldChange(block.id, "calendarColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Text</label>
+                                <input
+                                  type="color"
+                                  value={block.calendarTextColor || "#1f2937"}
+                                  onChange={(event) => handleFieldChange(block.id, "calendarTextColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Accent</label>
+                                <input
+                                  type="color"
+                                  value={block.calendarAccentColor || "#2563eb"}
+                                  onChange={(event) => handleFieldChange(block.id, "calendarAccentColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "map" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Location Name</label>
+                              <input
+                                value={block.mapTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "mapTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="e.g. Our Office"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Address</label>
+                              <input
+                                value={block.mapAddress || ""}
+                                onChange={(event) => handleFieldChange(block.id, "mapAddress", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="e.g. 123 Main St, City"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "featured" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Product Title</label>
+                              <input
+                                value={block.featuredTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "featuredTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Product Name"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Price</label>
+                                <input
+                                  value={block.featuredPrice || ""}
+                                  onChange={(event) => handleFieldChange(block.id, "featuredPrice", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder="$19.99"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Image URL</label>
+                                <input
+                                  value={block.featuredImage || ""}
+                                  onChange={(event) => handleFieldChange(block.id, "featuredImage", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Product URL</label>
+                              <input
+                                value={block.featuredUrl || ""}
+                                onChange={(event) => handleFieldChange(block.id, "featuredUrl", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
+                                <input
+                                  type="color"
+                                  value={block.featuredColor || "#1f4d36"}
+                                  onChange={(event) => handleFieldChange(block.id, "featuredColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                <input
+                                  type="color"
+                                  value={block.featuredTextColor || "#ffffff"}
+                                  onChange={(event) => handleFieldChange(block.id, "featuredTextColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "affiliate" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                              <input
+                                value={block.affiliateTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "affiliateTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Copy my coupon code"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Coupon Code</label>
+                              <input
+                                value={block.affiliateCode || ""}
+                                onChange={(event) => handleFieldChange(block.id, "affiliateCode", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="CODE123"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Image URL</label>
+                              <input
+                                value={block.affiliateImage || ""}
+                                onChange={(event) => handleFieldChange(block.id, "affiliateImage", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Affiliate URL</label>
+                              <input
+                                value={block.affiliateUrl || ""}
+                                onChange={(event) => handleFieldChange(block.id, "affiliateUrl", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
+                                <input
+                                  type="color"
+                                  value={block.affiliateColor || "#ffffff"}
+                                  onChange={(event) => handleFieldChange(block.id, "affiliateColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                <input
+                                  type="color"
+                                  value={block.affiliateTextColor || "#1f2937"}
+                                  onChange={(event) => handleFieldChange(block.id, "affiliateTextColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "event" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Event Title</label>
+                              <input
+                                value={block.eventTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "eventTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="Live Webinar"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Date & Time</label>
+                              <input
+                                type="datetime-local"
+                                value={block.eventDate || ""}
+                                onChange={(event) => handleFieldChange(block.id, "eventDate", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Button Text</label>
+                                <input
+                                  value={block.eventButtonText || ""}
+                                  onChange={(event) => handleFieldChange(block.id, "eventButtonText", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder="Register"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Button URL</label>
+                                <input
+                                  value={block.eventButtonUrl || ""}
+                                  onChange={(event) => handleFieldChange(block.id, "eventButtonUrl", event.target.value)}
+                                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
+                                <input
+                                  type="color"
+                                  value={block.eventColor || "#111827"}
+                                  onChange={(event) => handleFieldChange(block.id, "eventColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                <input
+                                  type="color"
+                                  value={block.eventTextColor || "#ffffff"}
+                                  onChange={(event) => handleFieldChange(block.id, "eventTextColor", event.target.value)}
+                                  className="h-9 w-full rounded cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "spotify" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Spotify URL</label>
+                              <input
+                                value={block.spotifyUrl || ""}
+                                onChange={(event) => handleFieldChange(block.id, "spotifyUrl", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://open.spotify.com/track/..."
+                              />
+                              <p className="text-[10px] text-gray-500 mt-1">Supports tracks, albums, and playlists</p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-medium text-gray-700">Compact Player</label>
+                                <button 
+                                    onClick={() => handleFieldChange(block.id, "spotifyCompact", !block.spotifyCompact)}
+                                    className={`w-10 h-5 rounded-full relative transition-colors ${block.spotifyCompact ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.spotifyCompact ? 'left-6' : 'left-1'}`}></div>
+                                </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "instagram" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Instagram Username</label>
+                              <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-400 text-sm">@</span>
+                                <input
+                                  value={block.instagramUsername || ""}
+                                  onChange={(event) => handleFieldChange(block.id, "instagramUsername", event.target.value)}
+                                  className="w-full rounded-lg border border-border pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                  placeholder="username"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Display Type</label>
+                              <select
+                                value={block.instagramDisplayType || "grid"}
+                                onChange={(event) => handleFieldChange(block.id, "instagramDisplayType", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              >
+                                <option value="grid">Grid (3 Columns)</option>
+                                <option value="list">List (Vertical)</option>
+                              </select>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-medium text-gray-700">Show Username</label>
+                                <button 
+                                    onClick={() => handleFieldChange(block.id, "instagramShowText", block.instagramShowText === false ? true : false)}
+                                    className={`w-10 h-5 rounded-full relative transition-colors ${block.instagramShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.instagramShowText !== false ? 'left-6' : 'left-1'}`}></div>
+                                </button>
+                            </div>
+
+                            {block.instagramShowText !== false && (
+                                <>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => handleFieldChange(block.id, "instagramTextPosition", "top")}
+                                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                                    block.instagramTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                                                }`}
+                                            >
+                                                Top
+                                            </button>
+                                            <button
+                                                onClick={() => handleFieldChange(block.id, "instagramTextPosition", "bottom")}
+                                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                                    (block.instagramTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                                                }`}
+                                            >
+                                                Bottom
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="color"
+                                                value={block.instagramTextColor || "#0095f6"}
+                                                onChange={(event) => handleFieldChange(block.id, "instagramTextColor", event.target.value)}
+                                                className="h-9 w-9 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <span className="text-xs text-gray-500 uppercase">{block.instagramTextColor || "#0095f6"}</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                          </div>
+                        )}
+
+                        {block.type === "tour" && (
+                          <div className="pt-3 space-y-4">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Section Title</label>
+                              <input
+                                value={block.tourTitle || ""}
+                                onChange={(event) => handleFieldChange(block.id, "tourTitle", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="TOURS"
+                              />
+                            </div>
+
+                            <div className="space-y-3">
+                              <label className="text-xs font-medium text-gray-700 block">Tour Dates</label>
+                              
+                              {(block.tours || []).map((tour, index) => (
+                                <div key={tour.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200 relative group">
+                                  <button 
+                                    onClick={() => {
+                                      const newTours = [...(block.tours || [])];
+                                      newTours.splice(index, 1);
+                                      handleFieldChange(block.id, "tours", newTours);
+                                    }}
+                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                  </button>
+
+                                  <div className="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                      <label className="text-[10px] text-gray-500 uppercase font-bold">Date</label>
+                                      <input
+                                        value={tour.date}
+                                        onChange={(e) => {
+                                          const newTours = [...(block.tours || [])];
+                                          newTours[index] = { ...tour, date: e.target.value };
+                                          handleFieldChange(block.id, "tours", newTours);
+                                        }}
+                                        className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                                        placeholder="AUG 1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-gray-500 uppercase font-bold">Location</label>
+                                      <input
+                                        value={tour.location}
+                                        onChange={(e) => {
+                                          const newTours = [...(block.tours || [])];
+                                          newTours[index] = { ...tour, location: e.target.value };
+                                          handleFieldChange(block.id, "tours", newTours);
+                                        }}
+                                        className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                                        placeholder="City, Country"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="mb-2">
+                                    <label className="text-[10px] text-gray-500 uppercase font-bold">Image URL</label>
+                                    <input
+                                      value={tour.image || ""}
+                                      onChange={(e) => {
+                                        const newTours = [...(block.tours || [])];
+                                        newTours[index] = { ...tour, image: e.target.value };
+                                        handleFieldChange(block.id, "tours", newTours);
+                                      }}
+                                      className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+
+                                  <div className="mb-2">
+                                    <label className="text-[10px] text-gray-500 uppercase font-bold">Ticket Link</label>
+                                    <input
+                                      value={tour.ticketUrl || ""}
+                                      onChange={(e) => {
+                                        const newTours = [...(block.tours || [])];
+                                        newTours[index] = { ...tour, ticketUrl: e.target.value };
+                                        handleFieldChange(block.id, "tours", newTours);
+                                      }}
+                                      className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+
+                                  <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input 
+                                        type="checkbox" 
+                                        checked={tour.sellingFast || false}
+                                        onChange={(e) => {
+                                          const newTours = [...(block.tours || [])];
+                                          newTours[index] = { ...tour, sellingFast: e.target.checked, soldOut: e.target.checked ? false : tour.soldOut };
+                                          handleFieldChange(block.id, "tours", newTours);
+                                        }}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-xs text-gray-600">Selling Fast</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input 
+                                        type="checkbox" 
+                                        checked={tour.soldOut || false}
+                                        onChange={(e) => {
+                                          const newTours = [...(block.tours || [])];
+                                          newTours[index] = { ...tour, soldOut: e.target.checked, sellingFast: e.target.checked ? false : tour.sellingFast };
+                                          handleFieldChange(block.id, "tours", newTours);
+                                        }}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                      />
+                                      <span className="text-xs text-gray-600">Sold Out</span>
+                                    </label>
+                                  </div>
+                                </div>
+                              ))}
+
+                              <button
+                                onClick={() => {
+                                  const newTours = [...(block.tours || [])];
+                                  newTours.push({
+                                    id: makeId(),
+                                    date: "TBA",
+                                    location: "City",
+                                    image: "",
+                                    ticketUrl: ""
+                                  });
+                                  handleFieldChange(block.id, "tours", newTours);
+                                }}
+                                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Add Tour Date
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {block.type === "youtube" && (
+                          <div className="pt-3 space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">YouTube Channel URL</label>
+                              <input
+                                value={block.youtubeUrl || ""}
+                                onChange={(event) => handleFieldChange(block.id, "youtubeUrl", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                placeholder="https://youtube.com/@channel"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-700 mb-1 block">Display Type</label>
+                              <select
+                                value={block.youtubeDisplayType || "grid"}
+                                onChange={(event) => handleFieldChange(block.id, "youtubeDisplayType", event.target.value)}
+                                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                              >
+                                <option value="grid">Grid (3 Columns)</option>
+                                <option value="list">List (Vertical)</option>
+                              </select>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-medium text-gray-700">Show Channel Link</label>
+                                <button 
+                                    onClick={() => handleFieldChange(block.id, "youtubeShowText", block.youtubeShowText === false ? true : false)}
+                                    className={`w-10 h-5 rounded-full relative transition-colors ${block.youtubeShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.youtubeShowText !== false ? 'left-6' : 'left-1'}`}></div>
+                                </button>
+                            </div>
+
+                            {block.youtubeShowText !== false && (
+                                <>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => handleFieldChange(block.id, "youtubeTextPosition", "top")}
+                                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                                    block.youtubeTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                                                }`}
+                                            >
+                                                Top
+                                            </button>
+                                            <button
+                                                onClick={() => handleFieldChange(block.id, "youtubeTextPosition", "bottom")}
+                                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                                    (block.youtubeTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                                                }`}
+                                            >
+                                                Bottom
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="color"
+                                                value={block.youtubeTextColor || "#ff0000"}
+                                                onChange={(event) => handleFieldChange(block.id, "youtubeTextColor", event.target.value)}
+                                                className="h-9 w-9 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <span className="text-xs text-gray-500 uppercase">{block.youtubeTextColor || "#ff0000"}</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                          </div>
+                        )}
+
+
+
+                        {block.type === "divider" && (
+                          <p className="text-xs text-text-muted pt-3">Simple dividing line.</p>
+                        )}
+
+                        <div className="pt-2 border-t border-gray-50">
+                          <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
+                          <div className="flex bg-gray-100 p-1 rounded-lg">
+                            {(['left', 'center', 'right'] as const).map((align) => (
+                              <button
+                                key={align}
+                                onClick={() => handleFieldChange(block.id, "align", align)}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                  (block.align || 'center') === align 
+                                    ? 'bg-white text-gray-900 shadow-sm' 
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                              >
+                                {align.charAt(0).toUpperCase() + align.slice(1)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           </section>
@@ -1989,18 +3076,18 @@ export default function DashboardEditor() {
                 </button>
             )}
             <div className={`flex justify-center ${showMobilePreview ? 'scale-90 sm:scale-100' : 'sticky top-4'}`}>
-              <div className="relative w-[260px] h-[520px] bg-black rounded-[2.5rem] shadow-2xl border-[8px] border-gray-900 ring-1 ring-white/10">
+              <div className="relative w-[320px] h-[640px] bg-black rounded-[3rem] shadow-2xl border-[8px] border-gray-900 ring-1 ring-white/10">
                 {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-32 bg-black rounded-b-2xl z-20 border-b border-x border-white/10"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-7 w-36 bg-black rounded-b-2xl z-20 border-b border-x border-white/10"></div>
                 
                 {/* Side buttons */}
-                <div className="absolute -left-[10px] top-24 h-10 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -left-[10px] top-36 h-10 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -right-[10px] top-32 h-14 w-[3px] bg-gray-800 rounded-r-md"></div>
+                <div className="absolute -left-[10px] top-28 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
+                <div className="absolute -left-[10px] top-44 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
+                <div className="absolute -right-[10px] top-36 h-16 w-[3px] bg-gray-800 rounded-r-md"></div>
 
                 {/* Screen */}
                 <div 
-                  className="w-full h-full rounded-[2rem] overflow-hidden relative flex flex-col"
+                  className="w-full h-full rounded-[2.5rem] overflow-hidden relative flex flex-col"
                   style={{
                     backgroundColor: bgColor,
                     backgroundImage: 
@@ -2075,7 +3162,7 @@ export default function DashboardEditor() {
                   </div>
 
                   {/* Content Scrollable Area */}
-                  <div className="flex-1 overflow-y-auto pb-8 px-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+                  <div className="flex-1 overflow-y-auto pb-8 px-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                     {/* User Profile Section */}
                     <div className="flex flex-col items-center gap-2 pt-8 pb-6">
                       <div 
@@ -2315,7 +3402,7 @@ export default function DashboardEditor() {
                                   <a key={platform} href={url} target="_blank" rel="noreferrer" 
                                      className={`
                                         flex items-center justify-center
-                                        ${showLabel ? 'px-3 py-2 rounded-xl text-sm' : 'p-3 rounded-full'} 
+                                        ${showLabel ? 'px-4 py-3 rounded-xl' : 'p-3 rounded-full'} 
                                         bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors
                                         ${layout === 'column' ? 'w-full' : ''}
                                      `}>

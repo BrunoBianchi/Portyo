@@ -166,16 +166,13 @@ const blockToHtml = (block: BioBlock): string => {
   }
 
   if (block.type === "heading") {
-    const titleColor = block.textColor || "#0f172a";
-    const bodyColor = block.textColor ? `${block.textColor}b3` : "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:16px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:28px; font-weight:700; color:${titleColor};">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:16px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:28px; font-weight:700; color:#0f172a;">${escapeHtml(
       block.title || "Heading"
-    )}</h2>\n  ${block.body ? `<p style="margin:8px 0 0; color:${bodyColor};">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
+    )}</h2>\n  ${block.body ? `<p style="margin:8px 0 0; color:#475569;">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
   }
 
   if (block.type === "text") {
-    const textColor = block.textColor || "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.6;">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:#475569; line-height:1.6;">${escapeHtml(
       block.body || ""
     )}</p>\n</section>`;
   }
@@ -1652,8 +1649,8 @@ export default function DashboardEditor() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr_300px] gap-5 items-start">
-          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-[520px] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr_360px] gap-5 items-start">
+          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-auto max-h-[500px] lg:max-h-none lg:h-[calc(100vh-140px)] overflow-y-auto relative lg:sticky top-0 lg:top-24 scrollbar-hide">
             <div className="flex p-1 bg-gray-100 rounded-xl mb-4">
               <button
                 onClick={() => setActiveTab("blocks")}
@@ -1925,7 +1922,7 @@ export default function DashboardEditor() {
             )}
           </section>
 
-          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm h-[520px] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
+          <section className="bg-white border border-border rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-text-main">Layout</h2>
               <span className="text-xs text-text-muted">Drag to reorder</span>
@@ -1972,7 +1969,7 @@ export default function DashboardEditor() {
                   onChange={handleFieldChange}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
-                  onDrop={(e, i) => handleDrop(i, e)}
+                  onDrop={handleDrop}
                   onDragEnter={handleDragEnter}
                 />
               ))}
@@ -1989,18 +1986,18 @@ export default function DashboardEditor() {
                 </button>
             )}
             <div className={`flex justify-center ${showMobilePreview ? 'scale-90 sm:scale-100' : 'sticky top-4'}`}>
-              <div className="relative w-[260px] h-[520px] bg-black rounded-[2.5rem] shadow-2xl border-[8px] border-gray-900 ring-1 ring-white/10">
+              <div className="relative w-[320px] h-[640px] bg-black rounded-[3rem] shadow-2xl border-[8px] border-gray-900 ring-1 ring-white/10">
                 {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-32 bg-black rounded-b-2xl z-20 border-b border-x border-white/10"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-7 w-36 bg-black rounded-b-2xl z-20 border-b border-x border-white/10"></div>
                 
                 {/* Side buttons */}
-                <div className="absolute -left-[10px] top-24 h-10 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -left-[10px] top-36 h-10 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -right-[10px] top-32 h-14 w-[3px] bg-gray-800 rounded-r-md"></div>
+                <div className="absolute -left-[10px] top-28 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
+                <div className="absolute -left-[10px] top-44 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
+                <div className="absolute -right-[10px] top-36 h-16 w-[3px] bg-gray-800 rounded-r-md"></div>
 
                 {/* Screen */}
                 <div 
-                  className="w-full h-full rounded-[2rem] overflow-hidden relative flex flex-col"
+                  className="w-full h-full rounded-[2.5rem] overflow-hidden relative flex flex-col"
                   style={{
                     backgroundColor: bgColor,
                     backgroundImage: 
@@ -2075,7 +2072,7 @@ export default function DashboardEditor() {
                   </div>
 
                   {/* Content Scrollable Area */}
-                  <div className="flex-1 overflow-y-auto pb-8 px-4 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+                  <div className="flex-1 overflow-y-auto pb-8 px-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                     {/* User Profile Section */}
                     <div className="flex flex-col items-center gap-2 pt-8 pb-6">
                       <div 
@@ -2315,7 +2312,7 @@ export default function DashboardEditor() {
                                   <a key={platform} href={url} target="_blank" rel="noreferrer" 
                                      className={`
                                         flex items-center justify-center
-                                        ${showLabel ? 'px-3 py-2 rounded-xl text-sm' : 'p-3 rounded-full'} 
+                                        ${showLabel ? 'px-4 py-3 rounded-xl' : 'p-3 rounded-full'} 
                                         bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors
                                         ${layout === 'column' ? 'w-full' : ''}
                                      `}>
