@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useCookies } from 'react-cookie';
 
 import { api } from '~/services/api';
@@ -75,6 +75,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             {children}
         </AuthContext.Provider>
     )
+}
+
+export function useAuth() {
+    const context = useContext(AuthContext);
+    return context;
 }
 
 export default AuthContext;

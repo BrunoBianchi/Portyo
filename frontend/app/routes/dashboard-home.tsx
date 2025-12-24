@@ -6,9 +6,19 @@ export default function DashboardHome() {
 
     return (
         <div className="p-8 max-w-6xl mx-auto">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-text-main mb-2">Dashboard</h1>
-                <p className="text-text-muted">Welcome back! Here's what's happening with your profile.</p>
+            <header className="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold text-text-main mb-2">Dashboard</h1>
+                    <p className="text-text-muted">Welcome back! Here's what's happening with your profile.</p>
+                </div>
+                {bio && (
+                    <a 
+                        href={`/dashboard/editor`} 
+                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                        Open editor
+                    </a>
+                )}
             </header>
 
             {/* Example Content */}

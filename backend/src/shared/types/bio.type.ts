@@ -6,4 +6,6 @@ export type Bio = BaseType & {
     clicks:number;
     views:number;
     user:UserType | string;
+    blocks?: any[];
+    html?: string;
 }

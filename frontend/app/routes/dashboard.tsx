@@ -1,8 +1,8 @@
 import AuthorizationGuard from "~/contexts/guard.context";
 import { Sidebar } from "~/components/sidebar";
 import type { Route } from "../+types/root";
-import { useContext, useState } from "react";
-import BioContext, { BioProvider } from "~/contexts/bio.context";
+import { useState } from "react";
+import { BioProvider } from "~/contexts/bio.context";
 import { Outlet } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
@@ -13,16 +13,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Dashboard() { 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const {bio,bios,createBio,getBio,getBios} = useContext(BioContext)
-    console.log(bio)
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     return (
         <AuthorizationGuard>
             <BioProvider>
             <div className="min-h-screen bg-surface-alt flex">
                 <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
                 
-                <main className="flex-1 md:ml-64 transition-all duration-300">
+                <main className="flex-1 md:ml-60 transition-all duration-300">
                     {/* Mobile Header */}
                     <div className="md:hidden bg-surface border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
                         <div className="font-bold text-xl">Portyo</div>

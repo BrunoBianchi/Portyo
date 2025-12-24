@@ -10,7 +10,14 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (origin === "http://localhost:5173" || /^http:\/\/.*\.localhost:5173$/.test(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }))

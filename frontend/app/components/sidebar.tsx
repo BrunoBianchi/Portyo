@@ -54,10 +54,7 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
 
     const navItems = [
         { name: "Dashboard", path: "/dashboard", icon: <HomeIcon /> },
-        { name: "Links", path: "/dashboard/links", icon: <LinkIcon /> },
-        { name: "Appearance", path: "/dashboard/appearance", icon: <PaletteIcon /> },
-        { name: "Analytics", path: "/dashboard/analytics", icon: <ChartIcon /> },
-        { name: "Settings", path: "/dashboard/settings", icon: <SettingsIcon /> },
+        { name: "Editor", path: "/dashboard/editor", icon: <LinkIcon /> },
     ];
 
     return (
@@ -117,7 +114,7 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
             )}
             
             <aside className={`
-                w-64 h-screen flex flex-col fixed left-0 top-0 z-50
+                w-60 h-screen flex flex-col fixed left-0 top-0 z-50
                 transition-transform duration-300 ease-in-out
                 ${isOpen ? "translate-x-0 bg-surface-alt" : "-translate-x-full"}
                 md:translate-x-0 md:bg-transparent

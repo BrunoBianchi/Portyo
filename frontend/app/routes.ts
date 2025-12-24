@@ -9,7 +9,8 @@ export default [
         path:'/dashboard',
         file:"routes/dashboard.tsx",
         children: [
-            { index: true, file: "routes/dashboard-home.tsx" }
+            { index: true, file: "routes/dashboard-home.tsx" },
+            { path: "editor", file: "routes/dashboard-editor.tsx" },
         ]
     }
 ] satisfies RouteConfig;

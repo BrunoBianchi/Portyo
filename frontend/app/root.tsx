@@ -12,7 +12,9 @@ import Footer from "./components/footer-section";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
+import { SubDomainProvider } from "./contexts/subdomain.context";
 import { CookiesProvider } from 'react-cookie';
+import { useEffect, useState } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -38,26 +40,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <CookiesProvider>
-
-
-    <AuthProvider>
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-       {!isDashboard && <Navbar />}
-        {children}
-        {!isDashboard && <Footer />}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-    </AuthProvider>
-        </CookiesProvider>
+      <SubDomainProvider>
+        <AuthProvider>
+          <html lang="en">
+            <head>
+              <meta charSet="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <Meta />
+              <Links />
+            </head>
+            <body>
+            {!isDashboard && <Navbar />}
+              {children}
+              {!isDashboard && <Footer />}
+              <ScrollRestoration />
+              <Scripts />
+            </body>
+          </html>
+        </AuthProvider>
+      </SubDomainProvider>
+    </CookiesProvider>
   );
 }
 
@@ -91,5 +93,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         </pre>
       )}
     </main>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="flex items-center justify-center h-screen w-screen bg-white">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-gray-800"></div>
+    </div>
   );
 }

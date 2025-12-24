@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { authMiddleware } from "../../../middlewares/auth.middleware";
+import { ownerMiddleware } from "../../../middlewares/owner.middleware";
 import getBio from "./[get]-bio.route"
 import getBios from "./[get]-bios.route"
 import createBio from "./[post]-bio.route"
+import updateBio from "./[post]-update-bio"
 const router: Router = Router();
-router.use(authMiddleware,getBio)
-router.use(authMiddleware,getBios)
-router.use(authMiddleware,createBio)
+router.use(getBio)
+router.use(getBios)
+router.use(createBio)
+router.use(updateBio)
+
 export default router;
