@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Check } from "lucide-react";
 
 export default function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
@@ -112,7 +113,7 @@ export default function PricingSection() {
                 <div className="flex flex-col gap-3">
                     {['Customizable link-in-bio', 'Basic Analytics', 'Unlimited Links', 'Social Icons', 'Basic Themes'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
-                            <i className="fa-solid fa-check text-green-500"></i>
+                            <Check className="w-4 h-4 text-green-500" />
                             <span className="text-text-main text-sm font-medium">{feature}</span>
                         </div>
                     ))}
@@ -150,7 +151,7 @@ export default function PricingSection() {
                 <div className="flex flex-col gap-3">
                     {['Everything in Free', 'Remove Branding', 'Custom Domain', 'Priority Support', 'Advanced Analytics', 'Email Collection'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
-                            <i className="fa-solid fa-check text-black"></i>
+                            <Check className="w-4 h-4 text-black" />
                             <span className="text-primary-foreground text-sm font-medium">{feature}</span>
                         </div>
                     ))}
@@ -184,7 +185,7 @@ export default function PricingSection() {
                 <div className="flex flex-col gap-3">
                     {['Everything in Standard', '0% Transaction Fees', 'API Access', 'Dedicated Manager', 'White Labeling', 'Newsletter Tool'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
-                            <i className="fa-solid fa-check text-primary"></i>
+                            <Check className="w-4 h-4 text-primary" />
                             <span className="text-gray-300 text-sm font-medium">{feature}</span>
                         </div>
                     ))}

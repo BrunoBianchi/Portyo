@@ -1,5 +1,20 @@
 import React, { memo } from "react";
 import { type BioBlock } from "~/contexts/bio.context";
+import { 
+  DragHandleIcon, 
+  HeadingIcon, 
+  TextIcon, 
+  ButtonIcon, 
+  ImageIcon, 
+  SocialsIcon, 
+  VideoIcon, 
+  DividerIcon, 
+  DefaultIcon,
+  TrashIcon,
+  ChevronDownIcon,
+  XIcon,
+  PlusIcon
+} from "~/components/icons";
 
 interface BlockItemProps {
   block: BioBlock;
@@ -45,7 +60,7 @@ const BlockItem = memo(({
   return (
     <div className="group">
       <div
-        className={`rounded-xl mb-3 overflow-hidden transition-all duration-300 ${
+        className={`rounded-xl mb-2 overflow-hidden transition-all duration-300 ${
           isDragging
             ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100" 
             : "border-2 border-transparent hover:border-primary/40 bg-white shadow-sm"
@@ -65,20 +80,31 @@ const BlockItem = memo(({
           <div 
             className="flex items-center justify-between gap-3 p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors"
             onClick={() => onToggleExpand(block.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleExpand(block.id);
+              }
+            }}
           >
           <div className="flex items-center gap-3">
+            <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 p-1">
+              <DragHandleIcon />
+            </div>
             <div className="p-2 rounded-lg bg-gray-100 text-gray-500">
               {/* Icon based on type */}
-              {block.type === 'heading' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 12h12"/><path d="M6 20V4"/><path d="M18 20V4"/></svg>}
-              {block.type === 'text' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></svg>}
-              {block.type === 'button' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
-              {block.type === 'image' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>}
-              {block.type === 'socials' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>}
-              {block.type === 'video' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" ry="2"/><polygon points="10 9 15 12 10 15 10 9"/></svg>}
-              {block.type === 'divider' && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" x2="19" y1="12" y2="12"/></svg>}
+              {block.type === 'heading' && <HeadingIcon />}
+              {block.type === 'text' && <TextIcon />}
+              {block.type === 'button' && <ButtonIcon />}
+              {block.type === 'image' && <ImageIcon />}
+              {block.type === 'socials' && <SocialsIcon />}
+              {block.type === 'video' && <VideoIcon />}
+              {block.type === 'divider' && <DividerIcon />}
               {/* Add other icons as needed, defaulting to a generic one if missing */}
               {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider'].includes(block.type) && (
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                 <DefaultIcon />
               )}
             </div>
             <div>
@@ -96,10 +122,10 @@ const BlockItem = memo(({
               type="button"
               title="Remove block"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              <TrashIcon />
             </button>
             <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              <ChevronDownIcon />
             </div>
           </div>
           </div>
@@ -470,6 +496,7 @@ const BlockItem = memo(({
                     >
                       <option value="carousel">Carousel</option>
                       <option value="list">List</option>
+                      <option value="grid">Grid</option>
                     </select>
                   </div>
                   <div>
@@ -481,9 +508,116 @@ const BlockItem = memo(({
                     >
                       <option value="featured">Featured</option>
                       <option value="minimal">Minimal</option>
+                      <option value="modern">Modern</option>
                     </select>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogBackgroundColor || "#ffffff"}
+                        onChange={(e) => handleFieldChange("blogBackgroundColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogBackgroundColor || "#ffffff"}
+                        onChange={(e) => handleFieldChange("blogBackgroundColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Title Color</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogTitleColor || "#1f2937"}
+                        onChange={(e) => handleFieldChange("blogTitleColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogTitleColor || "#1f2937"}
+                        onChange={(e) => handleFieldChange("blogTitleColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogTextColor || "#4b5563"}
+                        onChange={(e) => handleFieldChange("blogTextColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogTextColor || "#4b5563"}
+                        onChange={(e) => handleFieldChange("blogTextColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Date/Accent</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogDateColor || "#f59e0b"}
+                        onChange={(e) => handleFieldChange("blogDateColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogDateColor || "#f59e0b"}
+                        onChange={(e) => handleFieldChange("blogDateColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Tag Bg</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogTagBackgroundColor || "#f3f4f6"}
+                        onChange={(e) => handleFieldChange("blogTagBackgroundColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogTagBackgroundColor || "#f3f4f6"}
+                        onChange={(e) => handleFieldChange("blogTagBackgroundColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Tag Text</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.blogTagTextColor || "#4b5563"}
+                        onChange={(e) => handleFieldChange("blogTagTextColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.blogTagTextColor || "#4b5563"}
+                        onChange={(e) => handleFieldChange("blogTagTextColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">Number of Posts: {block.blogPostCount || 3}</label>
                   <input
@@ -514,7 +648,85 @@ const BlockItem = memo(({
                   >
                     <option value="grid">Grid</option>
                     <option value="list">List</option>
+                    <option value="carousel">Carousel</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Card Style</label>
+                  <select
+                    value={block.productCardStyle || "default"}
+                    onChange={(event) => handleFieldChange("productCardStyle", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  >
+                    <option value="default">Default</option>
+                    <option value="minimal">Minimal</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.productBackgroundColor || "#ffffff"}
+                        onChange={(e) => handleFieldChange("productBackgroundColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.productBackgroundColor || "#ffffff"}
+                        onChange={(e) => handleFieldChange("productBackgroundColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.productTextColor || "#1f2937"}
+                        onChange={(e) => handleFieldChange("productTextColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.productTextColor || "#1f2937"}
+                        onChange={(e) => handleFieldChange("productTextColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Accent Color</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={block.productAccentColor || "#2563eb"}
+                        onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={block.productAccentColor || "#2563eb"}
+                        onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
+                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Button Text</label>
+                  <input
+                    type="text"
+                    value={block.productButtonText || "View Product"}
+                    onChange={(e) => handleFieldChange("productButtonText", e.target.value)}
+                    className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
+                    placeholder="e.g. Buy Now"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-700 block">Products</label>
@@ -1022,7 +1234,7 @@ const BlockItem = memo(({
                         }}
                         className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <XIcon />
                       </button>
 
                       <div className="grid grid-cols-2 gap-2 mb-2">
@@ -1127,7 +1339,7 @@ const BlockItem = memo(({
                     }}
                     className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <PlusIcon />
                     Add Tour Date
                   </button>
                 </div>

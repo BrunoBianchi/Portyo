@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 import ClaimUsernameInput from "./claim-username-input";
+import { Palette, Instagram, Image, Rocket, Youtube } from "lucide-react";
+import { DecorativeUnderlineIcon, TikTokIcon } from "./icons";
 
 export default function HeroSection() {
   return (
@@ -10,13 +12,15 @@ export default function HeroSection() {
             <img 
               src="/Street%20Life%20-%20Head.svg" 
               alt="User avatar" 
+              width="80"
+              height="80"
               className="w-20 h-20 "
             />
           </div>
           
           <div className="absolute top-2 -right-45 bg-white px-4 py-2.5 rounded-2xl shadow-xl transform rotate-3 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-3 z-20">
             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-              <i className="fa-light fa-palette text-sm "></i>
+              <Palette className="w-4 h-4" />
             </div>
             <div className="flex flex-col ">
               <span className="text-xs text-text-muted font-medium">Role</span>
@@ -26,12 +30,12 @@ export default function HeroSection() {
 
           {/* Icon: Instagram */}
           <div className="absolute -top-10 -left-10 bg-white p-3 rounded-full shadow-lg transform -rotate-12 group-hover:rotate-0 transition-transform duration-300 z-10">
-            <i className="fa-brands fa-instagram text-2xl text-[#E1306C] "></i>
+            <Instagram className="w-6 h-6 text-[#E1306C]" />
           </div>
 
            {/* Card: New Post */}
            <div className="absolute -bottom-12 -left-14 bg-white px-3 py-2 rounded-xl shadow-lg transform rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-30">
-             <i className="fa-light fa-image text-blue-500"></i>
+             <Image className="w-4 h-4 text-blue-500" />
              <span className="text-xs font-semibold text-text-main">New 3D Art</span>
            </div>
         </div>
@@ -45,13 +49,15 @@ export default function HeroSection() {
             <img 
               src="/Street%20Life%20-%20Head%20(1).svg" 
               alt="User avatar" 
+              width="64"
+              height="64"
               className="w-16 h-16"
             />
           </div>
 
           {/* Card: TikTok */}
           <div className="absolute -top-8 -right-24 bg-white px-3 py-1.5 rounded-xl shadow-lg transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-20">
-             <i className="fa-brands fa-tiktok text-black"></i>
+             <TikTokIcon className="w-4 h-4 text-black" />
              <span className="text-xs font-bold text-text-main">Viral!</span>
           </div>
         </div>
@@ -65,6 +71,8 @@ export default function HeroSection() {
             <img 
               src="/Street%20Life%20-%20Head%20(2).svg" 
               alt="User avatar" 
+              width="96"
+              height="96"
               className="w-24 h-24 "
             />
           </div>
@@ -72,7 +80,7 @@ export default function HeroSection() {
           {/* Card: Startup Founder */}
           <div className="absolute top-0 -left-48 bg-white px-5 py-3 rounded-2xl shadow-xl transform -rotate-3 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-3 z-20">
              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-              <i className="fa-light fa-rocket-launch text-sm"></i>
+              <Rocket className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-text-muted font-medium">Founder</span>
@@ -98,13 +106,15 @@ export default function HeroSection() {
             <img 
               src="/Street%20Life%20-%20Head%20(3).svg" 
               alt="User avatar" 
+              width="56"
+              height="56"
               className="w-14 h-14"
             />
           </div>
 
           {/* Card: YouTube */}
           <div className="absolute -bottom-8 -left-20 bg-white px-3 py-1.5 rounded-xl shadow-lg transform rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-20">
-             <i className="fa-brands fa-youtube text-[#FF0000]"></i>
+             <Youtube className="w-4 h-4 text-[#FF0000]" />
              <span className="text-xs font-bold text-text-main">New Video</span>
           </div>
         </div>
@@ -115,9 +125,7 @@ export default function HeroSection() {
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-text-main leading-[1.1]">
           Convert your followers into <span className="text-primary-hover relative inline-block">
             customers
-            <svg className="absolute w-full h-3 -bottom-1 left-0 text-secondary opacity-60 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
-              <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
-            </svg>
+            <DecorativeUnderlineIcon className="absolute w-full h-3 -bottom-1 left-0 text-secondary opacity-60 -z-10" />
           </span> with one link
         </h1>
         

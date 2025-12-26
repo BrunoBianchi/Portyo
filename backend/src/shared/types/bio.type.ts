@@ -8,4 +8,14 @@ export type Bio = BaseType & {
     user:UserType | string;
     blocks?: any[];
     html?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    favicon?: string;
+    googleAnalyticsId?: string;
+    facebookPixelId?: string;
+    seoKeywords?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    noIndex?: boolean;
 }

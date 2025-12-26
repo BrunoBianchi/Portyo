@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { useCookies } from 'react-cookie';
 
 import { api } from '~/services/api';
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
     }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = useCallback(async (email: string, password: string) => {
         const response = await api.post("/user/login", {
             email, password
         })
@@ -50,9 +50,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setCookie('@App:user', JSON.stringify(user), { path: '/' });
         setCookie('@App:token', token, { path: '/' });
-    }
+    }, [setCookie]);
 
-    const register = async (email: string, password: string, fullname: string, sufix: string) => {
+    const register = useCallback(async (email: string, password: string, fullname: string, sufix: string) => {
         const response = await api.post("/user/", {
             sufix, fullname, email, password
         })
@@ -62,16 +62,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setCookie('@App:user', JSON.stringify(authentification.user), { path: '/' });
         setCookie('@App:token', authentification.token, { path: '/' });
-    }
+    }, [setCookie]);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setUser(null);
         removeCookie('@App:user', { path: '/' });
         removeCookie('@App:token', { path: '/' });
-    };
+    }, [removeCookie]);
+
+    const value = useMemo(() => ({
+        signed: !!user,
+        user,
+        loading,
+        login,
+        logout,
+        register
+    }), [user, loading, login, logout, register]);
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, user, loading, login, logout, register }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     )

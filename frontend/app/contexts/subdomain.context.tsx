@@ -10,6 +10,17 @@ interface Bio {
     views: number;
     createdAt: string;
     userId: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    favicon?: string;
+    googleAnalyticsId?: string;
+    facebookPixelId?: string;
+    seoKeywords?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    noIndex?: boolean;
+    customDomain?: string;
 }
 
 interface SubDomainData {
@@ -343,6 +354,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // Platform domains (Render) can look like: appname.onrender.com
         // In that case, `appname` is NOT a user subdomain.
         const isOnRenderDomain = host.endsWith('.onrender.com');
+        const isPortyoDomain = host.endsWith('portyo.me');
 
         if (isLocalhost) {
             // username.localhost (or username.localhost:5173)
@@ -351,9 +363,15 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             // Treat subdomain only when there's an extra label before the app name:
             // username.appname.onrender.com
             if (parts.length > 3) currentSubdomain = parts[0];
-        } else {
-            // user.domain.tld
+        } else if (isPortyoDomain) {
+            // user.portyo.me
             if (parts.length > 2) currentSubdomain = parts[0];
+        } else {
+            // Custom domain logic
+            // If it's not localhost, not render, and not portyo.me, it's likely a custom domain
+            // We need to fetch the bio by custom domain
+            fetchBioByCustomDomain(host);
+            return;
         }
 
         if (currentSubdomain === "www") currentSubdomain = "";
@@ -365,6 +383,25 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             setIsLoading(false);
         }
     }, []);
+
+    const fetchBioByCustomDomain = async (domain: string) => {
+        try {
+            // We need a new endpoint for this or use a query param
+            // For now, let's assume we can search by custom domain
+            // This might require backend changes to support finding by custom domain
+            // Or we can try to find by sufix if the custom domain is mapped to a sufix
+            
+            // Ideally: GET /public/bio/domain/:domain
+            const response = await api.get(`/public/bio/domain/${domain}`);
+            setBio(response.data);
+            setSubDomain(response.data.sufix); // Set the sufix for context consistency
+        } catch (error) {
+            console.error("Error fetching bio by domain", error);
+            setIsNotFound(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const fetchBio = async (sufix: string) => {
         try {
@@ -404,7 +441,59 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     <head>
                         <meta charSet="utf-8" />
                         <meta name="viewport" content="width=device-width, initial-scale=1" />
-                        <title>{subdomain}</title>
+                        <title>{bio.seoTitle || subdomain}</title>
+                        {bio.seoDescription && <meta name="description" content={bio.seoDescription} />}
+                        {bio.seoKeywords && <meta name="keywords" content={bio.seoKeywords} />}
+                        {bio.favicon && <link rel="icon" href={bio.favicon} />}
+                        
+                        {/* Open Graph / Social Media */}
+                        <meta property="og:title" content={bio.ogTitle || bio.seoTitle || subdomain} />
+                        <meta property="og:description" content={bio.ogDescription || bio.seoDescription || ""} />
+                        {bio.ogImage && <meta property="og:image" content={bio.ogImage} />}
+                        <meta property="og:type" content="website" />
+                        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+
+                        {/* Indexing */}
+                        {bio.noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+                        {/* Google Analytics */}
+                        {bio.googleAnalyticsId && (
+                            <>
+                                <script async src={`https://www.googletagmanager.com/gtag/js?id=${bio.googleAnalyticsId}`}></script>
+                                <script dangerouslySetInnerHTML={{
+                                    __html: `
+                                        window.dataLayer = window.dataLayer || [];
+                                        function gtag(){dataLayer.push(arguments);}
+                                        gtag('js', new Date());
+                                        gtag('config', '${bio.googleAnalyticsId}');
+                                    `
+                                }} />
+                            </>
+                        )}
+
+                        {/* Facebook Pixel */}
+                        {bio.facebookPixelId && (
+                            <>
+                                <script dangerouslySetInnerHTML={{
+                                    __html: `
+                                        !function(f,b,e,v,n,t,s)
+                                        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                                        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                                        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                                        n.queue=[];t=b.createElement(e);t.async=!0;
+                                        t.src=v;s=b.getElementsByTagName(e)[0];
+                                        s.parentNode.insertBefore(t,s)}(window, document,'script',
+                                        'https://connect.facebook.net/en_US/fbevents.js');
+                                        fbq('init', '${bio.facebookPixelId}');
+                                        fbq('track', 'PageView');
+                                    `
+                                }} />
+                                <noscript><img height="1" width="1" style={{display:'none'}}
+                                src={`https://www.facebook.com/tr?id=${bio.facebookPixelId}&ev=PageView&noscript=1`}
+                                /></noscript>
+                            </>
+                        )}
+
                         <Meta />
                         <Links />
                     </head>

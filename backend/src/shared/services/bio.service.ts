@@ -12,19 +12,29 @@ export const findBioBySufixWithUser = async (sufix: string): Promise<Bio | null>
                 sufix
             },
             relations:['user']
-        }) || null
+        }) as Bio || null
+}
+
+export const findBioByCustomDomain = async (customDomain: string): Promise<Bio | null> => { 
+    return await repository.findOne({ 
+        where:{
+            customDomain
+        },
+        relations:['user']
+    }) as Bio || null
 }
 
 export const findBioBySufix = async (sufix: string): Promise<Bio | null> => {
-    return await repository.findOneBy({ sufix }) || null
+    return await repository.findOneBy({ sufix }) as Bio || null
 }
 export const findBioById= async (id: string): Promise<Bio | null> => {
-    return await repository.findOneBy({ id }) || null
+    return await repository.findOneBy({ id }) as Bio || null
 }
-export const updateBioById = async(id:string, html:string, blocks: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }): Promise<Bio | null> => { 
+export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }, seoSettings?: { seoTitle?: string, seoDescription?: string, favicon?: string, googleAnalyticsId?: string, facebookPixelId?: string, seoKeywords?: string, ogTitle?: string, ogDescription?: string, ogImage?: string, noIndex?: boolean }, customDomain?: string, layoutSettings?: { cardStyle?: string, cardBackgroundColor?: string, cardBorderColor?: string, cardBorderWidth?: number, cardBorderRadius?: number, cardShadow?: string, cardPadding?: number, maxWidth?: number }): Promise<Bio | null> => { 
     let bio = await findBioById(id) as BioEntity
-    bio.html = html ?? "";
-    bio.blocks = blocks ?? [];
+    if (html !== undefined) bio.html = html;
+    if (blocks !== undefined) bio.blocks = blocks;
+    if (customDomain !== undefined) bio.customDomain = customDomain;
     
     if (bgSettings) {
         if (bgSettings.bgType) bio.bgType = bgSettings.bgType;
@@ -36,14 +46,38 @@ export const updateBioById = async(id:string, html:string, blocks: any[], bgSett
         if (bgSettings.imageStyle) bio.imageStyle = bgSettings.imageStyle;
     }
 
+    if (layoutSettings) {
+        if (layoutSettings.cardStyle) bio.cardStyle = layoutSettings.cardStyle;
+        if (layoutSettings.cardBackgroundColor) bio.cardBackgroundColor = layoutSettings.cardBackgroundColor;
+        if (layoutSettings.cardBorderColor) bio.cardBorderColor = layoutSettings.cardBorderColor;
+        if (layoutSettings.cardBorderWidth !== undefined) bio.cardBorderWidth = layoutSettings.cardBorderWidth;
+        if (layoutSettings.cardBorderRadius !== undefined) bio.cardBorderRadius = layoutSettings.cardBorderRadius;
+        if (layoutSettings.cardShadow) bio.cardShadow = layoutSettings.cardShadow;
+        if (layoutSettings.cardPadding !== undefined) bio.cardPadding = layoutSettings.cardPadding;
+        if (layoutSettings.maxWidth !== undefined) bio.maxWidth = layoutSettings.maxWidth;
+    }
+
+    if (seoSettings) {
+        if (seoSettings.seoTitle !== undefined) bio.seoTitle = seoSettings.seoTitle;
+        if (seoSettings.seoDescription !== undefined) bio.seoDescription = seoSettings.seoDescription;
+        if (seoSettings.favicon !== undefined) bio.favicon = seoSettings.favicon;
+        if (seoSettings.googleAnalyticsId !== undefined) bio.googleAnalyticsId = seoSettings.googleAnalyticsId;
+        if (seoSettings.facebookPixelId !== undefined) bio.facebookPixelId = seoSettings.facebookPixelId;
+        if (seoSettings.seoKeywords !== undefined) bio.seoKeywords = seoSettings.seoKeywords;
+        if (seoSettings.ogTitle !== undefined) bio.ogTitle = seoSettings.ogTitle;
+        if (seoSettings.ogDescription !== undefined) bio.ogDescription = seoSettings.ogDescription;
+        if (seoSettings.ogImage !== undefined) bio.ogImage = seoSettings.ogImage;
+        if (seoSettings.noIndex !== undefined) bio.noIndex = seoSettings.noIndex;
+    }
+
     await repository.save(bio)
-    return bio;
+    return bio as Bio;
 }
 
 export const getBiosFromUser = async(userId:string):Promise<Bio[]|null> =>{
     return await repository.find({
         where:{userId}
-    }) || null
+    }) as Bio[] || null
 }
 
 export const createNewBio = async (sufix: string, userEmail: string): Promise<Partial<Bio> | ApiError> => {

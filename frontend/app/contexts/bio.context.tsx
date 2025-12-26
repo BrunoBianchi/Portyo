@@ -31,9 +31,15 @@ export type BioBlock = {
     socialsLayout?: "row" | "column";
     socialsLabel?: boolean;
     // Blog specific
-    blogLayout?: "carousel" | "list";
-    blogCardStyle?: "featured" | "minimal";
+    blogLayout?: "carousel" | "list" | "grid";
+    blogCardStyle?: "featured" | "minimal" | "modern";
     blogPostCount?: number;
+    blogBackgroundColor?: string;
+    blogTitleColor?: string;
+    blogTextColor?: string;
+    blogDateColor?: string;
+    blogTagBackgroundColor?: string;
+    blogTagTextColor?: string;
     // Product specific
     products?: {
         id: string;
@@ -42,7 +48,12 @@ export type BioBlock = {
         image: string;
         url: string;
     }[];
-    productLayout?: "grid" | "list";
+    productLayout?: "grid" | "list" | "carousel";
+    productCardStyle?: "default" | "minimal";
+    productBackgroundColor?: string;
+    productTextColor?: string;
+    productAccentColor?: string;
+    productButtonText?: string;
     // Calendar specific
     calendarTitle?: string;
     calendarUrl?: string;
@@ -120,6 +131,25 @@ interface Bio {
     bgVideo?: string;
     usernameColor?: string;
     imageStyle?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    favicon?: string;
+    googleAnalyticsId?: string;
+    facebookPixelId?: string;
+    seoKeywords?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    noIndex?: boolean;
+    customDomain?: string;
+    cardStyle?: string;
+    cardBackgroundColor?: string;
+    cardBorderColor?: string;
+    cardBorderWidth?: number;
+    cardBorderRadius?: number;
+    cardShadow?: string;
+    cardPadding?: number;
+    maxWidth?: number;
 }
 
 interface BioData {
@@ -128,7 +158,7 @@ interface BioData {
     createBio(sufix: string): Promise<void>;
     getBio(id: string): Promise<void>;
     getBios(): Promise<void>;
-    updateBio(id: string, payload: { html: string; blocks: BioBlock[]; bgType?: string; bgColor?: string; bgSecondaryColor?: string; bgImage?: string; bgVideo?: string; usernameColor?: string; imageStyle?: string }): Promise<void>;
+    updateBio(id: string, payload: Partial<Bio>): Promise<void>;
     selectBio(bio: Bio): void;
 }
 
@@ -169,7 +199,7 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
     };
 
-    const updateBio = async (id: string, payload: { html: string; blocks: BioBlock[] }) => {
+    const updateBio = async (id: string, payload: Partial<Bio>) => {
         try {
             const response = await api.post(`/bio/update/${id}`, payload);
             setBio(response.data);

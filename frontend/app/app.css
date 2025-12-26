@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -24,6 +23,55 @@
   /* Border Colors */
   --color-border: #e5e5e5;
   --color-border-hover: #d4d4d4;
+
+  /* Spacing & Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-transparent shadow-sm hover:shadow-md transition-all duration-300;
+  }
+  
+  .card-hover {
+    @apply hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-text-main border border-border hover:bg-gray-50 hover:border-gray-300;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-text-muted hover:text-text-main hover:bg-black/5;
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-sm rounded-md;
+  }
+
+  .btn-lg {
+    @apply px-8 py-4 text-lg rounded-xl;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base placeholder:text-text-muted/50;
+  }
+
+  .label {
+    @apply block text-sm font-bold text-text-main mb-2 uppercase tracking-wider;
+  }
 }
 
 body {

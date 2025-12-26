@@ -1,3 +1,4 @@
+import { QrCode } from 'lucide-react';
 import React, { useEffect } from 'react';
 
 export default function AnalyticsSection() {
@@ -142,7 +143,7 @@ export default function AnalyticsSection() {
             <div className="parallax-wrapper lg:mt-12 transition-transform duration-75 ease-out will-change-transform">
                 <div className="bg-white text-neutral-900 p-6 rounded-3xl aspect-square flex flex-col justify-center items-center gap-3 shadow-xl hover:scale-[1.02] transition-transform duration-300 border border-border/50 relative overflow-hidden">
                     <div className="w-20 h-20 bg-neutral-900 rounded-xl p-2 flex items-center justify-center relative z-10 overflow-hidden">
-                        <i className="fa-sharp fa-light fa-qrcode text-5xl text-white relative z-10"></i>
+                        <QrCode className="w-12 h-12 text-white relative z-10" />
                         {/* Scan Line Overlay */}
                         <div className="scan-line absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-transparent via-primary/80 to-transparent -translate-y-full z-20 blur-sm"></div>
                     </div>

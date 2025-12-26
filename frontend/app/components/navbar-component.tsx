@@ -192,10 +192,10 @@ function ProductsDropdown() {
   }
 
   const subMenuItems = [
-    { title: "Overview", href: "#" },
-    { title: "Modifiers", href: "#" },
-    { title: "Columns", href: "#" },
-    { title: "Layout", href: "#" },
+    { title: "Overview", href: "/" },
+    { title: "Modifiers", href: "/" },
+    { title: "Columns", href: "/" },
+    { title: "Layout", href: "/" },
   ];
 
   return (

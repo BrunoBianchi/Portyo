@@ -1,4 +1,6 @@
 import React from 'react';
+import { ArrowRight, Bell, Image } from "lucide-react";
+import { NikeIcon } from "./icons";
 
 export default function FeaturesSection() {
   return (
@@ -15,7 +17,7 @@ export default function FeaturesSection() {
                 </p>
               </div>
               <button className="w-fit mt-2 font-bold text-text-main hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-                Learn more <i className="fa-solid fa-arrow-right text-base group-hover:translate-x-1 transition-transform"></i>
+                Learn more <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
           </div>
           
@@ -38,7 +40,7 @@ export default function FeaturesSection() {
                     <div className="flex gap-2">
                         <div className="flex-1 h-12 bg-white border border-gray-200 rounded-xl px-4 flex items-center text-gray-400 text-sm">your@email.com</div>
                         <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-text-main shadow-sm cursor-pointer hover:bg-primary-hover transition-colors">
-                            <i className="fa-solid fa-arrow-right"></i>
+                            <ArrowRight className="w-4 h-4" />
                         </div>
                     </div>
                 </div>
@@ -48,7 +50,7 @@ export default function FeaturesSection() {
              <div className="absolute -right-4 top-20 bg-black text-white px-6 py-4 rounded-2xl shadow-2xl z-20 rotate-[5deg] animate-bounce-slow">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-black text-xs">
-                        <i className="fa-solid fa-bell"></i>
+                        <Bell className="w-4 h-4" />
                     </div>
                     <div>
                         <p className="text-xs text-gray-400">Notification</p>
@@ -71,7 +73,7 @@ export default function FeaturesSection() {
                 </p>
               </div>
               <button className="w-fit mt-2 font-bold text-white hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-                Get Sponsored <i className="fa-solid fa-arrow-right text-base group-hover:translate-x-1 transition-transform"></i>
+                Get Sponsored <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
           </div>
           
@@ -79,7 +81,7 @@ export default function FeaturesSection() {
              {/* Visual: Primary Card */}
              <div className="w-full max-w-md bg-primary rounded-[2.5rem] shadow-xl p-8 relative z-10 rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
                 <div className="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                    <i className="fa-brands fa-nike text-3xl text-black"></i>
+                    <NikeIcon className="w-8 h-8 text-black" />
                 </div>
                 <h3 className="text-2xl font-bold text-black mb-2">Collaboration Request</h3>
                 <p className="text-black/70 mb-8">Nike wants to collaborate with you on their new campaign.</p>
@@ -107,7 +109,7 @@ export default function FeaturesSection() {
              <div className="w-full max-w-md bg-[#fcdba8] rounded-[2.5rem] shadow-xl p-8 relative z-10 rotate-[2deg] hover:rotate-0 transition-transform duration-500">
                 <div className="w-full aspect-video bg-black/5 rounded-2xl mb-6 overflow-hidden relative">
                     <div className="absolute inset-0 flex items-center justify-center text-black/20">
-                        <i className="fa-solid fa-image text-4xl"></i>
+                        <Image className="w-9 h-9" />
                     </div>
                 </div>
                 <div className="flex gap-2 mb-4">
@@ -138,7 +140,7 @@ export default function FeaturesSection() {
                 </p>
               </div>
               <button className="w-fit mt-2 font-bold text-text-main hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-                Start Writing <i className="fa-solid fa-arrow-right text-base group-hover:translate-x-1 transition-transform"></i>
+                Start Writing <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
           </div>
         </div>

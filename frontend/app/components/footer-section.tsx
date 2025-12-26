@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { Twitter, Instagram, Linkedin } from "lucide-react";
+import { TikTokIcon } from "./icons";
 
 export default function Footer() {
   return (
@@ -72,10 +74,10 @@ export default function Footer() {
             <p>© 2025 Portyo Inc. All rights reserved.</p>
             
             <div className="flex items-center gap-6">
-                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-twitter text-xl"></i></a>
-                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-instagram text-xl"></i></a>
-                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-linkedin text-xl"></i></a>
-                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-tiktok text-xl"></i></a>
+                <a href="#" aria-label="Twitter" className="hover:text-white transition-colors"><Twitter className="w-5 h-5" /></a>
+                <a href="#" aria-label="Instagram" className="hover:text-white transition-colors"><Instagram className="w-5 h-5" /></a>
+                <a href="#" aria-label="LinkedIn" className="hover:text-white transition-colors"><Linkedin className="w-5 h-5" /></a>
+                <a href="#" aria-label="TikTok" className="hover:text-white transition-colors"><TikTokIcon className="w-5 h-5" /></a>
             </div>
         </div>
 

@@ -1,4 +1,8 @@
 
+import React from 'react';
+import { Linkedin } from "lucide-react";
+import { TwitterXIcon, TikTokIcon, ProductHuntIcon } from "./icons";
+
 export default function FeaturedSection() {
   return (
     <section className="w-full py-12 px-4">
@@ -10,22 +14,22 @@ export default function FeaturedSection() {
         <div className="flex flex-wrap justify-center gap-4 md:gap-6">
           {/* Twitter (X) */}
           <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <i className="fa-brands fa-x-twitter text-3xl text-text-main group-hover:scale-110 transition-transform duration-300"></i>
+            <TwitterXIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
           </div>
 
           {/* TikTok */}
           <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <i className="fa-brands fa-tiktok text-3xl text-text-main group-hover:scale-110 transition-transform duration-300"></i>
+            <TikTokIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
           </div>
 
           {/* Product Hunt */}
           <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <i className="fa-brands fa-product-hunt text-3xl text-text-main group-hover:scale-110 transition-transform duration-300"></i>
+            <ProductHuntIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
           </div>
 
           {/* LinkedIn */}
           <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <i className="fa-brands fa-linkedin text-3xl text-text-main group-hover:scale-110 transition-transform duration-300"></i>
+            <Linkedin className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
           </div>
         </div>
       </div>

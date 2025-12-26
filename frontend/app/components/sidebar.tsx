@@ -2,6 +2,27 @@ import { Link, useLocation } from "react-router";
 import { useContext, useState, useRef, useEffect } from "react";
 import AuthContext from "~/contexts/auth.context";
 import BioContext from "~/contexts/bio.context";
+import { 
+    LayoutDashboard, 
+    PenTool, 
+    Settings, 
+    LogOut, 
+    Globe, 
+    ChevronDown, 
+    Plus, 
+    Check, 
+    ExternalLink,
+    X,
+    Sparkles,
+    BarChart3,
+    Users,
+    Zap,
+    Puzzle,
+    CreditCard,
+    ShoppingBag,
+    FileText,
+    UserCog
+} from "lucide-react";
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -9,7 +30,7 @@ interface SidebarProps {
     handleChangeBio?:()=>void;
 }
 
-export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProps) {
+export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarProps) {
     const location = useLocation();
     const { user, logout } = useContext(AuthContext);
     const { bio, bios, createBio, selectBio } = useContext(BioContext);
@@ -53,8 +74,17 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
     }, []);
 
     const navItems = [
-        { name: "Dashboard", path: "/dashboard", icon: <HomeIcon /> },
-        { name: "Editor", path: "/dashboard/editor", icon: <LinkIcon /> },
+        { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
+        { name: "Editor", path: "/dashboard/editor", icon: PenTool },
+        { name: "Leads", path: "/dashboard/leads", icon: Users },
+        { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
+        { name: "Blog", path: "/dashboard/blog", icon: FileText },
+        { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
+        { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
+        { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
+        { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
+        { name: "Billing", path: "/dashboard/billing", icon: CreditCard },
+        { name: "Settings", path: "/dashboard/settings", icon: UserCog },
     ];
 
     return (
@@ -62,7 +92,7 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
             {/* Mobile Overlay */}
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/20 z-[45] md:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/20 z-[45] md:hidden backdrop-blur-sm transition-opacity"
                     onClick={onClose}
                 />
             )}
@@ -70,43 +100,55 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
             {/* Create Bio Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)} />
-                    <div className="bg-white w-full max-w-[580px] rounded-[2rem] p-8 relative z-10 shadow-2xl animate-float">
-                        <div className="flex items-start justify-between mb-8">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" onClick={() => setIsCreateModalOpen(false)} />
+                    <div className="bg-white w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-start justify-between mb-6">
                             <div>
-                                <h2 className="text-3xl font-extrabold text-black mb-2 tracking-tight">Claim your link</h2>
-                                <p className="text-gray-500 text-lg">Choose a unique username for your page.</p>
+                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
+                                    <Sparkles className="w-3 h-3" />
+                                    New Page
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Claim your link</h2>
+                                <p className="text-gray-500 mt-1 text-sm">Choose a unique username for your new page.</p>
                             </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-black">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-black" aria-label="Close modal">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                         
                         <div className="space-y-6">
-                            <div className="relative flex items-center bg-[#F9F8F4] rounded-2xl h-20 px-6 border border-transparent focus-within:border-black/5 transition-all">
-                                <div className="flex-1 flex items-center justify-end h-full">
-                                    <input 
-                                        type="text" 
-                                        value={newUsername}
-                                        onChange={(e) => setNewUsername(normalizeUsername(e.target.value))}
-                                        placeholder="username" 
-                                        className="w-full bg-transparent border-none outline-none text-3xl font-bold text-black placeholder:text-gray-300 h-full text-right pr-1 tracking-tight"
-                                        autoFocus
-                                        spellCheck={false}
-                                    />
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Globe className="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                                 </div>
-                                <div className="flex items-center h-full pl-1">
-                                    <span className="text-3xl font-bold text-black/80 select-none tracking-tight">.portyo.me</span>
+                                <div className="flex items-center bg-gray-50 rounded-lg h-12 px-4 border border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white transition-all">
+                                    <div className="flex-1 flex items-center h-full pl-8">
+                                        <span className="text-base font-medium text-gray-500 select-none">portyo.me/</span>
+                                        <input 
+                                            type="text" 
+                                            value={newUsername}
+                                            onChange={(e) => setNewUsername(normalizeUsername(e.target.value))}
+                                            placeholder="username" 
+                                            className="w-full bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 h-full ml-1"
+                                            autoFocus
+                                            spellCheck={false}
+                                        />
+                                    </div>
+                                    {isUsernameValid && (
+                                        <div className="text-green-500 animate-in fade-in zoom-in duration-200">
+                                            <Check className="w-5 h-5" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             
                             <button 
                                 disabled={!isUsernameValid}
                                 onClick={handleCreateBio}
-                                className="w-full bg-[#DFFF7E] hover:bg-[#D2F270] text-[#5F6D28] font-bold text-xl py-5 rounded-2xl shadow-lg shadow-[#DFFF7E]/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
+                                className="btn btn-primary w-full justify-center gap-2"
                             >
                                 <span>Create Page</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                <Plus className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -114,217 +156,175 @@ export function Sidebar({ isOpen = false, onClose,handleChangeBio }: SidebarProp
             )}
             
             <aside className={`
-                w-60 h-screen flex flex-col fixed left-0 top-0 z-50
-                transition-transform duration-300 ease-in-out
-                ${isOpen ? "translate-x-0 bg-surface-alt" : "-translate-x-full"}
-                md:translate-x-0 md:bg-transparent
+                w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-white
+                transition-transform duration-300 ease-out border-r border-gray-100
+                ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+                md:translate-x-0 md:shadow-none
             `}>
                 {/* Logo Area */}
-                <div className="p-8 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-xl shadow-sm">
+                <div className="p-4 pb-2 flex items-center justify-between">
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
                             P
                         </div>
-                        <span className="font-bold text-xl tracking-tight text-text-main">Portyo</span>
+                        <span className="font-bold text-xl tracking-tight text-gray-900">Portyo</span>
                     </Link>
-                    {/* Close button for mobile */}
-                    <button onClick={onClose} className="md:hidden text-text-muted hover:text-text-main">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close sidebar">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 px-6 space-y-3 overflow-y-auto">
-                <div className="mb-6" ref={dropdownRef}>
+                {/* Workspace Switcher */}
+                <div className="px-4 mb-6 mt-2" ref={dropdownRef}>
                     <div className="relative">
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full bg-surface hover:bg-white text-text-main p-3 rounded-xl transition-all flex items-center justify-between shadow-sm hover:shadow-md cursor-pointer border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-border/50'}`}
+                            className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-900 p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                            aria-label="Switch workspace"
+                            aria-expanded={isDropdownOpen}
                         >
                             <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-sm">
-                                    <GlobeIcon className="w-5 h-5" />
+                                <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-primary shrink-0 shadow-sm">
+                                    <Globe className="w-5 h-5" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden min-w-0 flex-1">
-                                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-0.5">Active Page</span>
-                                    <span className="text-sm font-bold truncate w-full text-left leading-tight">
-                                        {bio?.sufix || "No page"}
+                                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Current Page</span>
+                                    <span className="text-sm font-bold truncate w-full text-left text-gray-900">
+                                        {bio?.sufix || "Select Page"}
                                     </span>
                                 </div>
                             </div>
-                            <ChevronDownIcon className={`text-text-muted transition-transform duration-200 w-4 h-4 shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            <div className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400">
+                                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </div>
                         </button>
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-xl shadow-xl border border-border/50 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="p-1.5">
-                                    <button 
-                                        onClick={() => {
-                                            setIsDropdownOpen(false);
-                                            setIsCreateModalOpen(true);
-                                        }}
-                                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-surface-alt text-left transition-colors group"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg bg-surface-alt group-hover:bg-white border border-border/50 flex items-center justify-center text-text-main transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                        </div>
-                                        <span className="font-medium text-sm">Create new page</span>
-                                    </button>
-                                    
-                                    {bios.length > 0 && (
-                                        <>
-                                            <div className="h-px bg-border/50 my-1.5 mx-2" />
-                                            {bios.map((b) => (
-                                                <button 
-                                                    key={b.id}
-                                                    onClick={() => {
-                                                        selectBio(b);
-                                                        setIsDropdownOpen(false);
-                                                    }}
-                                                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${bio?.id === b.id ? 'bg-primary/5 text-primary-hover' : 'hover:bg-surface-alt text-text-main'}`}
-                                                >
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-primary/20 text-primary-hover' : 'bg-surface-alt text-text-muted'}`}>
-                                                        <GlobeIcon className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0 flex-1">
-                                                        <span className="font-bold text-sm truncate">{b.sufix}</span>
-                                                        {bio?.id === b.id && <span className="text-[10px] opacity-80">Active</span>}
-                                                    </div>
-                                                    {bio?.id === b.id && (
-                                                        <div className="ml-auto shrink-0 pl-2">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </>
-                                    )}
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-black/5 p-2">
+                                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                    Your Pages
                                 </div>
+                                <div className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar">
+                                    {bios.length > 0 && bios.map((b) => (
+                                        <button 
+                                            key={b.id}
+                                            onClick={() => {
+                                                selectBio(b);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${bio?.id === b.id ? 'bg-primary/10 text-gray-900 font-bold' : 'hover:bg-gray-50 text-gray-600 hover:text-gray-900 font-medium'}`}
+                                        >
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-white text-primary shadow-sm' : 'bg-gray-100 text-gray-400'}`}>
+                                                <Globe className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-sm truncate flex-1">{b.sufix}</span>
+                                            {bio?.id === b.id && (
+                                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-primary/30">
+                                                    <Check className="w-3 h-3 text-white shrink-0" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                <div className="h-px bg-gray-100 my-2 mx-2" />
+                                
+                                <button 
+                                    onClick={() => {
+                                        setIsDropdownOpen(false);
+                                        setIsCreateModalOpen(true);
+                                    }}
+                                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 text-left transition-colors group text-gray-500 hover:text-gray-900"
+                                    aria-label="Create new page"
+                                >
+                                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-500 group-hover:text-gray-700">
+                                        <Plus className="w-4 h-4" />
+                                    </div>
+                                    <span className="font-bold text-sm">Create new page</span>
+                                </button>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {navItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center gap-4 px-6 py-3.5 rounded-2xl transition-all duration-300 group ${
-                            isActive(item.path)
-                                ? "text-text-main font-semibold bg-white/60"
-                                : "text-text-muted hover:text-text-main hover:bg-white/30"
-                        }`}
-                    >
-                        <span className={`${isActive(item.path) ? "text-text-main" : "text-text-muted group-hover:text-text-main"} transition-colors`}>
-                            {item.icon}
-                        </span>
-                        {item.name}
-                    </Link>
-                ))}
-            </nav>
+                {/* Navigation */}
+                <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2">
+                    <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Menu
+                    </div>
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative ${
+                                isActive(item.path)
+                                    ? "bg-primary/15 text-gray-900 font-bold"
+                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                            }`}
+                        >
+                            <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
+                            <span className="flex-1 text-sm">{item.name}</span>
+                            {/* @ts-ignore */}
+                            {item.isPro && (
+                                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
+                                    Pro
+                                </span>
+                            )}
+                        </Link>
+                    ))}
+                </nav>
 
-            {/* User Profile & Logout */}
-            <div className="p-6 mt-auto">
-                <div className="bg-surface/80 backdrop-blur-sm rounded-2xl p-3 flex items-center gap-3 border border-white/50 shadow-sm hover:shadow-md transition-all group cursor-pointer">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-hover font-bold text-lg shrink-0">
-                        {user?.fullname?.[0]?.toUpperCase() || "U"}
+                {/* Footer Actions */}
+                <div className="p-3 border-t border-gray-100 space-y-3 bg-white">
+                    {bio && (
+                        <a 
+                            href={`https://${bio.sufix}.portyo.me`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
+                        >
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors shadow-sm border border-gray-100">
+                                    <ExternalLink className="w-4 h-4" />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Page</span>
+                                    <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
+                                        {bio.sufix}.portyo.me
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    )}
+
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">
+                            {user?.fullname?.[0]?.toUpperCase() || "U"}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold truncate text-gray-900">{user?.fullname || "User"}</p>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 uppercase tracking-wider border border-gray-200">
+                                    Free
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                        </div>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                logout();
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                            title="Log out"
+                            aria-label="Log out"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate text-text-main">{user?.fullname || "User"}</p>
-                        <p className="text-xs text-text-muted truncate">{user?.email}</p>
-                    </div>
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            logout();
-                        }}
-                        className="p-2 text-text-muted hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                        title="Log out"
-                    >
-                        <LogoutIcon />
-                    </button>
                 </div>
-            </div>
-        </aside>
+            </aside>
         </>
-    );
-}
-
-// Icons
-function HomeIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-    );
-}
-
-function LinkIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-        </svg>
-    );
-}
-
-function PaletteIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
-            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
-            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
-            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
-            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.093 0-.679.63-1.289 1.293-1.289a1.94 1.94 0 0 0 1.938-1.938 1.9 1.9 0 0 0-1.938-1.938c-.902 0-1.687-.746-1.687-1.687 0-.438.18-.836.438-1.125.29-.29.437-.653.437-1.094 0-.679-.63-1.289-1.293-1.289-.664 0-1.293.61-1.293 1.289 0 .441.148.804.438 1.094.257.289.437.687.437 1.125 0 .941-.785 1.687-1.687 1.687a1.94 1.94 0 0 0-1.938 1.938c0 1.07.867 1.938 1.938 1.938 1.07 0 1.937-.868 1.937-1.938 0-1.07-.867-1.938-1.937-1.938Z"/>
-        </svg>
-    );
-}
-
-function ChartIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="20" x2="12" y2="10"/>
-            <line x1="18" y1="20" x2="18" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="16"/>
-        </svg>
-    );
-}
-
-function SettingsIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-            <circle cx="12" cy="12" r="3"/>
-        </svg>
-    );
-}
-
-function LogoutIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-    );
-}
-
-function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-    );
-}
-
-function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <path d="m6 9 6 6 6-6"/>
-        </svg>
     );
 }
