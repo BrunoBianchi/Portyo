@@ -100,7 +100,7 @@ export default function DashboardProducts() {
                 <button className="flex-1 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200">
                   Edit
                 </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors" aria-label="More options">
                   <MoreVertical className="w-5 h-5" />
                 </button>
               </div>

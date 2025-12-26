@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { api } from "~/services/api";
 
 export type BioBlock = {
@@ -225,5 +225,7 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         </BioContext.Provider>
     );
 };
+
+export const useBio = () => useContext(BioContext);
 
 export default BioContext;

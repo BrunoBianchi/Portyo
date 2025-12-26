@@ -5,6 +5,8 @@ export default [
     {path:'/login',file:"routes/login.tsx"},
     {path:'/signup',file:"routes/signup.tsx"},
     {path:'/verify-email',file:"routes/verify-email.tsx"},
+    {path:'/robots.txt',file:"routes/robots.ts", id: "robots-txt"},
+    {path:'/robot.txt',file:"routes/robots.ts", id: "robot-txt"},
     {
         path:'/dashboard',
         file:"routes/dashboard.tsx",

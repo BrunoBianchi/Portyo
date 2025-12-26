@@ -11,8 +11,8 @@ const ClaimUsernameBar = lazy(() => import("~/components/claim-username-bar"));
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Portyo - Link in Bio" },
+    { name: "description", content: "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform." },
   ];
 }
 

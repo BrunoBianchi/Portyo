@@ -60,10 +60,10 @@ export function AuthorizationGuard({
                 navigate("/"); 
             }
         }
-        if(!user?.verified){
+        if(signed && user && !user.verified){
                 navigate("/verify-email")
             }
-    }, [authorized, loading, fallback, navigate, redirectTo, signed, location]);
+    }, [authorized, loading, fallback, navigate, redirectTo, signed, location, user]);
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">

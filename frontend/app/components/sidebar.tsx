@@ -84,7 +84,6 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
         { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
         { name: "Billing", path: "/dashboard/billing", icon: CreditCard },
-        { name: "Settings", path: "/dashboard/settings", icon: UserCog },
     ];
 
     return (
@@ -276,29 +275,34 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 </nav>
 
                 {/* Footer Actions */}
-                <div className="p-3 border-t border-gray-100 space-y-3 bg-white">
+                <div className="border-t border-gray-100 bg-white flex flex-col">
                     {bio && (
-                        <a 
-                            href={`https://${bio.sufix}.portyo.me`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
-                        >
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors shadow-sm border border-gray-100">
-                                    <ExternalLink className="w-4 h-4" />
+                        <div className="p-3 pb-0">
+                            <a 
+                                href={`https://${bio.sufix}.portyo.me`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
+                            >
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors shadow-sm border border-gray-100">
+                                        <ExternalLink className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Page</span>
+                                        <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
+                                            {bio.sufix}.portyo.me
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Page</span>
-                                    <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
-                                        {bio.sufix}.portyo.me
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
+                            </a>
+                        </div>
                     )}
 
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer">
+                    <Link 
+                        to="/dashboard/settings"
+                        className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group cursor-pointer"
+                    >
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">
                             {user?.fullname?.[0]?.toUpperCase() || "U"}
                         </div>
@@ -314,6 +318,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 logout();
                             }}
                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
@@ -322,7 +327,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         >
                             <LogOut className="w-4 h-4" />
                         </button>
-                    </div>
+                    </Link>
                 </div>
             </aside>
         </>

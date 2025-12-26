@@ -6,13 +6,15 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useLoaderData,
 } from "react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import { SubDomainProvider } from "./contexts/subdomain.context";
 import { CookiesProvider } from 'react-cookie';
+import { BioLayout } from "./components/bio-layout";
 
 const Navbar = lazy(() => import("./components/navbar-component"));
 const Footer = lazy(() => import("./components/footer-section"));
@@ -29,13 +31,84 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
+  },
   { rel: "manifest", href: "/manifest.json" },
 ];
 
+export function headers() {
+  return {
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  };
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const host = url.host;
+  
+  const hostname = host.split(':')[0];
+  const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+  const parts = hostname.split('.').filter(Boolean);
+
+  let subdomain = "";
+  const isOnRenderDomain = hostname.endsWith('.onrender.com');
+  const isPortyoDomain = hostname.endsWith('portyo.me');
+
+  const apiUrl = process.env.API_URL || 'http://localhost:3000/api';
+
+  if (isLocalhost) {
+      if (parts.length > 1) subdomain = parts[0];
+  } else if (isOnRenderDomain) {
+      if (parts.length > 3) subdomain = parts[0];
+  } else if (isPortyoDomain) {
+      if (parts.length > 2) subdomain = parts[0];
+  } else {
+      // Custom domain
+      try {
+          const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
+          if (res.ok) {
+              const bio = await res.json();
+              return { bio, subdomain: bio.sufix };
+          }
+      } catch (e) {
+          // ignore
+      }
+      return { bio: null, subdomain: null };
+  }
+
+  if (subdomain === "www") subdomain = "";
+
+  if (subdomain) {
+      try {
+          const res = await fetch(`${apiUrl}/public/bio/${subdomain}`);
+          if (res.ok) {
+              const bio = await res.json();
+              return { bio, subdomain };
+          }
+      } catch (e) {
+          console.error("SSR Bio Fetch Error", e);
+      }
+  }
+  
+  return { bio: null, subdomain: null };
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const loaderData = useLoaderData<typeof loader>();
   const { pathname } = useLocation();
   const isLoginPage = pathname === "/login";
   const isDashboard = pathname.startsWith("/dashboard");
+
+  // If we have bio data from SSR, render the BioLayout directly
+  if (loaderData?.bio) {
+    return <BioLayout bio={loaderData.bio} subdomain={loaderData.subdomain || ""} />;
+  }
 
   return (
     <CookiesProvider>

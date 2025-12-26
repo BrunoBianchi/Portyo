@@ -1500,8 +1500,16 @@ export default function DashboardEditor() {
                         }}
                       >
                         <img 
-                          src={`/users-photos/${user?.id}.png`} 
-                          onError={(e) => { e.currentTarget.src = `/users-photos/julia-soares.jpeg`; }}
+                          src={`/users-photos/${user?.id}-96.webp`} 
+                          srcSet={`/users-photos/${user?.id}-96.webp 1x, /users-photos/${user?.id}-192.webp 2x`}
+                          onError={(e) => { 
+                            const target = e.currentTarget;
+                            target.onerror = () => {
+                              target.src = `/users-photos/julia-soares.jpeg`;
+                            };
+                            target.srcset = '';
+                            target.src = `/users-photos/${user?.id}.png`;
+                          }}
                           alt={user?.fullname || "User avatar"} 
                           className="w-full h-full object-cover"
                           width="96"

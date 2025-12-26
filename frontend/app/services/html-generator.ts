@@ -93,24 +93,28 @@ export const blockToHtml = (block: BioBlock): string => {
 
     const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
 
-    const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
+    const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="${escapeHtml(block.title || "Button image")}" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
     
     const textPadding = block.buttonImage ? "padding-left:66px;" : "";
     const textStyle = `flex:1; text-align:${textAlign}; ${textPadding}`;
 
     const shareButtonHtml = `
-      <button onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(block.href || "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
+      <button aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(block.href || "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
       </button>
     `;
 
-    return `\n${extraHtml}<section style="text-align:${align}; padding:10px 0;">\n  <a href="${escapeHtml(block.href || "#")}" class="${animationClass}" style="${css}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
+    const tag = block.href ? 'a' : 'div';
+    const hrefAttr = block.href ? ` href="${escapeHtml(block.href)}"` : ' role="button"';
+    const cursorStyle = block.href ? 'cursor:pointer;' : 'cursor:default;';
+
+    return `\n${extraHtml}<section style="text-align:${align}; padding:10px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
       block.title || "Open link"
-    )}</span>${shareButtonHtml}</a>\n</section>`;
+    )}</span>${shareButtonHtml}</${tag}>\n</section>`;
   }
 
   if (block.type === "image") {
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img src="${escapeHtml(block.mediaUrl || "")}" alt="bio" style="max-width:100%; border-radius:18px;" />\n</section>`;
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="max-width:100%; border-radius:18px;" />\n</section>`;
   }
 
   if (block.type === "socials") {
@@ -137,7 +141,7 @@ export const blockToHtml = (block: BioBlock): string => {
         ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:#f3f4f6; color:#374151; text-decoration:none; font-weight:600; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'};`
         : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:#f3f4f6; color:#374151; text-decoration:none; border-radius:9999px; width:${layout === 'column' ? '100%' : 'auto'};`;
 
-      return `<a href="${escapeHtml(url)}" style="${style}">${iconSvg}${label}</a>`;
+      return `<a href="${escapeHtml(url)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
     }).join("");
 
     const containerStyle = layout === 'column' 
@@ -228,13 +232,13 @@ export const blockToHtml = (block: BioBlock): string => {
 
     if (layout === "carousel") {
       return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; position:relative; ${animationStyle}">
-        <button onclick="document.getElementById('${uniqueId}').scrollBy({left: -230, behavior: 'smooth'})" style="position:absolute; left:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
+        <button aria-label="Scroll left" onclick="document.getElementById('${uniqueId}').scrollBy({left: -230, behavior: 'smooth'})" style="position:absolute; left:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div id="${uniqueId}" style="display:flex; gap:12px; overflow-x:auto; padding:0 40px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
           ${cardsHtml}
         </div>
-        <button onclick="document.getElementById('${uniqueId}').scrollBy({left: 230, behavior: 'smooth'})" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
+        <button aria-label="Scroll right" onclick="document.getElementById('${uniqueId}').scrollBy({left: 230, behavior: 'smooth'})" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
         <style>#${uniqueId}::-webkit-scrollbar { display: none; }</style>
@@ -521,7 +525,7 @@ export const blockToHtml = (block: BioBlock): string => {
       return `
         <a href="${escapeHtml(ticketUrl)}" target="_blank" style="flex:0 0 160px; scroll-snap-align:center; position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden; text-decoration:none; display:block;">
           <div style="position:absolute; inset:0; background:#1f2937;">
-            ${bgImage ? `<img src="${escapeHtml(bgImage)}" alt="" style="width:100%; height:100%; object-fit:cover; opacity:0.8;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom, #374151, #111827);"></div>`}
+            ${bgImage ? `<img src="${escapeHtml(bgImage)}" alt="${escapeHtml(title)} - ${escapeHtml(location)}" style="width:100%; height:100%; object-fit:cover; opacity:0.8;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom, #374151, #111827);"></div>`}
             <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2), transparent);"></div>
           </div>
           
@@ -676,6 +680,9 @@ export const blockToHtml = (block: BioBlock): string => {
 };
 
 export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
+  const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://${bio.sufix}.portyo.me`;
+  const encodedShareUrl = encodeURIComponent(shareUrl);
+
   const animationsCss = `
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -707,7 +714,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
 
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:32px 0 24px;">
       <div style="width:96px; height:96px; background:#f3f4f6; border:4px solid white; box-shadow:0 1px 2px rgba(0,0,0,0.05); overflow:hidden; ${imgStyle}">
-        <img src="/users-photos/${user?.id}.png" onerror="this.src='/users-photos/julia-soares.jpeg'" alt="${user?.fullname || 'User'}" style="width:100%; height:100%; object-fit:cover;" />
+        <img fetchpriority="high" src="/users-photos/${user?.id}-96.webp" srcset="/users-photos/${user?.id}-96.webp 1x, /users-photos/${user?.id}-192.webp 2x" onerror="this.onerror=function(){this.src='/users-photos/julia-soares.jpeg'}; this.srcset=''; this.src='/users-photos/${user?.id}.png';" alt="${user?.fullname || 'Profile Picture'}" style="width:100%; height:100%; object-fit:cover;" />
       </div>
       <div style="text-align:center;">
         <p style="font-size:18px; font-weight:700; color:${usernameColor}; margin:0;">@${bio?.sufix || 'user'}</p>
@@ -795,7 +802,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
       <div style="background:white; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); width:100%; max-width:448px; overflow:hidden; margin:16px; animation:zoomIn 0.2s ease-out;">
          <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #f3f4f6;">
            <h3 style="font-weight:700; font-size:18px; color:#111827; margin:0;">Share link</h3>
-           <button onclick="window.closeShare()" style="padding:8px; border-radius:9999px; color:#6b7280; background:transparent; border:none; cursor:pointer; display:flex;">
+           <button onclick="window.closeShare()" aria-label="Close share modal" style="padding:8px; border-radius:9999px; color:#6b7280; background:transparent; border:none; cursor:pointer; display:flex;">
              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
            </button>
          </div>
@@ -811,35 +818,35 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
            </div>
 
            <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:16px; justify-content:space-between; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
-              <button onclick="window.copyShareLink()" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; background:transparent; border:none; cursor:pointer; padding:0;">
+              <button onclick="window.copyShareLink()" aria-label="Copy link to clipboard" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; background:transparent; border:none; cursor:pointer; padding:0;">
                 <div style="width:48px; height:48px; border-radius:9999px; background:#f3f4f6; display:flex; align-items:center; justify-content:center; color:#374151;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 </div>
                 <span style="font-size:12px; font-weight:500; color:#4b5563;">Copy link</span>
               </button>
 
-              <a id="share-twitter" href="#" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
+              <a id="share-twitter" href="https://twitter.com/intent/tweet?url=${encodedShareUrl}" target="_blank" aria-label="Share on X (Twitter)" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
                 <div style="width:48px; height:48px; border-radius:9999px; background:#000000; display:flex; align-items:center; justify-content:center; color:white;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
                 </div>
                 <span style="font-size:12px; font-weight:500; color:#4b5563;">X</span>
               </a>
 
-              <a id="share-facebook" href="#" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
+              <a id="share-facebook" href="https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}" target="_blank" aria-label="Share on Facebook" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
                 <div style="width:48px; height:48px; border-radius:9999px; background:#2563eb; display:flex; align-items:center; justify-content:center; color:white;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                 </div>
                 <span style="font-size:12px; font-weight:500; color:#4b5563;">Facebook</span>
               </a>
 
-              <a id="share-whatsapp" href="#" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
+              <a id="share-whatsapp" href="https://api.whatsapp.com/send?text=${encodedShareUrl}" target="_blank" aria-label="Share on WhatsApp" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
                 <div style="width:48px; height:48px; border-radius:9999px; background:#22c55e; display:flex; align-items:center; justify-content:center; color:white;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
                 </div>
                 <span style="font-size:12px; font-weight:500; color:#4b5563;">WhatsApp</span>
               </a>
 
-              <a id="share-linkedin" href="#" target="_blank" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
+              <a id="share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=${encodedShareUrl}" target="_blank" aria-label="Share on LinkedIn" style="display:flex; flex-direction:column; align-items:center; gap:8px; min-width:64px; text-decoration:none;">
                 <div style="width:48px; height:48px; border-radius:9999px; background:#1d4ed8; display:flex; align-items:center; justify-content:center; color:white;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
                 </div>
@@ -856,7 +863,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     </div>
     <div id="subscribe-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
       <div style="background:white; border-radius:24px; padding:32px; width:100%; max-width:400px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; animation:zoomIn 0.2s ease-out;">
-        <button onclick="window.closeSubscribe()" style="position:absolute; top:16px; right:16px; background:transparent; border:none; cursor:pointer; color:#9ca3af;">
+        <button onclick="window.closeSubscribe()" aria-label="Close subscribe modal" style="position:absolute; top:16px; right:16px; background:transparent; border:none; cursor:pointer; color:#9ca3af;">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         
@@ -864,7 +871,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         
         <form onsubmit="window.submitSubscribe(event)" style="display:flex; gap:12px;">
           <input type="email" placeholder="your@email.com" required style="flex:1; padding:16px; border-radius:16px; border:1px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb;" />
-          <button type="submit" style="width:56px; height:56px; border-radius:16px; background:#ccff00; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:black; flex-shrink:0; transition:transform 0.1s;">
+          <button type="submit" aria-label="Subscribe" style="width:56px; height:56px; border-radius:16px; background:#ccff00; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:black; flex-shrink:0; transition:transform 0.1s;">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </form>

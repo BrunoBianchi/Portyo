@@ -10,7 +10,7 @@ import ReactFlow, {
   Handle,
   Position,
   Panel,
-  useReactFlow
+  useReactFlow,
 } from 'reactflow';
 import type { Connection, Edge, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -27,8 +27,11 @@ import {
   Instagram,
   Youtube,
   Share2,
-  Trash2
+  Trash2,
+  Layout,
+  Edit
 } from "lucide-react";
+import { useBio } from "~/contexts/bio.context";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -39,7 +42,7 @@ export function meta({}: Route.MetaArgs) {
 
 // --- Node Configuration ---
 
-type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration';
+type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element';
 
 interface NodeData {
   title: string;
@@ -56,6 +59,8 @@ const NODE_CONFIG: Record<NodeType, NodeData> = {
   instagram: { title: "Instagram", icon: Instagram, color: "bg-pink-600" },
   youtube: { title: "YouTube", icon: Youtube, color: "bg-red-600" },
   integration: { title: "Integration", icon: Share2, color: "bg-indigo-500" },
+  page_event: { title: "Page Event", icon: Layout, color: "bg-teal-500" },
+  update_element: { title: "Update Element", icon: Edit, color: "bg-orange-500" },
 };
 
 // --- Custom Node Component ---
@@ -67,7 +72,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
 
   const onDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setNodes((nodes) => nodes.filter((n) => n.id !== id));
+    setNodes((nodes:any) => nodes.filter((n:any) => n.id !== id));
     setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
   };
 
@@ -135,8 +140,12 @@ const CustomNode = ({ id, data, type, selected }: any) => {
           )}
           {type === 'condition' && (
             <div className="flex items-center gap-2">
-               <span className="text-gray-500">Check if:</span>
-               <span className="font-medium text-gray-900">Has Tag "VIP"</span>
+               <span className="text-gray-500">Check:</span>
+               <span className="font-medium text-gray-900">
+                 {data.conditionType === 'element_property' 
+                   ? `${data.property} ${data.operator} ${data.value}` 
+                   : `Has Tag "${data.tagName || 'VIP'}"`}
+               </span>
             </div>
           )}
           {type === 'instagram' && (
@@ -155,6 +164,18 @@ const CustomNode = ({ id, data, type, selected }: any) => {
             <div className="flex items-center gap-2">
               <span className="text-gray-500">Platform:</span>
               <span className="font-medium text-gray-900">{data.platform || 'Google Sheets'}</span>
+            </div>
+          )}
+          {type === 'page_event' && (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Event:</span>
+              <span className="font-medium text-gray-900">{data.eventType === 'page_load' ? 'Page Load' : 'Custom'}</span>
+            </div>
+          )}
+          {type === 'update_element' && (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Target:</span>
+              <span className="font-medium text-gray-900">{data.elementId ? 'Selected Element' : 'None'}</span>
             </div>
           )}
         </div>
@@ -178,6 +199,8 @@ const nodeTypes = {
   instagram: CustomNode,
   youtube: CustomNode,
   integration: CustomNode,
+  page_event: CustomNode,
+  update_element: CustomNode,
 };
 
 // --- Main Component ---
@@ -192,6 +215,7 @@ const initialEdges: Edge[] = [
 ];
 
 export default function DashboardAutomation() {
+  const { bio } = useBio();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -285,6 +309,9 @@ export default function DashboardAutomation() {
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
+            fitViewOptions={{ maxZoom: 1 }}
+            minZoom={0.1}
+            maxZoom={1}
             className="bg-gray-50"
           >
             <Background color="#94a3b8" gap={20} size={1} />
@@ -300,6 +327,8 @@ export default function DashboardAutomation() {
                   { type: 'delay', label: 'Delay', icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
                   { type: 'condition', label: 'Condition', icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
                   { type: 'integration', label: 'Integration', icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                  { type: 'page_event', label: 'Page Event', icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
+                  { type: 'update_element', label: 'Update Element', icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
                 ].map((item) => (
                   <div
                     key={item.type}
@@ -426,6 +455,95 @@ export default function DashboardAutomation() {
                 </div>
               )}
 
+              {/* Condition Configuration */}
+              {selectedNode.type === 'condition' && (
+                <>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Condition Type</label>
+                    <select 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                      value={selectedNode.data.conditionType || 'tag'}
+                      onChange={(e) => updateNodeData('conditionType', e.target.value)}
+                    >
+                      <option value="tag">Has Tag</option>
+                      <option value="element_property">Element Property</option>
+                    </select>
+                  </div>
+
+                  {selectedNode.data.conditionType === 'element_property' && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          value={selectedNode.data.elementId || ''}
+                          onChange={(e) => updateNodeData('elementId', e.target.value)}
+                        >
+                          <option value="">Select an element...</option>
+                          {bio?.blocks?.map((block) => (
+                            <option key={block.id} value={block.id}>
+                              {block.title || block.type} ({block.id.substr(0, 4)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          value={selectedNode.data.property || 'title'}
+                          onChange={(e) => updateNodeData('property', e.target.value)}
+                        >
+                          <option value="title">Title</option>
+                          <option value="body">Body</option>
+                          <option value="href">URL</option>
+                          <option value="visible">Visibility</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          value={selectedNode.data.operator || 'equals'}
+                          onChange={(e) => updateNodeData('operator', e.target.value)}
+                        >
+                          <option value="equals">Equals</option>
+                          <option value="contains">Contains</option>
+                          <option value="not_equals">Not Equals</option>
+                          <option value="starts_with">Starts With</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Value</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                          placeholder="Value to check..." 
+                          value={selectedNode.data.value || ''}
+                          onChange={(e) => updateNodeData('value', e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {(!selectedNode.data.conditionType || selectedNode.data.conditionType === 'tag') && (
+                     <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                          placeholder="e.g. VIP" 
+                          value={selectedNode.data.tagName || ''}
+                          onChange={(e) => updateNodeData('tagName', e.target.value)}
+                        />
+                      </div>
+                  )}
+                </>
+              )}
+
               {/* Instagram Configuration */}
               {selectedNode.type === 'instagram' && (
                 <>
@@ -501,6 +619,68 @@ export default function DashboardAutomation() {
                       <span>No account connected</span>
                       <button className="text-primary font-bold text-xs hover:underline">Connect</button>
                     </div>
+                  </div>
+                </>
+              )}
+
+              {/* Page Event Configuration */}
+              {selectedNode.type === 'page_event' && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Event Type</label>
+                  <select 
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                    value={selectedNode.data.eventType || 'page_load'}
+                    onChange={(e) => updateNodeData('eventType', e.target.value)}
+                  >
+                    <option value="page_load">Page Load</option>
+                    <option value="scroll_percentage">Scroll Percentage</option>
+                    <option value="exit_intent">Exit Intent</option>
+                  </select>
+                </div>
+              )}
+
+              {selectedNode.type === 'update_element' && (
+                <>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                    <select 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                      value={selectedNode.data.elementId || ''}
+                      onChange={(e) => updateNodeData('elementId', e.target.value)}
+                    >
+                      <option value="">Select an element...</option>
+                      {bio?.blocks?.map((block) => (
+                        <option key={block.id} value={block.id}>
+                          {block.title || block.type} ({block.id.substr(0, 4)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property to Update</label>
+                    <select 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                      value={selectedNode.data.property || 'title'}
+                      onChange={(e) => updateNodeData('property', e.target.value)}
+                    >
+                      <option value="title">Title</option>
+                      <option value="body">Body</option>
+                      <option value="href">URL</option>
+                      <option value="buttonStyle">Button Style</option>
+                      <option value="visible">Visibility</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">New Value</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                      placeholder="Enter new value..." 
+                      value={selectedNode.data.value || ''}
+                      onChange={(e) => updateNodeData('value', e.target.value)}
+                    />
                   </div>
                 </>
               )}
