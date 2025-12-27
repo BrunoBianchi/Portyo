@@ -618,6 +618,75 @@ const BlockItem = memo(({
                   </div>
                 </div>
 
+                <div className="pt-2 border-t border-gray-100">
+                  <label className="text-xs font-medium text-gray-700 mb-2 block">Popup Configuration</label>
+                  <div className="mb-3">
+                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Popup Style</label>
+                    <select
+                      value={block.blogPopupStyle || "classic"}
+                      onChange={(event) => handleFieldChange("blogPopupStyle", event.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    >
+                      <option value="classic">Classic (Default)</option>
+                      <option value="modern">Modern (Split)</option>
+                      <option value="simple">Simple (Minimal)</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="color"
+                          value={block.blogPopupBackgroundColor || "#ffffff"}
+                          onChange={(e) => handleFieldChange("blogPopupBackgroundColor", e.target.value)}
+                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={block.blogPopupBackgroundColor || "#ffffff"}
+                          onChange={(e) => handleFieldChange("blogPopupBackgroundColor", e.target.value)}
+                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="color"
+                          value={block.blogPopupTextColor || "#1f2937"}
+                          onChange={(e) => handleFieldChange("blogPopupTextColor", e.target.value)}
+                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={block.blogPopupTextColor || "#1f2937"}
+                          onChange={(e) => handleFieldChange("blogPopupTextColor", e.target.value)}
+                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Overlay Color</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="color"
+                          value={block.blogPopupOverlayColor || "#000000"}
+                          onChange={(e) => handleFieldChange("blogPopupOverlayColor", e.target.value)}
+                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={block.blogPopupOverlayColor || "#000000"}
+                          onChange={(e) => handleFieldChange("blogPopupOverlayColor", e.target.value)}
+                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">Number of Posts: {block.blogPostCount || 3}</label>
                   <input

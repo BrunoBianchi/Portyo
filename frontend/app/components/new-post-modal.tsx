@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { CustomDatePicker } from "./custom-date-picker";
+import { useBlog } from "~/contexts/blog.context";
 
 interface NewPostModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface NewPostModalProps {
 type PostMode = "upload" | "write";
 
 export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
+  const { createPost } = useBlog();
   const [activeMode, setActiveMode] = useState<PostMode>("upload");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState(""); // For markdown
@@ -24,6 +26,7 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
   const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -43,6 +46,40 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
   }, []);
 
   if (!isOpen) return null;
+
+  const handleSchedule = async () => {
+    if (!title) {
+        alert("Title is required");
+        return;
+    }
+    if (activeMode === "write" && !content) {
+        alert("Content is required");
+        return;
+    }
+
+    setIsSubmitting(true);
+    try {
+        await createPost({
+            title,
+            content: activeMode === "write" ? content : "File upload content placeholder", // Handle file upload later if needed
+            keywords: tags.join(","),
+            status: scheduleMode === "now" ? "published" : "scheduled",
+            scheduledAt: scheduleMode === "later" && scheduledDate ? scheduledDate.toISOString() : null
+        });
+        onClose();
+        // Reset form
+        setTitle("");
+        setContent("");
+        setTags(["Design", "Blog"]);
+        setFile(null);
+        setThumbnail(null);
+    } catch (error) {
+        console.error("Failed to create post", error);
+        alert("Failed to create post");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -346,11 +383,16 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
                 <button
                     onClick={onClose}
                     className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                    disabled={isSubmitting}
                 >
                     Cancel
                 </button>
-                <button className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-black hover:bg-gray-800 transition-all shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5">
-                    Schedule Post
+                <button 
+                    onClick={handleSchedule}
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-black hover:bg-gray-800 transition-all shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isSubmitting ? "Saving..." : "Schedule Post"}
                 </button>
             </div>
         </div>

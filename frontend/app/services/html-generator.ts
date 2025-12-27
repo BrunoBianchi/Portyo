@@ -181,6 +181,25 @@ export const blockToHtml = (block: BioBlock): string => {
     const dateColor = block.blogDateColor || "#f59e0b";
     const tagBg = block.blogTagBackgroundColor || '#f3f4f6';
     const tagText = block.blogTagTextColor || '#4b5563';
+    const popupBg = block.blogPopupBackgroundColor || '#ffffff';
+    const popupText = block.blogPopupTextColor || '#1f2937';
+    const popupOverlay = block.blogPopupOverlayColor || 'rgba(0, 0, 0, 0.5)';
+    const popupStyle = block.blogPopupStyle || 'classic';
+
+    const dataAttrs = `
+      data-layout="${layout}"
+      data-card-style="${cardStyle}"
+      data-bg-color="${bgColor}"
+      data-title-color="${titleColor}"
+      data-text-color="${textColor}"
+      data-date-color="${dateColor}"
+      data-tag-bg="${tagBg}"
+      data-tag-text="${tagText}"
+      data-popup-bg-color="${popupBg}"
+      data-popup-text-color="${popupText}"
+      data-popup-overlay-color="${popupOverlay}"
+      data-popup-style="${popupStyle}"
+    `;
 
     const cardsHtml = posts.map(post => {
       if (cardStyle === "featured") {
@@ -235,7 +254,7 @@ export const blockToHtml = (block: BioBlock): string => {
         <button aria-label="Scroll left" onclick="document.getElementById('${uniqueId}').scrollBy({left: -230, behavior: 'smooth'})" style="position:absolute; left:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div id="${uniqueId}" style="display:flex; gap:12px; overflow-x:auto; padding:0 40px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
+        <div id="${uniqueId}" class="custom-blog-feed" ${dataAttrs} style="display:flex; gap:12px; overflow-x:auto; padding:0 40px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
           ${cardsHtml}
         </div>
         <button aria-label="Scroll right" onclick="document.getElementById('${uniqueId}').scrollBy({left: 230, behavior: 'smooth'})" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
@@ -245,7 +264,7 @@ export const blockToHtml = (block: BioBlock): string => {
       </section>`;
     }
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div style="display:flex; flex-direction:column; gap:12px;">${cardsHtml}</div>\n</section>`;
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div class="custom-blog-feed" ${dataAttrs} style="display:flex; flex-direction:column; gap:12px;">${cardsHtml}</div>\n</section>`;
   }
 
   if (block.type === "product") {

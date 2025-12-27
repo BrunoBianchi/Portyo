@@ -1,6 +1,7 @@
-import { Column, Entity, ManyToOne, JoinColumn } from "typeorm";
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { BaseEntity } from "./base-entity";
 import { UserEntity } from "./user-entity";
+import { PostEntity } from "./posts-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -105,5 +106,8 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "uuid" })
     userId!: string;
+
+    @OneToMany(() => PostEntity, (post) => post.bio)
+    posts!: PostEntity[];
 
 }

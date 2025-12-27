@@ -3,8 +3,10 @@ import type { MetaFunction } from "react-router";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import BlockItem from "~/components/dashboard-editor/block-item";
+import { BlogPostPopup } from "~/components/blog-post-popup";
 import { palette } from "~/data/editor-palette";
 import { blocksToHtml } from "~/services/html-generator";
+import { api } from "~/services/api";
 import { 
   ArrowLeftIcon, 
   ArrowRightIcon, 
@@ -139,7 +141,160 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
   );
 };
 
-import { api } from "~/services/api";
+const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) => {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await api.get(`/blog/${bioId}?publicView=true`);
+        setPosts(res.data);
+      } catch (error) {
+        console.error("Failed to fetch posts", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (bioId) {
+        fetchPosts();
+    }
+  }, [bioId]);
+
+  const layout = block.blogLayout || "carousel";
+  const cardStyle = block.blogCardStyle || "featured";
+  
+  // Colors
+  const bgColor = block.blogBackgroundColor || (cardStyle === 'featured' ? '#fef3c7' : '#ffffff');
+  const titleColor = block.blogTitleColor || '#1f2937';
+  const textColor = block.blogTextColor || '#4b5563';
+  const dateColor = block.blogDateColor || "#f59e0b";
+  const tagBg = block.blogTagBackgroundColor || '#f3f4f6';
+  const tagText = block.blogTagTextColor || '#4b5563';
+
+  const displayPosts = posts.length > 0 ? posts : Array.from({ length: block.blogPostCount || 3 }).map((_, i) => ({
+    title: i === 0 ? "Senior Developer" : `Blog Post Title ${i + 1}`,
+    subtitle: i === 0 ? "Tech4Humans • São Paulo, SP - Remote" : "Category • Location",
+    createdAt: new Date().toISOString(),
+    content: "FullStack Developer at Tech4Humans, working on projects for large insurance companies. I had the chance to participate in the development of new features...",
+    tags: ["FullStack Dev", "Soft Skills", "Hard Skills"],
+    category: "Lifestyle",
+    readTime: "5 min read",
+    image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+    author: "By You"
+  }));
+
+  return (
+    <>
+      {selectedPost && (
+        <BlogPostPopup 
+          post={{
+            ...selectedPost,
+            date: new Date(selectedPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+            author: "By You"
+          }}
+          onClose={() => setSelectedPost(null)}
+          config={{
+            backgroundColor: block.blogPopupBackgroundColor,
+            textColor: block.blogPopupTextColor,
+            overlayColor: block.blogPopupOverlayColor
+          }}
+        />
+      )}
+      <div key={block.id} className="relative group/carousel">
+        {layout === 'carousel' && (
+          <>
+            <button 
+              onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: -230, behavior: 'smooth' })}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button 
+              onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: 230, behavior: 'smooth' })}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+            >
+              <ChevronRightIcon />
+            </button>
+          </>
+        )}
+        <div 
+          id={`preview-blog-${block.id}`}
+          className={`w-full ${layout === 'carousel' ? 'overflow-x-auto px-10 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden' : 'flex flex-col gap-3'}`}
+          style={layout === 'carousel' ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : undefined}
+        >
+          <div className={`${
+            layout === 'carousel' ? 'flex gap-3 w-max' : 
+            layout === 'grid' ? 'grid grid-cols-2 gap-3' : 
+            'flex flex-col gap-3'
+          }`}>
+            {displayPosts.map((post, i) => {
+               const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+               const description = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...' : '';
+               const image = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post"; 
+               const category = "Blog";
+               const readTime = "5 min read";
+               const author = "By You";
+               
+               return (
+              <article 
+                key={i}
+                onClick={() => setSelectedPost(post)}
+                className={`
+                  cursor-pointer transition-transform hover:scale-[1.02] active:scale-95
+                  ${cardStyle === 'featured' 
+                    ? 'p-3 rounded-2xl flex flex-col gap-2.5 w-[200px]' 
+                    : cardStyle === 'modern'
+                    ? 'py-4 flex flex-col gap-2 w-full border-b border-gray-100 last:border-0'
+                    : 'border border-gray-200 p-3.5 rounded-2xl w-[160px]'}
+                  ${(layout === 'list' || layout === 'grid') && cardStyle !== 'modern' ? 'w-full' : ''}
+                  ${cardStyle === 'modern' && layout === 'carousel' ? 'w-[280px] border-r border-b-0 pr-6 mr-2' : ''}
+                  shrink-0 snap-start
+                `}
+                style={cardStyle !== 'modern' ? { backgroundColor: bgColor } : {}}
+              >
+                {cardStyle === 'modern' ? (
+                  <>
+                    <div className="text-xs font-bold mb-1" style={{ color: dateColor }}>{date}</div>
+                    <h3 className="text-lg font-bold leading-tight mb-0.5" style={{ color: titleColor }}>{post.title}</h3>
+                    <div className="text-xs font-medium opacity-80 mb-2" style={{ color: textColor }}>{category} • {readTime}</div>
+                    <p className="text-xs leading-relaxed mb-3 line-clamp-2" style={{ color: textColor, opacity: 0.8 }}>{description}</p>
+                  </>
+                ) : cardStyle === 'featured' ? (
+                  <>
+                    <div className="aspect-[16/10] w-full bg-slate-200 rounded-xl overflow-hidden">
+                      <img src={image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{category}</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{readTime}</span>
+                    </div>
+                    <h3 className="text-base font-extrabold leading-tight" style={{ color: titleColor }}>{post.title}</h3>
+                    <div className="flex items-center gap-1.5 mt-auto pt-1">
+                      <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
+                      <span className="text-xs" style={{ color: textColor }}>{author}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-bold text-sm mb-1.5" style={{ color: titleColor }}>{post.title}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px]" style={{ color: textColor }}>{readTime}</span>
+                      <span className="text-[11px] font-medium" style={{ color: dateColor }}>Read more &rarr;</span>
+                    </div>
+                  </>
+                )}
+              </article>
+            )})}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 const TourBlockPreview = ({ block }: { block: BioBlock }) => {
   const tours = block.tours || [];
@@ -1796,124 +1951,7 @@ export default function DashboardEditor() {
                         }
 
                         if (block.type === "blog") {
-                          const posts = Array.from({ length: block.blogPostCount || 3 }).map((_, i) => ({
-                            title: i === 0 ? "Senior Developer" : `Blog Post Title ${i + 1}`,
-                            subtitle: i === 0 ? "Tech4Humans • São Paulo, SP - Remote" : "Category • Location",
-                            date: "06/2025 - 08/2025",
-                            description: "FullStack Developer at Tech4Humans, working on projects for large insurance companies. I had the chance to participate in the development of new features...",
-                            tags: ["FullStack Dev", "Soft Skills", "Hard Skills"],
-                            category: "Lifestyle",
-                            readTime: "5 min read",
-                            image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
-                            author: "By You"
-                          }));
-                          const layout = block.blogLayout || "carousel";
-                          const cardStyle = block.blogCardStyle || "featured";
-                          
-                          // Colors
-                          const bgColor = block.blogBackgroundColor || (cardStyle === 'featured' ? '#fef3c7' : '#ffffff');
-                          const titleColor = block.blogTitleColor || '#1f2937';
-                          const textColor = block.blogTextColor || '#4b5563';
-                          const dateColor = block.blogDateColor || "#f59e0b";
-                          const tagBg = block.blogTagBackgroundColor || '#f3f4f6';
-                          const tagText = block.blogTagTextColor || '#4b5563';
-
-                          return (
-                            <div key={block.id} className="relative group/carousel">
-                              {layout === 'carousel' && (
-                                <>
-                                  <button 
-                                    onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: -230, behavior: 'smooth' })}
-                                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                                  >
-                                    <ChevronLeftIcon />
-                                  </button>
-                                  <button 
-                                    onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: 230, behavior: 'smooth' })}
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                                  >
-                                    <ChevronRightIcon />
-                                  </button>
-                                </>
-                              )}
-                              <div 
-                                id={`preview-blog-${block.id}`}
-                                className={`w-full ${layout === 'carousel' ? 'overflow-x-auto px-10 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden' : 'flex flex-col gap-3'}`}
-                                style={layout === 'carousel' ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : undefined}
-                              >
-                                <div className={`${
-                                  layout === 'carousel' ? 'flex gap-3 w-max' : 
-                                  layout === 'grid' ? 'grid grid-cols-2 gap-3' : 
-                                  'flex flex-col gap-3'
-                                }`}>
-                                  {posts.map((post, i) => (
-                                    <article 
-                                      key={i}
-                                      className={`
-                                        ${cardStyle === 'featured' 
-                                          ? 'p-3 rounded-2xl flex flex-col gap-2.5 w-[200px]' 
-                                          : cardStyle === 'modern'
-                                          ? 'py-4 flex flex-col gap-2 w-full border-b border-gray-100 last:border-0'
-                                          : 'border border-gray-200 p-3.5 rounded-2xl w-[160px]'}
-                                        ${(layout === 'list' || layout === 'grid') && cardStyle !== 'modern' ? 'w-full' : ''}
-                                        ${cardStyle === 'modern' && layout === 'carousel' ? 'w-[280px] border-r border-b-0 pr-6 mr-2' : ''}
-                                        shrink-0 snap-start
-                                      `}
-                                      style={cardStyle !== 'modern' ? { backgroundColor: bgColor } : {}}
-                                    >
-                                      {cardStyle === 'modern' ? (
-                                        <>
-                                          <div className="text-xs font-bold mb-1" style={{ color: dateColor }}>{post.date}</div>
-                                          <h3 className="text-lg font-bold leading-tight mb-0.5" style={{ color: titleColor }}>{post.title}</h3>
-                                          <div className="text-xs font-medium opacity-80 mb-2" style={{ color: textColor }}>{post.subtitle}</div>
-                                          <p className="text-xs leading-relaxed mb-3 line-clamp-2" style={{ color: textColor, opacity: 0.8 }}>{post.description}</p>
-                                          <div className="flex flex-wrap gap-2 mt-auto">
-                                            {post.tags.map((tag, t) => (
-                                              <span 
-                                                key={t} 
-                                                className="px-2 py-0.5 rounded text-[10px] font-medium border"
-                                                style={{ borderColor: tagBg, color: tagText, backgroundColor: 'transparent' }}
-                                              >
-                                                {tag}
-                                              </span>
-                                            ))}
-                                          </div>
-                                              src={post.image} 
-                                              alt={post.title || "Post image"} 
-                                              className="w-full h-full object-cover" 
-                                              loading="lazy"
-                                           
-                                        </>
-                                      ) : cardStyle === 'featured' ? (
-                                        <>
-                                          <div className="aspect-[16/10] w-full bg-slate-200 rounded-xl overflow-hidden">
-                                            <img src={post.image} alt="" className="w-full h-full object-cover" />
-                                          </div>
-                                          <div className="flex gap-1.5">
-                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{post.category}</span>
-                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{post.readTime}</span>
-                                          </div>
-                                          <h3 className="text-base font-extrabold leading-tight" style={{ color: titleColor }}>{post.title}</h3>
-                                          <div className="flex items-center gap-1.5 mt-auto pt-1">
-                                            <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
-                                            <span className="text-xs" style={{ color: textColor }}>{post.author}</span>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <h3 className="font-bold text-sm mb-1.5" style={{ color: titleColor }}>{post.title}</h3>
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-[11px]" style={{ color: textColor }}>{post.readTime}</span>
-                                            <span className="text-[11px] font-medium" style={{ color: dateColor }}>Read more &rarr;</span>
-                                          </div>
-                                        </>
-                                      )}
-                                    </article>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          );
+                          return <BlogBlockPreview key={block.id} block={block} bioId={bio.id} />;
                         }
 
                         if (block.type === "product") {

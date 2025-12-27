@@ -1,6 +1,7 @@
 import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
 import { BaseEntity } from "./base-entity";
 import { BioEntity } from "./bio-entity";
+import { PostEntity } from "./posts-entity";
 import * as bcrypt from "bcrypt";
 
 @Entity()
@@ -32,5 +33,8 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
+
+    @OneToMany(() => PostEntity, (post) => post.user)
+    posts!: PostEntity[];
 
 }

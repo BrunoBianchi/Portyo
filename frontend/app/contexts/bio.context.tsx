@@ -40,6 +40,11 @@ export type BioBlock = {
     blogDateColor?: string;
     blogTagBackgroundColor?: string;
     blogTagTextColor?: string;
+    // Blog Popup specific
+    blogPopupStyle?: "classic" | "modern" | "simple";
+    blogPopupBackgroundColor?: string;
+    blogPopupTextColor?: string;
+    blogPopupOverlayColor?: string;
     // Product specific
     products?: {
         id: string;

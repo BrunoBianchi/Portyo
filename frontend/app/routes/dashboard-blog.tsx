@@ -2,6 +2,7 @@ import type { MetaFunction } from "react-router";
 import { useState } from "react";
 import { Plus, Search, FileText, MoreHorizontal, Calendar, Eye, Filter, Edit2, Trash2 } from "lucide-react";
 import { NewPostModal } from "../components/new-post-modal";
+import { useBlog } from "~/contexts/blog.context";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,47 +11,9 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  status: "published" | "draft";
-  date: string;
-  views: number;
-}
-
 export default function DashboardBlog() {
   const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
-  const [posts, setPosts] = useState<BlogPost[]>([
-    {
-      id: "1",
-      title: "How to optimize your bio link for conversions",
-      excerpt: "Learn the top strategies to turn your followers into customers using your bio link.",
-      image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      status: "published",
-      date: "Oct 24, 2025",
-      views: 1240
-    },
-    {
-      id: "2",
-      title: "My journey as a content creator",
-      excerpt: "Sharing my personal experiences, ups and downs, and what I learned along the way.",
-      image: "https://images.unsplash.com/photo-1499750310159-5b5f226932b7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      status: "published",
-      date: "Oct 10, 2025",
-      views: 856
-    },
-    {
-      id: "3",
-      title: "Top 10 tools for productivity",
-      excerpt: "A curated list of the best tools to help you get more done in less time.",
-      image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      status: "draft",
-      date: "Oct 01, 2025",
-      views: 0
-    }
-  ]);
+  const { posts, loading, deletePost } = useBlog();
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
@@ -137,7 +100,7 @@ export default function DashboardBlog() {
                     <div className="col-span-2 space-y-1">
                         <div className="flex items-center gap-1.5 text-xs text-text-muted">
                             <Calendar className="w-3 h-3" />
-                            <span>{post.date}</span>
+                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-text-muted">
                             <Eye className="w-3 h-3" />
@@ -150,7 +113,11 @@ export default function DashboardBlog() {
                         <button className="p-2 text-text-muted hover:text-primary-foreground hover:bg-primary/10 rounded-lg transition-colors" title="Edit">
                             <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                        <button 
+                            onClick={() => deletePost(post.id)}
+                            className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                            title="Delete"
+                        >
                             <Trash2 className="w-4 h-4" />
                         </button>
                         <button className="p-2 text-text-muted hover:text-text-main hover:bg-gray-100 rounded-lg transition-colors" aria-label="More options">

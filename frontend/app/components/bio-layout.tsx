@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Links, Meta, Scripts, ScrollRestoration } from "react-router";
 import { api } from "../services/api";
+import { BlogPostPopup } from "./blog-post-popup";
 
 interface BioLayoutProps {
     bio: any;
@@ -9,6 +10,8 @@ interface BioLayoutProps {
 
 export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [selectedPost, setSelectedPost] = useState<any>(null);
+    const [popupConfig, setPopupConfig] = useState<any>({});
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -228,11 +231,117 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
             };
         };
 
+        const initBlogFeeds = () => {
+            const root = containerRef.current;
+            if (!root) return;
+
+            const feeds = root.querySelectorAll('.custom-blog-feed');
+            feeds.forEach(feed => {
+                if (feed.hasAttribute('data-initialized')) return;
+                feed.setAttribute('data-initialized', 'true');
+
+                const layout = feed.getAttribute('data-layout') || 'carousel';
+                const cardStyle = feed.getAttribute('data-card-style') || 'featured';
+                const popupStyle = feed.getAttribute('data-popup-style') || 'modern';
+                const bgColor = feed.getAttribute('data-bg-color') || '#ffffff';
+                const titleColor = feed.getAttribute('data-title-color') || '#1f2937';
+                const textColor = feed.getAttribute('data-text-color') || '#4b5563';
+                const dateColor = feed.getAttribute('data-date-color') || '#f59e0b';
+                const tagBg = feed.getAttribute('data-tag-bg') || '#f3f4f6';
+                const tagText = feed.getAttribute('data-tag-text') || '#4b5563';
+
+                api.get(`/blog/${bio.id}?publicView=true`)
+                    .then(res => res.data)
+                    .then(posts => {
+                        if (!posts || !Array.isArray(posts) || posts.length === 0) {
+                            feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#6b7280; font-size:12px;">No posts found</div>';
+                            return;
+                        }
+
+                        const esc = (s: string) => s ? s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;") : "";
+
+                        const cardsHtml = posts.map((post: any) => {
+                            const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            const description = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...' : '';
+                            const image = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post"; 
+                            const category = "Blog";
+                            const readTime = "5 min read";
+                            const author = "By You";
+
+                            if (cardStyle === "featured") {
+                                return `
+                                  <article style="flex:0 0 200px; scroll-snap-align:start; background:${bgColor}; border-radius:20px; padding:12px; display:flex; flex-direction:column; gap:10px; min-width:200px;">
+                                    <div style="background:#e2e8f0; border-radius:12px; aspect-ratio:16/10; width:100%; overflow:hidden;">
+                                       <img src="${image}" alt="${esc(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
+                                    </div>
+                                    <div style="display:flex; gap:6px;">
+                                      <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${category}</span>
+                                      <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${readTime}</span>
+                                    </div>
+                                    <h3 style="font-size:16px; font-weight:800; line-height:1.3; color:${titleColor}; margin:0;">${esc(post.title)}</h3>
+                                    <div style="display:flex; items-center; gap:6px; margin-top:auto;">
+                                      <div style="width:20px; height:20px; background:#d1d5db; border-radius:50%;"></div>
+                                      <span style="font-size:12px; color:${textColor};">${author}</span>
+                                    </div>
+                                  </article>
+                                `;
+                            } else if (cardStyle === "modern") {
+                                const widthStyle = layout === 'carousel' ? 'flex:0 0 280px; min-width:280px; border-right:1px solid #f3f4f6; padding-right:24px; margin-right:8px;' : 'width:100%; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:16px;';
+                                return `
+                                  <article style="${widthStyle} scroll-snap-align:start; display:flex; flex-direction:column; gap:8px;">
+                                    <div style="font-size:12px; font-weight:700; color:${dateColor}; margin-bottom:4px;">${date}</div>
+                                    <h3 style="font-size:18px; font-weight:700; line-height:1.2; color:${titleColor}; margin:0;">${esc(post.title)}</h3>
+                                    <div style="font-size:12px; font-weight:500; opacity:0.8; color:${textColor}; margin-bottom:8px;">${category} • ${readTime}</div>
+                                    <p style="font-size:12px; line-height:1.6; color:${textColor}; opacity:0.8; margin:0 0 12px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${esc(description)}</p>
+                                  </article>
+                                `;
+                            } else {
+                                return `
+                                  <article style="flex:0 0 160px; scroll-snap-align:start; background:${bgColor}; border:1px solid #e5e7eb; border-radius:16px; padding:14px; min-width:160px;">
+                                    <h3 style="font-size:14px; font-weight:700; color:${titleColor}; margin:0 0 6px 0;">${esc(post.title)}</h3>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                      <span style="font-size:11px; color:${textColor};">${readTime}</span>
+                                      <span style="font-size:11px; font-weight:500; color:${dateColor};">Read more &rarr;</span>
+                                    </div>
+                                  </article>
+                                `;
+                            }
+                        }).join("");
+
+                        feed.innerHTML = cardsHtml;
+
+                        // Add click listeners
+                        feed.querySelectorAll('article').forEach((article, index) => {
+                            article.style.cursor = 'pointer';
+                            article.addEventListener('click', () => {
+                                const post = posts[index];
+                                setPopupConfig({
+                                    style: popupStyle as any,
+                                    backgroundColor: feed.getAttribute('data-popup-bg-color') || '#ffffff',
+                                    textColor: feed.getAttribute('data-popup-text-color') || '#1f2937',
+                                    overlayColor: feed.getAttribute('data-popup-overlay-color') || 'rgba(0, 0, 0, 0.5)'
+                                });
+                                setSelectedPost({
+                                    ...post,
+                                    date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                                    image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+                                    author: "By You"
+                                });
+                            });
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Blog fetch error:", err);
+                    });
+            });
+        };
+
         const scanAndInit = () => {
             const timers = containerRef.current?.querySelectorAll('.countdown-timer');
             timers?.forEach(startTimer);
             initInstagramFeeds();
             initYoutubeFeeds();
+            initBlogFeeds();
             initShareModal();
             initSubscribeModal();
         };
@@ -383,6 +492,13 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
                 <Links />
             </head>
             <body>
+                {selectedPost && (
+                    <BlogPostPopup 
+                        post={selectedPost} 
+                        onClose={() => setSelectedPost(null)} 
+                        config={popupConfig}
+                    />
+                )}
                 <div ref={containerRef} dangerouslySetInnerHTML={{ __html: bio.html.replace(/(<img\s+)(src="\/users-photos\/[^"]+")/i, '$1fetchpriority="high" $2') }} suppressHydrationWarning={true} />
                 <Scripts />
             </body>
