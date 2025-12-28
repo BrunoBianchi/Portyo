@@ -11,6 +11,10 @@ export const findUserByEmail = async (email: string): Promise<UserType | null> =
     return (await repository.findOneBy({ email })) as UserType || null;
 }
 
+export const findUserById = async (id: string): Promise<UserType | null> => {
+    return (await repository.findOneBy({ id })) as UserType || null;
+}
+
 export const createNewUser = async (user: Partial<UserType>): Promise<Object | Error> => {
     const userExist = await findUserByEmail(user.email!);
     if (userExist) {
@@ -21,11 +25,11 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         const payload = {
             id: user.id,
             email: user.email,
-
             fullname: user.fullName,
             verified: user.verified,
             provider: user.provider,
-            createdAt: user.createdAt
+            createdAt: user.createdAt,
+            plan: user.plan
         }
         return {
             token: await generateToken({ ...payload }),
@@ -42,13 +46,13 @@ export const login = async (password: string, email: string): Promise<Object | E
         id: user.id,
         email: user.email,
         fullname: user.fullName,
-
         verified: user.verified,
         provider: user.provider,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        plan: user.plan
     }
     if (!isValidLogin) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
-    
+
     return {
         token: await generateToken({ ...payload }),
         user: payload

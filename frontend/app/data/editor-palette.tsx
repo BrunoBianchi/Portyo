@@ -17,15 +17,22 @@ import {
   SpotifyIcon,
   InstagramIcon,
   YouTubeIcon,
-  DividerIcon
+  DividerIcon,
+  QrCodeIcon
 } from "~/components/icons";
 
-export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React.ReactNode; category: string }> = [
+export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React.ReactNode; category: string; isPro?: boolean }> = [
   { 
     type: "heading", 
     label: "Heading", 
     category: "Content",
     icon: <HeadingIcon width="24" height="24" /> 
+  },
+  { 
+    type: "qrcode", 
+    label: "QR Code", 
+    category: "Content",
+    icon: <QrCodeIcon width="24" height="24" /> 
   },
   { 
     type: "text", 
@@ -67,6 +74,7 @@ export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React
     type: "product", 
     label: "Product Catalog", 
     category: "Shop",
+    isPro: true,
     icon: <ProductIcon width="24" height="24" /> 
   },
   { 
@@ -85,6 +93,7 @@ export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React
     type: "featured", 
     label: "Featured", 
     category: "Shop",
+    isPro: true,
     icon: <StarIcon width="24" height="24" /> 
   },
   { 
@@ -103,6 +112,7 @@ export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React
     type: "tour", 
     label: "Tour Dates", 
     category: "Content",
+    isPro: true,
     icon: <TourIcon width="24" height="24" /> 
   },
   { 

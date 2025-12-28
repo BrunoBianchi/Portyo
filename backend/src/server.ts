@@ -12,9 +12,21 @@ const app = express();
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
+        // Allow localhost:5173 and any subdomain of localhost:5173
         if (origin === "http://localhost:5173" || /^http:\/\/.*\.localhost:5173$/.test(origin)) {
             callback(null, true);
-        } else {
+        } 
+        // Allow requests from the backend itself (for testing/preview if served from same origin)
+        else if (origin === "http://localhost:3000") {
+            callback(null, true);
+        }
+        // Allow null origin (for local file testing or some redirects)
+        else if (origin === "null") {
+            callback(null, true);
+        }
+        else {
+            // For development, let's be more permissive if needed, or log the blocked origin
+            console.log("Blocked CORS origin:", origin);
             callback(new Error('Not allowed by CORS'));
         }
     },

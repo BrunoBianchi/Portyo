@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import type { Route } from "../+types/root";
-import { Download, Search, Trash2, Mail, User, Calendar, CheckSquare, Square, X } from "lucide-react";
+import { Download, Search, Trash2, Mail, User, Calendar, CheckSquare, Square, X, Loader2 } from "lucide-react";
+import { AuthorizationGuard } from "~/contexts/guard.context";
+import BioContext from "~/contexts/bio.context";
+import { api } from "~/services/api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,28 +12,43 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-// Mock data for leads
-const MOCK_LEADS = [
-  { id: 1, email: "alice@example.com", name: "Alice Johnson", date: "2023-10-25", status: "Active" },
-  { id: 2, email: "bob@company.com", name: "Bob Smith", date: "2023-10-24", status: "Active" },
-  { id: 3, email: "charlie@domain.net", name: "Charlie Brown", date: "2023-10-23", status: "Unsubscribed" },
-  { id: 4, email: "david@service.org", name: "David Wilson", date: "2023-10-22", status: "Active" },
-  { id: 5, email: "eve@platform.io", name: "Eve Davis", date: "2023-10-21", status: "Active" },
-];
+interface Lead {
+  id: string;
+  email: string;
+  createdAt: string;
+}
 
 export default function DashboardLeads() {
+  const { bio } = useContext(BioContext);
   const [searchTerm, setSearchTerm] = useState("");
-  const [leads, setLeads] = useState(MOCK_LEADS);
-  const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (bio?.id) {
+      setLoading(true);
+      api.get(`/email/${bio.id}`)
+        .then((response) => {
+          setLeads(response.data);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch leads:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [bio?.id]);
 
   const filteredLeads = leads.filter(
     (lead) =>
-      lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.name.toLowerCase().includes(searchTerm.toLowerCase())
+      lead.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this lead?")) {
+      // TODO: Implement delete API
       setLeads(leads.filter((lead) => lead.id !== id));
       setSelectedLeads(selectedLeads.filter((leadId) => leadId !== id));
     }
@@ -38,17 +56,37 @@ export default function DashboardLeads() {
 
   const handleBulkDelete = () => {
     if (confirm(`Are you sure you want to delete ${selectedLeads.length} leads?`)) {
+      // TODO: Implement bulk delete API
       setLeads(leads.filter((lead) => !selectedLeads.includes(lead.id)));
       setSelectedLeads([]);
     }
   };
 
   const handleExport = () => {
-    alert("Exporting leads to CSV...");
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Email,Date\n"
+      + leads.map(e => `${e.email},${new Date(e.createdAt).toLocaleDateString()}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "leads.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleBulkExport = () => {
-    alert(`Exporting ${selectedLeads.length} selected leads to CSV...`);
+    const selected = leads.filter(l => selectedLeads.includes(l.id));
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + "Email,Date\n"
+      + selected.map(e => `${e.email},${new Date(e.createdAt).toLocaleDateString()}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "selected_leads.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const toggleSelectAll = () => {
@@ -59,7 +97,7 @@ export default function DashboardLeads() {
     }
   };
 
-  const toggleSelectLead = (id: number) => {
+  const toggleSelectLead = (id: string) => {
     if (selectedLeads.includes(id)) {
       setSelectedLeads(selectedLeads.filter((leadId) => leadId !== id));
     } else {
@@ -68,6 +106,7 @@ export default function DashboardLeads() {
   };
 
   return (
+    <AuthorizationGuard minPlan="pro">
     <div className="p-6 max-w-7xl mx-auto w-full relative">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -76,7 +115,8 @@ export default function DashboardLeads() {
         </div>
         <button
           onClick={handleExport}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
+          disabled={leads.length === 0}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download className="w-4 h-4" />
           Export CSV
@@ -89,56 +129,53 @@ export default function DashboardLeads() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by email or name..."
+            placeholder="Search by email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
         </div>
         <div className="text-sm text-gray-500 ml-auto">
-          Showing <span className="font-bold text-gray-900">{filteredLeads.length}</span> leads
+          {filteredLeads.length} leads found
         </div>
       </div>
 
-      {/* Leads Table */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden relative">
-        {/* Bulk Actions Bar */}
-        {selectedLeads.length > 0 && (
-          <div className="absolute top-0 left-0 right-0 z-10 bg-primary text-primary-foreground p-2 flex items-center justify-between animate-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center gap-3 px-4">
-              <span className="font-semibold text-sm">{selectedLeads.length} selected</span>
-              <div className="h-4 w-px bg-primary-foreground/20"></div>
-              <button 
-                onClick={() => setSelectedLeads([])}
-                className="text-xs hover:underline opacity-80 hover:opacity-100"
-              >
-                Clear selection
-              </button>
-            </div>
-            <div className="flex items-center gap-2 pr-2">
-              <button
-                onClick={handleBulkExport}
-                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-xs font-medium flex items-center gap-1.5"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Export
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-xs font-medium flex items-center gap-1.5 text-red-100 hover:text-red-50 hover:bg-red-500/20"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Delete
-              </button>
-            </div>
-          </div>
-        )}
+      {/* Bulk Actions */}
+      {selectedLeads.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <span className="text-sm font-medium text-gray-700 border-r border-gray-200 pr-4">
+            {selectedLeads.length} selected
+          </span>
+          <button 
+            onClick={handleBulkExport}
+            className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </button>
+          <button 
+            onClick={handleBulkDelete}
+            className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-2 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+          <button 
+            onClick={() => setSelectedLeads([])}
+            className="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+      )}
 
+      {/* Leads Table */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="py-4 px-6 w-12">
+                <th className="px-6 py-4 text-left w-12">
                   <button 
                     onClick={toggleSelectAll}
                     className="flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
@@ -150,87 +187,81 @@ export default function DashboardLeads() {
                     )}
                   </button>
                 </th>
-                <th className="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5" />
-                    Name
-                  </div>
-                </th>
-                <th className="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5" />
-                    Email
-                  </div>
-                </th>
-                <th className="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5" />
-                    Date
-                  </div>
-                </th>
-                <th className="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
-                  Actions
-                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Subscribed</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredLeads.length > 0 ? (
-                filteredLeads.map((lead) => {
-                  const isSelected = selectedLeads.includes(lead.id);
-                  return (
-                    <tr 
-                      key={lead.id} 
-                      className={`group transition-colors ${isSelected ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-gray-50/50'}`}
-                    >
-                      <td className="py-4 px-6">
-                        <button 
-                          onClick={() => toggleSelectLead(lead.id)}
-                          className="flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="w-5 h-5 text-primary" />
-                          ) : (
-                            <Square className="w-5 h-5" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-medium text-gray-900">{lead.name}</div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-gray-600">{lead.email}</div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-sm text-gray-500">{lead.date}</div>
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => handleDelete(lead.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete lead"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
+              {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                        <Search className="w-6 h-6" />
-                      </div>
-                      <p>No leads found matching your search.</p>
+                      <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+                      <p>Loading leads...</p>
                     </div>
                   </td>
                 </tr>
+              ) : filteredLeads.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <p className="font-medium text-gray-900">No leads found</p>
+                      <p className="text-sm">
+                        {searchTerm ? "Try adjusting your search terms" : "Share your bio link to start collecting emails"}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredLeads.map((lead) => (
+                  <tr key={lead.id} className="group hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <button 
+                        onClick={() => toggleSelectLead(lead.id)}
+                        className="flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {selectedLeads.includes(lead.id) ? (
+                          <CheckSquare className="w-5 h-5 text-primary" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-xs">
+                          {lead.email.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{lead.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(lead.createdAt).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        onClick={() => handleDelete(lead.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                        title="Delete lead"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
+    </AuthorizationGuard>
   );
 }

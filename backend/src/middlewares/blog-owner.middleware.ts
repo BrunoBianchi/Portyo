@@ -9,7 +9,6 @@ export const blogOwnerMiddleware = async(req:Request,res:Response,next:NextFunct
     const post = await getPostById(id) as PostEntity | null;
 
     if (!post) throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
-    // @ts-ignore
     if(post.user.id != req.session.user!.id) throw new ApiError(APIErrors.authorizationError,"User not authorized",403)
     next()
 }

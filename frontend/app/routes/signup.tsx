@@ -31,8 +31,9 @@ export default function Signup() {
   const handleContinue = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (step === "1") {
-        setSufix(searchParams.get("sufix")?sufix:username);
-        setSearchParams({ step: "2", sufix: sufix});
+        const nextSufix = searchParams.get("sufix") ? sufix : normalizeUsername(username);
+        setSufix(nextSufix);
+        setSearchParams({ step: "2", sufix: nextSufix});
     } else {
         register(email, password, username, sufix).catch((e)=>{
             console.log(e)
@@ -66,7 +67,7 @@ export default function Signup() {
                                 placeholder="Full Name" 
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                 required
-                                onChange={(e)=>setUsername(normalizeUsername(e.target.value))}
+                                onChange={(e)=>setUsername(e.target.value)}
                             />
                         </div>
                         <div>

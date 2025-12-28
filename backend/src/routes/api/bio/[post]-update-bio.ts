@@ -34,7 +34,8 @@ router.post("/update/:id",ownerMiddleware,async(req,res)=>{
         cardBorderRadius: z.number().optional(),
         cardShadow: z.string().optional(),
         cardPadding: z.number().optional(),
-        maxWidth: z.number().optional()
+        maxWidth: z.number().optional(),
+        enableSubscribeButton: z.boolean().optional()
     }).parse(req.body)
      return res.status(200).json(await updateBioById(id, schema.html, schema.blocks, {
         bgType: schema.bgType,
@@ -64,7 +65,7 @@ router.post("/update/:id",ownerMiddleware,async(req,res)=>{
         cardShadow: schema.cardShadow,
         cardPadding: schema.cardPadding,
         maxWidth: schema.maxWidth
-     }))
+     }, schema.enableSubscribeButton))
 })
 
 

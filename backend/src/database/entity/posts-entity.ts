@@ -8,19 +8,19 @@ import { BioEntity } from "./bio-entity";
 export class PostEntity extends BaseEntity {
 
     
-@Column()
+@Column({ type: "text" })
 title!:string;
 
-@Column()
+@Column({ type: "text" })
 content!:string;
 
-@Column()
+@Column({ type: "text" })
 keywords!:string;
 
-@Column()
+@Column({ type: "int", default: 0 })
 views:number = 0;
 
-@Column()
+@Column({ type: "text" })
 status!:string;
 
 @Column({ type: "timestamp", nullable: true })

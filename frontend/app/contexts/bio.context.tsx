@@ -3,7 +3,7 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode";
     title?: string;
     body?: string;
     href?: string;
@@ -98,6 +98,18 @@ export type BioBlock = {
     instagramShowText?: boolean;
     // Youtube specific
     youtubeUrl?: string;
+    // QR Code specific
+    qrCodeValue?: string;
+    qrCodeLayout?: "single" | "multiple" | "grid";
+    qrCodeColor?: string;
+    qrCodeBgColor?: string;
+    qrCodeTitle?: string;
+    qrCodeItems?: {
+        id: string;
+        value: string;
+        label: string;
+    }[];
+
     youtubeTitle?: string;
     youtubeDisplayType?: "grid" | "list";
     youtubeTextColor?: string;
@@ -136,6 +148,7 @@ interface Bio {
     bgVideo?: string;
     usernameColor?: string;
     imageStyle?: string;
+    enableSubscribeButton?: boolean;
     seoTitle?: string;
     seoDescription?: string;
     favicon?: string;
@@ -177,7 +190,13 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
             const response = await api.get("/bio/");
             setBios(response.data);
-            if (response.data.length > 0 && !bio) {
+            
+            const savedBioId = localStorage.getItem("selectedBioId");
+            const savedBio = response.data.find((b: Bio) => b.id === savedBioId);
+
+            if (savedBio) {
+                setBio(savedBio);
+            } else if (response.data.length > 0 && !bio) {
                 setBio(response.data[0]);
             }
         } catch (error) {
@@ -217,6 +236,7 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const selectBio = (selectedBio: Bio) => {
         setBio(selectedBio);
+        localStorage.setItem("selectedBioId", selectedBio.id);
     };
 
     useEffect(() => {

@@ -217,16 +217,27 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
                 const email = emailInput ? emailInput.value : '';
                 
                 if (email) {
-                    console.log('Subscribing email:', email);
-                    const successMsg = document.getElementById('subscribe-success');
-                    if (successMsg) {
-                        successMsg.style.display = 'block';
-                        successMsg.textContent = 'Thanks for subscribing!';
-                    }
-                    if (emailInput) emailInput.value = '';
-                    setTimeout(() => {
-                        (window as any).closeSubscribe();
-                    }, 2000);
+                    api.post(`/public/email/subscribe/${bio.id}`, { email })
+                        .then(() => {
+                            const successMsg = document.getElementById('subscribe-success');
+                            if (successMsg) {
+                                successMsg.style.display = 'block';
+                                successMsg.textContent = 'Thanks for subscribing!';
+                            }
+                            if (emailInput) emailInput.value = '';
+                            setTimeout(() => {
+                                (window as any).closeSubscribe();
+                            }, 2000);
+                        })
+                        .catch((err) => {
+                            console.error('Subscription error:', err);
+                            const successMsg = document.getElementById('subscribe-success');
+                            if (successMsg) {
+                                successMsg.style.display = 'block';
+                                successMsg.style.color = 'red';
+                                successMsg.textContent = 'Failed to subscribe. Please try again.';
+                            }
+                        });
                 }
             };
         };

@@ -70,7 +70,7 @@ export default function DashboardBlog() {
 
         {/* List */}
         <div className="divide-y divide-border">
-            {posts.map((post) => (
+            {posts.map((post:any) => (
                 <div key={post.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-alt/50 transition-colors group">
                     {/* Post Info */}
                     <div className="col-span-6 flex items-center gap-4">

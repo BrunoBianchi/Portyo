@@ -7,6 +7,8 @@ import { BlogPostPopup } from "~/components/blog-post-popup";
 import { palette } from "~/data/editor-palette";
 import { blocksToHtml } from "~/services/html-generator";
 import { api } from "~/services/api";
+import QRCode from "react-qr-code";
+import { getQrCodes, createQrCode, type QrCode } from "~/services/qrcode.service";
 import { 
   ArrowLeftIcon, 
   ArrowRightIcon, 
@@ -654,7 +656,61 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
   );
 };
 
+const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
+  const layout = block.qrCodeLayout || "single";
+  const fgColor = block.qrCodeColor || "#000000";
+  const bgColor = block.qrCodeBgColor || "#FFFFFF";
+  
+  if (layout === "single") {
+    const value = block.qrCodeValue || "https://example.com";
+    return (
+      <div key={block.id} className="flex justify-center py-4">
+        <div className="p-4 rounded-xl shadow-sm" style={{ backgroundColor: bgColor }}>
+          <QRCode 
+            value={value} 
+            size={150} 
+            fgColor={fgColor}
+            bgColor={bgColor}
+            style={{ height: "auto", maxWidth: "100%", width: "100%" }} 
+            viewBox={`0 0 256 256`} 
+          />
+        </div>
+      </div>
+    );
+  }
 
+  const items = block.qrCodeItems || [];
+  
+  if (items.length === 0) {
+    return (
+      <div className="w-full py-4">
+        <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+          Add QR Codes to display
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div key={block.id} className={`py-4 ${layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'flex flex-col gap-4'}`}>
+      {items.map((item) => (
+        <div key={item.id} className="flex flex-col items-center gap-2 p-4 rounded-xl shadow-sm" style={{ backgroundColor: bgColor }}>
+          <QRCode 
+            value={item.value || "https://example.com"} 
+            size={layout === 'grid' ? 100 : 120} 
+            fgColor={fgColor}
+            bgColor={bgColor}
+            style={{ height: "auto", maxWidth: "100%", width: "100%" }} 
+            viewBox={`0 0 256 256`} 
+          />
+          {item.label && (
+            <span className="text-sm font-medium text-center" style={{ color: fgColor }}>{item.label}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default function DashboardEditor() {
   const { bio, bios, selectBio, updateBio, getBios } = useContext(BioContext);
@@ -675,6 +731,7 @@ export default function DashboardEditor() {
   const [bgVideo, setBgVideo] = useState("");
   const [usernameColor, setUsernameColor] = useState("#111827");
   const [imageStyle, setImageStyle] = useState("circle");
+  const [enableSubscribeButton, setEnableSubscribeButton] = useState(false);
   
   // Card/Layout State
   const [cardStyle, setCardStyle] = useState("none");
@@ -688,6 +745,13 @@ export default function DashboardEditor() {
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+
+  // QR Code State
+  const [availableQrCodes, setAvailableQrCodes] = useState<QrCode[]>([]);
+  const [showCreateQrModal, setShowCreateQrModal] = useState(false);
+  const [creatingQrForBlockId, setCreatingQrForBlockId] = useState<string | null>(null);
+  const [newQrValue, setNewQrValue] = useState("");
+  const [isCreatingQr, setIsCreatingQr] = useState(false);
 
   const toggleCategory = useCallback((category: string) => {
     setExpandedCategories((prev) =>
@@ -730,6 +794,7 @@ export default function DashboardEditor() {
       setBgVideo(bio.bgVideo || "");
       setUsernameColor(bio.usernameColor || "#111827");
       setImageStyle(bio.imageStyle || "circle");
+      setEnableSubscribeButton(bio.enableSubscribeButton || false);
       
       // Load Card/Layout settings
       setCardStyle(bio.cardStyle || "none");
@@ -740,8 +805,44 @@ export default function DashboardEditor() {
       setCardShadow(bio.cardShadow || "none");
       setCardPadding(Number(bio.cardPadding ?? 24));
       setMaxWidth(Number(bio.maxWidth ?? 640));
+
+      // Fetch QR Codes
+      getQrCodes(bio.id).then(setAvailableQrCodes).catch(console.error);
     }
   }, [bio?.id, bio?.blocks]);
+
+  const handleCreateQrCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bio?.id || !newQrValue) return;
+    
+    setIsCreatingQr(true);
+    try {
+      const newQr = await createQrCode(bio.id, newQrValue);
+      setAvailableQrCodes(prev => [...prev, newQr]);
+      
+      if (creatingQrForBlockId) {
+        setBlocks(prev => prev.map(block => {
+          if (block.id === creatingQrForBlockId) {
+            // If it's a single QR block
+            if (block.qrCodeLayout === 'single' || !block.qrCodeLayout) {
+              return { ...block, qrCodeValue: newQr.value };
+            }
+            // If it's a multiple QR block (we might need more logic here if we want to add to the list, 
+            // but for now let's assume single or just don't auto-select for multiple to avoid confusion on WHICH item to update)
+          }
+          return block;
+        }));
+      }
+
+      setNewQrValue("");
+      setShowCreateQrModal(false);
+      setCreatingQrForBlockId(null);
+    } catch (error) {
+      console.error("Failed to create QR code", error);
+    } finally {
+      setIsCreatingQr(false);
+    }
+  };
 
   useEffect(() => {
     // Initialize Subscribe Modal logic for Preview
@@ -783,6 +884,11 @@ export default function DashboardEditor() {
       const next = [...prev];
 
       if (dragItem.source === "palette" && dragItem.type) {
+        const paletteItem = palette.find(p => p.type === dragItem.type);
+        if (paletteItem?.isPro && user?.plan !== 'pro') {
+          return prev;
+        }
+
         const newBlock: BioBlock = {
           id: makeId(),
           type: dragItem.type,
@@ -871,8 +977,8 @@ export default function DashboardEditor() {
         cardPadding: Number(cardPadding), 
         maxWidth: Number(maxWidth) 
       };
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, ...layoutSettings });
-      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, ...layoutSettings });
+      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, ...layoutSettings });
+      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, ...layoutSettings });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
     } catch (error) {
@@ -880,7 +986,7 @@ export default function DashboardEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, updateBio, cardStyle, cardBackgroundColor, cardBorderColor, cardBorderWidth, cardBorderRadius, cardShadow, cardPadding, maxWidth]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, updateBio, cardStyle, cardBackgroundColor, cardBorderColor, cardBorderWidth, cardBorderRadius, cardShadow, cardPadding, maxWidth]);
 
   const handleFieldChange = useCallback((id: string, key: keyof BioBlock, value: any) => {
     setBlocks((prev) => prev.map((block) => (block.id === id ? { ...block, [key]: value } : block)));
@@ -1036,20 +1142,32 @@ export default function DashboardEditor() {
                       </h3>
                       {expandedCategories.includes(category) && (
                         <div className="grid grid-cols-3 gap-2">
-                          {items.map((item) => (
-                            <div
-                              key={item.type}
-                              draggable
-                              onDragStart={() => setDragItem({ source: "palette", type: item.type })}
-                              onDragEnd={() => setDragItem(null)}
-                              className="flex flex-col items-center justify-center gap-1 p-1.5 rounded-2xl border border-border hover:border-primary hover:bg-primary/5 cursor-grab active:cursor-grabbing bg-white transition-all group shadow-sm hover:shadow-md"
-                            >
-                              <div className="text-gray-500 group-hover:text-primary transition-colors [&>svg]:w-5 [&>svg]:h-5">
-                                {item.icon}
+                          {items.map((item) => {
+                            const isLocked = item.isPro && user?.plan !== 'pro';
+                            return (
+                              <div
+                                key={item.type}
+                                draggable={!isLocked}
+                                onDragStart={() => !isLocked && setDragItem({ source: "palette", type: item.type })}
+                                onDragEnd={() => setDragItem(null)}
+                                className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded-2xl border border-border bg-white transition-all group shadow-sm relative ${
+                                  isLocked 
+                                    ? 'opacity-60 cursor-not-allowed' 
+                                    : 'hover:border-primary hover:bg-primary/5 cursor-grab active:cursor-grabbing hover:shadow-md'
+                                }`}
+                              >
+                                {isLocked && (
+                                  <div className="absolute top-1 right-1 bg-black text-white text-[8px] px-1 rounded font-bold z-10">
+                                    PRO
+                                  </div>
+                                )}
+                                <div className={`text-gray-500 transition-colors [&>svg]:w-5 [&>svg]:h-5 ${!isLocked && 'group-hover:text-primary'}`}>
+                                  {item.icon}
+                                </div>
+                                <p className="font-medium text-[10px] text-text-main text-center leading-tight">{item.label}</p>
                               </div>
-                              <p className="font-medium text-[10px] text-text-main text-center leading-tight">{item.label}</p>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -1445,6 +1563,58 @@ export default function DashboardEditor() {
                     </div>
                   )}
                 </div>
+
+                {/* Features Section */}
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                  <h3 className="mb-3">
+                    <button 
+                      className="text-sm font-medium text-text-main flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors w-full text-left"
+                      onClick={() => toggleSetting("features")}
+                      aria-expanded={expandedSettings.includes("features")}
+                    >
+                      <span className={`transform transition-transform duration-200 ${expandedSettings.includes("features") ? '' : '-rotate-90'}`}>
+                        <ChevronDownIcon width={14} height={14} />
+                      </span>
+                      Features
+                    </button>
+                  </h3>
+                  
+                  {expandedSettings.includes("features") && (
+                    <div className="pl-2 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium text-gray-900 block">Subscribe Button</label>
+                                {user?.plan === 'free' && (
+                                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider bg-gray-900 text-white">
+                                        Pro
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500">Allow visitors to subscribe to your newsletter.</p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (user?.plan !== 'free') {
+                                    setEnableSubscribeButton(!enableSubscribeButton);
+                                } else {
+                                    alert("Upgrade to Standard or Pro to enable this feature.");
+                                }
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                enableSubscribeButton ? 'bg-primary' : 'bg-gray-200'
+                            } ${user?.plan === 'free' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    enableSubscribeButton ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                            />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -1498,6 +1668,11 @@ export default function DashboardEditor() {
                   onDragEnd={handleDragEnd}
                   onDrop={(e, i) => handleDrop(i, e)}
                   onDragEnter={handleDragEnter}
+                  availableQrCodes={availableQrCodes}
+                  onCreateQrCode={() => {
+                    setCreatingQrForBlockId(block.id);
+                    setShowCreateQrModal(true);
+                  }}
                 />
               ))}
             </div>
@@ -1595,10 +1770,12 @@ export default function DashboardEditor() {
                     >
                       <HomeIcon />
                     </button>
+                    {enableSubscribeButton && (
                     <button className="h-10 px-4 rounded-full bg-white shadow-sm border border-gray-100 flex items-center gap-2 text-sm font-semibold text-gray-700">
                       <BellIcon />
                       Subscribe
                     </button>
+                    )}
                   </div>
 
                   {/* Content Scrollable Area */}
@@ -2221,6 +2398,10 @@ export default function DashboardEditor() {
                           return <YoutubeBlockPreview key={block.id} block={block} />;
                         }
 
+                        if (block.type === "qrcode") {
+                          return <QrCodeBlockPreview key={block.id} block={block} />;
+                        }
+
                         if (block.type === "affiliate") {
                           const title = block.affiliateTitle || "Copy my coupon code";
                           const code = block.affiliateCode || "CODE123";
@@ -2398,6 +2579,45 @@ export default function DashboardEditor() {
                     </button>
                 </div>
              </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <h3 className="font-bold text-lg text-gray-900">Create New QR Code</h3>
+              <button 
+                onClick={() => setShowCreateQrModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <XIcon width="20" height="20" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateQrCode} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-text-muted uppercase mb-2">Destination URL</label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                  <input 
+                    type="url" 
+                    value={newQrValue}
+                    onChange={(e) => setNewQrValue(e.target.value)}
+                    placeholder="https://example.com" 
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                    required
+                  />
+                </div>
+              </div>
+              <button 
+                type="submit" 
+                disabled={isCreatingQr || !newQrValue}
+                className="btn btn-primary w-full justify-center"
+              >
+                {isCreatingQr ? "Creating..." : "Create QR Code"}
+              </button>
+            </form>
           </div>
         </div>
       )}

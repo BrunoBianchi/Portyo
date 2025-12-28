@@ -30,11 +30,12 @@ export const findBioBySufix = async (sufix: string): Promise<Bio | null> => {
 export const findBioById= async (id: string): Promise<Bio | null> => {
     return await repository.findOneBy({ id }) as Bio || null
 }
-export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }, seoSettings?: { seoTitle?: string, seoDescription?: string, favicon?: string, googleAnalyticsId?: string, facebookPixelId?: string, seoKeywords?: string, ogTitle?: string, ogDescription?: string, ogImage?: string, noIndex?: boolean }, customDomain?: string, layoutSettings?: { cardStyle?: string, cardBackgroundColor?: string, cardBorderColor?: string, cardBorderWidth?: number, cardBorderRadius?: number, cardShadow?: string, cardPadding?: number, maxWidth?: number }): Promise<Bio | null> => { 
+export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }, seoSettings?: { seoTitle?: string, seoDescription?: string, favicon?: string, googleAnalyticsId?: string, facebookPixelId?: string, seoKeywords?: string, ogTitle?: string, ogDescription?: string, ogImage?: string, noIndex?: boolean }, customDomain?: string, layoutSettings?: { cardStyle?: string, cardBackgroundColor?: string, cardBorderColor?: string, cardBorderWidth?: number, cardBorderRadius?: number, cardShadow?: string, cardPadding?: number, maxWidth?: number }, enableSubscribeButton?: boolean): Promise<Bio | null> => { 
     let bio = await findBioById(id) as BioEntity
     if (html !== undefined) bio.html = html;
     if (blocks !== undefined) bio.blocks = blocks;
     if (customDomain !== undefined) bio.customDomain = customDomain;
+    if (enableSubscribeButton !== undefined) bio.enableSubscribeButton = enableSubscribeButton;
     
     if (bgSettings) {
         if (bgSettings.bgType) bio.bgType = bgSettings.bgType;

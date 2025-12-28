@@ -21,7 +21,9 @@ import {
     CreditCard,
     ShoppingBag,
     FileText,
-    UserCog
+    UserCog,
+    QrCode,
+    Bell
 } from "lucide-react";
 
 interface SidebarProps {
@@ -76,14 +78,14 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const navItems = [
         { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
         { name: "Editor", path: "/dashboard/editor", icon: PenTool },
-        { name: "Leads", path: "/dashboard/leads", icon: Users },
+        { name: "Leads", path: "/dashboard/leads", icon: Users, isPro: true },
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
+        { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
         { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
-        { name: "Billing", path: "/dashboard/billing", icon: CreditCard },
     ];
 
     return (
@@ -252,26 +254,43 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Menu
                     </div>
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative ${
-                                isActive(item.path)
-                                    ? "bg-primary/15 text-gray-900 font-bold"
-                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
-                            }`}
-                        >
-                            <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
-                            <span className="flex-1 text-sm">{item.name}</span>
-                            {/* @ts-ignore */}
-                            {item.isPro && (
-                                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
-                                    Pro
-                                </span>
-                            )}
-                        </Link>
-                    ))}
+                    {bio ? (
+                        navItems.filter((item:any) => {
+                            if (!item.minPlan) return true;
+                            if (user?.plan === 'free') return false;
+                            if (item.minPlan === 'pro' && user?.plan !== 'pro') return false;
+                            return true;
+                        }).map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative ${
+                                    isActive(item.path)
+                                        ? "bg-primary/15 text-gray-900 font-bold"
+                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                }`}
+                            >
+                                <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
+                                <span className="flex-1 text-sm">{item.name}</span>
+                                {/* @ts-ignore */}
+                                {item.isPro && (
+                                    <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
+                                        Pro
+                                    </span>
+                                )}
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="px-3 py-4 text-center">
+                            <p className="text-sm text-gray-500 mb-3">Select or create a page to access the menu.</p>
+                            <button 
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="btn btn-primary w-full justify-center text-xs"
+                            >
+                                <Plus className="w-3 h-3 mr-1" /> Create Page
+                            </button>
+                        </div>
+                    )}
                 </nav>
 
                 {/* Footer Actions */}

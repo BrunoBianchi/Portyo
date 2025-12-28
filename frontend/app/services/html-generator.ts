@@ -43,6 +43,38 @@ export const blockToHtml = (block: BioBlock): string => {
     )}</p>\n</section>`;
   }
 
+  if (block.type === "qrcode") {
+    const layout = block.qrCodeLayout || "single";
+    const fgColor = (block.qrCodeColor || "#000000").replace('#', '');
+    const bgColor = (block.qrCodeBgColor || "#FFFFFF").replace('#', '');
+    
+    if (layout === "single") {
+      const value = block.qrCodeValue || "https://example.com";
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}&color=${fgColor}&bgcolor=${bgColor}`;
+      return `\n${extraHtml}<section class="${animationClass}" style="text-align:center; padding:16px 0; ${animationStyle}">\n  <div style="display:inline-block; padding:16px; background-color:#${bgColor}; border-radius:12px; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">\n    <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:200px; height:auto;" />\n  </div>\n</section>`;
+    }
+
+    const items = block.qrCodeItems || [];
+    if (items.length === 0) return "";
+
+    const gridStyle = layout === 'grid' 
+      ? "display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;" 
+      : "display:flex; flex-direction:column; gap:16px;";
+
+    const itemHtml = items.map(item => {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.value || "https://example.com")}&color=${fgColor}&bgcolor=${bgColor}`;
+      return `
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px; background-color:#${bgColor}; border-radius:12px; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">
+          <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:150px; height:auto;" />
+          ${item.label ? `<span style="font-size:14px; font-weight:500; color:#${fgColor}; text-align:center;">${escapeHtml(item.label)}</span>` : ""}
+        </div>
+      `;
+    }).join("");
+
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`;
+  }
+
+
   if (block.type === "button") {
     const bg = block.accent || "#111827";
     const color = block.textColor || "#ffffff";
@@ -725,10 +757,10 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
       <a href="/" style="width:40px; height:40px; border-radius:50%; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #f3f4f6; display:flex; align-items:center; justify-content:center; color:#374151; text-decoration:none;">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </a>
-      <button onclick="window.openSubscribe()" style="height:40px; padding:0 16px; border-radius:99px; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #f3f4f6; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
+      ${bio.enableSubscribeButton ? `<button onclick="window.openSubscribe()" style="height:40px; padding:0 16px; border-radius:99px; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #f3f4f6; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         Subscribe
-      </button>
+      </button>` : ''}
     </div>
 
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:32px 0 24px;">
@@ -880,6 +912,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
          </div>
       </div>
     </div>
+
     <div id="subscribe-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
       <div style="background:white; border-radius:24px; padding:32px; width:100%; max-width:400px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; animation:zoomIn 0.2s ease-out;">
         <button onclick="window.closeSubscribe()" aria-label="Close subscribe modal" style="position:absolute; top:16px; right:16px; background:transparent; border:none; cursor:pointer; color:#9ca3af;">
@@ -927,21 +960,79 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         const successMsg = document.getElementById('subscribe-success');
         if (successMsg) successMsg.style.display = 'none';
       };
-      window.submitSubscribe = function(e) {
+      window.submitSubscribe = async function(e) {
         e.preventDefault();
         const emailInput = e.target.querySelector('input[type="email"]');
         const email = emailInput ? emailInput.value : '';
+        const submitBtn = e.target.querySelector('button[type="submit"]');
         
+        // API Base URL - Change this for production
+        const API_BASE_URL = 'http://localhost:3000/api';
+
         if (email) {
-            const successMsg = document.getElementById('subscribe-success');
-            if (successMsg) {
-                successMsg.style.display = 'block';
-                successMsg.textContent = 'Thanks for subscribing!';
+            if(submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.innerHTML = '<svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
             }
-            if (emailInput) emailInput.value = '';
-            setTimeout(() => {
-                window.closeSubscribe();
-            }, 2000);
+
+            try {
+              console.log('Submitting email to:', \`\${API_BASE_URL}/public/email/subscribe/${bio.id}\`);
+              const response = await fetch(\`\${API_BASE_URL}/public/email/subscribe/${bio.id}\`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+              });
+
+              console.log('Response status:', response.status);
+
+              if (response.ok) {
+                const successMsg = document.getElementById('subscribe-success');
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                    successMsg.textContent = 'Thanks for subscribing!';
+                    successMsg.style.color = '#10b981';
+                }
+                if (emailInput) emailInput.value = '';
+                setTimeout(() => {
+                    window.closeSubscribe();
+                }, 2000);
+              } else if (response.status === 409) {
+                 // Email already exists - treat as success for user privacy or show specific message
+                 const successMsg = document.getElementById('subscribe-success');
+                 if (successMsg) {
+                    successMsg.style.display = 'block';
+                    successMsg.textContent = 'Thanks for subscribing!'; // Or "You are already subscribed"
+                    successMsg.style.color = '#10b981';
+                 }
+                 if (emailInput) emailInput.value = '';
+                 setTimeout(() => {
+                    window.closeSubscribe();
+                 }, 2000);
+              } else {
+                const data = await response.json();
+                const successMsg = document.getElementById('subscribe-success');
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                    successMsg.textContent = data.message || 'Something went wrong.';
+                    successMsg.style.color = '#ef4444';
+                }
+              }
+            } catch (err) {
+               console.error('Subscribe error:', err);
+               const successMsg = document.getElementById('subscribe-success');
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                    successMsg.textContent = 'Failed to connect to server.';
+                    successMsg.style.color = '#ef4444';
+                }
+            } finally {
+              if(submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+              }
+            }
         }
       };
     </script>

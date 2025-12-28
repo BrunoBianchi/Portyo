@@ -18,10 +18,10 @@ export default [
             { path: "leads", file: "routes/dashboard-leads.tsx" },
             { path: "automation", file: "routes/dashboard-automation.tsx" },
             { path: "integrations", file: "routes/dashboard-integrations.tsx" },
-            { path: "billing", file: "routes/dashboard-billing.tsx" },
             { path: "settings", file: "routes/dashboard-settings.tsx" },
             { path: "products", file: "routes/dashboard-products.tsx" },
             { path: "blog", file: "routes/dashboard-blog.tsx" },
+            { path: "qrcode", file: "routes/dashboard-qrcode.tsx" },
         ]
     }
 ] satisfies RouteConfig;

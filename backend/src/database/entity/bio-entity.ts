@@ -1,7 +1,9 @@
-import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany, ManyToMany, JoinTable } from "typeorm";
 import { BaseEntity } from "./base-entity";
 import { UserEntity } from "./user-entity";
 import { PostEntity } from "./posts-entity";
+import { QRCodeEntity } from "./qrcode-entity";
+import { EmailEntity } from "./email-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -97,6 +99,9 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "boolean", default: false })
     noIndex: boolean = false;
 
+    @Column({ type: "boolean", default: false })
+    enableSubscribeButton: boolean = false;
+
     @Column({ type: "varchar", nullable: true, unique: true })
     customDomain: string | null = null;
 
@@ -109,5 +114,12 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => PostEntity, (post) => post.bio)
     posts!: PostEntity[];
+
+    @OneToMany(() => QRCodeEntity, (qrcode) => qrcode.bio)
+    qrcodes!: QRCodeEntity[];
+
+    @ManyToMany(() => EmailEntity, (email) => email.bios)
+    @JoinTable()
+    emails!: EmailEntity[];
 
 }

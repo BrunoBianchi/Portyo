@@ -1,5 +1,6 @@
 import React, { memo } from "react";
 import { type BioBlock } from "~/contexts/bio.context";
+import type { QrCode } from "~/services/qrcode.service";
 import { 
   DragHandleIcon, 
   HeadingIcon, 
@@ -13,8 +14,10 @@ import {
   TrashIcon,
   ChevronDownIcon,
   XIcon,
-  PlusIcon
+  PlusIcon,
+  QrCodeIcon
 } from "~/components/icons";
+
 
 interface BlockItemProps {
   block: BioBlock;
@@ -30,6 +33,8 @@ interface BlockItemProps {
   onDragEnd: () => void;
   onDrop: (e: React.DragEvent, index: number) => void;
   onDragEnter: (e: React.DragEvent, id: string) => void;
+  availableQrCodes?: QrCode[];
+  onCreateQrCode?: () => void;
 }
 
 const makeId = () =>
@@ -50,7 +55,9 @@ const BlockItem = memo(({
   onDragStart,
   onDragEnd,
   onDrop,
-  onDragEnter
+  onDragEnter,
+  availableQrCodes = [],
+  onCreateQrCode
 }: BlockItemProps) => {
   
   const handleFieldChange = (key: keyof BioBlock, value: any) => {
@@ -102,8 +109,9 @@ const BlockItem = memo(({
               {block.type === 'socials' && <SocialsIcon />}
               {block.type === 'video' && <VideoIcon />}
               {block.type === 'divider' && <DividerIcon />}
+              {block.type === 'qrcode' && <QrCodeIcon />}
               {/* Add other icons as needed, defaulting to a generic one if missing */}
-              {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider'].includes(block.type) && (
+              {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode'].includes(block.type) && (
                  <DefaultIcon />
               )}
             </div>
@@ -1411,6 +1419,154 @@ const BlockItem = memo(({
                     <PlusIcon />
                     Add Tour Date
                   </button>
+                </div>
+              </div>
+            )}
+
+            {block.type === "qrcode" && (
+              <div className="space-y-4 pt-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                    {(['single', 'multiple', 'grid'] as const).map((layout) => (
+                      <button
+                        key={layout}
+                        onClick={() => handleFieldChange("qrCodeLayout", layout)}
+                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                          (block.qrCodeLayout || 'single') === layout 
+                            ? 'bg-white text-gray-900 shadow-sm' 
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        {layout.charAt(0).toUpperCase() + layout.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {(block.qrCodeLayout === 'single' || !block.qrCodeLayout) ? (
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Select QR Code</label>
+                    <div className="flex gap-2 items-center">
+                      <div className="relative flex-1">
+                        <select
+                          value={block.qrCodeValue || ""}
+                          onChange={(event) => handleFieldChange("qrCodeValue", event.target.value)}
+                          className="w-full appearance-none rounded-lg border border-border bg-white px-3 py-2 pr-8 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        >
+                          <option value="">Select a QR Code</option>
+                          {availableQrCodes.map((qr) => (
+                            <option key={qr.id} value={qr.value}>
+                              {qr.value}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" width={14} height={14} />
+                      </div>
+                      <button
+                        onClick={onCreateQrCode}
+                        className="flex items-center justify-center w-9 h-9 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+                        title="Create new QR Code"
+                      >
+                        <PlusIcon width={16} height={16} />
+                      </button>
+                    </div>
+                    {!block.qrCodeValue && (
+                      <p className="text-[10px] text-text-muted mt-1">Select an existing QR code or create a new one.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <label className="text-xs font-medium text-gray-700 block">QR Codes</label>
+                    {(block.qrCodeItems || []).map((item, idx) => (
+                      <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2 relative group">
+                        <button
+                          onClick={() => {
+                            const newItems = [...(block.qrCodeItems || [])];
+                            newItems.splice(idx, 1);
+                            handleFieldChange("qrCodeItems", newItems);
+                          }}
+                          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <XIcon width={12} height={12} />
+                        </button>
+                        <input
+                          value={item.label}
+                          onChange={(e) => {
+                            const newItems = [...(block.qrCodeItems || [])];
+                            newItems[idx] = { ...newItems[idx], label: e.target.value };
+                            handleFieldChange("qrCodeItems", newItems);
+                          }}
+                          className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs focus:border-primary outline-none"
+                          placeholder="Label"
+                        />
+                        <div className="flex gap-2 items-center">
+                          <div className="relative flex-1">
+                            <select
+                              value={item.value}
+                              onChange={(e) => {
+                                const newItems = [...(block.qrCodeItems || [])];
+                                newItems[idx] = { ...newItems[idx], value: e.target.value };
+                                handleFieldChange("qrCodeItems", newItems);
+                              }}
+                              className="w-full appearance-none rounded border border-gray-200 bg-white px-2 py-1.5 pr-6 text-xs focus:border-primary outline-none"
+                            >
+                              <option value="">Select QR Code</option>
+                              {availableQrCodes.map((qr) => (
+                                <option key={qr.id} value={qr.value}>
+                                  {qr.value}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" width={12} height={12} />
+                          </div>
+                          <button
+                            onClick={onCreateQrCode}
+                            className="flex items-center justify-center w-7 h-7 bg-white border border-gray-200 rounded text-gray-500 hover:text-primary hover:border-primary transition-colors"
+                            title="Create new QR Code"
+                          >
+                            <PlusIcon width={14} height={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const newItems = [...(block.qrCodeItems || [])];
+                        newItems.push({ id: makeId(), label: "New QR Code", value: "" });
+                        handleFieldChange("qrCodeItems", newItems);
+                      }}
+                      className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                    >
+                      <PlusIcon />
+                      Add QR Code Item
+                    </button>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Foreground Color</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={block.qrCodeColor || "#000000"}
+                        onChange={(event) => handleFieldChange("qrCodeColor", event.target.value)}
+                        className="h-9 w-full rounded cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background Color</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={block.qrCodeBgColor || "#FFFFFF"}
+                        onChange={(event) => handleFieldChange("qrCodeBgColor", event.target.value)}
+                        className="h-9 w-full rounded cursor-pointer"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

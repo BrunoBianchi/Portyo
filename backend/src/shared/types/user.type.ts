@@ -6,5 +6,5 @@ export type UserType = BaseType & {
     password: string;
     provider:string;
     verified:boolean;
-
+    plan:string;
 }

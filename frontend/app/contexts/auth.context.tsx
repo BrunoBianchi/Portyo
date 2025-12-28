@@ -33,11 +33,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const storagedUser = cookies['@App:user'];
         const storagedToken = cookies['@App:token'];
 
-        if (storagedToken && storagedUser) {
-            setUser(storagedUser);
+        if (storagedToken) {
             api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`;
+            if (storagedUser) {
+                setUser(typeof storagedUser === 'string' ? JSON.parse(storagedUser) : storagedUser);
+            }
+            
+            api.get('/user/@')
+                .then(response => {
+                    setUser(response.data);
+                    setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
+                })
+                .catch((error) => {
+                    console.error("Failed to fetch user profile", error);
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const login = useCallback(async (email: string, password: string) => {

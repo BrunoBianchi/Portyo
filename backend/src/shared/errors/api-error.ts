@@ -10,7 +10,8 @@ export enum APIErrors {
     paymentRequiredError = "Payment required error",
     requestTimeoutError = "Request timeout error",
     requestEntityTooLargeError = "Request entity too large error",
-    dtoError = "DTO error"
+    dtoError = "DTO error",
+    EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS"
 }
 
 export class ApiError extends Error {
