@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
+import { useSearchParams } from "react-router";
 import type { MetaFunction } from "react-router";
+import { api } from "~/services/api";
+import BioContext from "~/contexts/bio.context";
 import { 
   InstagramIcon, 
   YouTubeIcon, 
@@ -12,7 +15,7 @@ import {
   SpotifyIcon,
   ProductHuntIcon
 } from "~/components/icons";
-import { Check, Plus, ExternalLink, AlertCircle } from "lucide-react";
+import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,7 +34,18 @@ interface Integration {
 }
 
 export default function DashboardIntegrations() {
+  const { bio } = useContext(BioContext);
+  const [searchParams] = useSearchParams();
+  const [isLoadingStripe, setIsLoadingStripe] = useState(false);
   const [integrations, setIntegrations] = useState<Integration[]>([
+    {
+      id: "stripe",
+      name: "Stripe",
+      description: "Accept payments and donations directly on your page.",
+      icon: <div className="w-8 h-8 bg-[#635BFF] rounded-lg flex items-center justify-center text-white"><CreditCard className="w-5 h-5" /></div>,
+      status: "disconnected",
+      category: "marketing"
+    },
     {
       id: "instagram",
       name: "Instagram",
@@ -112,7 +126,91 @@ export default function DashboardIntegrations() {
     (item) => filter === "all" || item.category === filter
   );
 
+  useEffect(() => {
+    const fetchIntegrations = async () => {
+        if (!bio?.id) return;
+        try {
+            const res = await api.get(`/integration?bioId=${bio.id}`);
+            const connectedIntegrations = res.data;
+            
+            setIntegrations(prevIntegrations => prevIntegrations.map(integration => {
+                if (integration.status === "coming_soon") return integration;
+                
+                const isConnected = connectedIntegrations.some((i: any) => i.name === integration.id);
+                
+                if (isConnected) {
+                    return { ...integration, status: "connected" };
+                } else {
+                    return { ...integration, status: "disconnected" };
+                }
+            }));
+        } catch (error) {
+            console.error("Failed to fetch integrations", error);
+        }
+    };
+
+    fetchIntegrations();
+  }, [bio?.id]);
+
+  useEffect(() => {
+    if (bio?.id) {
+        checkStripeStatus();
+        
+        const stripeParam = searchParams.get("stripe");
+        if (stripeParam === "return" || stripeParam === "refresh") {
+            checkStripeStatus();
+        }
+    }
+  }, [searchParams, bio?.id]);
+
+  const checkStripeStatus = async () => {
+    if (!bio?.id) return;
+    try {
+        const res = await api.get(`/stripe/status?bioId=${bio.id}`);
+        if (res.data.connected) {
+            setIntegrations(prev => prev.map(item => 
+                item.id === "stripe" ? { ...item, status: "connected" } : item
+            ));
+        }
+    } catch (error) {
+        console.error("Failed to check stripe status", error);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    if (!bio?.id) return;
+    setIsLoadingStripe(true);
+    try {
+        const res = await api.post("/stripe/connect", { bioId: bio.id });
+        if (res.data.url) {
+            window.location.href = res.data.url;
+        }
+    } catch (error) {
+        console.error("Failed to connect stripe", error);
+        setIsLoadingStripe(false);
+    }
+  };
+
+  const handleStripeDashboard = async () => {
+    if (!bio?.id) return;
+    setIsLoadingStripe(true);
+    try {
+        const res = await api.post("/stripe/login-link", { bioId: bio.id });
+        if (res.data.url) {
+            window.open(res.data.url, "_blank");
+        }
+    } catch (error) {
+        console.error("Failed to get stripe login link", error);
+    } finally {
+        setIsLoadingStripe(false);
+    }
+  };
+
   const handleConnect = (id: string) => {
+    if (id === "stripe") {
+        handleConnectStripe();
+        return;
+    }
     // Simulate connection
     setIntegrations(prev => prev.map(item => {
       if (item.id === id) {
@@ -186,16 +284,32 @@ export default function DashboardIntegrations() {
                 </button>
               ) : (
                 <button
-                  onClick={() => handleConnect(integration.id)}
+                  onClick={() => {
+                    if (integration.id === "stripe" && integration.status === "connected") {
+                        handleStripeDashboard();
+                    } else {
+                        handleConnect(integration.id);
+                    }
+                  }}
+                  disabled={integration.id === "stripe" && isLoadingStripe}
                   className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                     integration.status === "connected"
-                      ? "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-red-600 hover:border-red-200"
+                      ? "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                       : "bg-black text-white hover:bg-gray-800 shadow-md hover:shadow-lg transform active:scale-95"
                   }`}
                 >
-                  {integration.status === "connected" ? (
+                  {integration.id === "stripe" && isLoadingStripe ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : integration.status === "connected" ? (
                     <>
-                      Disconnect
+                      {integration.id === "stripe" ? (
+                          <>
+                            <ExternalLink className="w-4 h-4" />
+                            Dashboard
+                          </>
+                      ) : (
+                          "Disconnect"
+                      )}
                     </>
                   ) : (
                     <>

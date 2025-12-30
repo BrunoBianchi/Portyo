@@ -22,6 +22,7 @@ export default [
             { path: "products", file: "routes/dashboard-products.tsx" },
             { path: "blog", file: "routes/dashboard-blog.tsx" },
             { path: "qrcode", file: "routes/dashboard-qrcode.tsx" },
+            { path: "scheduler", file: "routes/dashboard-scheduler.tsx" },
         ]
     }
 ] satisfies RouteConfig;

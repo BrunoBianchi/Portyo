@@ -347,6 +347,53 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
             });
         };
 
+        const initProductLinks = () => {
+            const root = containerRef.current;
+            if (!root) return;
+
+            const links = root.querySelectorAll('.product-item-link');
+            links.forEach(link => {
+                if (link.hasAttribute('data-initialized')) return;
+                link.setAttribute('data-initialized', 'true');
+
+                link.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const productId = link.getAttribute('data-product-id');
+                    if (!productId) return;
+
+                    // Show loading state if needed, e.g. change cursor or opacity
+                    (link as HTMLElement).style.opacity = '0.7';
+                    (link as HTMLElement).style.pointerEvents = 'none';
+
+                    try {
+                        const res = await api.post('/public/stripe/generate-product-link', { 
+                            productId, 
+                            bioId: bio.id 
+                        });
+                        
+                        if (res.data && res.data.url) {
+                            const width = 600;
+                            const height = 800;
+                            const left = (window.screen.width - width) / 2;
+                            const top = (window.screen.height - height) / 2;
+                            window.open(
+                                res.data.url, 
+                                'StripeCheckout', 
+                                `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+                            );
+                        }
+                    } catch (error: any) {
+                        console.error("Failed to generate product link", error);
+                        const message = error.response?.data?.message || "Failed to load product. Please try again.";
+                        alert(message);
+                    } finally {
+                        (link as HTMLElement).style.opacity = '1';
+                        (link as HTMLElement).style.pointerEvents = 'auto';
+                    }
+                });
+            });
+        };
+
         const scanAndInit = () => {
             const timers = containerRef.current?.querySelectorAll('.countdown-timer');
             timers?.forEach(startTimer);
@@ -355,6 +402,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
             initBlogFeeds();
             initShareModal();
             initSubscribeModal();
+            initProductLinks();
         };
 
         scanAndInit();

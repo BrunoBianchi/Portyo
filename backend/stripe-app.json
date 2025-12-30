@@ -1,0 +1,29 @@
+{
+  "connect_permissions": null,
+  "icon": "",
+  "id": "com.portyo.portyo",
+  "name": "Portyo",
+  "permissions": [],
+  "ui_extension": {
+    "content_security_policy": {
+      "connect-src": null,
+      "image-src": null,
+      "purpose": ""
+    },
+    "views": [
+      {
+        "component": "Home",
+        "viewport": "stripe.dashboard.home.overview"
+      },
+      {
+        "component": "Customers",
+        "viewport": "stripe.dashboard.customer.list"
+      },
+      {
+        "component": "CustomerDetails",
+        "viewport": "stripe.dashboard.customer.detail"
+      }
+    ]
+  },
+  "version": "0.0.1"
+}

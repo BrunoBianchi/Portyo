@@ -111,7 +111,7 @@ export default function PricingSection() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    {['Customizable link-in-bio', 'Basic Analytics', 'Unlimited Links', 'Social Icons', 'Basic Themes'].map((feature, i) => (
+                    {['Customizable link-in-bio', 'Basic Analytics', 'Unlimited Links', 'Social Icons', 'Basic Themes','2.5% Transaction Fees'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <Check className="w-4 h-4 text-green-500" />
                             <span className="text-text-main text-sm font-medium">{feature}</span>

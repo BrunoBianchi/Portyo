@@ -4,6 +4,7 @@ import { BioEntity } from "./entity/bio-entity"
 import { PostEntity } from "./entity/posts-entity"
 import { QRCodeEntity } from "./entity/qrcode-entity"
 import { EmailEntity } from "./entity/email-entity"
+import { IntegrationEntity } from "./entity/integration-entity"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "postgres",
     database: process.env.DB_DATABASE || "portyo",
-    entities: [UserEntity,BioEntity,PostEntity,QRCodeEntity,EmailEntity],
+    entities: [UserEntity,BioEntity,PostEntity,QRCodeEntity,EmailEntity,IntegrationEntity],
     synchronize: true,
     logging: false,
 })

@@ -23,7 +23,8 @@ import {
     FileText,
     UserCog,
     QrCode,
-    Bell
+    Bell,
+    Calendar
 } from "lucide-react";
 
 interface SidebarProps {
@@ -82,6 +83,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
+        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
@@ -176,7 +178,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 </div>
 
                 {/* Workspace Switcher */}
-                <div className="px-4 mb-6 mt-2" ref={dropdownRef}>
+                <div className="px-4 mb-2 mt-2" ref={dropdownRef}>
                     <div className="relative">
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -250,7 +252,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2">
+                <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Menu
                     </div>
@@ -264,7 +266,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative ${
+                                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${
                                     isActive(item.path)
                                         ? "bg-primary/15 text-gray-900 font-bold"
                                         : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"

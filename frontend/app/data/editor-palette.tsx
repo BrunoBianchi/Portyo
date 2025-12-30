@@ -74,7 +74,6 @@ export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React
     type: "product", 
     label: "Product Catalog", 
     category: "Shop",
-    isPro: true,
     icon: <ProductIcon width="24" height="24" /> 
   },
   { 
@@ -93,7 +92,6 @@ export const palette: Array<{ type: BioBlock["type"]; label: string; icon: React
     type: "featured", 
     label: "Featured", 
     category: "Shop",
-    isPro: true,
     icon: <StarIcon width="24" height="24" /> 
   },
   { 

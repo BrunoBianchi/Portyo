@@ -133,6 +133,12 @@ export type BioBlock = {
 
 };
 
+export interface Integration {
+    id: string;
+    account_id: string;
+    name: string;
+}
+
 interface Bio {
     id: string;
     sufix: string;
@@ -141,6 +147,7 @@ interface Bio {
     views: number;
     clicks: number;
     userId: string;
+    integrations?: Integration[];
     bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract";
     bgColor?: string;
     bgSecondaryColor?: string;

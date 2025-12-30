@@ -1,0 +1,27 @@
+import { Router } from "express";
+import { createStripeConnectAccount } from "../../../shared/services/stripe.service";
+import { authMiddleware } from "../../../middlewares/auth.middleware";
+import { z } from "zod";
+import { findBioById } from "../../../shared/services/bio.service";
+import { BioEntity } from "../../../database/entity/bio-entity";
+import { UserEntity } from "../../../database/entity/user-entity";
+
+const router: Router = Router();
+
+router.post("/connect", authMiddleware, async (req, res) => {
+    try {
+        const { bioId } = z.object({ bioId: z.string() }).parse(req.body);
+        const userId = req.session.user!.id;
+
+        const bio = await findBioById(bioId, ['user']);
+        if (!bio) return res.status(404).json({ message: "Bio not found" });
+       if ((bio.user as UserEntity).id !== userId) return res.status(403).json({ message: "Unauthorized" });
+
+        const url = await createStripeConnectAccount(bioId);
+        res.json({ url });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+export default router;

@@ -4,6 +4,7 @@ import { UserEntity } from "./user-entity";
 import { PostEntity } from "./posts-entity";
 import { QRCodeEntity } from "./qrcode-entity";
 import { EmailEntity } from "./email-entity";
+import { IntegrationEntity } from "./integration-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -121,5 +122,8 @@ export class BioEntity extends BaseEntity {
     @ManyToMany(() => EmailEntity, (email) => email.bios)
     @JoinTable()
     emails!: EmailEntity[];
+
+    @OneToMany(() => IntegrationEntity, (integration) =>integration.bio)
+    integrations!: IntegrationEntity[];
 
 }

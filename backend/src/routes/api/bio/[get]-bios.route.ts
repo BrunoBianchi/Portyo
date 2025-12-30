@@ -4,7 +4,7 @@ const router:Router = Router()
 
 router.get("/",async(req,res)=>{
  
-     return res.status(200).json(await getBiosFromUser(req.session!.user!.id))
+     return res.status(200).json(await getBiosFromUser(req.session!.user!.id, ['integrations']))
 })
 
 

@@ -1,7 +1,10 @@
-import React, { memo } from "react";
-import { type BioBlock } from "~/contexts/bio.context";
+import React, { memo, useState, useEffect, useContext } from "react";
+import { createPortal } from "react-dom";
+import BioContext, { type BioBlock } from "~/contexts/bio.context";
+import { api } from "~/services/api";
+import { Loader2, CreditCard } from "lucide-react";
 import type { QrCode } from "~/services/qrcode.service";
-import { 
+import {  
   DragHandleIcon, 
   HeadingIcon, 
   TextIcon, 
@@ -59,6 +62,90 @@ const BlockItem = memo(({
   availableQrCodes = [],
   onCreateQrCode
 }: BlockItemProps) => {
+  const { bio } = useContext(BioContext);
+  const [stripeProducts, setStripeProducts] = useState<any[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
+  const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [newProductData, setNewProductData] = useState({
+    title: "",
+    price: "",
+    currency: "usd",
+    image: ""
+  });
+
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bio?.id) return;
+    
+    setIsCreatingProduct(true);
+    try {
+      const res = await api.post("/stripe/create-product", {
+        bioId: bio.id,
+        title: newProductData.title,
+        price: parseFloat(newProductData.price),
+        currency: newProductData.currency,
+        image: newProductData.image
+      });
+      
+      const newProduct = {
+        id: res.data.id,
+        title: res.data.name,
+        price: (res.data.default_price?.unit_amount ? res.data.default_price.unit_amount / 100 : parseFloat(newProductData.price)),
+        currency: res.data.default_price?.currency || newProductData.currency,
+        image: res.data.images?.[0] || null,
+        stripeProductId: res.data.id
+      };
+      
+      // Add to local list
+      setStripeProducts([...stripeProducts, {
+        id: newProduct.id,
+        title: newProduct.title,
+        price: newProduct.price,
+        currency: newProduct.currency,
+        image: newProduct.image,
+        status: 'active'
+      }]);
+      
+      // Add to block
+      const blockProduct = {
+          id: makeId(),
+          title: newProduct.title,
+          price: new Intl.NumberFormat('en-US', { style: 'currency', currency: newProduct.currency }).format(newProduct.price),
+          image: newProduct.image || "https://placehold.co/300x300",
+          url: "#", 
+          stripeProductId: newProduct.id
+      };
+      handleFieldChange("products", [...(block.products || []), blockProduct] as any);
+      
+      setIsCreateProductModalOpen(false);
+      setIsProductSelectOpen(false);
+      setNewProductData({ title: "", price: "", currency: "usd", image: "" });
+    } catch (error) {
+      console.error("Failed to create product", error);
+      alert("Failed to create product. Please try again.");
+    } finally {
+      setIsCreatingProduct(false);
+    }
+  };
+
+  useEffect(() => {
+    if (block.type === 'product' && isExpanded && bio?.id && stripeProducts.length === 0) {
+      const fetchProducts = async () => {
+        setIsLoadingProducts(true);
+        try {
+          const res = await api.get(`/stripe/products?bioId=${bio.id}`);
+          setStripeProducts(res.data);
+        } catch (error) {
+          console.error("Failed to fetch products", error);
+        } finally {
+          setIsLoadingProducts(false);
+        }
+      };
+      fetchProducts();
+    }
+  }, [block.type, isExpanded, bio?.id]);
   
   const handleFieldChange = (key: keyof BioBlock, value: any) => {
     onChange(block.id, key, value);
@@ -781,13 +868,13 @@ const BlockItem = memo(({
                     <div className="flex items-center gap-1">
                       <input
                         type="color"
-                        value={block.productAccentColor || "#2563eb"}
+                        value={block.productAccentColor || "#000000"}
                         onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
                         className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
                       />
                       <input
                         type="text"
-                        value={block.productAccentColor || "#2563eb"}
+                        value={block.productAccentColor || "#000000"}
                         onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
                         className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
                       />
@@ -808,52 +895,212 @@ const BlockItem = memo(({
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-700 block">Products</label>
                   {(block.products || []).map((product, index) => (
-                    <div key={product.id} className="p-2 border border-gray-200 rounded-lg space-y-2">
-                      <input
-                        value={product.title}
-                        onChange={(e) => {
-                          const newProducts = [...(block.products || [])];
-                          newProducts[index] = { ...product, title: e.target.value };
-                          handleFieldChange("products", newProducts as any);
-                        }}
-                        className="w-full rounded border border-gray-200 px-2 py-1 text-xs"
-                        placeholder="Product Title"
-                      />
-                      <div className="flex gap-2">
-                        <input
-                          value={product.price}
-                          onChange={(e) => {
-                            const newProducts = [...(block.products || [])];
-                            newProducts[index] = { ...product, price: e.target.value };
-                            handleFieldChange("products", newProducts as any);
-                          }}
-                          className="w-1/3 rounded border border-gray-200 px-2 py-1 text-xs"
-                          placeholder="Price"
-                        />
-                        <input
-                          value={product.url}
-                          onChange={(e) => {
-                            const newProducts = [...(block.products || [])];
-                            newProducts[index] = { ...product, url: e.target.value };
-                            handleFieldChange("products", newProducts as any);
-                          }}
-                          className="w-2/3 rounded border border-gray-200 px-2 py-1 text-xs"
-                          placeholder="URL"
-                        />
+                    <div key={product.id} className="p-3 border border-gray-200 rounded-xl bg-white relative group flex items-center gap-3 hover:border-gray-300 transition-colors">
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100">
+                        {product.image && product.image !== "https://placehold.co/300x300" ? (
+                            <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <ImageIcon className="w-5 h-5" />
+                            </div>
+                        )}
                       </div>
+                      
+                      <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-gray-900 truncate">{product.title}</h4>
+                          <p className="text-xs text-gray-500">{product.price}</p>
+                      </div>
+
+                      <button 
+                        onClick={() => {
+                            const newProducts = [...(block.products || [])];
+                            newProducts.splice(index, 1);
+                            handleFieldChange("products", newProducts as any);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        title="Remove product"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
                     </div>
                   ))}
-                  <button
-                    onClick={() => {
-                      const newProduct = { id: makeId(), title: "New Product", price: "$0.00", image: "https://placehold.co/300x300", url: "#" };
-                      handleFieldChange("products", [...(block.products || []), newProduct] as any);
-                    }}
-                    className="w-full py-1.5 text-xs font-medium text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
-                  >
-                    + Add Product
-                  </button>
+                  
+                  <div className="pt-2 border-t border-gray-100 mt-4">
+                     <label className="text-xs font-medium text-gray-500 mb-2 block">Add Product from Stripe</label>
+                     {isLoadingProducts ? (
+                        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
+                     ) : (
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsProductSelectOpen(!isProductSelectOpen)}
+                                className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white hover:border-gray-300 transition-colors text-left"
+                            >
+                                <span className="text-gray-500">Select a product to add...</span>
+                                <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isProductSelectOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            {isProductSelectOpen && (
+                                <div className="mt-2 w-full rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="overflow-y-auto flex-1 max-h-60">
+                                    {stripeProducts
+                                        .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
+                                        .length === 0 ? (
+                                            <div className="p-8 flex flex-col items-center justify-center text-center gap-3 bg-gray-50/80">
+                                                <div className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
+                                                    <CreditCard className="w-6 h-6" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-semibold text-gray-900">No products found</p>
+                                                    <p className="text-xs text-gray-500">Create a new product to add it here.</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            stripeProducts
+                                                .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
+                                                .map(p => (
+                                                    <button
+                                                        key={p.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newProduct = {
+                                                                id: makeId(),
+                                                                title: p.title,
+                                                                price: new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0),
+                                                                image: p.image || "https://placehold.co/300x300",
+                                                                url: "#", 
+                                                                stripeProductId: p.id
+                                                            };
+                                                            handleFieldChange("products", [...(block.products || []), newProduct] as any);
+                                                            setIsProductSelectOpen(false);
+                                                        }}
+                                                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0 group"
+                                                    >
+                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100 group-hover:border-gray-200 transition-colors">
+                                                            {p.image ? (
+                                                                <img src={p.image} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                                    <ImageIcon className="w-4 h-4" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900 group-hover:text-black transition-colors">{p.title}</div>
+                                                            <div className="text-xs text-gray-500">{new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0)}</div>
+                                                        </div>
+                                                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <PlusIcon className="w-4 h-4 text-gray-400" />
+                                                        </div>
+                                                    </button>
+                                                ))
+                                        )
+                                    }
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCreateProductModalOpen(true)}
+                                        className="w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-white bg-black hover:bg-gray-800 transition-all border-t border-gray-100"
+                                    >
+                                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                                            <PlusIcon className="w-3 h-3 text-white" />
+                                        </div>
+                                        Create New Product
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                     )}
+                  </div>
                 </div>
               </div>
+            )}
+
+            {isCreateProductModalOpen && typeof document !== "undefined" && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900">Create Product</h3>
+                            <button 
+                                onClick={() => setIsCreateProductModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <XIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                                <input
+                                    required
+                                    value={newProductData.title}
+                                    onChange={(e) => setNewProductData({...newProductData, title: e.target.value})}
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="e.g. Digital Guide"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                            {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
+                                        </span>
+                                        <input
+                                            required
+                                            type="number"
+                                            min="0.50"
+                                            step="0.01"
+                                            value={newProductData.price}
+                                            onChange={(e) => setNewProductData({...newProductData, price: e.target.value})}
+                                            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                    <select
+                                        value={newProductData.currency}
+                                        onChange={(e) => setNewProductData({...newProductData, currency: e.target.value})}
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    >
+                                        <option value="usd">USD ($)</option>
+                                        <option value="eur">EUR (€)</option>
+                                        <option value="gbp">GBP (£)</option>
+                                        <option value="brl">BRL (R$)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
+                                <input
+                                    value={newProductData.image}
+                                    onChange={(e) => setNewProductData({...newProductData, image: e.target.value})}
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={isCreatingProduct}
+                                    className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isCreatingProduct ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : (
+                                        "Create Product"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
             )}
 
             {block.type === "calendar" && (

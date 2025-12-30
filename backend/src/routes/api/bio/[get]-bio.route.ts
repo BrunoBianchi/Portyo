@@ -8,7 +8,7 @@ const router: Router = Router();
 
 router.get("/:id", ownerMiddleware, async (req, res) => {
      const { id } = z.object({ id: z.string() }).parse(req.params);
-     const bio = await findBioById(id);
+     const bio = await findBioById(id, ['integrations']);
 
      if (!bio) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
 

@@ -18,4 +18,5 @@ export type Bio = BaseType & {
     ogDescription?: string;
     ogImage?: string;
     noIndex?: boolean;
+    integrations:any[]
 }

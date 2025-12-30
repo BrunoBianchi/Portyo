@@ -306,11 +306,11 @@ export const blockToHtml = (block: BioBlock): string => {
     
     const bgColor = block.productBackgroundColor || "#ffffff";
     const textColor = block.productTextColor || "#1f2937";
-    const accentColor = block.productAccentColor || "#2563eb";
+    const accentColor = block.productAccentColor || "#000000";
     const btnText = block.productButtonText || "View Product";
     const cardStyleType = block.productCardStyle || "standard";
 
-    const productItems = products.map(p => {
+    const productItems = products.map((p: any) => {
       const wrapperStyle = layout === "carousel" 
         ? "flex:0 0 170px; scroll-snap-align:start; min-width:170px;" 
         : "width:100%;";
@@ -322,7 +322,7 @@ export const blockToHtml = (block: BioBlock): string => {
 
       if (cardStyleType === "minimal") {
          return `
-          <a href="${escapeHtml(p.url)}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
+          <a href="javascript:void(0)" class="product-item-link" data-product-id="${escapeHtml(p.stripeProductId || '')}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
             <div style="background:${bgColor}; border-radius:16px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05); border:1px solid ${bgColor === '#ffffff' ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}; display:flex; align-items:center; padding:8px; gap:12px; height:100%;">
               <div style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; background:${bgColor === '#ffffff' ? '#f9fafb' : 'rgba(0,0,0,0.05)'};">
                 <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" style="width:100%; height:100%; object-fit:cover;" />
@@ -343,19 +343,19 @@ export const blockToHtml = (block: BioBlock): string => {
       }
 
       return `
-      <a href="${escapeHtml(p.url)}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
-        <div style="background:${bgColor}; border-radius:20px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.2s; height:100%; display:flex; flex-direction:column; border:1px solid ${bgColor === '#ffffff' ? '#f3f4f6' : 'rgba(255,255,255,0.1)'};">
-          <div style="aspect-ratio:1; width:100%; position:relative; overflow:hidden; background:${bgColor === '#ffffff' ? '#f9fafb' : 'rgba(0,0,0,0.05)'};">
+      <a href="javascript:void(0)" class="product-item-link" data-product-id="${escapeHtml(p.stripeProductId || '')}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
+        <div style="background:${bgColor}; border-radius:24px; overflow:hidden; box-shadow:0 2px 20px rgba(0,0,0,0.04); transition:transform 0.2s; height:100%; display:flex; flex-direction:column; border:1px solid ${bgColor === '#ffffff' ? '#f3f4f6' : 'rgba(255,255,255,0.1)'}; padding: 12px; gap: 12px;">
+          <div style="aspect-ratio:1; width:100%; position:relative; overflow:hidden; border-radius: 18px; background:${bgColor === '#ffffff' ? '#f9fafb' : 'rgba(0,0,0,0.05)'};">
             <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" />
-            <div style="position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,0.95); padding:4px 10px; border-radius:99px; font-size:12px; font-weight:700; color:#1f2937; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-              ${escapeHtml(p.price)}
-            </div>
           </div>
-          <div style="padding:14px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
-            <h3 style="margin:0 0 8px 0; font-size:15px; font-weight:600; color:${textColor}; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(p.title)}</h3>
-            <div style="display:flex; align-items:center; gap:6px; color:${accentColor}; font-size:13px; font-weight:600; margin-top:auto;">
-              <span>${escapeHtml(btnText)}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          <div style="flex:1; display:flex; flex-direction:column; gap: 6px; padding: 0 4px;">
+            <h3 style="margin:0; font-size:15px; font-weight:600; color:${textColor}; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(p.title)}</h3>
+            <div style="font-size:15px; font-weight:500; color:${textColor}; opacity: 0.7;">${escapeHtml(p.price)}</div>
+            
+            <div style="margin-top:auto; padding-top: 8px;">
+                <div style="background:${accentColor}; color:#ffffff; text-align:center; padding:10px; border-radius:14px; font-size:14px; font-weight:600; transition:opacity 0.2s;">
+                ${escapeHtml(btnText)}
+                </div>
             </div>
           </div>
         </div>

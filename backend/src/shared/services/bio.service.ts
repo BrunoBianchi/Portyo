@@ -27,11 +27,16 @@ export const findBioByCustomDomain = async (customDomain: string): Promise<Bio |
 export const findBioBySufix = async (sufix: string): Promise<Bio | null> => {
     return await repository.findOneBy({ sufix }) as Bio || null
 }
-export const findBioById= async (id: string): Promise<Bio | null> => {
-    return await repository.findOneBy({ id }) as Bio || null
+export const findBioById= async (id: string,relations?:string[]): Promise<Bio | null> => {
+    return await repository.findOne({ 
+        where:{
+            id
+        },
+        relations
+    } ) as Bio || null
 }
 export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }, seoSettings?: { seoTitle?: string, seoDescription?: string, favicon?: string, googleAnalyticsId?: string, facebookPixelId?: string, seoKeywords?: string, ogTitle?: string, ogDescription?: string, ogImage?: string, noIndex?: boolean }, customDomain?: string, layoutSettings?: { cardStyle?: string, cardBackgroundColor?: string, cardBorderColor?: string, cardBorderWidth?: number, cardBorderRadius?: number, cardShadow?: string, cardPadding?: number, maxWidth?: number }, enableSubscribeButton?: boolean): Promise<Bio | null> => { 
-    let bio = await findBioById(id) as BioEntity
+    let bio = await findBioById(id, ['integrations']) as BioEntity
     if (html !== undefined) bio.html = html;
     if (blocks !== undefined) bio.blocks = blocks;
     if (customDomain !== undefined) bio.customDomain = customDomain;
@@ -75,9 +80,10 @@ export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSe
     return bio as Bio;
 }
 
-export const getBiosFromUser = async(userId:string):Promise<Bio[]|null> =>{
+export const getBiosFromUser = async(userId:string, relations?: string[]):Promise<Bio[]|null> =>{
     return await repository.find({
-        where:{userId}
+        where:{userId},
+        relations
     }) as Bio[] || null
 }
 
