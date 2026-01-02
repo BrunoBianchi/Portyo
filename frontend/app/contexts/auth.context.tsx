@@ -18,6 +18,7 @@ interface AuthContextData {
     user: User | null;
     loading: boolean;
     login(email: string, password: string): Promise<void>;
+    socialLogin(user: User, token: string): void;
     register(email: string, password: string, fullname: string, sufix: string): Promise<void>;
     logout(): void;
 }
@@ -65,6 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCookie('@App:token', token, { path: '/' });
     }, [setCookie]);
 
+    const socialLogin = useCallback((user: User, token: string) => {
+        setUser(user);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setCookie('@App:user', JSON.stringify(user), { path: '/' });
+        setCookie('@App:token', token, { path: '/' });
+    }, [setCookie]);
+
     const register = useCallback(async (email: string, password: string, fullname: string, sufix: string) => {
         const response = await api.post("/user/", {
             sufix, fullname, email, password
@@ -89,8 +97,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         login,
         logout,
-        register
-    }), [user, loading, login, logout, register]);
+        register,
+        socialLogin
+    }), [user, loading, login, logout, register, socialLogin]);
 
     return (
         <AuthContext.Provider value={value}>

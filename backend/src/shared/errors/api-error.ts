@@ -15,8 +15,13 @@ export enum APIErrors {
 }
 
 export class ApiError extends Error {
-    constructor(cause:APIErrors,message:string,code:number){
-        super(JSON.stringify({cause,message,code}))
+    public readonly cause: APIErrors;
+    public readonly code: number;
+
+    constructor(cause: APIErrors, message: string, code: number) {
+        super(message);
         this.name = 'ApiError';
+        this.cause = cause;
+        this.code = code;
     }
 }

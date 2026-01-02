@@ -28,6 +28,7 @@ export default function DashboardProducts() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [newProductData, setNewProductData] = useState({
     title: "",
     price: "",
@@ -39,6 +40,7 @@ export default function DashboardProducts() {
     e.preventDefault();
     if (!bio?.id) return;
     
+    setCreateError(null);
     setIsCreatingProduct(true);
     try {
       const res = await api.post("/stripe/create-product", {
@@ -63,9 +65,9 @@ export default function DashboardProducts() {
       
       setIsCreateProductModalOpen(false);
       setNewProductData({ title: "", price: "", currency: "usd", image: "" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create product", error);
-      alert("Failed to create product. Please try again.");
+      setCreateError(error.response?.data?.message || "Failed to create product. Please try again.");
     } finally {
       setIsCreatingProduct(false);
     }
@@ -204,6 +206,11 @@ export default function DashboardProducts() {
                     </button>
                 </div>
                 <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
+                    {createError && (
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                            {createError}
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
                         <input

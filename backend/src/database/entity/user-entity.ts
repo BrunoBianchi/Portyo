@@ -29,7 +29,7 @@ export class UserEntity extends BaseEntity {
     verified!:boolean;
     @BeforeInsert()
     VerifyProvider() {
-        this.verified = this.provider === "email"?true:false
+        this.verified = this.provider != "password"?true:false
     }
 
     @Column({ type: "varchar", default: "free" })

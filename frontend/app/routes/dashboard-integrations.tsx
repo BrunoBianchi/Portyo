@@ -107,7 +107,7 @@ export default function DashboardIntegrations() {
       name: "Google Analytics",
       description: "Track visitors and gain deeper insights into your traffic.",
       icon: <div className="w-8 h-8 bg-[#E37400] rounded-full flex items-center justify-center text-white font-bold text-xs">GA</div>,
-      status: "coming_soon",
+      status: "disconnected",
       category: "analytics"
     },
     {
@@ -206,9 +206,25 @@ export default function DashboardIntegrations() {
     }
   };
 
+  const handleConnectGoogleAnalytics = async () => {
+    if (!bio?.id) return;
+    try {
+        const res = await api.get(`/google-analytics/auth?bioId=${bio.id}`);
+        if (res.data.url) {
+            window.location.href = res.data.url;
+        }
+    } catch (error) {
+        console.error("Failed to connect google analytics", error);
+    }
+  };
+
   const handleConnect = (id: string) => {
     if (id === "stripe") {
         handleConnectStripe();
+        return;
+    }
+    if (id === "google-analytics") {
+        handleConnectGoogleAnalytics();
         return;
     }
     // Simulate connection

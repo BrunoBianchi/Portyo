@@ -21,7 +21,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const post = await createPost({
         ...postData,
         scheduledAt: postData.scheduledAt ? new Date(postData.scheduledAt) : null
-    }, userId, postData.bioId);
+    }, userId as string, postData.bioId);
     return res.status(201).json(post);
 });
 

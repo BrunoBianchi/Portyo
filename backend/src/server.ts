@@ -1,72 +1,106 @@
 import express from "express";
-import * as dotenv from "dotenv";
-import apiController from "./controllers/api.controller";
-import { decryptToken } from "./shared/services/jwt.service";
-import * as session from "express-session"
-import { UserType } from "./shared/types/user.type";
+import routes from "./routes/index";
+import { deserializeUser } from "./middlewares/auth.middleware";
+import * as session from "express-session";
 import { errorMiddleware } from "./middlewares/error.middleware";
-import cors from "cors"
-dotenv.config();
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import { env } from "./config/env";
+import { logger } from "./shared/utils/logger";
 
 const app = express();
-app.use(cors({
+
+app.use(helmet());
+app.use(compression());
+
+const morganFormat = ":method :url :status :response-time ms";
+
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => {
+        const logObject = {
+          method: message.split(" ")[0],
+          url: message.split(" ")[1],
+          status: message.split(" ")[2],
+          responseTime: message.split(" ")[3],
+        };
+        logger.http(JSON.stringify(logObject));
+      },
+    },
+  })
+);
+
+app.use(
+  cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        // Allow localhost:5173 and any subdomain of localhost:5173
-        if (origin === "http://localhost:5173" || /^http:\/\/.*\.localhost:5173$/.test(origin)) {
-            callback(null, true);
-        } 
-        // Allow requests from the backend itself (for testing/preview if served from same origin)
-        else if (origin === "http://localhost:3000") {
-            callback(null, true);
-        }
-        // Allow null origin (for local file testing or some redirects)
-        else if (origin === "null") {
-            callback(null, true);
-        }
-        else {
-            // For development, let's be more permissive if needed, or log the blocked origin
-            console.log("Blocked CORS origin:", origin);
-            callback(new Error('Not allowed by CORS'));
-        }
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [env.CORS_ORIGIN, "http://localhost:3000"];
+      const isAllowed = allowedOrigins.includes(origin) || /^http:\/\/.*\.localhost:5173$/.test(origin);
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        logger.warn(`Blocked CORS origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
     },
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-}))
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      message: "Too many requests, please try again later.",
+    });
+  },
+});
+app.use(limiter);
+
 app.use(express.json());
-app.use(session.default({
-    secret: process.env.SESSION_SECRET || 'secret',
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session.default({
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
+    cookie: { secure: env.NODE_ENV === "production" },
+  })
+);
 
-app.use(async (req, res, next) => {
-    const { authorization } = req.headers
-    const token = authorization?.split("Bearer ")[1]?.trim();
-    if (token) {
-        const user = await decryptToken(token) as UserType
-        const payload = {
-            fullname: user.fullName,
-            email: user.email,
-            id: user.id,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        }
-        if (user) {
-            (req.session as any).user = payload
-        }
-    }
-    next()
-})
+app.use(deserializeUser);
 
-
-
-app.use(apiController);
+app.use(routes);
 app.use(errorMiddleware);
+
 export const InitializateServer = () => {
-    app.listen(process.env.PORT || 3000, () => {
-        console.log(`Server is running on port ${process.env.PORT || 3000}`);
-    })
-}
+  const port = env.PORT;
+  const server = app.listen(port, () => {
+    logger.info(`Server is running on port ${port}`);
+    logger.info(`Environment: ${env.NODE_ENV}`);
+  });
+
+  const shutdown = () => {
+    logger.info("Shutting down server...");
+    server.close(() => {
+      logger.info("Server closed.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+};
 

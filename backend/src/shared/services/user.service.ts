@@ -7,40 +7,51 @@ import { is } from "zod/v4/locales";
 import { ApiError, APIErrors } from "../errors/api-error";
 
 const repository = AppDataSource.getRepository(UserEntity);
+
 export const findUserByEmail = async (email: string): Promise<UserType | null> => {
-    return (await repository.findOneBy({ email })) as UserType || null;
+    return (await repository.findOneBy({ email })) as UserType || null
+}
+
+export const findUserByEmailWithoutPassword = async (email: string): Promise<Partial<UserType> | null> => {
+    const user =   (await repository.findOneBy({ email })) as UserType || null
+    console.log(user)
+    return user?{email:user.email,id:user.id,provider:user.provider,plan:user.plan,verified:user.verified,fullName:user.fullName} as Partial<UserType>: null;
 }
 
 export const findUserById = async (id: string): Promise<UserType | null> => {
     return (await repository.findOneBy({ id })) as UserType || null;
 }
 
-export const createNewUser = async (user: Partial<UserType>): Promise<Object | Error> => {
+export const createUser = async (user: Partial<UserType>): Promise<UserType> => {
     const userExist = await findUserByEmail(user.email!);
-    if (userExist) {
+    if (userExist != null) {
         throw new ApiError(APIErrors.conflictError, "User already exist", 409);
-    } else {
-        const newUser = await repository.create(user);
-        await repository.save(newUser) as UserType;
-        const payload = {
-            id: user.id,
-            email: user.email,
-            fullname: user.fullName,
-            verified: user.verified,
-            provider: user.provider,
-            createdAt: user.createdAt,
-            plan: user.plan
-        }
-        return {
-            token: await generateToken({ ...payload }),
-            user: payload
-        }
+    }
+    const newUser = repository.create(user);
+    return await repository.save(newUser);
+}
+
+export const createNewUser = async (user: Partial<UserType>): Promise<Object | Error> => {
+    const savedUser = await createUser(user);
+    const payload = {
+        id: savedUser.id,
+        email: savedUser.email,
+        fullname: savedUser.fullName,
+        verified: savedUser.verified,
+        provider: savedUser.provider,
+        createdAt: savedUser.createdAt,
+        plan: savedUser.plan
+    }
+    return {
+        token: await generateToken({ ...payload }),
+        user: payload
     }
 }
 
 export const login = async (password: string, email: string): Promise<Object | Error> => {
     const user = await findUserByEmail(email)
     if (!user) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
+    if (user.provider !== "password" || !user.password) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
     const isValidLogin = await bcrypt.compare(password, user.password);
     const payload = {
         id: user.id,

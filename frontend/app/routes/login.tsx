@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useContext, useState } from "react";
 import { AuthBackground } from "~/components/auth-background";
 import AuthContext from "~/contexts/auth.context";
+import { AlertCircle } from "lucide-react";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Login - Portyo" }];
@@ -13,12 +14,48 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [email,setEmail] = useState("");
     const [password,setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const authContext = useContext(AuthContext)
+
     async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        await authContext.login(email,password)
-        navigate("/")
+        setError(null)
+        try {
+            await authContext.login(email,password)
+            navigate("/")
+        } catch (err: any) {
+            console.error(err);
+            const message = err.response?.data?.message || err.response?.data?.error || "Failed to login. Please check your credentials.";
+            setError(message);
+        }
     }
+
+    const handleGoogleLogin = () => {
+        const width = 500;
+        const height = 600;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        const popup = window.open(
+            "http://localhost:3000/api/google/auth",
+            "Google Login",
+            `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        const handleMessage = async (event: MessageEvent) => {
+            if (event.origin !== "http://localhost:3000") return;
+            
+            const data = event.data;
+            if (data.token && data.user) {
+                 authContext.socialLogin(data.user, data.token);
+                 navigate("/");
+            }
+            popup?.close();
+            window.removeEventListener("message", handleMessage);
+        };
+
+        window.addEventListener("message", handleMessage);
+    };
   return (
     <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
       <AuthBackground />
@@ -31,6 +68,13 @@ export default function Login() {
                     Hey, Enter your details to get sign in to your account
                 </p>
             </div>
+
+            {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-600 font-medium">{error}</p>
+                </div>
+            )}
 
             <form className="space-y-5" onSubmit={handleLogin}>
                 <div>
@@ -80,7 +124,10 @@ export default function Login() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                    <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
+                    <button 
+                        onClick={handleGoogleLogin}
+                        className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group"
+                    >
                         <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">Google</span>
                     </button>
                     <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">

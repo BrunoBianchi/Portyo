@@ -39,6 +39,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const { bio, bios, createBio, selectBio } = useContext(BioContext);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createError, setCreateError] = useState<string | null>(null);
     const [newUsername, setNewUsername] = useState("");
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,12 +58,14 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     const handleCreateBio = async () => {
         if (!isUsernameValid) return;
+        setCreateError(null);
         try {
             await createBio(newUsername);
             setIsCreateModalOpen(false);
             setNewUsername("");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create bio", error);
+            setCreateError(error.response?.data?.message || "Failed to create page. Username might be taken.");
         }
     };
 
@@ -119,29 +122,44 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             </button>
                         </div>
                         
+                        {createError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                                {createError}
+                            </div>
+                        )}
+
                         <div className="space-y-6">
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Globe className="w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                                </div>
-                                <div className="flex items-center bg-gray-50 rounded-lg h-12 px-4 border border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white transition-all">
-                                    <div className="flex-1 flex items-center h-full pl-8">
-                                        <span className="text-base font-medium text-gray-500 select-none">portyo.me/</span>
+                                <div className="flex items-center bg-white rounded-full h-16 px-6 border border-gray-200 shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 hover:shadow-md">
+                                    <Globe className="w-6 h-6 text-gray-400 group-focus-within:text-primary transition-colors shrink-0 mr-4" />
+                                    
+                                    <div className="flex-1 flex items-center h-full relative">
                                         <input 
                                             type="text" 
                                             value={newUsername}
-                                            onChange={(e) => setNewUsername(normalizeUsername(e.target.value))}
-                                            placeholder="username" 
-                                            className="w-full bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 h-full ml-1"
+                                            onChange={(e) => {
+                                                setNewUsername(normalizeUsername(e.target.value));
+                                                setCreateError(null);
+                                            }}
+                                            placeholder="yourname" 
+                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-right pr-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
                                         />
+                                        <span className="text-xl md:text-2xl font-bold text-gray-400 select-none tracking-tight shrink-0">.portyo.me</span>
                                     </div>
-                                    {isUsernameValid && (
-                                        <div className="text-green-500 animate-in fade-in zoom-in duration-200">
-                                            <Check className="w-5 h-5" />
-                                        </div>
-                                    )}
+                                    
+                                    <div className={`ml-4 transition-all duration-300 ${isUsernameValid || createError ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+                                        {createError ? (
+                                            <div className="bg-red-500 rounded-full p-1 text-white shadow-sm">
+                                                <X className="w-4 h-4" strokeWidth={3} />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-green-500 rounded-full p-1 text-white shadow-sm">
+                                                <Check className="w-4 h-4" strokeWidth={3} />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             

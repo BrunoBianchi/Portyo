@@ -5,7 +5,7 @@ import { findUserById } from "../../../shared/services/user.service";
 const router:Router = Router()
 
 router.get("/@",authMiddleware,async (req,res)=>{
-     const user = await findUserById(req.session!.user!.id);
+     const user = await findUserById(req.session!.user!.id as string);
      if (!user) return res.status(404).send("User not found");
      
      const payload = {

@@ -10,6 +10,7 @@ import {
     Sparkles,
     Settings
 } from "lucide-react";
+import { api } from "~/services/api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,14 +25,37 @@ export default function DashboardAnalytics() {
     const [facebookPixelId, setFacebookPixelId] = useState("");
     const [noIndex, setNoIndex] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [analyticsData, setAnalyticsData] = useState<any>(null);
+    const [isLoadingData, setIsLoadingData] = useState(false);
 
     useEffect(() => {
         if (bio) {
             setGoogleAnalyticsId(bio.googleAnalyticsId || "");
             setFacebookPixelId(bio.facebookPixelId || "");
             setNoIndex(bio.noIndex || false);
+            
+            // Check if connected to GA and fetch data
+            checkGAConnection();
         }
     }, [bio]);
+
+    const checkGAConnection = async () => {
+        if (!bio) return;
+        try {
+            // We can check if we have data by trying to fetch it
+            // Or check integrations endpoint. Let's try fetching data directly.
+            setIsLoadingData(true);
+            const res = await api.get(`/google-analytics/data?bioId=${bio.id}`);
+            if (res.data) {
+                setAnalyticsData(res.data);
+            }
+        } catch (error) {
+            // Not connected or error
+            console.log("GA Data fetch failed (likely not connected)", error);
+        } finally {
+            setIsLoadingData(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!bio) return;
@@ -89,6 +113,55 @@ export default function DashboardAnalytics() {
                                 <p className="text-text-muted text-sm">Tracking codes and other advanced configurations.</p>
                             </div>
                         </div>
+
+                        {analyticsData && (
+                            <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
+                                    <BarChart3 className="w-5 h-5" />
+                                    Google Analytics Overview (Last 30 Days)
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-gray-500 mb-1">Active Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[0].value), 0)}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-gray-500 mb-1">Page Views</p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[1].value), 0)}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-gray-500 mb-1">Total Time</p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {(() => {
+                                                const seconds = (analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[2].value), 0);
+                                                const h = Math.floor(seconds / 3600);
+                                                const m = Math.floor((seconds % 3600) / 60);
+                                                return h > 0 ? `${h}h ${m}m` : `${m}m`;
+                                            })()}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-gray-500 mb-1">Interactions</p>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm font-bold text-gray-900">
+                                                Scrolls: <span className="font-normal">{(analyticsData.events?.rows || []).find((r: any) => r.dimensionValues[0].value === 'scroll')?.metricValues[0].value || 0}</span>
+                                            </span>
+                                            <span className="text-sm font-bold text-gray-900">
+                                                Clicks: <span className="font-normal">{(analyticsData.events?.rows || []).find((r: any) => r.dimensionValues[0].value === 'click')?.metricValues[0].value || 0}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-blue-600 mt-3 flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3" />
+                                    Note: Data may take 24-48 hours to appear. If you use an AdBlocker, your own visits may not be counted.
+                                </p>
+                            </div>
+                        )}
 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>

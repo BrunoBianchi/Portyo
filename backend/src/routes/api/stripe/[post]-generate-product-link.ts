@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { createProductLink } from "../../../shared/services/stripe.service";
 import { z } from "zod";
+import { activityService } from "../../../services/activity.service";
+import { ActivityType } from "../../../database/entity/activity-entity";
 
 const router = Router();
 
@@ -24,6 +26,9 @@ router.post("/generate-product-link", async (req: Request, res: Response) => {
 
         const paymentLink = await createProductLink(productId, bioId);
         
+        // Log activity
+        await activityService.logActivity(bioId, ActivityType.CLICK, `User clicked on product`, { productId, type: 'product' });
+
         return res.status(200).json(paymentLink);
     } catch (error: any) {
         console.error("Error generating product link:", error);

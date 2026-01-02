@@ -18,7 +18,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [sufix, setSufix] = useState(searchParams.get("sufix") || "");
   const navigate = useNavigate()
-  const {register} = useContext(AuthContext);
+  const {register, socialLogin} = useContext(AuthContext);
   useEffect(() => {
     setSufix(searchParams.get("sufix") || "");
   }, [searchParams]);
@@ -40,6 +40,33 @@ export default function Signup() {
         })
         navigate("/verify-email")
     }
+  };
+
+  const handleGoogleLogin = () => {
+    const width = 500;
+    const height = 600;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    const popup = window.open(
+        "http://localhost:3000/api/google/auth",
+        "Google Login",
+        `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    const handleMessage = async (event: MessageEvent) => {
+        if (event.origin !== "http://localhost:3000") return;
+        
+        const data = event.data;
+        if (data.token && data.user) {
+             socialLogin(data.user, data.token);
+             navigate("/");
+        }
+        popup?.close();
+        window.removeEventListener("message", handleMessage);
+    };
+
+    window.addEventListener("message", handleMessage);
   };
 
   return (
@@ -146,7 +173,10 @@ export default function Signup() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
-                        <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
+                        <button 
+                            onClick={handleGoogleLogin}
+                            className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group"
+                        >
                             <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">Google</span>
                         </button>
                         <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">

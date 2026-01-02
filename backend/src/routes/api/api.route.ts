@@ -12,6 +12,9 @@ import stripeRoute from "./stripe/stripe.route"
 import generateProductLinkRoute from "./stripe/[post]-generate-product-link"
 import integrationRoute from "./integration/integration.route"
 import { authMiddleware } from "../../middlewares/auth.middleware";
+import googleRoute from "../api/google/google.route"
+import googleAnalyticsRoute from "./google-analytics/google-analytics.route"
+import activityRoute from "./activity/activity.route"
 const router: Router = Router();
 router.use('/user',userRoute);
 router.use('/bio',authMiddleware,bioRoute)
@@ -25,4 +28,7 @@ router.use('/qrcode/',authMiddleware ,QrRoute)
 router.use('/email', authMiddleware, emailRoute)
 router.use('/stripe', authMiddleware, stripeRoute)
 router.use('/integration', authMiddleware, integrationRoute)
+router.use('/google',googleRoute)
+router.use('/activity', authMiddleware, activityRoute)
+router.use('/google-analytics', googleAnalyticsRoute)
 export default router;

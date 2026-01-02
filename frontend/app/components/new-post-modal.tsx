@@ -27,6 +27,7 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,12 +49,13 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
   if (!isOpen) return null;
 
   const handleSchedule = async () => {
+    setError(null);
     if (!title) {
-        alert("Title is required");
+        setError("Title is required");
         return;
     }
     if (activeMode === "write" && !content) {
-        alert("Content is required");
+        setError("Content is required");
         return;
     }
 
@@ -73,9 +75,9 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
         setTags(["Design", "Blog"]);
         setFile(null);
         setThumbnail(null);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to create post", error);
-        alert("Failed to create post");
+        setError(error.message || "Failed to create post. Please try again.");
     } finally {
         setIsSubmitting(false);
     }
@@ -151,6 +153,12 @@ export function NewPostModal({ isOpen, onClose }: NewPostModalProps) {
                     </button>
                 </div>
             </div>
+
+            {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                    {error}
+                </div>
+            )}
 
             {/* Mode Toggle */}
             <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full">

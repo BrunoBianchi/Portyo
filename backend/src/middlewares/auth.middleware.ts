@@ -1,37 +1,63 @@
 import { NextFunction, Request, Response } from "express";
 import { UserType } from "../shared/types/user.type";
 import { decryptToken } from "../shared/services/jwt.service";
+import { logger } from "../shared/utils/logger";
+
 declare module "express-session" {
     interface SessionData {
-        user: UserType;
+        user: Partial<UserType>;
     }
 }
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+declare global {
+    namespace Express {
+        interface Request {
+            user?: Partial<UserType>;
+        }
+    }
+}
+
+export const deserializeUser = async (req: Request, res: Response, next: NextFunction) => {
+    // 1. Check Session
     if (req.session && req.session.user) {
+        req.user = req.session.user;
         return next();
     }
+
+    // 2. Check Header
     const { authorization } = req.headers;
     const token = authorization?.split("Bearer ")[1]?.trim();
 
-    if (!token) {
-        res.status(401).send("Not Authenticated!");
-        return;
+    if (token) {
+        try {
+            const user = await decryptToken(token) as UserType;
+            if (user) {
+                const payload: Partial<UserType> = {
+                    fullName: user.fullName,
+                    email: user.email,
+                    id: user.id,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    plan: user.plan,
+                    verified: user.verified
+                };
+                req.user = payload;
+                // Sync to session
+                req.session.user = payload;
+            }
+        } catch (error) {
+            logger.debug("Invalid token provided in authorization header");
+        }
     }
+    next();
+};
 
-    const user = await decryptToken(token) as UserType;
-    const payload = {
-        fullname: user.fullName,
-        email: user.email,
-        id: user.id,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+        return res.status(401).json({ message: "Not Authenticated" });
     }
-    if (!user) {
-        res.status(401).send("Not Authenticated!");
-        return;
-    } else {
-        (req.session as any).user = payload as Partial<UserType>;
-        next();
-    }
-}
+    next();
+};
+
+// Alias for backward compatibility if needed, but better to use requireAuth
+export const authMiddleware = requireAuth;

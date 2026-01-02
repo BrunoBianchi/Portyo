@@ -1,9 +1,39 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import BioContext from "~/contexts/bio.context";
-import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, Sparkles, ExternalLink, PenTool } from "lucide-react";
+import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, Sparkles, ExternalLink, PenTool, ShoppingBag, Mail, Eye } from "lucide-react";
+import { api } from "~/services/api";
+
+interface Activity {
+    id: string;
+    type: "PURCHASE" | "SUBSCRIBE" | "VIEW" | "CLICK" | "LEAD";
+    description: string;
+    createdAt: string;
+    metadata?: any;
+}
 
 export default function DashboardHome() {
     const { bio } = useContext(BioContext);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (bio?.id) {
+            api.get(`/activity?bioId=${bio.id}&limit=5`)
+                .then(res => setActivities(res.data))
+                .catch(err => console.error("Failed to fetch activities", err))
+                .finally(() => setLoading(false));
+        }
+    }, [bio?.id]);
+
+    const getActivityIcon = (type: string) => {
+        switch (type) {
+            case "PURCHASE": return <ShoppingBag className="w-5 h-5 text-green-500" />;
+            case "SUBSCRIBE": return <Mail className="w-5 h-5 text-blue-500" />;
+            case "CLICK": return <MousePointer2 className="w-5 h-5 text-purple-500" />;
+            case "VIEW": return <Eye className="w-5 h-5 text-gray-500" />;
+            default: return <Sparkles className="w-5 h-5 text-yellow-500" />;
+        }
+    };
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
@@ -109,13 +139,41 @@ export default function DashboardHome() {
                         <h2 className="text-xl font-bold text-text-main">Recent Activity</h2>
                         <button className="btn btn-ghost btn-sm">View All</button>
                     </div>
-                    <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-2xl bg-surface-alt/50">
-                        <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4 shadow-sm">
-                            <BarChart3 className="w-8 h-8 text-text-muted" />
+                    
+                    {loading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
-                        <h3 className="text-lg font-bold text-text-main mb-1">No activity yet</h3>
-                        <p className="text-text-muted max-w-xs mx-auto">Share your page to start tracking views and clicks from your audience.</p>
-                    </div>
+                    ) : activities.length > 0 ? (
+                        <div className="space-y-4">
+                            {activities.map((activity) => (
+                                <div key={activity.id} className="flex items-center gap-4 p-4 rounded-xl bg-surface-alt/30 hover:bg-surface-alt/50 transition-colors border border-border/50">
+                                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
+                                        {getActivityIcon(activity.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-text-main truncate">{activity.description}</p>
+                                        <p className="text-xs text-text-muted">
+                                            {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
+                                        </p>
+                                    </div>
+                                    {activity.type === "PURCHASE" && (
+                                        <div className="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">
+                                            Sale
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-2xl bg-surface-alt/50">
+                            <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4 shadow-sm">
+                                <BarChart3 className="w-8 h-8 text-text-muted" />
+                            </div>
+                            <h3 className="text-lg font-bold text-text-main mb-1">No activity yet</h3>
+                            <p className="text-text-muted max-w-xs mx-auto">Share your page to start tracking views and clicks from your audience.</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="card p-8 bg-black text-white relative overflow-hidden">

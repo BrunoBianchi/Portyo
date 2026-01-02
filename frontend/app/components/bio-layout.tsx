@@ -464,6 +464,100 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
         };
     }, [bio.html]);
 
+    // Analytics Tracking Effect
+    useEffect(() => {
+        if (!bio.googleAnalyticsId) return;
+
+        const w = window as any;
+        // Ensure dataLayer exists
+        w.dataLayer = w.dataLayer || [];
+        function gtag(...args: any[]) { w.dataLayer.push(args); }
+
+        console.log('Portyo Analytics: Initializing enhanced tracking...');
+
+        // 1. Click Tracking (Delegation)
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const link = target.closest('a');
+            const button = target.closest('button');
+            
+            if (link) {
+                const url = link.href;
+                const text = link.innerText || link.getAttribute('aria-label') || 'Link';
+                
+                console.log('Portyo Analytics: Link Click detected', { url, text });
+                
+                gtag('event', 'click', {
+                    event_category: 'outbound',
+                    event_label: url,
+                    transport_type: 'beacon',
+                    link_url: url,
+                    link_text: text
+                });
+
+                // Also track as a custom event for easier reporting
+                gtag('event', 'link_click', {
+                    url: url,
+                    text: text
+                });
+            }
+            
+            if (button) {
+                const text = button.innerText || 'Button';
+                console.log('Portyo Analytics: Button Click detected', { text });
+                
+                gtag('event', 'click', {
+                    event_category: 'interaction',
+                    event_label: text,
+                    button_text: text
+                });
+            }
+        };
+
+        // 2. Scroll Tracking
+        let maxScroll = 0;
+        const handleScroll = () => {
+            const scrollPercent = Math.round((window.scrollY + window.innerHeight) / document.body.scrollHeight * 100);
+            // Track at 25, 50, 75, 90%
+            if (scrollPercent > maxScroll) {
+                const thresholds = [25, 50, 75, 90];
+                thresholds.forEach(t => {
+                    if (maxScroll < t && scrollPercent >= t) {
+                        console.log(`Portyo Analytics: Scrolled ${t}%`);
+                        gtag('event', 'scroll_depth', {
+                            event_category: 'engagement',
+                            event_label: `${t}%`,
+                            value: t
+                        });
+                    }
+                });
+                maxScroll = scrollPercent;
+            }
+        };
+
+        // 3. Time on Screen (Heartbeat)
+        const timeIntervals = [10, 30, 60, 120, 300]; // seconds
+        const timers = timeIntervals.map(seconds => {
+            return setTimeout(() => {
+                console.log(`Portyo Analytics: Time on screen ${seconds}s`);
+                gtag('event', 'time_on_page', {
+                    event_category: 'engagement',
+                    event_label: `${seconds}s`,
+                    value: seconds
+                });
+            }, seconds * 1000);
+        });
+
+        document.addEventListener('click', handleClick);
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            document.removeEventListener('click', handleClick);
+            window.removeEventListener('scroll', handleScroll);
+            timers.forEach(clearTimeout);
+        };
+    }, [bio.googleAnalyticsId]);
+
     return (
         <html lang="en">
             <head>
@@ -513,16 +607,25 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain }) => {
                 {/* Google Analytics */}
                 {bio.googleAnalyticsId && (
                     <>
+                        <script dangerouslySetInnerHTML={{
+                            __html: `console.log('Portyo Analytics: Injecting GA4 ID ${bio.googleAnalyticsId}');`
+                        }} />
                         <script async src={`https://www.googletagmanager.com/gtag/js?id=${bio.googleAnalyticsId}`}></script>
                         <script dangerouslySetInnerHTML={{
                             __html: `
                                 window.dataLayer = window.dataLayer || [];
                                 function gtag(){dataLayer.push(arguments);}
                                 gtag('js', new Date());
-                                gtag('config', '${bio.googleAnalyticsId}');
+                                gtag('config', '${bio.googleAnalyticsId}',{
+                                'debug_mode': true});
                             `
                         }} />
                     </>
+                )}
+
+                {/* Google Search Console Verification */}
+                {bio.googleAnalyticsId && (
+                    <meta name="google-site-verification" content={bio.googleAnalyticsId} />
                 )}
 
                 {/* Facebook Pixel */}
