@@ -6,6 +6,10 @@ import { QRCodeEntity } from "./entity/qrcode-entity"
 import { EmailEntity } from "./entity/email-entity"
 import { IntegrationEntity } from "./entity/integration-entity"
 import { ActivityEntity } from "./entity/activity-entity"
+import { AutomationEntity, AutomationExecutionEntity } from "./entity/automation-entity"
+import { EmailTemplateEntity } from "./entity/email-template-entity"
+import { BookingSettingsEntity } from "./entity/booking-settings-entity"
+import { BookingEntity } from "./entity/booking-entity"
 import { env } from "../config/env"
 
 export const AppDataSource = new DataSource({
@@ -15,9 +19,9 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity],
+    entities: [UserEntity, BioEntity, PostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity],
     synchronize: env.NODE_ENV !== "production",
-    logging: env.NODE_ENV === "development",
+    logging: false,
     ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
 })
 

@@ -14,12 +14,29 @@ export class ActivityService {
         return await this.activityRepository.save(activity);
     }
 
-    async getRecentActivities(bioId: string, limit: number = 5) {
-        return await this.activityRepository.find({
-            where: { bioId },
+    async getRecentActivities(bioId: string, page: number = 1, limit: number = 5, type?: string) {
+        const skip = (page - 1) * limit;
+        const whereClause: any = { bioId };
+        if (type && type !== 'ALL') {
+            whereClause.type = type;
+        }
+
+        const [activities, total] = await this.activityRepository.findAndCount({
+            where: whereClause,
             order: { createdAt: "DESC" },
-            take: limit
+            take: limit,
+            skip: skip
         });
+        
+        return {
+            data: activities,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        };
     }
 }
 

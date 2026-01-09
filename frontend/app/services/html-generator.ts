@@ -8,7 +8,7 @@ const escapeHtml = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-export const blockToHtml = (block: BioBlock): string => {
+export const blockToHtml = (block: BioBlock, bio: any): string => {
   const align = block.align || "left";
   
   const animationTrigger = block.animationTrigger || "loop";
@@ -31,14 +31,14 @@ export const blockToHtml = (block: BioBlock): string => {
   if (block.type === "heading") {
     const titleColor = block.textColor || "#0f172a";
     const bodyColor = block.textColor ? `${block.textColor}b3` : "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:16px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:28px; font-weight:700; color:${titleColor};">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:32px; font-weight:800; color:${titleColor}; line-height:1.2; letter-spacing:-0.8px;">${escapeHtml(
       block.title || "Heading"
-    )}</h2>\n  ${block.body ? `<p style="margin:8px 0 0; color:${bodyColor};">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
+    )}</h2>\n  ${block.body ? `<p style="margin:12px 0 0; color:${bodyColor}; font-size:16px; line-height:1.6; font-weight:500;">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
   }
 
   if (block.type === "text") {
     const textColor = block.textColor || "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.6;">${escapeHtml(
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.7; font-size:16px; font-weight:500;">${escapeHtml(
       block.body || ""
     )}</p>\n</section>`;
   }
@@ -51,7 +51,7 @@ export const blockToHtml = (block: BioBlock): string => {
     if (layout === "single") {
       const value = block.qrCodeValue || "https://example.com";
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}&color=${fgColor}&bgcolor=${bgColor}`;
-      return `\n${extraHtml}<section class="${animationClass}" style="text-align:center; padding:16px 0; ${animationStyle}">\n  <div style="display:inline-block; padding:16px; background-color:#${bgColor}; border-radius:12px; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">\n    <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:200px; height:auto;" />\n  </div>\n</section>`;
+      return `\n${extraHtml}<section class="${animationClass}" style="text-align:center; padding:12px 0; ${animationStyle}">\n  <div style="display:inline-block; padding:16px; background-color:#${bgColor}; border-radius:24px; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">\n    <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:200px; height:auto;" />\n  </div>\n</section>`;
     }
 
     const items = block.qrCodeItems || [];
@@ -64,14 +64,14 @@ export const blockToHtml = (block: BioBlock): string => {
     const itemHtml = items.map(item => {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.value || "https://example.com")}&color=${fgColor}&bgcolor=${bgColor}`;
       return `
-        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px; background-color:#${bgColor}; border-radius:12px; box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px; background-color:#${bgColor}; border-radius:24px; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">
           <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:150px; height:auto;" />
           ${item.label ? `<span style="font-size:14px; font-weight:500; color:#${fgColor}; text-align:center;">${escapeHtml(item.label)}</span>` : ""}
         </div>
       `;
     }).join("");
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`;
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`;
   }
 
 
@@ -83,11 +83,16 @@ export const blockToHtml = (block: BioBlock): string => {
     const shadowColor = block.buttonShadowColor || bg;
     const textAlign = block.buttonTextAlign || "center";
     
-    let css = `display:flex; align-items:center; position:relative; min-height:60px; padding:12px 24px; text-decoration:none; font-weight:600; width:100%; ${animationStyle}`;
+    const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
+    const tag = block.href ? 'a' : 'div';
+    const hrefAttr = block.href ? ` href="${escapeHtml(block.href)}"` : ' role="button"';
+    const cursorStyle = block.href ? 'cursor:pointer;' : 'cursor:default;';
+
+    let css = `display:flex; align-items:center; position:relative; min-height:48px; padding:14px 28px; text-decoration:none; font-weight:700; font-size:15px; letter-spacing:-0.3px; width:100%; transition:all 280ms cubic-bezier(0.34, 1.56, 0.64, 1); ${animationStyle}`;
     
     if (shape === "pill") css += " border-radius:9999px;";
     else if (shape === "square") css += " border-radius:8px;";
-    else css += " border-radius:16px;";
+    else css += " border-radius:14px;";
 
     if (style === "outline") {
       css += ` border:2px solid ${bg}; color:${bg}; background:transparent;`;
@@ -96,34 +101,59 @@ export const blockToHtml = (block: BioBlock): string => {
     } else if (style === "hard-shadow") {
       css += ` background:${bg}; color:${color}; border:2px solid ${shadowColor}; box-shadow:4px 4px 0px 0px ${shadowColor};`;
     } else if (style === "soft-shadow") {
-      css += ` background:${bg}; color:${color}; box-shadow:0 10px 15px -3px ${shadowColor}40, 0 4px 6px -2px ${shadowColor}20;`;
+      css += ` background:linear-gradient(135deg, ${bg}, ${shadowColor}); color:${color}; box-shadow:0 20px 25px -5px ${shadowColor}40, 0 10px 10px -5px ${shadowColor}20;`;
     } else if (style === "3d") {
       css += ` background:${bg}; color:${color}; border-bottom:4px solid ${shadowColor}; transform:translateY(0); transition:all 0.1s;`;
     } else if (style === "glass") {
-      css += ` background:rgba(255, 255, 255, 0.2); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255, 255, 255, 0.3); color:${color};`;
+      css += ` background:rgba(255, 255, 255, 0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255, 255, 255, 0.15); color:${color}; box-shadow:0 8px 32px 0 rgba(0, 0, 0, 0.05);`;
     } else if (style === "gradient") {
-      css += ` background:linear-gradient(45deg, ${bg}, ${shadowColor}); color:${color}; border:none;`;
+      css += ` background:linear-gradient(135deg, ${bg} 0%, ${shadowColor} 100%); color:${color}; border:none; box-shadow:0 12px 24px -8px ${shadowColor}60;`;
     } else if (style === "neumorphism") {
-      css += ` background:${bg}; box-shadow:-5px -5px 10px rgba(255,255,255,0.5), 5px 5px 10px ${shadowColor}40; color:${color}; border:none;`;
+      css += ` background:${bg}; box-shadow:-6px -6px 14px rgba(255,255,255,0.6), 6px 6px 14px rgba(0,0,0,0.08); color:${color}; border:none;`;
     } else if (style === "clay") {
-      css += ` background:${bg}; box-shadow:inset 6px 6px 12px rgba(255,255,255,0.4), inset -6px -6px 12px ${shadowColor}20, 8px 16px 24px ${shadowColor}40; border-radius:24px; color:${color}; border:none;`;
+      css += ` background:${bg}; box-shadow:inset 6px 6px 12px rgba(255,255,255,0.4), inset -6px -6px 12px rgba(0,0,0,0.1), 8px 16px 24px rgba(0,0,0,0.15); border-radius:24px; color:${color}; border:none;`;
     } else if (style === "cyberpunk") {
       css += ` background:${bg}; clip-path:polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); border-left:4px solid ${shadowColor}; color:${color}; font-family:monospace; text-transform:uppercase; border-radius:0;`;
     } else if (style === "pixel") {
       css += ` background:${bg}; box-shadow:-3px 0 0 0 ${shadowColor}, 3px 0 0 0 ${shadowColor}, 0 -3px 0 0 ${shadowColor}, 0 3px 0 0 ${shadowColor}; color:${color}; border-radius:0; border:none; margin:4px;`;
     } else if (style === "neon") {
-      css += ` background:transparent; border:2px solid ${bg}; box-shadow:0 0 10px ${shadowColor}, inset 0 0 10px ${shadowColor}; color:${bg}; text-shadow:0 0 5px ${shadowColor};`;
+      css += ` background:rgba(0,0,0,0.2); border:1px solid ${bg}; box-shadow:0 0 12px ${shadowColor}40, inset 0 0 12px ${shadowColor}20; color:${bg}; text-shadow:0 0 8px ${shadowColor}; backdrop-filter:blur(4px);`;
     } else if (style === "sketch") {
       css += ` background:transparent; border:2px solid ${shadowColor}; border-radius:255px 15px 225px 15px / 15px 225px 15px 255px; color:${bg};`;
     } else if (style === "gradient-border") {
       css += ` background:linear-gradient(#fff, #fff) padding-box, linear-gradient(to right, ${bg}, ${shadowColor}) border-box; border:2px solid transparent; color:${bg};`;
     } else if (style === "minimal-underline") {
-      css += ` background:transparent; border:none; border-bottom:3px solid ${bg}; border-radius:0; padding-left:0; padding-right:0; color:${bg}; justify-content:${textAlign === 'center' ? 'center' : textAlign === 'right' ? 'flex-end' : 'flex-start'};`;
-    } else {
-      css += ` background:${bg}; color:${color};`;
-    }
+      css += ` background:transparent; border:none; border-bottom:1px solid ${bg}40; border-radius:0; padding-left:0; padding-right:0; color:${bg}; justify-content:${textAlign === 'center' ? 'center' : textAlign === 'right' ? 'flex-end' : 'flex-start'}; transition: all 0.2s;`;
+    } else if (style as any === "image-grid") {
+      // Custom HTML for image grid
+      const bgImg = block.mediaUrl || block.buttonImage || "https://via.placeholder.com/300"; // Fallback
+      const iconImg = block.buttonImage || ""; // Optional icon
+      const label = escapeHtml(block.title || "");
+      
+      const iconHtml = iconImg 
+          ? `<div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); padding:6px; box-shadow:0 4px 12px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+               <img src="${escapeHtml(iconImg)}" style="width:100%; height:100%; object-fit:contain;" />
+             </div>`
+          : `<div style="height:34px;"></div>`;
 
-    const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
+      // Custom HTML for image grid as requested
+      return `\n${extraHtml}<section style="padding:6px; display:inline-block; width:50%; box-sizing:border-box; vertical-align:top;">
+        <${tag}${hrefAttr} class="${animationClass}" style="position: relative; display: block; aspect-ratio: 261 / 151; width: 100%; border-radius: 20px; overflow: hidden; text-decoration: none; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1); ${cursorStyle}" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" ${nsfwAttr}>
+          <div style="position:absolute; inset:0; background-color:#1f2937;">
+            <img src="${escapeHtml(bgImg)}" alt="${escapeHtml(label)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);"></div>
+          </div>
+          
+          <div style="position:absolute; inset:0; padding:14px; display:flex; flex-direction:column; justify-content:space-between; color:white;">
+            ${iconHtml}
+            <span style="font-size:13px; font-weight:700; letter-spacing:0.01em; text-shadow:0 2px 4px rgba(0,0,0,0.3); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center;">${label}</span>
+          </div>
+        </${tag}>
+      </section>`;
+    } else {
+      // Default / Standard / Solid
+      css += ` background:${bg}; color:${color}; border:1px solid rgba(0,0,0,0.06); box-shadow:0 4px 12px -2px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);`;
+    }
 
     const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="${escapeHtml(block.title || "Button image")}" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
     
@@ -136,17 +166,13 @@ export const blockToHtml = (block: BioBlock): string => {
       </button>
     `;
 
-    const tag = block.href ? 'a' : 'div';
-    const hrefAttr = block.href ? ` href="${escapeHtml(block.href)}"` : ' role="button"';
-    const cursorStyle = block.href ? 'cursor:pointer;' : 'cursor:default;';
-
-    return `\n${extraHtml}<section style="text-align:${align}; padding:10px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
+    return `\n${extraHtml}<section style="text-align:${align}; padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
       block.title || "Open link"
     )}</span>${shareButtonHtml}</${tag}>\n</section>`;
   }
 
   if (block.type === "image") {
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="max-width:100%; border-radius:18px;" />\n</section>`;
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="max-width:100%; border-radius:24px;" />\n</section>`;
   }
 
   if (block.type === "socials") {
@@ -170,8 +196,8 @@ export const blockToHtml = (block: BioBlock): string => {
       const label = showLabel ? `<span style="margin-left:8px; text-transform:capitalize;">${platform}</span>` : "";
       
       const style = showLabel 
-        ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:#f3f4f6; color:#374151; text-decoration:none; font-weight:600; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'};`
-        : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:#f3f4f6; color:#374151; text-decoration:none; border-radius:9999px; width:${layout === 'column' ? '100%' : 'auto'};`;
+        ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; font-weight:700; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`
+        : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`;
 
       return `<a href="${escapeHtml(url)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
     }).join("");
@@ -186,206 +212,15 @@ export const blockToHtml = (block: BioBlock): string => {
   if (block.type === "video") {
     const videoId = block.mediaUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
     if (!videoId) return "";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:18px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n</section>`;
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:24px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n</section>`;
   }
 
   if (block.type === "blog") {
-    // Placeholder data for blog posts
-    const posts = Array.from({ length: block.blogPostCount || 3 }).map((_, i) => ({
-      title: `Blog Post Title ${i + 1}`,
-      category: "Lifestyle",
-      readTime: "5 min read",
-      date: "Oct 24, 2023",
-      image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
-      author: "By You",
-      subtitle: "Category • Location",
-      description: "FullStack Developer at Tech4Humans, working on projects for large insurance companies. I had the chance to participate in the development of new features..."
-    }));
-
-    const layout = block.blogLayout || "carousel";
-    const cardStyle = block.blogCardStyle || "featured";
-    const uniqueId = `blog-${block.id}`;
-
-    // Colors
-    const bgColor = block.blogBackgroundColor || (cardStyle === 'featured' ? '#fef3c7' : '#ffffff');
-    const titleColor = block.blogTitleColor || '#1f2937';
-    const textColor = block.blogTextColor || '#4b5563';
-    const dateColor = block.blogDateColor || "#f59e0b";
-    const tagBg = block.blogTagBackgroundColor || '#f3f4f6';
-    const tagText = block.blogTagTextColor || '#4b5563';
-    const popupBg = block.blogPopupBackgroundColor || '#ffffff';
-    const popupText = block.blogPopupTextColor || '#1f2937';
-    const popupOverlay = block.blogPopupOverlayColor || 'rgba(0, 0, 0, 0.5)';
-    const popupStyle = block.blogPopupStyle || 'classic';
-
-    const dataAttrs = `
-      data-layout="${layout}"
-      data-card-style="${cardStyle}"
-      data-bg-color="${bgColor}"
-      data-title-color="${titleColor}"
-      data-text-color="${textColor}"
-      data-date-color="${dateColor}"
-      data-tag-bg="${tagBg}"
-      data-tag-text="${tagText}"
-      data-popup-bg-color="${popupBg}"
-      data-popup-text-color="${popupText}"
-      data-popup-overlay-color="${popupOverlay}"
-      data-popup-style="${popupStyle}"
-    `;
-
-    const cardsHtml = posts.map(post => {
-      if (cardStyle === "featured") {
-        return `
-          <article style="flex:0 0 200px; scroll-snap-align:start; background:${bgColor}; border-radius:20px; padding:12px; display:flex; flex-direction:column; gap:10px; min-width:200px;">
-            <div style="background:#e2e8f0; border-radius:12px; aspect-ratio:16/10; width:100%; overflow:hidden;">
-               <img src="${post.image}" alt="${escapeHtml(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
-            </div>
-            <div style="display:flex; gap:6px;">
-              <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${post.category}</span>
-              <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${post.readTime}</span>
-            </div>
-            <h3 style="font-size:16px; font-weight:800; line-height:1.3; color:${titleColor}; margin:0;">${post.title}</h3>
-            <div style="display:flex; items-center; gap:6px; margin-top:auto;">
-              <div style="width:20px; height:20px; background:#d1d5db; border-radius:50%;"></div>
-              <span style="font-size:12px; color:${textColor};">${post.author}</span>
-            </div>
-          </article>
-        `;
-      } else if (cardStyle === "modern") {
-        // Text-only minimalist style
-        const widthStyle = layout === 'carousel' ? 'flex:0 0 280px; min-width:280px; border-right:1px solid #f3f4f6; padding-right:24px; margin-right:8px;' : 'width:100%; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:16px;';
-        
-        return `
-          <article style="${widthStyle} scroll-snap-align:start; display:flex; flex-direction:column; gap:8px;">
-            <div style="font-size:12px; font-weight:700; color:${dateColor}; margin-bottom:4px;">${post.date}</div>
-            <h3 style="font-size:18px; font-weight:700; line-height:1.2; color:${titleColor}; margin:0;">${post.title}</h3>
-            <div style="font-size:12px; font-weight:500; opacity:0.8; color:${textColor}; margin-bottom:8px;">${post.subtitle}</div>
-            <p style="font-size:12px; line-height:1.6; color:${textColor}; opacity:0.8; margin:0 0 12px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${post.description}</p>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:auto;">
-               <span style="padding:2px 8px; border-radius:4px; font-size:10px; font-weight:500; border:1px solid ${tagBg}; color:${tagText}; background:transparent;">FullStack Dev</span>
-               <span style="padding:2px 8px; border-radius:4px; font-size:10px; font-weight:500; border:1px solid ${tagBg}; color:${tagText}; background:transparent;">Soft Skills</span>
-            </div>
-          </article>
-        `;
-      } else {
-        // Minimal style
-        return `
-          <article style="flex:0 0 160px; scroll-snap-align:start; background:${bgColor}; border:1px solid #e5e7eb; border-radius:16px; padding:14px; min-width:160px;">
-            <h3 style="font-size:14px; font-weight:700; color:${titleColor}; margin:0 0 6px 0;">${post.title}</h3>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:11px; color:${textColor};">${post.readTime}</span>
-              <span style="font-size:11px; font-weight:500; color:${dateColor};">Read more &rarr;</span>
-            </div>
-          </article>
-        `;
-      }
-    }).join("");
-
-    if (layout === "carousel") {
-      return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; position:relative; ${animationStyle}">
-        <button aria-label="Scroll left" onclick="document.getElementById('${uniqueId}').scrollBy({left: -230, behavior: 'smooth'})" style="position:absolute; left:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div id="${uniqueId}" class="custom-blog-feed" ${dataAttrs} style="display:flex; gap:12px; overflow-x:auto; padding:0 40px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
-          ${cardsHtml}
-        </div>
-        <button aria-label="Scroll right" onclick="document.getElementById('${uniqueId}').scrollBy({left: 230, behavior: 'smooth'})" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); color:#374151;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-        <style>#${uniqueId}::-webkit-scrollbar { display: none; }</style>
-      </section>`;
-    }
-
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div class="custom-blog-feed" ${dataAttrs} style="display:flex; flex-direction:column; gap:12px;">${cardsHtml}</div>\n</section>`;
+    return "";
   }
 
   if (block.type === "product") {
-    const products = block.products || [];
-    const layout = block.productLayout || "grid";
-    const uniqueId = `product-${block.id}`;
-    
-    const bgColor = block.productBackgroundColor || "#ffffff";
-    const textColor = block.productTextColor || "#1f2937";
-    const accentColor = block.productAccentColor || "#000000";
-    const btnText = block.productButtonText || "View Product";
-    const cardStyleType = block.productCardStyle || "standard";
-
-    const productItems = products.map((p: any) => {
-      const wrapperStyle = layout === "carousel" 
-        ? "flex:0 0 170px; scroll-snap-align:start; min-width:170px;" 
-        : "width:100%;";
-      
-      // Adjust wrapper width for minimal style in carousel
-      const finalWrapperStyle = (layout === "carousel" && cardStyleType === "minimal")
-        ? "flex:0 0 260px; scroll-snap-align:start; min-width:260px;"
-        : wrapperStyle;
-
-      if (cardStyleType === "minimal") {
-         return `
-          <a href="javascript:void(0)" class="product-item-link" data-product-id="${escapeHtml(p.stripeProductId || '')}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
-            <div style="background:${bgColor}; border-radius:16px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05); border:1px solid ${bgColor === '#ffffff' ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}; display:flex; align-items:center; padding:8px; gap:12px; height:100%;">
-              <div style="width:64px; height:64px; flex-shrink:0; border-radius:12px; overflow:hidden; background:${bgColor === '#ffffff' ? '#f9fafb' : 'rgba(0,0,0,0.05)'};">
-                <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" style="width:100%; height:100%; object-fit:cover;" />
-              </div>
-              <div style="flex:1; min-width:0;">
-                <h3 style="margin:0 0 4px 0; font-size:14px; font-weight:600; color:${textColor}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.title)}</h3>
-                <div style="display:flex; align-items:center; justify-content:space-between;">
-                  <span style="font-size:13px; font-weight:700; color:${textColor}; opacity:0.8;">${escapeHtml(p.price)}</span>
-                  <div style="display:flex; align-items:center; gap:4px; color:${accentColor}; font-size:12px; font-weight:600;">
-                    <span>${escapeHtml(btnText)}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        `;
-      }
-
-      return `
-      <a href="javascript:void(0)" class="product-item-link" data-product-id="${escapeHtml(p.stripeProductId || '')}" style="display:block; text-decoration:none; color:inherit; ${finalWrapperStyle}">
-        <div style="background:${bgColor}; border-radius:24px; overflow:hidden; box-shadow:0 2px 20px rgba(0,0,0,0.04); transition:transform 0.2s; height:100%; display:flex; flex-direction:column; border:1px solid ${bgColor === '#ffffff' ? '#f3f4f6' : 'rgba(255,255,255,0.1)'}; padding: 12px; gap: 12px;">
-          <div style="aspect-ratio:1; width:100%; position:relative; overflow:hidden; border-radius: 18px; background:${bgColor === '#ffffff' ? '#f9fafb' : 'rgba(0,0,0,0.05)'};">
-            <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" />
-          </div>
-          <div style="flex:1; display:flex; flex-direction:column; gap: 6px; padding: 0 4px;">
-            <h3 style="margin:0; font-size:15px; font-weight:600; color:${textColor}; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(p.title)}</h3>
-            <div style="font-size:15px; font-weight:500; color:${textColor}; opacity: 0.7;">${escapeHtml(p.price)}</div>
-            
-            <div style="margin-top:auto; padding-top: 8px;">
-                <div style="background:${accentColor}; color:#ffffff; text-align:center; padding:10px; border-radius:14px; font-size:14px; font-weight:600; transition:opacity 0.2s;">
-                ${escapeHtml(btnText)}
-                </div>
-            </div>
-          </div>
-        </div>
-      </a>
-    `;
-    }).join("");
-
-    if (layout === "carousel") {
-      // Adjust scroll amount based on card width
-      const scrollAmount = cardStyleType === "minimal" ? 276 : 186; // width + gap
-      
-      return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; position:relative; ${animationStyle}">
-        <button onclick="document.getElementById('${uniqueId}').scrollBy({left: -${scrollAmount}, behavior: 'smooth'})" style="position:absolute; left:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1); color:#374151; opacity:0.9;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div id="${uniqueId}" style="display:flex; gap:16px; overflow-x:auto; padding:4px 40px 20px 40px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
-          ${productItems}
-        </div>
-        <button onclick="document.getElementById('${uniqueId}').scrollBy({left: ${scrollAmount}, behavior: 'smooth'})" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:10; background:white; border:1px solid #e5e7eb; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1); color:#374151; opacity:0.9;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-        <style>#${uniqueId}::-webkit-scrollbar { display: none; }</style>
-      </section>`;
-    }
-
-    const gridStyle = layout === "grid" 
-      ? (cardStyleType === "minimal" ? "display:flex; flex-direction:column; gap:12px;" : "display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;")
-      : "display:flex; flex-direction:column; gap:12px;";
-
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">\n  <div style="${gridStyle}">${productItems}</div>\n</section>`;
+    return "";
   }
 
   if (block.type === "calendar") {
@@ -395,31 +230,66 @@ export const blockToHtml = (block: BioBlock): string => {
     const textColor = block.calendarTextColor || "#1f2937";
     const accentColor = block.calendarAccentColor || "#2563eb";
     
-    const today = new Date().getDate();
-    const daysHtml = Array.from({ length: 31 }, (_, i) => {
-      const day = i + 1;
-      const isToday = day === today;
-      if (isToday) {
-        return `<span style="background:${accentColor}; color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; margin:0 auto;">${day}</span>`;
-      }
-      return `<span>${day}</span>`;
-    }).join("");
+    // Generate a simple static calendar for the current month
+    const currentDate = new Date();
+    const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startDay = monthStart.getDay(); // 0 is Sunday
+    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
-      <a href="${escapeHtml(url)}" style="display:block; text-decoration:none; background:${bgColor}; border-radius:24px; padding:20px; border:1px solid #e5e7eb; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="margin:0; font-size:18px; font-weight:700; color:${textColor};">${escapeHtml(title)}</h3>
-          <span style="background:${accentColor}15; color:${accentColor}; padding:4px 12px; border-radius:99px; font-size:12px; font-weight:600;">Book Now</span>
-        </div>
-        <div style="background:${bgColor === '#ffffff' ? '#f8fafc' : 'rgba(0,0,0,0.05)'}; border-radius:16px; padding:16px;">
-           <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600; color:${textColor}; font-size:14px;">
-             <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-           </div>
-           <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:8px; text-align:center; font-size:13px; color:${textColor}99;">
-             ${daysHtml}
-           </div>
-        </div>
-      </a>
+    let calendarGridRows = '';
+    let dayCount = 1;
+    let currentRow = '';
+    
+    // Header row (Su Mo Tu...)
+    const weekHeader = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-left:4px; padding-right:4px;">
+         ${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<div style="width:36px; text-align:center; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">${d}</div>`).join('')}
+      </div>
+    `;
+
+    // 6 rows max to cover all months
+    for(let r=0; r<6; r++) {
+         currentRow = '';
+         let hasDays = false;
+         for(let d=0; d<7; d++) {
+             if((r===0 && d < startDay) || dayCount > daysInMonth) {
+                 currentRow += `<div style="width:36px; height:36px;"></div>`; 
+             } else {
+                 hasDays = true;
+                 const isToday = dayCount === currentDate.getDate();
+                 currentRow += `
+                   <div style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:99px; font-size:14px; cursor:pointer; background:${isToday ? '#000000' : 'transparent'}; color:${isToday ? '#ffffff' : '#374151'}; font-weight:${isToday ? '600' : '400'}; transition:background 0.2s;" onmouseover="if(!this.style.background.includes('000000')) this.style.background='#f3f4f6'" onmouseout="if(!this.style.background.includes('000000')) this.style.background='transparent'">
+                     ${dayCount}
+                   </div>
+                 `;
+                 dayCount++;
+             }
+         }
+         if(hasDays) {
+            calendarGridRows += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">${currentRow}</div>`;
+         }
+    }
+    
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div class="custom-booking-block" data-title="${escapeHtml(title)}" data-description="${escapeHtml(block.body || "")}" data-bio-id="${bio.id}" style="cursor:pointer; background:${bgColor}; border-radius:24px; padding:20px; border:1px solid #e5e7eb; box-shadow:0 2px 4px -2px rgba(0,0,0,0.05);">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+           <h3 style="margin:0; font-size:18px; font-weight:700; color:${textColor};">${escapeHtml(title)}</h3>
+           <span style="background:#eff6ff; color:#2563eb; padding:4px 12px; border-radius:99px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Book It</span>
+         </div>
+         ${block.body ? `<p style="margin:0 0 20px 0; color:${textColor}; opacity:0.6; font-size:14px; line-height:1.5;">${escapeHtml(block.body)}</p>` : ""}
+         
+         <!-- Static Calendar Preview -->
+         <div style="background:white; border-radius:16px; border:1px solid #f3f4f6; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:0 4px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span style="font-weight:700; color:#111827;">${monthName}</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+             </div>
+             ${weekHeader}
+             <div>${calendarGridRows}</div>
+         </div>
+      </div>
     </section>`;
   }
 
@@ -428,7 +298,7 @@ export const blockToHtml = (block: BioBlock): string => {
     const address = block.mapAddress || "123 Main St, City";
     const encodedAddress = encodeURIComponent(address);
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="position:relative; border-radius:24px; overflow:hidden; height:200px; background:#f1f5f9; border:1px solid #e5e7eb;">
         <iframe 
           width="100%" 
@@ -458,7 +328,7 @@ export const blockToHtml = (block: BioBlock): string => {
     const bgColor = block.featuredColor || "#1f4d36";
     const textColor = block.featuredTextColor || "#ffffff";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <a href="${escapeHtml(url)}" style="display:block; text-decoration:none; background:${bgColor}; border-radius:24px; overflow:hidden; position:relative; color:${textColor};">
         <!-- Top Badge -->
         <div style="position:absolute; top:12px; right:-30px; background:white; color:black; padding:4px 30px; transform:rotate(45deg); font-size:10px; font-weight:800; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:10;">
@@ -500,8 +370,8 @@ export const blockToHtml = (block: BioBlock): string => {
     const bgColor = block.affiliateColor || "#ffffff";
     const textColor = block.affiliateTextColor || "#374151";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
-      <div style="background:${bgColor}; border-radius:24px; padding:24px; text-align:center; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05); border:1px solid #e5e7eb;">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div style="background:${bgColor}; border-radius:24px; padding:24px; text-align:center; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1); border:1px solid #e5e7eb;">
         <a href="${escapeHtml(url)}" style="display:block; margin-bottom:16px;">
           <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" style="width:120px; height:120px; object-fit:cover; border-radius:16px; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);" />
         </a>
@@ -523,7 +393,7 @@ export const blockToHtml = (block: BioBlock): string => {
     const btnUrl = block.eventButtonUrl || "#";
     const uniqueId = `countdown-${block.id}`;
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="background:${bgColor}; border-radius:24px; padding:20px; text-align:center; color:${textColor}; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:700;">${escapeHtml(title)}</h3>
         
@@ -574,7 +444,7 @@ export const blockToHtml = (block: BioBlock): string => {
       }
 
       return `
-        <a href="${escapeHtml(ticketUrl)}" target="_blank" style="flex:0 0 160px; scroll-snap-align:center; position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden; text-decoration:none; display:block;">
+        <a href="${escapeHtml(ticketUrl)}" target="_blank" style="flex:0 0 160px; scroll-snap-align:center; position:relative; aspect-ratio:3/4; border-radius:24px; overflow:hidden; text-decoration:none; display:block;">
           <div style="position:absolute; inset:0; background:#1f2937;">
             ${bgImage ? `<img src="${escapeHtml(bgImage)}" alt="${escapeHtml(title)} - ${escapeHtml(location)}" style="width:100%; height:100%; object-fit:cover; opacity:0.8;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom, #374151, #111827);"></div>`}
             <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2), transparent);"></div>
@@ -594,7 +464,7 @@ export const blockToHtml = (block: BioBlock): string => {
       `;
     }).join("");
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <h3 style="text-align:center; font-size:14px; font-weight:700; letter-spacing:0.1em; margin:0 0 16px 0; color:#111827;">${escapeHtml(title.toUpperCase())}</h3>
       <div style="position:relative;">
         <div id="${uniqueId}" style="display:flex; overflow-x:auto; gap:12px; padding:0 4px 16px 4px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
@@ -606,6 +476,38 @@ export const blockToHtml = (block: BioBlock): string => {
         <button onclick="document.getElementById('${uniqueId}').scrollBy({left: 516, behavior: 'smooth'})" style="position:absolute; right:-8px; top:50%; transform:translateY(-50%); z-index:10; background:rgba(37,99,235,0.9); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 6px rgba(37,99,235,0.3); color:white;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
+      </div>
+    </section>`;
+  }
+
+  if (block.type === "button_grid") {
+    const items = block.gridItems || [];
+    if (items.length === 0) return "";
+
+    const gridHtml = items.map(item => {
+      const bgImg = item.image || item.icon || "";
+      const iconImg = item.icon || "";
+      const title = item.title || "";
+      const url = item.url || "#";
+
+      return `
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="position:relative; display:block; aspect-ratio:261/151; width:100%; border-radius:15px; overflow:hidden; text-decoration:none; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);" onmouseover="const i=this.querySelector('img');if(i)i.style.transform='scale(1.1)'" onmouseout="const i=this.querySelector('img');if(i)i.style.transform='scale(1)'">
+          <div style="position:absolute; inset:0; background-color:#1f2937;">
+            ${bgImg ? `<img src="${escapeHtml(bgImg)}" alt="${escapeHtml(title)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom right, #374151, #111827);"></div>`}
+            <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);"></div>
+          </div>
+          
+          <div style="position:absolute; inset:0; padding:12px; display:flex; flex-direction:column; justify-content:space-between; color:white;">
+            ${iconImg ? `<div style="width:32px; height:32px; border-radius:50%; background:white; padding:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;"><img src="${escapeHtml(iconImg)}" style="width:100%; height:100%; object-fit:contain;" /></div>` : '<div style="height:32px;"></div>'}
+            ${title ? `<span style="font-size:14px; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,0.5); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center;">${escapeHtml(title)}</span>` : ''}
+          </div>
+        </a>
+      `;
+    }).join("");
+
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; width:100%;">
+        ${gridHtml}
       </div>
     </section>`;
   }
@@ -636,8 +538,8 @@ export const blockToHtml = (block: BioBlock): string => {
 
     if (!embedUrl) return "";
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; overflow:hidden; ${animationStyle}">
-      <iframe style="border-radius:12px; overflow:hidden; border:0;" src="${embedUrl}" width="100%" height="${isCompact ? "80" : "152"}" frameBorder="0" scrolling="no" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; overflow:hidden; ${animationStyle}">
+      <iframe style="border-radius:24px; overflow:hidden; border:0;" src="${embedUrl}" width="100%" height="${isCompact ? "80" : "152"}" frameBorder="0" scrolling="no" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </section>`;
   }
 
@@ -677,7 +579,7 @@ export const blockToHtml = (block: BioBlock): string => {
     ` : '';
 
     // We add 'custom-instagram-feed' class and data attributes for the BioRenderer to pick up
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:16px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
       <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
@@ -718,7 +620,7 @@ export const blockToHtml = (block: BioBlock): string => {
         </a>
       </div>` : '';
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:8px 0; ${animationStyle}">
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
       <div class="custom-youtube-feed" data-url="${escapeHtml(url)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
@@ -740,6 +642,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     @keyframes wobble { 0% { transform: translateX(0%); } 15% { transform: translateX(-25%) rotate(-5deg); } 30% { transform: translateX(20%) rotate(3deg); } 45% { transform: translateX(-15%) rotate(-3deg); } 60% { transform: translateX(10%) rotate(2deg); } 75% { transform: translateX(-5%) rotate(-1deg); } 100% { transform: translateX(0%); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
   `;
   
   const imageStyles: Record<string, string> = {
@@ -752,24 +656,87 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
   const imgStyle = imageStyles[bio.imageStyle || 'circle'] || imageStyles.circle;
   const usernameColor = bio.usernameColor || '#111827';
 
-  const headerHtml = `
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 0;">
-      <a href="/" style="width:40px; height:40px; border-radius:50%; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #f3f4f6; display:flex; align-items:center; justify-content:center; color:#374151; text-decoration:none;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      </a>
-      ${bio.enableSubscribeButton ? `<button onclick="window.openSubscribe()" style="height:40px; padding:0 16px; border-radius:99px; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #f3f4f6; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-        Subscribe
-      </button>` : ''}
-    </div>
+  const hasProducts = blocks.some(b => b.type === 'product' || b.type === 'featured');
+  const hasBlog = blocks.some(b => b.type === 'blog');
 
-    <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:32px 0 24px;">
-      <div style="width:96px; height:96px; background:#f3f4f6; border:4px solid white; box-shadow:0 1px 2px rgba(0,0,0,0.05); overflow:hidden; ${imgStyle}">
-        <img fetchpriority="high" src="/users-photos/${user?.id}-96.webp" srcset="/users-photos/${user?.id}-96.webp 1x, /users-photos/${user?.id}-192.webp 2x" onerror="this.onerror=function(){this.src='/users-photos/julia-soares.jpeg'}; this.srcset=''; this.src='/users-photos/${user?.id}.png';" alt="${user?.fullname || 'Profile Picture'}" style="width:100%; height:100%; object-fit:cover;" />
-      </div>
-      <div style="text-align:center;">
-        <p style="font-size:18px; font-weight:700; color:${usernameColor}; margin:0;">@${bio?.sufix || 'user'}</p>
-      </div>
+  const socials = bio.socials || {};
+  const description = bio.description || "";
+  const displayProfileImage = bio.displayProfileImage !== false;
+  const handle = bio.username || bio.sufix || 'user';
+  const displayName = user?.fullname || `@${handle}`;
+
+  const socialIcons: Record<string, string> = {
+    instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>',
+    tiktok: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>',
+    twitter: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>',
+    youtube: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+    linkedin: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+    email: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>',
+    website: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
+    github: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>'
+  };
+
+  const socialLinksHtml = Object.entries(socials)
+    .filter(([key, value]) => value && socialIcons[key])
+    .map(([key, value]) => {
+      let url = value as string;
+      if (key === 'email' && !url.startsWith('mailto:')) url = `mailto:${url}`;
+      else if (!url.startsWith('http') && key !== 'email') url = `https://${url}`;
+      
+      const colorMap: Record<string, string> = {
+        instagram: '#E4405F',
+        tiktok: '#000000',
+        twitter: '#1DA1F2',
+        youtube: '#FF0000',
+        linkedin: '#0A66C2',
+        email: '#EA4335',
+        website: '#2563EB',
+        github: '#111827'
+      };
+
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:white; color:${colorMap[key] || usernameColor}; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); margin: 0 4px;" onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';">
+        ${socialIcons[key].replace('width="16" height="16"', 'width="20" height="20"').replace('stroke-width="2"', 'stroke-width="2.5"')}
+      </a>`;
+    })
+    .join('');
+
+  const maxWidth = 566;
+
+  const cardStyle = bio.cardStyle || 'flat';
+  const cardBg = bio.cardBackgroundColor || '#ffffff';
+  const cardBorder = bio.cardBorderColor || '#e5e7eb';
+  const cardWidth = bio.cardBorderWidth || 0;
+  const cardRadius = bio.cardBorderRadius || 0;
+  const cardShadow = bio.cardShadow || 'none';
+  const cardPadding = bio.cardPadding || 16;
+
+  const navTextColor = '#111827';
+  const navBorder = 'rgba(0,0,0,0.08)';
+  const navInactive = '#9ca3af';
+
+ 
+
+  const headerHtml = `
+    <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; align-items:center; position:relative; z-index:10; padding-top: 40px;">
+        
+        <!-- Profile Image -->
+        <div style="width:120px; height:120px; border-radius:50%; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6;">
+             ${displayProfileImage ? `<img fetchpriority="high" src="/users-photos/${user?.id}.png" onerror="this.src='/users-photos/julia-soares.jpeg'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
+        </div>
+
+        <!-- Name & Handle -->
+        <h1 style="font-size:28px; font-weight:800; color:${usernameColor}; margin:0 0 4px 0; text-align:center; letter-spacing:-0.5px; line-height:1.2;">
+            ${escapeHtml(displayName)}
+            ${bio.isVerified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="#3b82f6" style="display:inline-block; vertical-align:middle; margin-left:4px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : ''}
+        </h1>
+        <div style="font-size:15px; font-weight:600; color:${usernameColor}; opacity:0.6; margin-bottom:16px;">@${escapeHtml(handle)}</div>
+
+        <!-- Description -->
+        ${bio.description ? `<p style="font-size:16px; font-weight:500; color:${usernameColor}; opacity:0.8; margin:0 0 24px 0; line-height:1.6; text-align:center; max-width:480px;">${escapeHtml(bio.description)}</p>` : ''}
+
+        <!-- Socials -->
+        ${socialLinksHtml ? `<div style="display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">${socialLinksHtml}</div>` : ''}
+
     </div>
   `;
 
@@ -803,6 +770,26 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     bgStyle = `background-color: ${bgColor}; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");`;
   } else if (bio.bgType === 'abstract') {
     bgStyle = `background-color: ${bgColor}; background-image: linear-gradient(30deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(150deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(30deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(150deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(60deg, ${bgSecondary}77 25%, transparent 25.5%, transparent 75%, ${bgSecondary}77 75%, ${bgSecondary}77), linear-gradient(60deg, ${bgSecondary}77 25%, transparent 25.5%, transparent 75%, ${bgSecondary}77 75%, ${bgSecondary}77); background-size: 20px 35px; background-position: 0 0, 0 0, 10px 18px, 10px 18px, 0 0, 10px 18px;`;
+  } else if (bio.bgType === 'dynamic-blur') {
+    // Use bgImage if available, otherwise fallback to user profile picture
+    const bgImg = bio.bgImage || `/users-photos/${user?.id}.png`;
+    bgStyle = `background: #000;`; // Fallback color
+    // We add a pseudo-element or a fixed div for the blur effect in the HTML structure below
+  } else if (bio.bgType === 'palm-leaves') {
+    // Tropical palm leaves pattern - SVG based
+    bgStyle = `background-color: ${bgColor}; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(bgSecondary)}' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");`;
+  } else if (bio.bgType === 'blueprint') {
+    // Architectural blueprint grid pattern
+    bgStyle = `background-color: #1e3a5f; background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px; background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;`;
+  } else if (bio.bgType === 'marble') {
+    // White marble texture pattern
+    bgStyle = `background-color: #fafafa; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='marble'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.02' numOctaves='3' result='noise' seed='2'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23fff' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23marble)' opacity='0.4'/%3E%3C/svg%3E");`;
+  } else if (bio.bgType === 'concrete') {
+    // Industrial concrete texture
+    bgStyle = `background-color: #9ca3af; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='concrete'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23concrete)' opacity='0.15'/%3E%3C/svg%3E"), linear-gradient(135deg, rgba(156,163,175,1) 0%, rgba(107,114,128,1) 100%);`;
+  } else if (bio.bgType === 'terracotta') {
+    // Warm terracotta/clay pattern
+    bgStyle = `background-color: #c2410c; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23ea580c' fill-opacity='0.3'%3E%3Cpath fill-rule='evenodd' d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/svg%3E");`;
   }
 
   const videoBgHtml = (bio.bgType === 'video' && bio.bgVideo) ? `
@@ -810,61 +797,164 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
       <source src="${bio.bgVideo}" type="video/mp4">
     </video>
     <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:-1;"></div>
+  ` : (bio.bgType === 'dynamic-blur') ? `
+    <div style="position:fixed; inset:-20px; z-index:-1; background:url('${bio.bgImage || `/users-photos/${user?.id}.png`}') no-repeat center center; background-size:cover; filter:blur(40px) brightness(0.6); transform:scale(1.1);"></div>
+    <div style="position:fixed; inset:0; z-index:-1; background:rgba(0,0,0,0.2);"></div>
   ` : '';
-
-  const maxWidth = bio.maxWidth || 720;
-  const cardStyle = bio.cardStyle || 'flat';
-  const cardBg = bio.cardBackgroundColor || '#ffffff';
-  const cardBorder = bio.cardBorderColor || '#e5e7eb';
-  const cardWidth = bio.cardBorderWidth || 0;
-  const cardRadius = bio.cardBorderRadius || 0;
-  const cardShadow = bio.cardShadow || 'none';
-  const cardPadding = bio.cardPadding || 24;
 
   let containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:${cardPadding}px; position:relative; z-index:1;`;
 
   if (cardStyle === 'card') {
-    containerStyle += `background:${cardBg}; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 24px; margin-bottom: 24px;`;
+    containerStyle += `background:${cardBg}; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 14px; margin-bottom: 14px;`;
   } else if (cardStyle === 'glass') {
-    containerStyle += `background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); border:${cardWidth}px solid rgba(255,255,255,0.2); border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 24px; margin-bottom: 24px;`;
+    containerStyle += `background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); border:${cardWidth}px solid rgba(255,255,255,0.2); border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 14px; margin-bottom: 14px;`;
   } else if (cardStyle === 'neumorphism') {
-     containerStyle += `background:${cardBg}; border-radius:${cardRadius}px; box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff; margin-top: 24px; margin-bottom: 24px;`;
+     containerStyle += `background:${cardBg}; border-radius:${cardRadius}px; box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff; margin-top: 14px; margin-bottom: 14px;`;
   } else if (cardStyle === 'outline') {
-     containerStyle += `background:transparent; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; margin-top: 24px; margin-bottom: 24px;`;
+     containerStyle += `background:transparent; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; margin-top: 14px; margin-bottom: 14px;`;
   }
 
-  return `<div style="${bgStyle} min-height:100vh; font-family: 'Inter', system-ui, -apple-system, sans-serif;">
+
+
+
+  // Tab Bar Logic
+  const showTabs = hasProducts || hasBlog;
+  const tabsHtml = showTabs ? `
+    <div style="display:flex; justify-content:center; gap:24px; border-bottom:1px solid rgba(0,0,0,0.06); margin-bottom:24px; padding-bottom:16px;">
+        <button id="tab-links" onclick="window.switchTab('links')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${usernameColor}; cursor:pointer; position:relative; transition:opacity 0.2s;">
+            Links
+            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:${usernameColor}; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
+        </button>
+        ${hasProducts ? `
+        <button id="tab-shop" onclick="window.switchTab('shop')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.6; cursor:pointer; position:relative; transition:opacity 0.2s;">
+            Shop
+            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
+        </button>` : ''}
+        ${hasBlog ? `
+        <button id="tab-blog" onclick="window.switchTab('blog')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.6; cursor:pointer; position:relative; transition:opacity 0.2s;">
+            Blog
+            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
+        </button>` : ''}
+    </div>
+  ` : '';
+
+  return `<div style="${bgStyle} min-height:100vh; font-family: 'Inter', system-ui, -apple-system, sans-serif; position:relative;">
     <style>
-      body { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
       * { box-sizing: border-box; }
+      a { color: inherit; }
+      img { max-width: 100%; height: auto; }
+      #profile-header-card { will-change: transform, opacity; }
+      #profile-header-bg { will-change: filter, opacity; }
+
+      /* Premium cards */
+      .portyo-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 36px -24px rgba(0,0,0,0.6), 0 6px 16px -12px rgba(0,0,0,0.24);
+        transform: translateZ(0);
+      }
+      .portyo-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        box-shadow: inset 0 0 0 1.2px rgba(255,255,255,0.12);
+      }
+      .portyo-card:hover {
+        box-shadow: 0 20px 52px -32px rgba(0,0,0,0.8), 0 10px 24px -16px rgba(0,0,0,0.42);
+        transform: translateY(-4px);
+      }
+
+      /* Smooth zoom on hover */
+      .portyo-card-media {
+        transition: transform 450ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        will-change: transform;
+      }
+      .portyo-card:hover .portyo-card-media {
+        transform: scale(1.13);
+      }
+
+      /* Softer text rendering over images */
+      .portyo-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.16) 52%, rgba(0,0,0,0) 82%);
+      }
+
+      /* Icon pill */
+      .portyo-icon-pill {
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 28px -18px rgba(0,0,0,0.75);
+        backdrop-filter: blur(8px);
+      }
+
+      /* Button smooth transitions */
+      a[role="button"], a[href]:not(.portyo-card), div[role="button"] {
+        transition: all 150ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #profile-header-card, #profile-header-bg { transition: none !important; }
+        .portyo-parallax-media { transition: none !important; }
+      }
       ${animationsCss}
     </style>
     ${videoBgHtml}
-    <main style="${containerStyle}">
+
+    <main style="${containerStyle} position:relative; z-index:10;">
       ${headerHtml}
-      ${blocks.map(blockToHtml).join("")}
-      <div style="text-align:center; padding:24px 0; margin-top:24px;">
-        <a href="https://portyo.me" style="text-decoration:none; color:#6b7280; font-size:14px; font-weight:500; display:inline-flex; align-items:center; gap:4px; background:white; padding:6px 12px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-          Powered by <span style="color:#111827; font-weight:800;">Portyo</span>
-        </a>
+      ${tabsHtml}
+      
+      <div id="links-feed" style="position:relative; z-index:20; display:block; animation:fadeIn 0.3s ease-out;">
+        ${blocks.map(b => blockToHtml(b, bio)).join("")}
       </div>
+
+      <div id="shop-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
+        <div id="shop-products-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:16px;">
+          <div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">Loading products...</div>
+        </div>
+      </div>
+
+      <div id="blog-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
+        <div id="blog-posts-container" style="display:flex; flex-direction:column; gap:16px;">
+          <div style="text-align:center; padding:40px; color:#6b7280;">Loading posts...</div>
+        </div>
+      </div>
+
+
     </main>
-    <div id="share-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
-      <div style="background:white; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); width:100%; max-width:448px; overflow:hidden; margin:16px; animation:zoomIn 0.2s ease-out;">
-         <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #f3f4f6;">
-           <h3 style="font-weight:700; font-size:18px; color:#111827; margin:0;">Share link</h3>
-           <button onclick="window.closeShare()" aria-label="Close share modal" style="padding:8px; border-radius:9999px; color:#6b7280; background:transparent; border:none; cursor:pointer; display:flex;">
+    <div id="share-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
+      <div style="background:white; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); width:100%; max-width:448px; overflow:hidden; margin:16px; animation:zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+         <div style="display:flex; align-items:center; justify-content:space-between; padding:20px; border-bottom:1px solid rgba(0,0,0,0.08);">
+           <h3 style="font-weight:700; font-size:18px; color:#111827; margin:0;">Share this link</h3>
+           <button onclick="window.closeShare()" aria-label="Close share modal" style="padding:8px; border-radius:9999px; color:#6b7280; background:rgba(0,0,0,0.05); border:none; cursor:pointer; display:flex; transition:all 200ms ease;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
            </button>
          </div>
-         <div style="padding:24px;">
-           <div style="background:#111827; border-radius:16px; padding:32px; text-align:center; color:white; margin-bottom:32px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); position:relative; overflow:hidden;">
-             <div style="position:absolute; inset:0; background:linear-gradient(to bottom right, #1f2937, #000000); z-index:0;"></div>
+         <div style="padding:28px;">
+           <div style="background:linear-gradient(135deg, #111827 0%, #1f2937 100%); border-radius:20px; padding:32px; text-align:center; color:white; margin-bottom:28px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1); position:relative; overflow:hidden;">
+             <div style="position:absolute; inset:0; background:radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent); z-index:0;"></div>
              <div style="position:relative; z-index:10;">
-                <div style="width:128px; height:128px; background:white; border-radius:12px; margin:0 auto 16px auto; padding:8px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+                <div style="width:128px; height:128px; background:white; border-radius:16px; margin:0 auto 20px auto; padding:8px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.2);">
                     <img id="share-qr" src="" alt="QR Code" style="width:100%; height:100%;" />
                 </div>
-                <p id="share-title" style="font-weight:500; font-size:18px; opacity:0.9; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></p>
+                <p id="share-title" style="font-weight:700; font-size:18px; opacity:0.95; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></p>
              </div>
            </div>
 
@@ -913,21 +1003,22 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
       </div>
     </div>
 
-    <div id="subscribe-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
-      <div style="background:white; border-radius:24px; padding:32px; width:100%; max-width:400px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; animation:zoomIn 0.2s ease-out;">
-        <button onclick="window.closeSubscribe()" aria-label="Close subscribe modal" style="position:absolute; top:16px; right:16px; background:transparent; border:none; cursor:pointer; color:#9ca3af;">
+    <div id="subscribe-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
+      <div style="background:white; border-radius:24px; padding:36px; width:100%; max-width:420px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); position:relative; animation:zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <button onclick="window.closeSubscribe()" aria-label="Close subscribe modal" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.05); border:none; cursor:pointer; color:#6b7280; padding:8px; border-radius:9999px; display:flex; transition:all 200ms ease;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         
-        <h3 style="font-size:20px; font-weight:900; color:#000; margin:0 0 24px 0; letter-spacing:0.05em; text-transform:uppercase;">JOIN THE LIST</h3>
+        <h3 style="font-size:22px; font-weight:900; color:#111827; margin:0 0 8px 0; letter-spacing:-0.5px;">Join the list</h3>
+        <p style="font-size:14px; color:#6b7280; margin:0 0 24px 0; font-weight:500;">Get the latest updates delivered to your inbox.</p>
         
         <form onsubmit="window.submitSubscribe(event)" style="display:flex; gap:12px;">
-          <input type="email" placeholder="your@email.com" required style="flex:1; padding:16px; border-radius:16px; border:1px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb;" />
-          <button type="submit" aria-label="Subscribe" style="width:56px; height:56px; border-radius:16px; background:#ccff00; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:black; flex-shrink:0; transition:transform 0.1s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          <input type="email" placeholder="your@email.com" required style="flex:1; padding:14px 16px; border-radius:12px; border:1.5px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb; font-weight:500; transition:all 200ms ease;" onfocus="this.style.borderColor='#111827'; this.style.background='#ffffff'" onblur="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb'" />
+          <button type="submit" aria-label="Subscribe" style="width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg, #111827, #1f2937); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0; transition:all 200ms ease; box-shadow:0 4px 12px -2px rgba(17, 24, 39, 0.2);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 20px -2px rgba(17, 24, 39, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px -2px rgba(17, 24, 39, 0.2)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </form>
-        <p style="margin:12px 0 0 0; font-size:12px; color:#6b7280; text-align:center; display:none;" id="subscribe-success">Thanks for subscribing!</p>
+        <p style="margin:16px 0 0 0; font-size:13px; color:#6b7280; text-align:center; display:none;" id="subscribe-success">✓ Thanks for subscribing!</p>
       </div>
     </div>
     <script>
@@ -1035,6 +1126,297 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
             }
         }
       };
+
+      // Blog & Tabs Logic
+      window.blogLoaded = false;
+      window.shopLoaded = false;
+      
+      function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+      }
+
+      window.switchTab = function(tabName) {
+        const linksTab = document.getElementById('tab-links');
+        const shopTab = document.getElementById('tab-shop');
+        const blogTab = document.getElementById('tab-blog');
+        const linksFeed = document.getElementById('links-feed');
+        const shopFeed = document.getElementById('shop-feed');
+        const blogFeed = document.getElementById('blog-feed');
+        
+        // Reset all
+        [linksTab, shopTab, blogTab].forEach(t => {
+          if(t) {
+            t.style.color = '${navInactive}';
+            t.style.opacity = '0.9';
+            const indicator = t.querySelector('span');
+            if (indicator) indicator.style.background = 'transparent';
+          }
+        });
+        [linksFeed, shopFeed, blogFeed].forEach(f => {
+          if(f) f.style.display = 'none';
+        });
+
+        if (tabName === 'shop') {
+            if (shopTab) {
+            shopTab.style.color = '${navTextColor}';
+            shopTab.style.opacity = '1';
+            const indicator = shopTab.querySelector('span');
+            if (indicator) indicator.style.background = '${usernameColor}';
+            }
+            if (shopFeed) shopFeed.style.display = 'block';
+            
+            if (!window.shopLoaded) {
+                window.loadProducts();
+            }
+            
+            if (window.location.pathname !== '/shop') {
+                window.history.pushState({ tab: 'shop' }, '', '/shop');
+            }
+        } else if (tabName === 'blog') {
+            if (blogTab) {
+            blogTab.style.color = '${navTextColor}';
+            blogTab.style.opacity = '1';
+            const indicator = blogTab.querySelector('span');
+            if (indicator) indicator.style.background = '${usernameColor}';
+            }
+            if (blogFeed) blogFeed.style.display = 'block';
+            
+            if (!window.blogLoaded) {
+                window.loadBlogPosts();
+            }
+            
+            if (window.location.pathname !== '/blog') {
+                window.history.pushState({ tab: 'blog' }, '', '/blog');
+            }
+        } else {
+            if (linksTab) {
+                linksTab.style.color = '${navTextColor}';
+            linksTab.style.opacity = '1';
+            const indicator = linksTab.querySelector('span');
+            if (indicator) indicator.style.background = '${usernameColor}';
+            }
+            if (linksFeed) linksFeed.style.display = 'block';
+            
+            if (window.location.pathname !== '/') {
+                window.history.pushState({ tab: 'links' }, '', '/');
+            }
+        }
+      };
+
+      window.loadProducts = async function() {
+        const container = document.getElementById('shop-products-container');
+        const API_BASE_URL = 'http://localhost:3000/api'; 
+        
+        try {
+            const response = await fetch(\`\${API_BASE_URL}/public/products/${bio.id}\`);
+            if (!response.ok) throw new Error('Failed to fetch products');
+            
+            const products = await response.json();
+            window.shopLoaded = true;
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">No products found.</div>';
+                return;
+            }
+            
+            container.innerHTML = products.map(product => {
+                const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: product.currency || 'USD' }).format(product.price || 0);
+                const image = product.images && product.images[0] ? product.images[0] : 'https://placehold.co/300x300?text=Product';
+                
+                return \`
+                    <a href="\${product.url || '#'}" target="_blank" class="product-card-item" style="display:flex; flex-direction:column; background:white; border-radius:24px; overflow:hidden; box-shadow:0 4px 20px -8px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); text-decoration:none; transition:all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); height:100%; position:relative;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px -10px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px -8px rgba(0,0,0,0.08)'">
+                        <div style="position:relative; aspect-ratio:1; overflow:hidden; background:#f3f4f6;">
+                            <img src="\${image}" alt="\${escapeHtml(product.name)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" />
+                            <div style="position:absolute; bottom:12px; left:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:6px 14px; border-radius:99px; color:#111827; font-size:13px; font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,0.08);">
+                                \${price}
+                            </div>
+                        </div>
+                        <div style="padding:16px; flex:1; display:flex; flex-direction:column;">
+                            <h3 style="font-size:16px; font-weight:700; color:#111827; margin:0 0 12px 0; line-height:1.4; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">\${escapeHtml(product.name)}</h3>
+                            <div style="background:#111827; color:white; text-align:center; padding:12px; border-radius:14px; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>View Product</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </div>
+                        </div>
+                    </a>
+                \`;
+            }).join('');
+            
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#ef4444;">Failed to load products.</div>';
+        }
+      };
+
+      window.loadBlogPosts = async function() {
+        const container = document.getElementById('blog-posts-container');
+        const API_BASE_URL = 'http://localhost:3000/api'; 
+        
+        try {
+            const response = await fetch(\`\${API_BASE_URL}/public/blog/${bio.id}\`);
+            if (!response.ok) throw new Error('Failed to fetch posts');
+            
+            const posts = await response.json();
+            window.blogLoaded = true;
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">No posts yet.</div>';
+                return;
+            }
+
+            // Apply grid layout
+            container.style.display = 'grid';
+            container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+            container.style.gap = '24px';
+            
+            container.innerHTML = posts.map((post, index) => {
+                const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const wordCount = post.content ? post.content.replace(/<[^>]*>/g, '').split(/\\s+/).length : 0;
+                const readTime = Math.max(1, Math.ceil(wordCount / 200));
+                const excerpt = post.content ? post.content.replace(/<[^>]*>/g, '') : '';
+                
+                // Extract first image from content if available, else placeholder
+                let image = 'https://placehold.co/600x400?text=Blog+Post';
+                const imgMatch = post.content && post.content.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) {
+                    image = imgMatch[1];
+                }
+
+                const authorName = (typeof bio !== 'undefined' && (bio.seoTitle || bio.subdomain)) ? (bio.seoTitle || bio.subdomain) : 'Author';
+                const authorImage = (typeof bio !== 'undefined' && (bio.profileImage || bio.favicon || bio.ogImage)) ? (bio.profileImage || bio.favicon || bio.ogImage) : ('https://ui-avatars.com/api/?name=' + encodeURIComponent(authorName) + '&background=random');
+
+
+                return \`
+                    <div class="blog-card-item" data-index="\${index}" onclick="(function(){ window.location.href='/blog/post/\${post.id}'; })()" style="
+                        background:white; border-radius:24px; overflow:hidden; box-shadow:0 8px 25px -8px rgba(0,0,0,0.08); 
+                        border:1px solid rgba(0,0,0,0.03); padding:20px; text-decoration:none; cursor:pointer;
+                        display:flex; flex-wrap:wrap; align-items:flex-start; min-height:180px;
+                        position: \${posts.length > 1 ? 'absolute' : 'relative'}; top:0; left:0; right:0;
+                        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+                        transform-origin: top center;
+                        background: #ffffff;
+                    ">
+                        <!-- Content -->
+                        <div style="flex:1; min-width:200px; padding-right:16px; display:flex; flex-direction:column;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                                <div style="width:24px; height:24px; border-radius:50%; background:#f3f4f6; overflow:hidden;">
+                                    <img src="\${authorImage}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User'" />
+                                </div>
+                                <span style="font-size:12px; font-weight:600; color:#374151;">\${escapeHtml(authorName)}</span>
+                            </div>
+                            <h3 style="font-size:18px; font-weight:800; color:#111827; margin:0 0 8px 0; line-height:1.3; letter-spacing:-0.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                                \${escapeHtml(post.title)}
+                            </h3>
+                            <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; width:100%; padding-top:12px;">
+                                <div style="font-size:12px; color:#6b7280; font-weight:500;">
+                                    \${date} <span style="margin:0 4px; opacity:0.5">•</span> \${readTime} min read
+                                </div>
+                                <div style="display:flex; align-items:center; gap:12px; color:#4b5563; font-size:13px; font-weight:600;">
+                                    <div style="display:flex; align-items:center; gap:4px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <span>\${Math.floor(Math.random() * 500) + 100}</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:4px;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                                        <span>\${Math.floor(Math.random() * 200) + 20}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Image -->
+                        <div style="width:120px; height:120px; flex-shrink:0;">
+                            <div style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#f3f4f6;">
+                                <img src="\${image}" alt="\${escapeHtml(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
+                            </div>
+                        </div>
+                    </div>
+                \`;
+            }).join('');
+            
+            if (posts.length > 1) {
+                const controls = \`
+                    <div style="display:flex; justify-content:center; gap:16px; margin-top:24px; padding-top:220px;">
+                        <button onclick="window.changeBlogStack(-1)" style="width:44px; height:44px; border-radius:50%; background:white; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <button onclick="window.changeBlogStack(1)" style="width:44px; height:44px; border-radius:50%; background:#111827; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+                \`;
+                
+                // Add interactivity
+                if (!window.changeBlogStack) {
+                    window.blogStackState = { activeIndex: 0, total: posts.length };
+                    window.changeBlogStack = function(dir) {
+                        const s = window.blogStackState;
+                        s.activeIndex = (s.activeIndex + dir + s.total) % s.total;
+                        window.updateCards(s.activeIndex, s.total);
+                    };
+                    window.updateCards = function(activeIndex, total) {
+                        const cards = document.querySelectorAll('.blog-card-item');
+                        cards.forEach((card, i) => {
+                            let offset = (i - activeIndex + total) % total;
+                            if (offset === 0) {
+                                card.style.zIndex = 10;
+                                card.style.opacity = 1;
+                                card.style.transform = 'translateY(0) scale(1)';
+                                card.style.pointerEvents = 'auto';
+                            } else if (offset === 1) {
+                                card.style.zIndex = 9;
+                                card.style.opacity = 1;
+                                card.style.transform = 'translateY(16px) scale(0.97)';
+                                card.style.pointerEvents = 'none';
+                            } else if (offset === 2) {
+                                card.style.zIndex = 8;
+                                card.style.opacity = 0.8;
+                                card.style.transform = 'translateY(32px) scale(0.94)';
+                                card.style.pointerEvents = 'none';
+                            } else {
+                                card.style.zIndex = 1;
+                                card.style.opacity = 0;
+                                card.style.pointerEvents = 'none';
+                                card.style.transform = 'translateY(48px) scale(0.9)';
+                            }
+                        });
+                    };
+                    setTimeout(() => window.updateCards(0, posts.length), 0);
+                }
+                
+                container.innerHTML = \`<div style="position:relative; height:auto; min-height:260px;">\${container.innerHTML}\${controls}</div>\`;
+            }
+            
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:#ef4444;">Failed to load posts.</div>';
+        }
+      };
+
+      // Handle Back/Forward
+      window.onpopstate = function(event) {
+        if (window.location.pathname === '/blog') {
+            window.switchTab('blog');
+        } else if (window.location.pathname === '/shop') {
+            window.switchTab('shop');
+        } else {
+            window.switchTab('links');
+        }
+      };
+
+      // Initial Load
+      if (window.location.pathname === '/blog') {
+        window.switchTab('blog');
+      } else if (window.location.pathname === '/shop') {
+        window.switchTab('shop');
+      }
+
     </script>
+
   </div>`;
 };

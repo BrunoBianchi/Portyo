@@ -50,15 +50,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (noIndex) {
         content = `# Robots.txt for ${subdomain}\nUser-agent: *\nDisallow: /`;
     } else {
-        content = `# Robots.txt for ${subdomain}\nUser-agent: *\nAllow: /\n\nSitemap: https://portyo.me/sitemap.xml`;
+        content = `# Robots.txt for ${subdomain}\nUser-agent: *\nAllow: /\nAllow: /blog/\nAllow: /blog/post/\n\nSitemap: https://${subdomain}.portyo.me/sitemap.xml`;
     }
 
   } else {
     // It's the main site
     content = `User-agent: *
 Allow: /
+Allow: /blog/
+Allow: /blog/post/
 Disallow: /dashboard/
 Disallow: /api/
+Disallow: /bookings/manage
 
 Sitemap: https://portyo.me/sitemap.xml`;
   }

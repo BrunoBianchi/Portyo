@@ -18,5 +18,6 @@ export type Bio = BaseType & {
     ogDescription?: string;
     ogImage?: string;
     noIndex?: boolean;
+    enableSubscribeButton?: boolean;
     integrations:any[]
 }

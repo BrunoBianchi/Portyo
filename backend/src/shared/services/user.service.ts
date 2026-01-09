@@ -3,7 +3,6 @@ import { AppDataSource } from "../../database/datasource";
 import { UserEntity } from "../../database/entity/user-entity";
 import { generateToken } from "./jwt.service";
 import bcrypt from "bcrypt"
-import { is } from "zod/v4/locales";
 import { ApiError, APIErrors } from "../errors/api-error";
 
 const repository = AppDataSource.getRepository(UserEntity);
@@ -13,9 +12,15 @@ export const findUserByEmail = async (email: string): Promise<UserType | null> =
 }
 
 export const findUserByEmailWithoutPassword = async (email: string): Promise<Partial<UserType> | null> => {
-    const user =   (await repository.findOneBy({ email })) as UserType || null
-    console.log(user)
-    return user?{email:user.email,id:user.id,provider:user.provider,plan:user.plan,verified:user.verified,fullName:user.fullName} as Partial<UserType>: null;
+    const user = (await repository.findOneBy({ email })) as UserType || null
+    return user ? {
+        email: user.email,
+        id: user.id,
+        provider: user.provider,
+        plan: user.plan,
+        verified: user.verified,
+        fullName: user.fullName
+    } as Partial<UserType> : null;
 }
 
 export const findUserById = async (id: string): Promise<UserType | null> => {

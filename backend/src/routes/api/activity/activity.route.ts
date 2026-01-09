@@ -5,7 +5,7 @@ const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const { bioId, limit } = req.query;
+        const { bioId, limit, page, type } = req.query;
         
         if (!bioId) {
             return res.status(400).json({ message: "Bio ID is required" });
@@ -13,7 +13,9 @@ router.get("/", async (req: Request, res: Response) => {
 
         const activities = await activityService.getRecentActivities(
             bioId as string, 
-            limit ? parseInt(limit as string) : 5
+            page ? parseInt(page as string) : 1,
+            limit ? parseInt(limit as string) : 5,
+            type as string
         );
         
         return res.json(activities);

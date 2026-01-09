@@ -16,14 +16,27 @@ export default function DashboardHome() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [filterType, setFilterType] = useState("ALL");
+
     useEffect(() => {
         if (bio?.id) {
-            api.get(`/activity?bioId=${bio.id}&limit=5`)
-                .then(res => setActivities(res.data))
+            setLoading(true);
+            api.get(`/activity?bioId=${bio.id}&limit=5&page=${page}&type=${filterType}`)
+                .then(res => {
+                    // Check if response has data/meta structure (new) or just array (old fallback)
+                    if (res.data.data) {
+                        setActivities(res.data.data);
+                        setTotalPages(res.data.meta.totalPages);
+                    } else if (Array.isArray(res.data)) {
+                        setActivities(res.data);
+                    }
+                })
                 .catch(err => console.error("Failed to fetch activities", err))
                 .finally(() => setLoading(false));
         }
-    }, [bio?.id]);
+    }, [bio?.id, page, filterType]);
 
     const getActivityIcon = (type: string) => {
         switch (type) {
@@ -49,7 +62,7 @@ export default function DashboardHome() {
                 <div className="flex items-center gap-3">
                     {bio && (
                         <>
-                            <a 
+                            <a
                                 href={`https://${bio.sufix}.portyo.me`}
                                 target="_blank"
                                 rel="noreferrer"
@@ -58,8 +71,8 @@ export default function DashboardHome() {
                                 <ExternalLink className="w-4 h-4" />
                                 View Page
                             </a>
-                            <a 
-                                href={`/dashboard/editor`} 
+                            <a
+                                href={`/dashboard/editor`}
                                 className="btn btn-primary btn-sm"
                             >
                                 <PenTool className="w-4 h-4" />
@@ -134,37 +147,71 @@ export default function DashboardHome() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 card p-8">
+                <div className="lg:col-span-2 card p-8 h-fit">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-text-main">Recent Activity</h2>
-                        <button className="btn btn-ghost btn-sm">View All</button>
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={filterType}
+                                onChange={(e) => {
+                                    setFilterType(e.target.value);
+                                    setPage(1); // Reset page on filter change
+                                }}
+                                className="bg-surface-alt border border-border rounded-lg px-3 py-1.5 text-sm font-medium text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                <option value="ALL">All Activity</option>
+                                <option value="PURCHASE">Purchases</option>
+                                <option value="SUBSCRIBE">Subscribers</option>
+                                <option value="CLICK">Clicks</option>
+                                <option value="VIEW">Views</option>
+                            </select>
+                            <div className="text-xs text-text-muted font-medium px-2">Page {page} of {totalPages}</div>
+                        </div>
                     </div>
-                    
+
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         </div>
                     ) : activities.length > 0 ? (
-                        <div className="space-y-4">
-                            {activities.map((activity) => (
-                                <div key={activity.id} className="flex items-center gap-4 p-4 rounded-xl bg-surface-alt/30 hover:bg-surface-alt/50 transition-colors border border-border/50">
-                                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
-                                        {getActivityIcon(activity.type)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-text-main truncate">{activity.description}</p>
-                                        <p className="text-xs text-text-muted">
-                                            {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
-                                        </p>
-                                    </div>
-                                    {activity.type === "PURCHASE" && (
-                                        <div className="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">
-                                            Sale
+                        <>
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                {activities.map((activity) => (
+                                    <div key={activity.id} className="flex items-center gap-4 p-4 rounded-xl bg-surface-alt/30 hover:bg-surface-alt/50 transition-colors border border-border/50">
+                                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
+                                            {getActivityIcon(activity.type)}
                                         </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-text-main truncate">{activity.description}</p>
+                                            <p className="text-xs text-text-muted">
+                                                {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
+                                            </p>
+                                        </div>
+                                        {activity.type === "PURCHASE" && (
+                                            <div className="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">
+                                                Sale
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-border/50 mt-4">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="text-sm font-medium text-text-muted hover:text-text-main disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page >= totalPages}
+                                    className="text-sm font-medium text-text-muted hover:text-text-main disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-2xl bg-surface-alt/50">
                             <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4 shadow-sm">

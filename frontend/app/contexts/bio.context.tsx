@@ -3,7 +3,7 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid";
     title?: string;
     body?: string;
     href?: string;
@@ -11,6 +11,14 @@ export type BioBlock = {
     accent?: string;
     textColor?: string;
     mediaUrl?: string;
+    // Button Grid specific
+    gridItems?: {
+        id: string;
+        title: string;
+        url: string;
+        image: string; // Background image
+        icon: string; // Small icon
+    }[];
     // Button specific
     buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline";
     buttonShape?: "pill" | "rounded" | "square";
@@ -148,13 +156,25 @@ interface Bio {
     clicks: number;
     userId: string;
     integrations?: Integration[];
-    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract";
+    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta";
     bgColor?: string;
     bgSecondaryColor?: string;
     bgImage?: string;
     bgVideo?: string;
     usernameColor?: string;
     imageStyle?: string;
+    displayProfileImage?: boolean;
+    description?: string;
+    socials?: {
+        instagram?: string;
+        tiktok?: string;
+        twitter?: string;
+        youtube?: string;
+        linkedin?: string;
+        email?: string;
+        website?: string;
+        github?: string;
+    };
     enableSubscribeButton?: boolean;
     seoTitle?: string;
     seoDescription?: string;
@@ -197,7 +217,7 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
             const response = await api.get("/bio/");
             setBios(response.data);
-            
+
             const savedBioId = localStorage.getItem("selectedBioId");
             const savedBio = response.data.find((b: Bio) => b.id === savedBioId);
 

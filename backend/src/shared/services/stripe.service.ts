@@ -1,13 +1,12 @@
 import Stripe from "stripe";
 import { UserEntity } from "../../database/entity/user-entity";
 import { AppDataSource } from "../../database/datasource";
-import * as dotenv from "dotenv"
 import { findBioById } from "./bio.service";
-import { createIntegration, getIntegrationByNameAndBioId, updatedIntegration } from "./integration.service";
+import { createIntegration } from "./integration.service";
 import { IntegrationEntity } from "../../database/entity/integration-entity";
+import { env } from "../../config/env";
 
-dotenv.config()
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-12-15.clover",
 });
 
@@ -42,11 +41,10 @@ export const createStripeConnectAccount = async (bioId: string) => {
 };
 
 export const createAccountLink = async (accountId: string) => {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     const accountLink = await stripe.accountLinks.create({
         account: accountId,
-        refresh_url: `${frontendUrl}/dashboard/integrations?stripe=refresh`,
-        return_url: `${frontendUrl}/dashboard/integrations?stripe=return`,
+        refresh_url: `${env.FRONTEND_URL}/dashboard/integrations?stripe=refresh`,
+        return_url: `${env.FRONTEND_URL}/dashboard/integrations?stripe=return`,
         type: "account_onboarding",
     });
 
@@ -189,6 +187,59 @@ export const createStripeProduct = async (bioId: string, data: { title: string, 
         },
         expand: ['default_price']
     }, {
+        stripeAccount: stripeIntegration.account_id,
+    });
+
+    return product;
+};
+
+export const updateStripeProduct = async (bioId: string, productId: string, data: { title?: string, description?: string, price?: number, currency?: string, image?: string, active?: boolean }) => {
+    const bioObject = await findBioById(bioId, ['integrations']);
+    if (!bioObject) throw new Error("Bio not found");
+
+    const stripeIntegration = bioObject.integrations?.find(i => i.name === "stripe");
+
+    if (!stripeIntegration || !stripeIntegration.account_id) {
+        throw new Error("Stripe account not connected");
+    }
+
+    const updateData: any = {};
+    if (data.title) updateData.name = data.title;
+    if (data.description) updateData.description = data.description;
+    if (data.image) updateData.images = [data.image];
+    if (data.active !== undefined) updateData.active = data.active;
+
+    // Price update requires creating a new price and setting it as default
+    if (data.price && data.currency) {
+        const newPrice = await stripe.prices.create({
+            unit_amount: Math.round(data.price * 100),
+            currency: data.currency,
+            product: productId,
+        }, {
+            stripeAccount: stripeIntegration.account_id,
+        });
+
+        updateData.default_price = newPrice.id;
+    }
+
+    const product = await stripe.products.update(productId, updateData, {
+        stripeAccount: stripeIntegration.account_id,
+    });
+
+    return product;
+};
+
+export const archiveStripeProduct = async (bioId: string, productId: string) => {
+    const bioObject = await findBioById(bioId, ['integrations']);
+    if (!bioObject) throw new Error("Bio not found");
+
+    const stripeIntegration = bioObject.integrations?.find(i => i.name === "stripe");
+
+    if (!stripeIntegration || !stripeIntegration.account_id) {
+        throw new Error("Stripe account not connected");
+    }
+
+    const product = await stripe.products.update(productId, { active: false }, {
         stripeAccount: stripeIntegration.account_id,
     });
 

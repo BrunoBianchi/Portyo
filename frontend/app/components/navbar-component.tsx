@@ -222,9 +222,8 @@ function ProductsDropdown() {
       >
         Blog
         <ChevronDown
-          className={`h-4 w-4 text-text-muted transition-transform ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
+          className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
+            }`}
         />
       </button>
 
@@ -239,67 +238,67 @@ function ProductsDropdown() {
             className="w-[800px] rounded-2xl border border-border bg-surface shadow-lg overflow-hidden"
           >
             <div className="grid grid-cols-4 gap-6 p-6">
-                {/* Column 1: Latest Posts */}
-                <div>
-                    <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
-                        Latest Posts <span>🤩</span>
-                    </div>
-                    <div className="text-sm text-text-muted">
-                        <div className="h-20 rounded-lg bg-surface-muted/50 border border-border/50"></div>
-                    </div>
+              {/* Column 1: Latest Posts */}
+              <div>
+                <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
+                  Latest Posts <span>🤩</span>
                 </div>
+                <div className="text-sm text-text-muted">
+                  <div className="h-20 rounded-lg bg-surface-muted/50 border border-border/50"></div>
+                </div>
+              </div>
 
-                {/* Column 2: Sub Menu Title */}
-                <div>
-                    <div className="text-sm font-semibold text-text-main mb-4">
-                        Sub Menu Title
-                    </div>
-                    <ul className="space-y-3">
-                        {subMenuItems.map((item) => (
-                            <li key={item.title}>
-                                <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
-                                    {item.title}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+              {/* Column 2: Sub Menu Title */}
+              <div>
+                <div className="text-sm font-semibold text-text-main mb-4">
+                  Sub Menu Title
                 </div>
+                <ul className="space-y-3">
+                  {subMenuItems.map((item) => (
+                    <li key={item.title}>
+                      <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
+                        {item.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                {/* Column 3: What's new */}
-                <div>
-                    <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
-                        What's new <span>🎉</span>
-                    </div>
-                    <div className="text-sm text-text-muted">
-                         <div className="h-20 rounded-lg bg-surface-muted/50 border border-border/50"></div>
-                    </div>
+              {/* Column 3: What's new */}
+              <div>
+                <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
+                  What's new <span>🎉</span>
                 </div>
+                <div className="text-sm text-text-muted">
+                  <div className="h-20 rounded-lg bg-surface-muted/50 border border-border/50"></div>
+                </div>
+              </div>
 
-                {/* Column 4: Sub Menu Title */}
-                <div>
-                    <div className="text-sm font-semibold text-text-main mb-4">
-                        Sub Menu Title
-                    </div>
-                    <ul className="space-y-3">
-                        {subMenuItems.map((item) => (
-                            <li key={item.title}>
-                                <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
-                                    {item.title}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+              {/* Column 4: Sub Menu Title */}
+              <div>
+                <div className="text-sm font-semibold text-text-main mb-4">
+                  Sub Menu Title
                 </div>
+                <ul className="space-y-3">
+                  {subMenuItems.map((item) => (
+                    <li key={item.title}>
+                      <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
+                        {item.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             {/* Footer */}
             <div className="border-t border-border bg-surface-muted/30 p-4 flex items-center justify-between">
-                <div className="text-sm font-medium text-text-main">
-                    Stay up to date!
-                </div>
-                <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/80 transition-colors">
-                    Subscribe
-                </button>
+              <div className="text-sm font-medium text-text-main">
+                Stay up to date!
+              </div>
+              <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/80 transition-colors">
+                Subscribe
+              </button>
             </div>
           </div>
         </div>
@@ -449,13 +448,12 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
         className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
       >
         <div className="w-9 h-9 rounded-full bg-[#E8F0B8] flex items-center justify-center text-[#A3B808] font-bold text-sm border border-[#D2E823]/30">
-            {user.fullname.charAt(0).toUpperCase()}
+          {user.fullname.charAt(0).toUpperCase()}
         </div>
         <span className="hidden sm:inline font-semibold text-[#A3B808]">{user.fullname}</span>
         <ChevronDown
-          className={`h-4 w-4 text-text-muted transition-transform ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
+          className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
+            }`}
         />
       </button>
 
@@ -467,35 +465,35 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
             aria-labelledby={buttonId}
             onPointerEnter={() => clearCloseTimer()}
             onPointerLeave={() => scheduleClose()}
-            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-200"
+            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-75"
           >
             <div className="px-5 py-4 border-b border-border/50">
-                <p className="text-base font-bold text-text-main truncate">{user.fullname}</p>
-                <p className="text-xs text-text-muted truncate mb-3 font-medium">{user.email}</p>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${planColors[userPlan]}`}>
-                    {userPlan} Plan
-                </span>
+              <p className="text-base font-bold text-text-main truncate">{user.fullname}</p>
+              <p className="text-xs text-text-muted truncate mb-3 font-medium">{user.email}</p>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${planColors[userPlan]}`}>
+                {userPlan} Plan
+              </span>
             </div>
-            
+
             <div className="py-2">
-                <Link to="/dashboard" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
-                    <IconLayoutDashboard className="w-4 h-4" />
-                    Dashboard
-                </Link>
-                <Link to="/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
-                    <IconSettings className="w-4 h-4" />
-                    Settings
-                </Link>
+              <Link to="/dashboard" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
+                <IconLayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+              <Link to="/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
+                <IconSettings className="w-4 h-4" />
+                Settings
+              </Link>
             </div>
 
             <div className="border-t border-border/50 py-2">
-                <button 
-                    onClick={logout}
-                    className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
-                >
-                    <IconLogOut className="w-4 h-4" />
-                    Sign out
-                </button>
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <IconLogOut className="w-4 h-4" />
+                Sign out
+              </button>
             </div>
           </div>
         </div>
@@ -505,34 +503,34 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
 }
 
 export default function Navbar() {
-  const {user, logout} = useContext(AuthContext)
+  const { user, logout } = useContext(AuthContext)
   return (
-         <header className="w-full p-6 flex justify-between items-start z-10 max-w-7xl mx-auto">
-        <div className="flex flex-col items-start">
-            <Link to='/' className="text-3xl font-extrabold tracking-tight mb-4">Portyo</Link>
-            <div className="w-32 h-px bg-text-main/20 mb-3"></div>
-            <Link to="/signup" className="text-sm font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2 group">
-                Launch your page 
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-        </div>
+    <header className="w-full p-6 flex justify-between items-start z-10 max-w-7xl mx-auto">
+      <div className="flex flex-col items-start">
+        <Link to='/' className="text-3xl font-extrabold tracking-tight mb-4">Portyo</Link>
+        <div className="w-32 h-px bg-text-main/20 mb-3"></div>
+        <Link to="/signup" className="text-sm font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2 group">
+          Launch your page
+          <span className="group-hover:translate-x-1 transition-transform">→</span>
+        </Link>
+      </div>
 
-        <div className="pt-2">
-            <ProductsDropdown />
-        </div>
-        
-        <div className="flex items-center gap-6 pt-2">
-            {!user ? (
-                <>
-                    <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
-                    <Link to="/signup" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
-                        Start For Free
-                    </Link>
-                </>
-            ) : (
-              <UserDropdown user={user} logout={logout} />
-            )}
-        </div>
-      </header>
+      <div className="pt-2">
+        <ProductsDropdown />
+      </div>
+
+      <div className="flex items-center gap-6 pt-2">
+        {!user ? (
+          <>
+            <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
+            <Link to="/signup" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
+              Start For Free
+            </Link>
+          </>
+        ) : (
+          <UserDropdown user={user} logout={logout} />
+        )}
+      </div>
+    </header>
   );
 }

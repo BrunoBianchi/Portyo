@@ -58,3 +58,21 @@ export const getEmailsFromBio = async(bioId:string) => {
         } as any
     })
 }
+
+export const removeEmails = async(emails:string[],bio:string) => {
+    const bioEntity = await findBioById(bio);
+    if (!bioEntity) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
+
+    const emailEntities = await repository.createQueryBuilder("email")
+        .leftJoinAndSelect("email.bios", "bio")
+        .where("bio.id = :bioId", { bioId: bio })
+        .andWhere("email.email IN (:...emails)", { emails })
+        .getMany();
+
+    if (emailEntities.length === 0) return;
+
+    for (const email of emailEntities) {
+        email.bios = email.bios.filter(b => b.id !== bio);
+        await repository.save(email);
+    }
+}

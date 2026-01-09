@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { UserType } from "../shared/types/user.type";
 import { decryptToken } from "../shared/services/jwt.service";
 import { logger } from "../shared/utils/logger";
+import { ApiError, APIErrors } from "../shared/errors/api-error";
 
 declare module "express-session" {
     interface SessionData {
@@ -54,7 +55,7 @@ export const deserializeUser = async (req: Request, res: Response, next: NextFun
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-        return res.status(401).json({ message: "Not Authenticated" });
+        throw new ApiError(APIErrors.unauthorizedError, "Not Authenticated", 401)
     }
     next();
 };

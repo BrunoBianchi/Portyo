@@ -14,7 +14,38 @@ import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import { SubDomainProvider } from "./contexts/subdomain.context";
 import { CookiesProvider } from 'react-cookie';
-import { BioLayout } from "./components/bio-layout";
+import BioLayout from "./components/bio-layout";
+
+const encodeHtmlToBase64 = (html: string) => {
+  try {
+    if (typeof Buffer !== "undefined") {
+      return Buffer.from(html, "utf-8").toString("base64");
+    }
+  } catch {
+    // ignore
+  }
+
+  try {
+    if (typeof btoa !== "undefined") {
+      return btoa(unescape(encodeURIComponent(html)));
+    }
+  } catch {
+    // ignore
+  }
+
+  return html;
+};
+
+const serializeBioHtml = (bio: any) => {
+  if (!bio || typeof bio !== "object") return bio;
+
+  if (bio.html && typeof bio.html === "string") {
+    const htmlBase64 = encodeHtmlToBase64(bio.html);
+    return { ...bio, htmlBase64, html: null };
+  }
+
+  return bio;
+};
 
 const Navbar = lazy(() => import("./components/navbar-component"));
 const Footer = lazy(() => import("./components/footer-section"));
@@ -73,8 +104,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       try {
           const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
           if (res.ok) {
-              const bio = await res.json();
-              return { bio, subdomain: bio.sufix };
+              const bio = serializeBioHtml(await res.json());
+              return { bio, subdomain: bio?.sufix };
           }
       } catch (e) {
           // ignore
@@ -88,8 +119,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       try {
           const res = await fetch(`${apiUrl}/public/bio/${subdomain}`);
           if (res.ok) {
-              const bio = await res.json();
-              return { bio, subdomain };
+            const bio = serializeBioHtml(await res.json());
+            return { bio, subdomain };
           }
       } catch (e) {
           console.error("SSR Bio Fetch Error", e);

@@ -1,7 +1,9 @@
 import { z } from "zod";
 import * as dotenv from "dotenv";
+import * as path from "path";
 
-dotenv.config();
+// Load .env from src directory
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const envSchema = z.object({
   PORT: z.string().default("3000"),
@@ -28,6 +30,18 @@ const envSchema = z.object({
   // Google
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+  // Mailgun (for email automation)
+  MAILGUN_API_SECRET: z.string().optional(),
+  MAILGUN_DOMAIN: z.string().default("portyo.me"),
+  MAILGUN_FROM_EMAIL: z.string().default("Portyo <noreply@portyo.me>"),
+  MAILGUN_BASE_URL: z.string().optional(),
+
+  // Stripe
+  STRIPE_SECRET_KEY: z.string().optional(),
+
+  // Frontend
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
 });
 
 export const env = envSchema.parse(process.env);

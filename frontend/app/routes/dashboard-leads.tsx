@@ -1,11 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import type { Route } from "../+types/root";
-import { Download, Search, Trash2, Mail, User, Calendar, CheckSquare, Square, X, Loader2 } from "lucide-react";
+import { Download, Search, Trash2, Mail, Calendar, CheckSquare, Square, X, Loader2 } from "lucide-react";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
+import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
+import { DeleteConfirmationModal } from "~/components/delete-confirmation-modal";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Leads | Portyo" },
     { name: "description", content: "Manage your email leads" },
@@ -19,11 +21,27 @@ interface Lead {
 }
 
 export default function DashboardLeads() {
-  const { bio } = useContext(BioContext);
+  const { user } = useContext(AuthContext);
+  const { bio, updateBio } = useContext(BioContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+
+  /* State Updates */
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    mode: 'single' | 'bulk';
+    email: string | null;
+    id: string | null;
+    count?: number;
+  }>({
+    isOpen: false,
+    mode: 'single',
+    email: null,
+    id: null
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (bio?.id) {
@@ -41,29 +59,57 @@ export default function DashboardLeads() {
     }
   }, [bio?.id]);
 
+  /* Handlers */
   const filteredLeads = leads.filter(
     (lead) =>
       lead.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this lead?")) {
-      // TODO: Implement delete API
-      setLeads(leads.filter((lead) => lead.id !== id));
-      setSelectedLeads(selectedLeads.filter((leadId) => leadId !== id));
+  const handleDeleteClick = (lead: Lead) => {
+    setDeleteModal({ isOpen: true, mode: 'single', email: lead.email, id: lead.id });
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedLeads.length === 0) return;
+    setDeleteModal({
+      isOpen: true,
+      mode: 'bulk',
+      email: null,
+      id: null,
+      count: selectedLeads.length
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!bio?.id) return;
+    setIsDeleting(true);
+
+    try {
+      if (deleteModal.mode === 'single' && deleteModal.email) {
+        await api.delete(`/email/${bio.id}`, { data: { email: deleteModal.email } });
+        setLeads(prev => prev.filter(l => l.email !== deleteModal.email));
+        setSelectedLeads(prev => prev.filter(id => id !== deleteModal.id));
+      } else if (deleteModal.mode === 'bulk') {
+        const leadsToDelete = leads.filter(l => selectedLeads.includes(l.id));
+        const emails = leadsToDelete.map(l => l.email);
+
+        await api.delete(`/email/${bio.id}/bulk`, { data: { emails } });
+
+        setLeads(prev => prev.filter(l => !selectedLeads.includes(l.id)));
+        setSelectedLeads([]);
+      }
+      setDeleteModal(prev => ({ ...prev, isOpen: false }));
+    } catch (error) {
+      console.error("Failed to delete lead(s):", error);
+      alert("Failed to delete lead(s)");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleBulkDelete = () => {
-    if (confirm(`Are you sure you want to delete ${selectedLeads.length} leads?`)) {
-      // TODO: Implement bulk delete API
-      setLeads(leads.filter((lead) => !selectedLeads.includes(lead.id)));
-      setSelectedLeads([]);
-    }
-  };
-
+  /* Export Handlers */
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + "Email,Date\n"
       + leads.map(e => `${e.email},${new Date(e.createdAt).toLocaleDateString()}`).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -77,7 +123,7 @@ export default function DashboardLeads() {
 
   const handleBulkExport = () => {
     const selected = leads.filter(l => selectedLeads.includes(l.id));
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + "Email,Date\n"
       + selected.map(e => `${e.email},${new Date(e.createdAt).toLocaleDateString()}`).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -89,179 +135,314 @@ export default function DashboardLeads() {
     document.body.removeChild(link);
   };
 
+  /* Derived Stats */
+  const totalLeads = leads.length;
+  const newLeadsToday = leads.filter(l => {
+    const date = new Date(l.createdAt);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+  }).length;
+  // Mocking conversion rate for now as we don't have page view data in this context yet
+  const conversionRate = totalLeads > 0 ? "2.4%" : "0%";
+
   const toggleSelectAll = () => {
     if (selectedLeads.length === filteredLeads.length) {
       setSelectedLeads([]);
     } else {
-      setSelectedLeads(filteredLeads.map((lead) => lead.id));
+      setSelectedLeads(filteredLeads.map((l) => l.id));
     }
   };
 
   const toggleSelectLead = (id: string) => {
-    if (selectedLeads.includes(id)) {
-      setSelectedLeads(selectedLeads.filter((leadId) => leadId !== id));
-    } else {
-      setSelectedLeads([...selectedLeads, id]);
-    }
+    setSelectedLeads((prev) =>
+      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
+    );
   };
+
+  const handleSendMessage = (email: string) => {
+    window.location.href = `mailto:${email}`;
+  };
+
+  const handleBulkSendMessage = () => {
+    const selected = leads.filter(l => selectedLeads.includes(l.id));
+    const emails = selected.map(l => l.email).join(',');
+    window.location.href = `mailto:?bcc=${emails}`;
+  };
+
+  /* ... Handlers ... */
 
   return (
     <AuthorizationGuard minPlan="pro">
-    <div className="p-6 max-w-7xl mx-auto w-full relative">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Email Leads</h1>
-          <p className="text-gray-500 mt-1">Manage and view your captured email subscribers.</p>
-        </div>
-        <button
-          onClick={handleExport}
-          disabled={leads.length === 0}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
-      </div>
+      <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-8">
 
-      {/* Search and Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6 flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          <DeleteConfirmationModal
+            isOpen={deleteModal.isOpen}
+            onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+            onConfirm={handleConfirmDelete}
+            title={deleteModal.mode === 'single' ? "Remove Subscriber" : "Remove Multiple Subscribers"}
+            description={
+              deleteModal.mode === 'single'
+                ? `Are you sure you want to remove ${deleteModal.email} from your list? This subscriber will no longer receive your updates.`
+                : `Are you sure you want to remove ${deleteModal.count} subscribers? This action cannot be undone.`
+            }
+            isDeleting={isDeleting}
           />
-        </div>
-        <div className="text-sm text-gray-500 ml-auto">
-          {filteredLeads.length} leads found
-        </div>
-      </div>
 
-      {/* Bulk Actions */}
-      {selectedLeads.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200">
-          <span className="text-sm font-medium text-gray-700 border-r border-gray-200 pr-4">
-            {selectedLeads.length} selected
-          </span>
-          <button 
-            onClick={handleBulkExport}
-            className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-          <button 
-            onClick={handleBulkDelete}
-            className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-2 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete
-          </button>
-          <button 
-            onClick={() => setSelectedLeads([])}
-            className="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
-        </div>
-      )}
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Audience</h1>
+              <p className="text-gray-500 mt-2 text-lg">Manage your subscribers and grow your community.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  if (bio) {
+                    updateBio(bio.id, { enableSubscribeButton: !bio.enableSubscribeButton });
+                  }
+                }}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${bio?.enableSubscribeButton
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bio?.enableSubscribeButton ? 'bg-primary' : 'bg-gray-400'}`} />
+                {bio?.enableSubscribeButton ? 'Accepting Leads' : 'Leads Disabled'}
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={leads.length === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+            </div>
+          </div>
 
-      {/* Leads Table */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-4 text-left w-12">
-                  <button 
-                    onClick={toggleSelectAll}
-                    className="flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {selectedLeads.length === filteredLeads.length && filteredLeads.length > 0 ? (
-                      <CheckSquare className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Square className="w-5 h-5" />
-                    )}
-                  </button>
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Subscribed</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
-                      <p>Loading leads...</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                        <Mail className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <p className="font-medium text-gray-900">No leads found</p>
-                      <p className="text-sm">
-                        {searchTerm ? "Try adjusting your search terms" : "Share your bio link to start collecting emails"}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="group hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <button 
-                        onClick={() => toggleSelectLead(lead.id)}
-                        className="flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-medium px-2 py-1 bg-green-50 text-green-700 rounded-full flex items-center gap-1">
+                  Active
+                </span>
+              </div>
+              <h3 className="text-gray-500 text-sm font-medium">Total Subscribers</h3>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{totalLeads}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 rounded-full">
+                  Today
+                </span>
+              </div>
+              <h3 className="text-gray-500 text-sm font-medium">New Subscribers</h3>
+              <p className="text-3xl font-bold text-gray-900 mt-2">+{newLeadsToday}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                  <CheckSquare className="w-5 h-5" />
+                </div>
+                {/* Placeholder for future growth stat */}
+                <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                  Avg.
+                </span>
+              </div>
+              <h3 className="text-gray-500 text-sm font-medium">Conversion Rate</h3>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{conversionRate}</p>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search subscribers by email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">
+              {filteredLeads.length} results
+            </div>
+          </div>
+
+          {/* Leads Table */}
+          <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50/40 border-b border-gray-100">
+                    <th className="px-6 py-5 text-left w-16">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
                       >
-                        {selectedLeads.includes(lead.id) ? (
+                        {selectedLeads.length === filteredLeads.length && filteredLeads.length > 0 ? (
                           <CheckSquare className="w-5 h-5 text-primary" />
                         ) : (
                           <Square className="w-5 h-5" />
                         )}
                       </button>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-xs">
-                          {lead.email.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{lead.email}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(lead.createdAt).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => handleDelete(lead.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                        title="Delete lead"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Subscriber</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                    <th className="px-6 py-5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-16 text-center text-gray-500">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                          <p className="font-medium animate-pulse">Syncing audience...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-16 text-center text-gray-500">
+                        <div className="flex flex-col items-center justify-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
+                            <Mail className="w-8 h-8 text-gray-300" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 text-lg">No subscribers found</p>
+                            <p className="text-sm mt-1">
+                              {searchTerm ? "Try adjusting your search terms" : "Share your bio link to start growing your list"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLeads.map((lead) => (
+                      <tr key={lead.id} className="group hover:bg-blue-50/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => toggleSelectLead(lead.id)}
+                            className="flex items-center justify-center text-gray-300 hover:text-primary transition-colors"
+                          >
+                            {selectedLeads.includes(lead.id) ? (
+                              <CheckSquare className="w-5 h-5 text-primary" />
+                            ) : (
+                              <Square className="w-5 h-5" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-sm shadow-sm">
+                              {lead.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <span className="block text-sm font-semibold text-gray-900">{lead.email}</span>
+                              <span className="block text-xs text-gray-500">Subscriber</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Active
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            {new Date(lead.createdAt).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <button
+                              onClick={() => handleSendMessage(lead.email)}
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Send email"
+                            >
+                              <Mail className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(lead)}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Remove subscriber"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
+        {/* Floating Bulk Actions Bar */}
+        {selectedLeads.length > 0 && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white shadow-2xl rounded-2xl px-2 py-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300 border border-gray-800">
+            <div className="pl-4 pr-3 py-2 border-r border-gray-700 flex items-center gap-2">
+              <span className="flex items-center justify-center bg-white text-gray-900 w-5 h-5 rounded-full text-xs font-bold">
+                {selectedLeads.length}
+              </span>
+              <span className="text-sm font-medium">selected</span>
+            </div>
+
+            <button
+              onClick={handleBulkSendMessage}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
+              title="Send email to selected"
+            >
+              <Mail className="w-4 h-4" />
+              <span className="hidden sm:inline">Message</span>
+            </button>
+
+            <button
+              onClick={handleBulkExport}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+
+            <button
+              onClick={handleBulkDeleteClick}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-all"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedLeads([])}
+              className="p-2 text-gray-500 hover:text-white hover:bg-gray-800 rounded-xl transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
-    </div>
     </AuthorizationGuard>
   );
 }

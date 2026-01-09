@@ -9,9 +9,11 @@ const bioRepository = AppDataSource.getRepository(BioEntity);
 const googleTokenUrl = "https://oauth2.googleapis.com/token";
 const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 
+import { env } from "../../config/env";
+
 export const getGoogleAnalyticsAuthUrl = (bioId: string) => {
   const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID!,
+    client_id: env.GOOGLE_CLIENT_ID!,
     redirect_uri: "http://localhost:3000/api/google-analytics/callback",
     response_type: "code",
     scope: "https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/analytics https://www.googleapis.com/auth/analytics.edit",
@@ -30,8 +32,8 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
     googleTokenUrl,
     new URLSearchParams({
       code: code.trim(),
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+      client_id: env.GOOGLE_CLIENT_ID!,
+      client_secret: env.GOOGLE_CLIENT_SECRET!,
       redirect_uri: "http://localhost:3000/api/google-analytics/callback",
       grant_type: "authorization_code",
     }),
@@ -129,6 +131,43 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
   return integration;
 };
 
+const refreshAccessToken = async (integration: IntegrationEntity) => {
+    console.log("Refreshing Google Access Token...");
+    try {
+        if (!integration.refreshToken) {
+            throw new Error("No refresh token available");
+        }
+
+        const response = await axios.post(
+            googleTokenUrl,
+            new URLSearchParams({
+                client_id: process.env.GOOGLE_CLIENT_ID!,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+                refresh_token: integration.refreshToken,
+                grant_type: "refresh_token",
+            }),
+            {
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            }
+        );
+
+        const { access_token, refresh_token } = response.data;
+        
+        integration.accessToken = access_token;
+        if (refresh_token) {
+            integration.refreshToken = refresh_token;
+        }
+        
+        await integrationRepository.save(integration);
+        console.log("Token refreshed successfully");
+        
+        return access_token;
+    } catch (error: any) {
+        console.error("Failed to refresh token:", error.response?.data || error.message);
+        throw new Error("Failed to refresh access token");
+    }
+};
+
 const getMeasurementId = async (accessToken: string, propertyId: string) => {
     try {
         // propertyId is like "properties/123456"
@@ -224,15 +263,27 @@ export const getAnalyticsProperties = async (integrationId: string) => {
     const integration = await integrationRepository.findOneBy({ id: integrationId });
     if (!integration) throw new Error("Integration not found");
 
-    // Refresh token if needed (simplified for now)
-    
-    const response = await axios.get("https://analyticsadmin.googleapis.com/v1beta/accountSummaries", {
-        headers: {
-            Authorization: `Bearer ${integration.accessToken}`
+    try {
+        const response = await axios.get("https://analyticsadmin.googleapis.com/v1beta/accountSummaries", {
+            headers: {
+                Authorization: `Bearer ${integration.accessToken}`
+            }
+        });
+        return response.data.accountSummaries;
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            console.log("Analytics properties fetch 401. Refreshing token...");
+            const newAccessToken = await refreshAccessToken(integration);
+            
+            const retryResponse = await axios.get("https://analyticsadmin.googleapis.com/v1beta/accountSummaries", {
+                headers: {
+                    Authorization: `Bearer ${newAccessToken}`
+                }
+            });
+            return retryResponse.data.accountSummaries;
         }
-    });
-
-    return response.data.accountSummaries;
+        throw error;
+    }
 }
 
 export const saveAnalyticsProperty = async (integrationId: string, propertyId: string) => {
@@ -248,44 +299,57 @@ export const getAnalyticsData = async (integrationId: string, startDate: string,
     const integration = await integrationRepository.findOneBy({ id: integrationId });
     if (!integration || !integration.account_id) throw new Error("Integration or Property ID not found");
 
-    // TODO: Handle token refresh here
-
     const propertyId = integration.account_id;
     
-    const overviewResponse = await axios.post(
-        `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
-        {
-            dateRanges: [{ startDate, endDate }],
-            dimensions: [{ name: "date" }],
-            metrics: [
-                { name: "activeUsers" }, 
-                { name: "screenPageViews" },
-                { name: "userEngagementDuration" }
-            ]
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${integration.accessToken}`
+    const fetchData = async (accessToken: string) => {
+        const overviewPromise = axios.post(
+            `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
+            {
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: "date" }],
+                metrics: [
+                    { name: "activeUsers" }, 
+                    { name: "screenPageViews" },
+                    { name: "userEngagementDuration" }
+                ]
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
             }
-        }
-    );
+        );
 
-    const eventsResponse = await axios.post(
-        `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
-        {
-            dateRanges: [{ startDate, endDate }],
-            dimensions: [{ name: "eventName" }],
-            metrics: [{ name: "eventCount" }]
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${integration.accessToken}`
+        const eventsPromise = axios.post(
+            `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
+            {
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: "eventName" }],
+                metrics: [{ name: "eventCount" }]
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
             }
-        }
-    );
+        );
 
-    return {
-        overview: overviewResponse.data,
-        events: eventsResponse.data
+        const [overviewResponse, eventsResponse] = await Promise.all([overviewPromise, eventsPromise]);
+
+        return {
+            overview: overviewResponse.data,
+            events: eventsResponse.data
+        };
     };
+
+    try {
+        return await fetchData(integration.accessToken!);
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            console.log("Analytics data fetch 401. Refreshing token...");
+            const newAccessToken = await refreshAccessToken(integration);
+            return await fetchData(newAccessToken);
+        }
+        throw error;
+    }
 }

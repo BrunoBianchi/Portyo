@@ -3,8 +3,60 @@ import { BioEntity } from "../../database/entity/bio-entity"
 import { UserEntity } from "../../database/entity/user-entity"
 import { ApiError, APIErrors } from "../errors/api-error"
 import { Bio } from "../types/bio.type"
-const repository = AppDataSource.getRepository(BioEntity)
 import { findUserByEmail } from "./user.service"
+
+const repository = AppDataSource.getRepository(BioEntity)
+
+// ==================== Types ====================
+
+export interface BackgroundSettings {
+    bgType?: string;
+    bgColor?: string;
+    bgSecondaryColor?: string;
+    bgImage?: string;
+    bgVideo?: string;
+    usernameColor?: string;
+    imageStyle?: string;
+    description?: string;
+    socials?: any;
+    displayProfileImage?: boolean;
+}
+
+export interface SeoSettings {
+    seoTitle?: string;
+    seoDescription?: string;
+    favicon?: string;
+    googleAnalyticsId?: string;
+    facebookPixelId?: string;
+    seoKeywords?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    noIndex?: boolean;
+}
+
+export interface LayoutSettings {
+    cardStyle?: string;
+    cardBackgroundColor?: string;
+    cardBorderColor?: string;
+    cardBorderWidth?: number;
+    cardBorderRadius?: number;
+    cardShadow?: string;
+    cardPadding?: number;
+    maxWidth?: number;
+}
+
+export interface UpdateBioOptions {
+    html?: string;
+    blocks?: any[];
+    bgSettings?: BackgroundSettings;
+    seoSettings?: SeoSettings;
+    customDomain?: string;
+    layoutSettings?: LayoutSettings;
+    enableSubscribeButton?: boolean;
+}
+
+// ==================== Query Functions ====================
 
 export const findBioBySufixWithUser = async (sufix: string): Promise<Bio | null> => { 
         return await repository.findOne({ 
@@ -35,50 +87,56 @@ export const findBioById= async (id: string,relations?:string[]): Promise<Bio | 
         relations
     } ) as Bio || null
 }
-export const updateBioById = async(id:string, html?:string, blocks?: any[], bgSettings?: { bgType?: string, bgColor?: string, bgSecondaryColor?: string, bgImage?: string, bgVideo?: string, usernameColor?: string, imageStyle?: string }, seoSettings?: { seoTitle?: string, seoDescription?: string, favicon?: string, googleAnalyticsId?: string, facebookPixelId?: string, seoKeywords?: string, ogTitle?: string, ogDescription?: string, ogImage?: string, noIndex?: boolean }, customDomain?: string, layoutSettings?: { cardStyle?: string, cardBackgroundColor?: string, cardBorderColor?: string, cardBorderWidth?: number, cardBorderRadius?: number, cardShadow?: string, cardPadding?: number, maxWidth?: number }, enableSubscribeButton?: boolean): Promise<Bio | null> => { 
-    let bio = await findBioById(id, ['integrations']) as BioEntity
+export const updateBioById = async (id: string, options: UpdateBioOptions): Promise<Bio | null> => {
+    const bio = await findBioById(id, ['integrations']) as BioEntity;
+    if (!bio) return null;
+
+    const { html, blocks, bgSettings, seoSettings, customDomain, layoutSettings, enableSubscribeButton } = options;
+
+    // Core fields
     if (html !== undefined) bio.html = html;
     if (blocks !== undefined) bio.blocks = blocks;
     if (customDomain !== undefined) bio.customDomain = customDomain;
     if (enableSubscribeButton !== undefined) bio.enableSubscribeButton = enableSubscribeButton;
-    
+
+    // Background settings
     if (bgSettings) {
-        if (bgSettings.bgType) bio.bgType = bgSettings.bgType;
-        if (bgSettings.bgColor) bio.bgColor = bgSettings.bgColor;
-        if (bgSettings.bgSecondaryColor) bio.bgSecondaryColor = bgSettings.bgSecondaryColor;
-        if (bgSettings.bgImage !== undefined) bio.bgImage = bgSettings.bgImage;
-        if (bgSettings.bgVideo !== undefined) bio.bgVideo = bgSettings.bgVideo;
-        if (bgSettings.usernameColor) bio.usernameColor = bgSettings.usernameColor;
-        if (bgSettings.imageStyle) bio.imageStyle = bgSettings.imageStyle;
+        applySettings(bio, bgSettings, [
+            'bgType', 'bgColor', 'bgSecondaryColor', 'bgImage', 'bgVideo',
+            'usernameColor', 'imageStyle', 'description', 'socials', 'displayProfileImage'
+        ]);
     }
 
+    // Layout settings
     if (layoutSettings) {
-        if (layoutSettings.cardStyle) bio.cardStyle = layoutSettings.cardStyle;
-        if (layoutSettings.cardBackgroundColor) bio.cardBackgroundColor = layoutSettings.cardBackgroundColor;
-        if (layoutSettings.cardBorderColor) bio.cardBorderColor = layoutSettings.cardBorderColor;
-        if (layoutSettings.cardBorderWidth !== undefined) bio.cardBorderWidth = layoutSettings.cardBorderWidth;
-        if (layoutSettings.cardBorderRadius !== undefined) bio.cardBorderRadius = layoutSettings.cardBorderRadius;
-        if (layoutSettings.cardShadow) bio.cardShadow = layoutSettings.cardShadow;
-        if (layoutSettings.cardPadding !== undefined) bio.cardPadding = layoutSettings.cardPadding;
-        if (layoutSettings.maxWidth !== undefined) bio.maxWidth = layoutSettings.maxWidth;
+        applySettings(bio, layoutSettings, [
+            'cardStyle', 'cardBackgroundColor', 'cardBorderColor', 'cardBorderWidth',
+            'cardBorderRadius', 'cardShadow', 'cardPadding', 'maxWidth'
+        ]);
     }
 
+    // SEO settings
     if (seoSettings) {
-        if (seoSettings.seoTitle !== undefined) bio.seoTitle = seoSettings.seoTitle;
-        if (seoSettings.seoDescription !== undefined) bio.seoDescription = seoSettings.seoDescription;
-        if (seoSettings.favicon !== undefined) bio.favicon = seoSettings.favicon;
-        if (seoSettings.googleAnalyticsId !== undefined) bio.googleAnalyticsId = seoSettings.googleAnalyticsId;
-        if (seoSettings.facebookPixelId !== undefined) bio.facebookPixelId = seoSettings.facebookPixelId;
-        if (seoSettings.seoKeywords !== undefined) bio.seoKeywords = seoSettings.seoKeywords;
-        if (seoSettings.ogTitle !== undefined) bio.ogTitle = seoSettings.ogTitle;
-        if (seoSettings.ogDescription !== undefined) bio.ogDescription = seoSettings.ogDescription;
-        if (seoSettings.ogImage !== undefined) bio.ogImage = seoSettings.ogImage;
-        if (seoSettings.noIndex !== undefined) bio.noIndex = seoSettings.noIndex;
+        applySettings(bio, seoSettings, [
+            'seoTitle', 'seoDescription', 'favicon', 'googleAnalyticsId', 'facebookPixelId',
+            'seoKeywords', 'ogTitle', 'ogDescription', 'ogImage', 'noIndex'
+        ]);
     }
 
-    await repository.save(bio)
+    await repository.save(bio);
     return bio as Bio;
-}
+};
+
+/**
+ * Helper to apply partial settings to entity
+ */
+const applySettings = <T extends object>(target: any, source: T, keys: (keyof T)[]): void => {
+    for (const key of keys) {
+        if (source[key] !== undefined) {
+            target[key] = source[key];
+        }
+    }
+};
 
 export const getBiosFromUser = async(userId:string, relations?: string[]):Promise<Bio[]|null> =>{
     return await repository.find({

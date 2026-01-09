@@ -2,17 +2,17 @@ import React, { memo, useState, useEffect, useContext } from "react";
 import { createPortal } from "react-dom";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import { api } from "~/services/api";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2, CreditCard, Calendar as CalendarIcon } from "lucide-react";
 import type { QrCode } from "~/services/qrcode.service";
-import {  
-  DragHandleIcon, 
-  HeadingIcon, 
-  TextIcon, 
-  ButtonIcon, 
-  ImageIcon, 
-  SocialsIcon, 
-  VideoIcon, 
-  DividerIcon, 
+import {
+  DragHandleIcon,
+  HeadingIcon,
+  TextIcon,
+  ButtonIcon,
+  ImageIcon,
+  SocialsIcon,
+  VideoIcon,
+  DividerIcon,
   DefaultIcon,
   TrashIcon,
   ChevronDownIcon,
@@ -44,6 +44,52 @@ const makeId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2, 9);
+
+// Block type accent colors for visual differentiation
+const getBlockTypeAccent = (type: string): { bg: string; text: string; border: string } => {
+  const accents: Record<string, { bg: string; text: string; border: string }> = {
+    heading: { bg: "bg-violet-50", text: "text-violet-600", border: "border-violet-200" },
+    text: { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200" },
+    button: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
+    button_grid: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
+    image: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
+    video: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
+    socials: { bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200" },
+    divider: { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" },
+    qrcode: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200" },
+    spotify: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
+    instagram: { bg: "bg-fuchsia-50", text: "text-fuchsia-600", border: "border-fuchsia-200" },
+    youtube: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
+    blog: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
+    product: { bg: "bg-teal-50", text: "text-teal-600", border: "border-teal-200" },
+    tour: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
+    event: { bg: "bg-cyan-50", text: "text-cyan-600", border: "border-cyan-200" },
+    calendar: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
+    map: { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" },
+  };
+  return accents[type] || { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" };
+};
+
+// Get a preview snippet for block content
+const getBlockPreview = (block: BioBlock): string => {
+  switch (block.type) {
+    case 'button':
+      return block.href ? new URL(block.href).hostname.replace('www.', '') : 'No URL set';
+    case 'heading':
+    case 'text':
+      return block.body?.substring(0, 40) || '';
+    case 'image':
+    case 'video':
+      return block.mediaUrl ? 'Media attached' : 'No media';
+    case 'socials':
+      const count = Object.values(block.socials || {}).filter(Boolean).length;
+      return count ? `${count} link${count > 1 ? 's' : ''}` : 'No links';
+    case 'qrcode':
+      return block.qrCodeValue ? 'QR configured' : 'No QR value';
+    default:
+      return '';
+  }
+};
 
 const BlockItem = memo(({
   block,
@@ -78,7 +124,7 @@ const BlockItem = memo(({
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bio?.id) return;
-    
+
     setIsCreatingProduct(true);
     try {
       const res = await api.post("/stripe/create-product", {
@@ -88,7 +134,7 @@ const BlockItem = memo(({
         currency: newProductData.currency,
         image: newProductData.image
       });
-      
+
       const newProduct = {
         id: res.data.id,
         title: res.data.name,
@@ -97,7 +143,7 @@ const BlockItem = memo(({
         image: res.data.images?.[0] || null,
         stripeProductId: res.data.id
       };
-      
+
       // Add to local list
       setStripeProducts([...stripeProducts, {
         id: newProduct.id,
@@ -107,18 +153,18 @@ const BlockItem = memo(({
         image: newProduct.image,
         status: 'active'
       }]);
-      
+
       // Add to block
       const blockProduct = {
-          id: makeId(),
-          title: newProduct.title,
-          price: new Intl.NumberFormat('en-US', { style: 'currency', currency: newProduct.currency }).format(newProduct.price),
-          image: newProduct.image || "https://placehold.co/300x300",
-          url: "#", 
-          stripeProductId: newProduct.id
+        id: makeId(),
+        title: newProduct.title,
+        price: new Intl.NumberFormat('en-US', { style: 'currency', currency: newProduct.currency }).format(newProduct.price),
+        image: newProduct.image || "https://placehold.co/300x300",
+        url: "#",
+        stripeProductId: newProduct.id
       };
       handleFieldChange("products", [...(block.products || []), blockProduct] as any);
-      
+
       setIsCreateProductModalOpen(false);
       setIsProductSelectOpen(false);
       setNewProductData({ title: "", price: "", currency: "usd", image: "" });
@@ -146,7 +192,7 @@ const BlockItem = memo(({
       fetchProducts();
     }
   }, [block.type, isExpanded, bio?.id]);
-  
+
   const handleFieldChange = (key: keyof BioBlock, value: any) => {
     onChange(block.id, key, value);
   };
@@ -154,11 +200,10 @@ const BlockItem = memo(({
   return (
     <div className="group">
       <div
-        className={`rounded-xl mb-2 overflow-hidden transition-all duration-300 ${
-          isDragging
-            ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100" 
-            : "border-2 border-transparent hover:border-primary/40 bg-white shadow-sm"
-        }`}
+        className={`rounded-xl mb-2 overflow-hidden transition-all duration-300 ${isDragging
+          ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100"
+          : "border-2 border-transparent hover:border-primary/40 bg-white shadow-sm"
+          }`}
         draggable
         onDragStart={(e) => onDragStart(e, block.id)}
         onDragEnd={onDragEnd}
@@ -171,7 +216,7 @@ const BlockItem = memo(({
             <span className="text-sm font-medium text-primary/60">Drop here</span>
           </div>
         ) : (
-          <div 
+          <div
             className="flex items-center justify-between gap-3 p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors"
             onClick={() => onToggleExpand(block.id)}
             role="button"
@@ -183,46 +228,60 @@ const BlockItem = memo(({
               }
             }}
           >
-          <div className="flex items-center gap-3">
-            <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 p-1">
-              <DragHandleIcon />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 p-1 shrink-0">
+                <DragHandleIcon />
+              </div>
+              <div className={`p-2.5 rounded-xl ${getBlockTypeAccent(block.type).bg} ${getBlockTypeAccent(block.type).text} shrink-0`}>
+                {/* Icon based on type */}
+                {block.type === 'heading' && <HeadingIcon />}
+                {block.type === 'text' && <TextIcon />}
+                {block.type === 'button' && <ButtonIcon />}
+                {block.type === 'image' && <ImageIcon />}
+                {block.type === 'socials' && <SocialsIcon />}
+                {block.type === 'video' && <VideoIcon />}
+                {block.type === 'divider' && <DividerIcon />}
+                {block.type === 'qrcode' && <QrCodeIcon />}
+                {/* Add other icons as needed, defaulting to a generic one if missing */}
+                {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode'].includes(block.type) && (
+                  <DefaultIcon />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-900 truncate">{block.title || block.type.charAt(0).toUpperCase() + block.type.slice(1).replace('_', ' ')}</p>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${getBlockTypeAccent(block.type).bg} ${getBlockTypeAccent(block.type).text}`}>
+                    {block.type.replace('_', ' ')}
+                  </span>
+                  {(() => {
+                    try {
+                      const preview = getBlockPreview(block);
+                      return preview ? (
+                        <span className="text-xs text-gray-400 truncate">{preview}</span>
+                      ) : null;
+                    } catch {
+                      return null;
+                    }
+                  })()}
+                </div>
+              </div>
             </div>
-            <div className="p-2 rounded-lg bg-gray-100 text-gray-500">
-              {/* Icon based on type */}
-              {block.type === 'heading' && <HeadingIcon />}
-              {block.type === 'text' && <TextIcon />}
-              {block.type === 'button' && <ButtonIcon />}
-              {block.type === 'image' && <ImageIcon />}
-              {block.type === 'socials' && <SocialsIcon />}
-              {block.type === 'video' && <VideoIcon />}
-              {block.type === 'divider' && <DividerIcon />}
-              {block.type === 'qrcode' && <QrCodeIcon />}
-              {/* Add other icons as needed, defaulting to a generic one if missing */}
-              {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode'].includes(block.type) && (
-                 <DefaultIcon />
-              )}
+            <div className="flex items-center gap-2">
+              <button
+                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(block.id);
+                }}
+                type="button"
+                title="Remove block"
+              >
+                <TrashIcon />
+              </button>
+              <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                <ChevronDownIcon />
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-text-main">{block.title || block.type.charAt(0).toUpperCase() + block.type.slice(1)}</p>
-              <p className="text-xs text-text-muted">{block.type.toUpperCase()}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove(block.id);
-              }}
-              type="button"
-              title="Remove block"
-            >
-              <TrashIcon />
-            </button>
-            <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-              <ChevronDownIcon />
-            </div>
-          </div>
           </div>
         )}
 
@@ -266,7 +325,7 @@ const BlockItem = memo(({
                     <select
                       value={block.animation || "none"}
                       onChange={(event) => handleFieldChange("animation", event.target.value)}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                     >
                       <option value="none">None</option>
                       <option value="bounce">Bounce</option>
@@ -278,7 +337,7 @@ const BlockItem = memo(({
                       <select
                         value={block.animationTrigger || "loop"}
                         onChange={(event) => handleFieldChange("animationTrigger", event.target.value)}
-                        className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                       >
                         <option value="loop">Loop</option>
                         <option value="once">Once</option>
@@ -319,7 +378,7 @@ const BlockItem = memo(({
                     <select
                       value={block.animation || "none"}
                       onChange={(event) => handleFieldChange("animation", event.target.value)}
-                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                     >
                       <option value="none">None</option>
                       <option value="bounce">Bounce</option>
@@ -331,7 +390,7 @@ const BlockItem = memo(({
                       <select
                         value={block.animationTrigger || "loop"}
                         onChange={(event) => handleFieldChange("animationTrigger", event.target.value)}
-                        className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                       >
                         <option value="loop">Loop</option>
                         <option value="once">Once</option>
@@ -343,173 +402,355 @@ const BlockItem = memo(({
               </div>
             )}
 
-            {block.type === "button" && (
-              <div className="space-y-3 pt-3">
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Label</label>
-                  <input
-                    value={block.title || ""}
-                    onChange={(event) => handleFieldChange("title", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Button text"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">URL</label>
-                  <input
-                    value={block.href || ""}
-                    onChange={(event) => handleFieldChange("href", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Image URL (Optional)</label>
-                  <input
-                    value={block.buttonImage || ""}
-                    onChange={(event) => handleFieldChange("buttonImage", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://... (icon or photo)"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Text Alignment</label>
-                  <div className="flex bg-gray-100 p-1 rounded-lg">
-                    {(['left', 'center', 'right'] as const).map((align) => (
+            {block.type === "button_grid" && (
+              <div className="space-y-4 pt-3">
+                <div className="space-y-3">
+                  {(block.gridItems || []).map((item, i) => (
+                    <div key={item.id} className="bg-gray-50 p-3 rounded-xl border border-gray-200 relative group">
                       <button
-                        key={align}
-                        onClick={() => handleFieldChange("buttonTextAlign", align)}
-                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          (block.buttonTextAlign || 'center') === align 
-                            ? 'bg-white text-gray-900 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
+                        onClick={() => {
+                          const newItems = [...(block.gridItems || [])];
+                          newItems.splice(i, 1);
+                          handleFieldChange("gridItems", newItems);
+                        }}
+                        className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        {align.charAt(0).toUpperCase() + align.slice(1)}
+                        <TrashIcon width={14} height={14} />
                       </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Style</label>
-                    <select
-                      value={block.buttonStyle || "solid"}
-                      onChange={(event) => handleFieldChange("buttonStyle", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    >
-                      <option value="solid">Solid</option>
-                      <option value="outline">Outline</option>
-                      <option value="ghost">Ghost</option>
-                      <option value="hard-shadow">Retro (Hard Shadow)</option>
-                      <option value="soft-shadow">Soft Shadow</option>
-                      <option value="3d">3D</option>
-                      <option value="glass">Glassmorphism</option>
-                      <option value="gradient">Gradient</option>
-                      <option value="neumorphism">Neumorphism</option>
-                      <option value="clay">Claymorphism</option>
-                      <option value="cyberpunk">Cyberpunk / Glitch</option>
-                      <option value="pixel">Pixel Art (8-bit)</option>
-                      <option value="neon">Neon Glow</option>
-                      <option value="sketch">Sketch / Hand-Drawn</option>
-                      <option value="gradient-border">Gradient Border</option>
-                      <option value="minimal-underline">Minimal Underline</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Shape</label>
-                    <select
-                      value={block.buttonShape || "rounded"}
-                      onChange={(event) => handleFieldChange("buttonShape", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    >
-                      <option value="pill">Pill</option>
-                      <option value="rounded">Rounded</option>
-                      <option value="square">Square</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={block.accent || "#111827"}
-                        onChange={(event) => handleFieldChange("accent", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={block.textColor || "#ffffff"}
-                        onChange={(event) => handleFieldChange("textColor", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                  {["hard-shadow", "soft-shadow", "3d", "gradient", "cyberpunk", "gradient-border", "neon", "pixel", "sketch", "neumorphism", "clay"].includes(block.buttonStyle || "") && (
-                    <div className="col-span-2">
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Secondary / Shadow Color</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={block.buttonShadowColor || block.accent || "#111827"}
-                          onChange={(event) => handleFieldChange("buttonShadowColor", event.target.value)}
-                          className="h-9 w-full rounded cursor-pointer"
-                        />
+
+                      <div className="grid gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">Label</label>
+                          <input
+                            value={item.title}
+                            onChange={(e) => {
+                              const newItems = [...(block.gridItems || [])];
+                              newItems[i] = { ...item, title: e.target.value };
+                              handleFieldChange("gridItems", newItems);
+                            }}
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            placeholder="Button Label"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">URL</label>
+                          <input
+                            value={item.url}
+                            onChange={(e) => {
+                              const newItems = [...(block.gridItems || [])];
+                              newItems[i] = { ...item, url: e.target.value };
+                              handleFieldChange("gridItems", newItems);
+                            }}
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            placeholder="https://"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">Background Image</label>
+                          <input
+                            value={item.image}
+                            onChange={(e) => {
+                              const newItems = [...(block.gridItems || [])];
+                              newItems[i] = { ...item, image: e.target.value };
+                              handleFieldChange("gridItems", newItems);
+                            }}
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            placeholder="https://..."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">Icon</label>
+                          <select
+                            value={item.icon}
+                            onChange={(e) => {
+                              const newItems = [...(block.gridItems || [])];
+                              newItems[i] = { ...item, icon: e.target.value };
+                              handleFieldChange("gridItems", newItems);
+                            }}
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                          >
+                            <option value="">Select an icon</option>
+                            <option value="https://cdn.simpleicons.org/instagram/E4405F">Instagram</option>
+                            <option value="https://cdn.simpleicons.org/vsco/000000">VSCO</option>
+                            <option value="https://cdn.simpleicons.org/snapchat/FFFC00">Snapchat</option>
+                            <option value="https://cdn.simpleicons.org/tiktok/000000">TikTok</option>
+                            <option value="https://cdn.simpleicons.org/x/000000">X (Twitter)</option>
+                            <option value="https://cdn.simpleicons.org/linktree/43E660">Link</option>
+                            <option value="https://cdn.simpleicons.org/amazon/FF9900">Amazon</option>
+                            <option value="https://cdn.simpleicons.org/spotify/1DB954">Spotify</option>
+                            <option value="https://cdn.simpleicons.org/youtube/FF0000">YouTube</option>
+                            <option value="https://cdn.simpleicons.org/pinterest/BD081C">Pinterest</option>
+                            <option value="https://cdn.simpleicons.org/netflix/E50914">Netflix</option>
+                            <option value="https://cdn.simpleicons.org/twitch/9146FF">Twitch</option>
+                            <option value="https://cdn.simpleicons.org/discord/5865F2">Discord</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  )}
-                  <div className="col-span-2">
-                    <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    const newItems = [...(block.gridItems || [])];
+                    newItems.push({
+                      id: makeId(),
+                      title: "New Link",
+                      url: "https://",
+                      image: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000&auto=format&fit=crop",
+                      icon: ""
+                    });
+                    handleFieldChange("gridItems", newItems);
+                  }}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+                >
+                  <PlusIcon width={16} height={16} />
+                  Add Button
+                </button>
+              </div>
+            )}
+
+            {block.type === "button" && (
+              <div className="space-y-4 pt-4">
+                {/* Basic Info Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px]">1</span>
+                    Content
+                  </div>
+                  <div className="pl-7 space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Label</label>
+                      <input
+                        value={block.title || ""}
+                        onChange={(event) => handleFieldChange("title", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                        placeholder="Button text"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">URL</label>
+                      <input
+                        value={block.href || ""}
+                        onChange={(event) => handleFieldChange("href", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white font-mono"
+                        placeholder="https://"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+                        {block.buttonStyle as any === 'image-grid' ? 'Icon' : 'Image (optional)'}
+                      </label>
+                      {block.buttonStyle as any === 'image-grid' ? (
+                        <select
+                          value={block.buttonImage || ""}
+                          onChange={(event) => handleFieldChange("buttonImage", event.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+                        >
+                          <option value="">Select an icon</option>
+                          <option value="https://cdn.simpleicons.org/instagram/E4405F">Instagram</option>
+                          <option value="https://cdn.simpleicons.org/vsco/000000">VSCO</option>
+                          <option value="https://cdn.simpleicons.org/snapchat/FFFC00">Snapchat</option>
+                          <option value="https://cdn.simpleicons.org/tiktok/000000">TikTok</option>
+                          <option value="https://cdn.simpleicons.org/x/000000">X (Twitter)</option>
+                          <option value="https://cdn.simpleicons.org/linktree/43E660">Link</option>
+                          <option value="https://cdn.simpleicons.org/amazon/FF9900">Amazon</option>
+                          <option value="https://cdn.simpleicons.org/spotify/1DB954">Spotify</option>
+                          <option value="https://cdn.simpleicons.org/youtube/FF0000">YouTube</option>
+                          <option value="https://cdn.simpleicons.org/pinterest/BD081C">Pinterest</option>
+                        </select>
+                      ) : (
+                        <input
+                          value={block.buttonImage || ""}
+                          onChange={(event) => handleFieldChange("buttonImage", event.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white font-mono"
+                          placeholder="https://..."
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Style Section */}
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide pt-3">
+                    <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-[10px]">2</span>
+                    Appearance
+                  </div>
+                  <div className="pl-7 space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Text Alignment</label>
+                      <div className="flex bg-gray-100 p-1 rounded-xl">
+                        {(['left', 'center', 'right'] as const).map((align) => (
+                          <button
+                            key={align}
+                            onClick={() => handleFieldChange("buttonTextAlign", align)}
+                            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${(block.buttonTextAlign || 'center') === align
+                              ? 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700'
+                              }`}
+                          >
+                            {align.charAt(0).toUpperCase() + align.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Style</label>
+                        <select
+                          value={block.buttonStyle || "solid"}
+                          onChange={(event) => handleFieldChange("buttonStyle", event.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+                        >
+                          <option value="solid">Solid</option>
+                          <option value="outline">Outline</option>
+                          <option value="ghost">Ghost</option>
+                          <option value="hard-shadow">Retro</option>
+                          <option value="soft-shadow">Soft Shadow</option>
+                          <option value="3d">3D</option>
+                          <option value="glass">Glass</option>
+                          <option value="gradient">Gradient</option>
+                          <option value="neon">Neon</option>
+                          <option value="image-grid">Image Card</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Shape</label>
+                        <select
+                          value={block.buttonShape || "rounded"}
+                          onChange={(event) => handleFieldChange("buttonShape", event.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+                        >
+                          <option value="pill">Pill</option>
+                          <option value="rounded">Rounded</option>
+                          <option value="square">Square</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Colors Section */}
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide pt-3">
+                    <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-[10px]">3</span>
+                    Colors
+                  </div>
+                  <div className="pl-7">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Background</label>
+                        <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 bg-gray-50">
+                          <input
+                            type="color"
+                            value={block.accent || "#111827"}
+                            onChange={(event) => handleFieldChange("accent", event.target.value)}
+                            className="h-8 w-10 rounded-lg cursor-pointer border-0 p-0"
+                          />
+                          <input
+                            type="text"
+                            value={block.accent || "#111827"}
+                            onChange={(event) => handleFieldChange("accent", event.target.value)}
+                            className="flex-1 text-xs font-mono uppercase bg-transparent border-0 outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Text</label>
+                        <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 bg-gray-50">
+                          <input
+                            type="color"
+                            value={block.textColor || "#ffffff"}
+                            onChange={(event) => handleFieldChange("textColor", event.target.value)}
+                            className="h-8 w-10 rounded-lg cursor-pointer border-0 p-0"
+                          />
+                          <input
+                            type="text"
+                            value={block.textColor || "#ffffff"}
+                            onChange={(event) => handleFieldChange("textColor", event.target.value)}
+                            className="flex-1 text-xs font-mono uppercase bg-transparent border-0 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {["hard-shadow", "soft-shadow", "3d", "gradient", "cyberpunk", "gradient-border", "neon", "pixel", "sketch", "neumorphism", "clay"].includes(block.buttonStyle || "") && (
+                      <div className="mt-3">
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Secondary / Shadow</label>
+                        <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 bg-gray-50">
+                          <input
+                            type="color"
+                            value={block.buttonShadowColor || block.accent || "#111827"}
+                            onChange={(event) => handleFieldChange("buttonShadowColor", event.target.value)}
+                            className="h-8 w-10 rounded-lg cursor-pointer border-0 p-0"
+                          />
+                          <input
+                            type="text"
+                            value={block.buttonShadowColor || block.accent || "#111827"}
+                            onChange={(event) => handleFieldChange("buttonShadowColor", event.target.value)}
+                            className="flex-1 text-xs font-mono uppercase bg-transparent border-0 outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Advanced Section */}
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide pt-3">
+                    <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px]">⚙</span>
+                    Advanced
+                  </div>
+                  <div className="pl-7 space-y-3">
+                    <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
                       <input
                         type="checkbox"
                         checked={block.isNsfw || false}
                         onChange={(event) => handleFieldChange("isNsfw", event.target.checked as any)}
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                       />
-                      Sensitive Content (+18)
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Sensitive Content</span>
+                        <p className="text-xs text-gray-400">Mark as 18+ content</p>
+                      </div>
                     </label>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Animation</label>
-                    <div className="flex gap-2">
-                      <select
-                        value={block.animation || "none"}
-                        onChange={(event) => handleFieldChange("animation", event.target.value)}
-                        className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      >
-                        <option value="none">None</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="pulse">Pulse</option>
-                        <option value="shake">Shake</option>
-                        <option value="wobble">Wobble</option>
-                      </select>
-                      {block.animation && block.animation !== "none" && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Animation</label>
+                      <div className="flex gap-2">
                         <select
-                          value={block.animationTrigger || "loop"}
-                          onChange={(event) => handleFieldChange("animationTrigger", event.target.value)}
-                          className="w-32 rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          value={block.animation || "none"}
+                          onChange={(event) => handleFieldChange("animation", event.target.value)}
+                          className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                         >
-                          <option value="loop">Loop</option>
-                          <option value="once">Once</option>
-                          <option value="hover">Hover</option>
+                          <option value="none">None</option>
+                          <option value="bounce">Bounce</option>
+                          <option value="pulse">Pulse</option>
+                          <option value="shake">Shake</option>
+                          <option value="wobble">Wobble</option>
                         </select>
-                      )}
+                        {block.animation && block.animation !== "none" && (
+                          <select
+                            value={block.animationTrigger || "loop"}
+                            onChange={(event) => handleFieldChange("animationTrigger", event.target.value)}
+                            className="w-28 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                          >
+                            <option value="loop">Loop</option>
+                            <option value="once">Once</option>
+                            <option value="hover">Hover</option>
+                          </select>
+                        )}
+                      </div>
                     </div>
-                  </div>                            </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {block.type === "socials" && (
               <div className="space-y-3 pt-3">
                 <p className="text-xs text-gray-500">Add your social media links below.</p>
-                
+
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
@@ -552,6 +793,41 @@ const BlockItem = memo(({
                     />
                   </div>
                 ))}
+              </div>
+            )}
+
+            {block.type === "calendar" && (
+              <div className="pt-3 space-y-3">
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600 shrink-0">
+                    <CalendarIcon size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-blue-900">Booking Settings</h4>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Availability and booking settings are managed in the
+                      <a href="/dashboard/scheduler" target="_blank" className="underline font-bold ml-1 hover:text-blue-900">Scheduler</a> tab.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                  <input
+                    value={block.title || ""}
+                    onChange={(event) => handleFieldChange("title", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="Book a time"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Description</label>
+                  <input
+                    value={block.body || ""}
+                    onChange={(event) => handleFieldChange("body", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="Brief description"
+                  />
+                </div>
               </div>
             )}
 
@@ -898,24 +1174,24 @@ const BlockItem = memo(({
                     <div key={product.id} className="p-3 border border-gray-200 rounded-xl bg-white relative group flex items-center gap-3 hover:border-gray-300 transition-colors">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100">
                         {product.image && product.image !== "https://placehold.co/300x300" ? (
-                            <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+                          <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                <ImageIcon className="w-5 h-5" />
-                            </div>
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <ImageIcon className="w-5 h-5" />
+                          </div>
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">{product.title}</h4>
-                          <p className="text-xs text-gray-500">{product.price}</p>
+                        <h4 className="text-sm font-medium text-gray-900 truncate">{product.title}</h4>
+                        <p className="text-xs text-gray-500">{product.price}</p>
                       </div>
 
-                      <button 
+                      <button
                         onClick={() => {
-                            const newProducts = [...(block.products || [])];
-                            newProducts.splice(index, 1);
-                            handleFieldChange("products", newProducts as any);
+                          const newProducts = [...(block.products || [])];
+                          newProducts.splice(index, 1);
+                          handleFieldChange("products", newProducts as any);
                         }}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                         title="Remove product"
@@ -924,183 +1200,183 @@ const BlockItem = memo(({
                       </button>
                     </div>
                   ))}
-                  
+
                   <div className="pt-2 border-t border-gray-100 mt-4">
-                     <label className="text-xs font-medium text-gray-500 mb-2 block">Add Product from Stripe</label>
-                     {isLoadingProducts ? (
-                        <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
-                     ) : (
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={() => setIsProductSelectOpen(!isProductSelectOpen)}
-                                className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white hover:border-gray-300 transition-colors text-left"
-                            >
-                                <span className="text-gray-500">Select a product to add...</span>
-                                <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isProductSelectOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            
-                            {isProductSelectOpen && (
-                                <div className="mt-2 w-full rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="overflow-y-auto flex-1 max-h-60">
-                                    {stripeProducts
-                                        .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
-                                        .length === 0 ? (
-                                            <div className="p-8 flex flex-col items-center justify-center text-center gap-3 bg-gray-50/80">
-                                                <div className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
-                                                    <CreditCard className="w-6 h-6" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm font-semibold text-gray-900">No products found</p>
-                                                    <p className="text-xs text-gray-500">Create a new product to add it here.</p>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            stripeProducts
-                                                .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
-                                                .map(p => (
-                                                    <button
-                                                        key={p.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const newProduct = {
-                                                                id: makeId(),
-                                                                title: p.title,
-                                                                price: new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0),
-                                                                image: p.image || "https://placehold.co/300x300",
-                                                                url: "#", 
-                                                                stripeProductId: p.id
-                                                            };
-                                                            handleFieldChange("products", [...(block.products || []), newProduct] as any);
-                                                            setIsProductSelectOpen(false);
-                                                        }}
-                                                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0 group"
-                                                    >
-                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100 group-hover:border-gray-200 transition-colors">
-                                                            {p.image ? (
-                                                                <img src={p.image} alt="" className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                                                    <ImageIcon className="w-4 h-4" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-sm font-medium text-gray-900 group-hover:text-black transition-colors">{p.title}</div>
-                                                            <div className="text-xs text-gray-500">{new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0)}</div>
-                                                        </div>
-                                                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <PlusIcon className="w-4 h-4 text-gray-400" />
-                                                        </div>
-                                                    </button>
-                                                ))
-                                        )
-                                    }
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsCreateProductModalOpen(true)}
-                                        className="w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-white bg-black hover:bg-gray-800 transition-all border-t border-gray-100"
-                                    >
-                                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                            <PlusIcon className="w-3 h-3 text-white" />
-                                        </div>
-                                        Create New Product
-                                    </button>
+                    <label className="text-xs font-medium text-gray-500 mb-2 block">Add Product from Stripe</label>
+                    {isLoadingProducts ? (
+                      <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
+                    ) : (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsProductSelectOpen(!isProductSelectOpen)}
+                          className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white hover:border-gray-300 transition-colors text-left"
+                        >
+                          <span className="text-gray-500">Select a product to add...</span>
+                          <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isProductSelectOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isProductSelectOpen && (
+                          <div className="mt-2 w-full rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col">
+                            <div className="overflow-y-auto flex-1 max-h-60">
+                              {stripeProducts
+                                .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
+                                .length === 0 ? (
+                                <div className="p-8 flex flex-col items-center justify-center text-center gap-3 bg-gray-50/80">
+                                  <div className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
+                                    <CreditCard className="w-6 h-6" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-semibold text-gray-900">No products found</p>
+                                    <p className="text-xs text-gray-500">Create a new product to add it here.</p>
+                                  </div>
                                 </div>
-                            )}
-                        </div>
-                     )}
+                              ) : (
+                                stripeProducts
+                                  .filter(p => !block.products?.some((bp: any) => bp.stripeProductId === p.id))
+                                  .map(p => (
+                                    <button
+                                      key={p.id}
+                                      type="button"
+                                      onClick={() => {
+                                        const newProduct = {
+                                          id: makeId(),
+                                          title: p.title,
+                                          price: new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0),
+                                          image: p.image || "https://placehold.co/300x300",
+                                          url: "#",
+                                          stripeProductId: p.id
+                                        };
+                                        handleFieldChange("products", [...(block.products || []), newProduct] as any);
+                                        setIsProductSelectOpen(false);
+                                      }}
+                                      className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0 group"
+                                    >
+                                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100 group-hover:border-gray-200 transition-colors">
+                                        {p.image ? (
+                                          <img src={p.image} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                            <ImageIcon className="w-4 h-4" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div className="text-sm font-medium text-gray-900 group-hover:text-black transition-colors">{p.title}</div>
+                                        <div className="text-xs text-gray-500">{new Intl.NumberFormat('en-US', { style: 'currency', currency: p.currency || 'USD' }).format(p.price || 0)}</div>
+                                      </div>
+                                      <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <PlusIcon className="w-4 h-4 text-gray-400" />
+                                      </div>
+                                    </button>
+                                  ))
+                              )
+                              }
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setIsCreateProductModalOpen(true)}
+                              className="w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-white bg-black hover:bg-gray-800 transition-all border-t border-gray-100"
+                            >
+                              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                                <PlusIcon className="w-3 h-3 text-white" />
+                              </div>
+                              Create New Product
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
             {isCreateProductModalOpen && typeof document !== "undefined" && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900">Create Product</h3>
-                            <button 
-                                onClick={() => setIsCreateProductModalOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <XIcon className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
-                                <input
-                                    required
-                                    value={newProductData.title}
-                                    onChange={(e) => setNewProductData({...newProductData, title: e.target.value})}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                    placeholder="e.g. Digital Guide"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                            {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
-                                        </span>
-                                        <input
-                                            required
-                                            type="number"
-                                            min="0.50"
-                                            step="0.01"
-                                            value={newProductData.price}
-                                            onChange={(e) => setNewProductData({...newProductData, price: e.target.value})}
-                                            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-                                    <select
-                                        value={newProductData.currency}
-                                        onChange={(e) => setNewProductData({...newProductData, currency: e.target.value})}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                    >
-                                        <option value="usd">USD ($)</option>
-                                        <option value="eur">EUR (€)</option>
-                                        <option value="gbp">GBP (£)</option>
-                                        <option value="brl">BRL (R$)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                                <input
-                                    value={newProductData.image}
-                                    onChange={(e) => setNewProductData({...newProductData, image: e.target.value})}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                            <div className="pt-2">
-                                <button
-                                    type="submit"
-                                    disabled={isCreatingProduct}
-                                    className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isCreatingProduct ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Creating...
-                                        </>
-                                    ) : (
-                                        "Create Product"
-                                    )}
-                                </button>
-                            </div>
-                        </form>
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900">Create Product</h3>
+                    <button
+                      onClick={() => setIsCreateProductModalOpen(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                      <input
+                        required
+                        value={newProductData.title}
+                        onChange={(e) => setNewProductData({ ...newProductData, title: e.target.value })}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        placeholder="e.g. Digital Guide"
+                      />
                     </div>
-                </div>,
-                document.body
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                            {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
+                          </span>
+                          <input
+                            required
+                            type="number"
+                            min="0.50"
+                            step="0.01"
+                            value={newProductData.price}
+                            onChange={(e) => setNewProductData({ ...newProductData, price: e.target.value })}
+                            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                        <select
+                          value={newProductData.currency}
+                          onChange={(e) => setNewProductData({ ...newProductData, currency: e.target.value })}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        >
+                          <option value="usd">USD ($)</option>
+                          <option value="eur">EUR (€)</option>
+                          <option value="gbp">GBP (£)</option>
+                          <option value="brl">BRL (R$)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
+                      <input
+                        value={newProductData.image}
+                        onChange={(e) => setNewProductData({ ...newProductData, image: e.target.value })}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={isCreatingProduct}
+                        className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {isCreatingProduct ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Product"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>,
+              document.body
             )}
 
             {block.type === "calendar" && (
@@ -1154,7 +1430,7 @@ const BlockItem = memo(({
                 </div>
               </div>
             )}
-            
+
             {block.type === "map" && (
               <div className="pt-3 space-y-3">
                 <div>
@@ -1377,15 +1653,15 @@ const BlockItem = memo(({
                   />
                   <p className="text-[10px] text-gray-500 mt-1">Supports tracks, albums, and playlists</p>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-gray-700">Compact Player</label>
-                    <button 
-                        onClick={() => handleFieldChange("spotifyCompact", !block.spotifyCompact)}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${block.spotifyCompact ? 'bg-blue-500' : 'bg-gray-300'}`}
-                    >
-                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.spotifyCompact ? 'left-6' : 'left-1'}`}></div>
-                    </button>
+                  <label className="text-xs font-medium text-gray-700">Compact Player</label>
+                  <button
+                    onClick={() => handleFieldChange("spotifyCompact", !block.spotifyCompact)}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${block.spotifyCompact ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  >
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.spotifyCompact ? 'left-6' : 'left-1'}`}></div>
+                  </button>
                 </div>
               </div>
             )}
@@ -1417,48 +1693,46 @@ const BlockItem = memo(({
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-gray-700">Show Username</label>
-                    <button 
-                        onClick={() => handleFieldChange("instagramShowText", block.instagramShowText === false ? true : false)}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${block.instagramShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
-                    >
-                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.instagramShowText !== false ? 'left-6' : 'left-1'}`}></div>
-                    </button>
+                  <label className="text-xs font-medium text-gray-700">Show Username</label>
+                  <button
+                    onClick={() => handleFieldChange("instagramShowText", block.instagramShowText === false ? true : false)}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${block.instagramShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  >
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.instagramShowText !== false ? 'left-6' : 'left-1'}`}></div>
+                  </button>
                 </div>
 
                 {block.instagramShowText !== false && (
-                    <>
-                        <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
-                            <div className="flex bg-gray-100 p-1 rounded-lg">
-                                <button
-                                    onClick={() => handleFieldChange("instagramTextPosition", "top")}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                                        block.instagramTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                                >
-                                    Top
-                                </button>
-                                <button
-                                    onClick={() => handleFieldChange("instagramTextPosition", "bottom")}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                                        (block.instagramTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                                >
-                                    Bottom
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                            <input
-                                type="color"
-                                value={block.instagramTextColor || "#000000"}
-                                onChange={(event) => handleFieldChange("instagramTextColor", event.target.value)}
-                                className="h-9 w-full rounded cursor-pointer"
-                            />
-                        </div>
-                    </>
+                  <>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                      <div className="flex bg-gray-100 p-1 rounded-lg">
+                        <button
+                          onClick={() => handleFieldChange("instagramTextPosition", "top")}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${block.instagramTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          Top
+                        </button>
+                        <button
+                          onClick={() => handleFieldChange("instagramTextPosition", "bottom")}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.instagramTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          Bottom
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                      <input
+                        type="color"
+                        value={block.instagramTextColor || "#000000"}
+                        onChange={(event) => handleFieldChange("instagramTextColor", event.target.value)}
+                        className="h-9 w-full rounded cursor-pointer"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1487,48 +1761,46 @@ const BlockItem = memo(({
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-gray-700">Show Channel Name</label>
-                    <button 
-                        onClick={() => handleFieldChange("youtubeShowText", block.youtubeShowText === false ? true : false)}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${block.youtubeShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
-                    >
-                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.youtubeShowText !== false ? 'left-6' : 'left-1'}`}></div>
-                    </button>
+                  <label className="text-xs font-medium text-gray-700">Show Channel Name</label>
+                  <button
+                    onClick={() => handleFieldChange("youtubeShowText", block.youtubeShowText === false ? true : false)}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${block.youtubeShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  >
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${block.youtubeShowText !== false ? 'left-6' : 'left-1'}`}></div>
+                  </button>
                 </div>
 
                 {block.youtubeShowText !== false && (
-                    <>
-                        <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
-                            <div className="flex bg-gray-100 p-1 rounded-lg">
-                                <button
-                                    onClick={() => handleFieldChange("youtubeTextPosition", "top")}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                                        block.youtubeTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                                >
-                                    Top
-                                </button>
-                                <button
-                                    onClick={() => handleFieldChange("youtubeTextPosition", "bottom")}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                                        (block.youtubeTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                                >
-                                    Bottom
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                            <input
-                                type="color"
-                                value={block.youtubeTextColor || "#ff0000"}
-                                onChange={(event) => handleFieldChange("youtubeTextColor", event.target.value)}
-                                className="h-9 w-full rounded cursor-pointer"
-                            />
-                        </div>
-                    </>
+                  <>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                      <div className="flex bg-gray-100 p-1 rounded-lg">
+                        <button
+                          onClick={() => handleFieldChange("youtubeTextPosition", "top")}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${block.youtubeTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          Top
+                        </button>
+                        <button
+                          onClick={() => handleFieldChange("youtubeTextPosition", "bottom")}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.youtubeTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          Bottom
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
+                      <input
+                        type="color"
+                        value={block.youtubeTextColor || "#ff0000"}
+                        onChange={(event) => handleFieldChange("youtubeTextColor", event.target.value)}
+                        className="h-9 w-full rounded cursor-pointer"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1547,10 +1819,10 @@ const BlockItem = memo(({
 
                 <div className="space-y-3">
                   <label className="text-xs font-medium text-gray-700 block">Tour Dates</label>
-                  
+
                   {(block.tours || []).map((tour, index) => (
                     <div key={tour.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200 relative group">
-                      <button 
+                      <button
                         onClick={() => {
                           const newTours = [...(block.tours || [])];
                           newTours.splice(index, 1);
@@ -1620,8 +1892,8 @@ const BlockItem = memo(({
 
                       <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={tour.sellingFast || false}
                             onChange={(e) => {
                               const newTours = [...(block.tours || [])];
@@ -1633,8 +1905,8 @@ const BlockItem = memo(({
                           <span className="text-xs text-gray-600">Selling Fast</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={tour.soldOut || false}
                             onChange={(e) => {
                               const newTours = [...(block.tours || [])];
@@ -1679,11 +1951,10 @@ const BlockItem = memo(({
                       <button
                         key={layout}
                         onClick={() => handleFieldChange("qrCodeLayout", layout)}
-                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          (block.qrCodeLayout || 'single') === layout 
-                            ? 'bg-white text-gray-900 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
+                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.qrCodeLayout || 'single') === layout
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                          }`}
                       >
                         {layout.charAt(0).toUpperCase() + layout.slice(1)}
                       </button>
@@ -1829,11 +2100,10 @@ const BlockItem = memo(({
                   <button
                     key={align}
                     onClick={() => handleFieldChange("align", align)}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                      (block.align || 'center') === align 
-                        ? 'bg-white text-gray-900 shadow-sm' 
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.align || 'center') === align
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
                   >
                     {align.charAt(0).toUpperCase() + align.slice(1)}
                   </button>

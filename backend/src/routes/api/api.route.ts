@@ -6,6 +6,8 @@ import publicBioRoute from "./public/bio.public.route"
 import instagramRoute from "./instagram/instagram.route"
 import youtubeRoute from "./youtube/youtube.route"
 import publicEmailRoute from "./public/email.public.route"
+import publicBlogRoute from "./public/blog.public.route"
+import publicProductsRoute from "./public/products.public.route"
 import QrRoute from "./qrcode/qrcode.route"
 import emailRoute from "./email/email.route"
 import stripeRoute from "./stripe/stripe.route"
@@ -15,20 +17,44 @@ import { authMiddleware } from "../../middlewares/auth.middleware";
 import googleRoute from "../api/google/google.route"
 import googleAnalyticsRoute from "./google-analytics/google-analytics.route"
 import activityRoute from "./activity/activity.route"
+import automationRoute from "./automation/automation.route"
+import automationTriggerRoute from "./public/automation-trigger.route"
+import publicEventsRoute from "./public/events.public.route"
+import templateRoute from "./templates/template.route"
+import bookingRoute from "./bookings/booking.route"
+import publicBookingRoute from "./public/booking.public.route"
+
+import googleCalendarRoute from "./google-calendar/google-calendar.route";
+
 const router: Router = Router();
-router.use('/user',userRoute);
-router.use('/bio',authMiddleware,bioRoute)
-router.use('/blog',blogRoute)
+// Specific routes first
+router.use('/user', userRoute); // Assuming userRoute doesn't have wildcards at root? Better check.
+router.use('/blog', blogRoute);
+
 router.use('/public/bio', publicBioRoute)
 router.use('/public/instagram', instagramRoute)
 router.use('/public/youtube', youtubeRoute)
 router.use('/public/email', publicEmailRoute)
+router.use('/public/blog', publicBlogRoute)
+router.use('/public/products', publicProductsRoute)
 router.use('/public/stripe', generateProductLinkRoute)
+router.use('/public/automation', automationTriggerRoute)
+router.use('/public/events', publicEventsRoute)
+router.use('/public/bookings', publicBookingRoute)
+
 router.use('/qrcode/',authMiddleware ,QrRoute)
 router.use('/email', authMiddleware, emailRoute)
 router.use('/stripe', authMiddleware, stripeRoute)
 router.use('/integration', authMiddleware, integrationRoute)
+router.use('/automation', authMiddleware, automationRoute)
 router.use('/google',googleRoute)
 router.use('/activity', authMiddleware, activityRoute)
 router.use('/google-analytics', googleAnalyticsRoute)
+router.use('/google-calendar', googleCalendarRoute)
+router.use('/templates', authMiddleware, templateRoute)
+router.use('/bookings', authMiddleware, bookingRoute)
+
+// Bio Route (likely contains wildcard /:id) should be last
+router.use('/bio', bioRoute);
+
 export default router;

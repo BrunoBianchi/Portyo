@@ -1,10 +1,13 @@
-import { Column, Entity, ManyToOne, JoinColumn, OneToMany, ManyToMany, JoinTable } from "typeorm";
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany, ManyToMany, JoinTable, OneToOne } from "typeorm";
 import { BaseEntity } from "./base-entity";
 import { UserEntity } from "./user-entity";
 import { PostEntity } from "./posts-entity";
 import { QRCodeEntity } from "./qrcode-entity";
 import { EmailEntity } from "./email-entity";
 import { IntegrationEntity } from "./integration-entity";
+import { EmailTemplateEntity } from "./email-template-entity";
+import { BookingSettingsEntity } from "./booking-settings-entity";
+import { BookingEntity } from "./booking-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -44,6 +47,24 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "varchar", default: "circle" })
     imageStyle: string = "circle";
+
+    @Column({ type: "boolean", default: true })
+    displayProfileImage: boolean = true;
+
+    @Column({ type: "text", nullable: true })
+    description: string | null = null;
+
+    @Column({ type: "jsonb", nullable: true })
+    socials: {
+        instagram?: string;
+        tiktok?: string;
+        twitter?: string;
+        youtube?: string;
+        linkedin?: string;
+        email?: string;
+        website?: string;
+        github?: string;
+    } | null = null;
 
     // Card/Container Styling
     @Column({ type: "varchar", default: "none" })
@@ -123,7 +144,15 @@ export class BioEntity extends BaseEntity {
     @JoinTable()
     emails!: EmailEntity[];
 
-    @OneToMany(() => IntegrationEntity, (integration) =>integration.bio)
+    @OneToMany(() => IntegrationEntity, (integration) => integration.bio)
     integrations!: IntegrationEntity[];
 
+    @OneToMany(() => EmailTemplateEntity, (template) => template.bio)
+    emailTemplates!: EmailTemplateEntity[];
+
+    @OneToOne(() => BookingSettingsEntity, (settings) => settings.bio)
+    bookingSettings!: BookingSettingsEntity;
+
+    @OneToMany(() => BookingEntity, (booking) => booking.bio)
+    bookings!: BookingEntity[];
 }

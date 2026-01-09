@@ -1,16 +1,17 @@
 import { Link, useLocation } from "react-router";
 import { useContext, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import AuthContext from "~/contexts/auth.context";
 import BioContext from "~/contexts/bio.context";
-import { 
-    LayoutDashboard, 
-    PenTool, 
-    Settings, 
-    LogOut, 
-    Globe, 
-    ChevronDown, 
-    Plus, 
-    Check, 
+import {
+    LayoutDashboard,
+    PenTool,
+    Settings,
+    LogOut,
+    Globe,
+    ChevronDown,
+    Plus,
+    Check,
     ExternalLink,
     X,
     Sparkles,
@@ -24,13 +25,14 @@ import {
     UserCog,
     QrCode,
     Bell,
-    Calendar
+    Calendar,
+    LayoutTemplate
 } from "lucide-react";
 
 interface SidebarProps {
     isOpen?: boolean;
     onClose?: () => void;
-    handleChangeBio?:()=>void;
+    handleChangeBio?: () => void;
 }
 
 export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarProps) {
@@ -47,11 +49,11 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     function normalizeUsername(value: string) {
         return value
-          .toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "")
-          .replace(/^-+/, "")
-          .replace(/-+/g, "-");
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+            .replace(/^-+/, "")
+            .replace(/-+/g, "-");
     }
 
     const isUsernameValid = newUsername.length >= 3 && !newUsername.endsWith("-");
@@ -87,6 +89,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
         { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar },
+        { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
@@ -97,17 +100,17 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         <>
             {/* Mobile Overlay */}
             {isOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/20 z-[45] md:hidden backdrop-blur-sm transition-opacity"
                     onClick={onClose}
                 />
             )}
-            
+
             {/* Create Bio Modal */}
-            {isCreateModalOpen && (
+            {isCreateModalOpen && typeof document !== 'undefined' && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" onClick={() => setIsCreateModalOpen(false)} />
-                    <div className="bg-white w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsCreateModalOpen(false)} />
+                    <div className="bg-white w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl">
                         <div className="flex items-start justify-between mb-6">
                             <div>
                                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
@@ -121,7 +124,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        
+
                         {createError && (
                             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
                                 {createError}
@@ -132,23 +135,23 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             <div className="relative group">
                                 <div className="flex items-center bg-white rounded-full h-16 px-6 border border-gray-200 shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 hover:shadow-md">
                                     <Globe className="w-6 h-6 text-gray-400 group-focus-within:text-primary transition-colors shrink-0 mr-4" />
-                                    
+
                                     <div className="flex-1 flex items-center h-full relative">
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             value={newUsername}
                                             onChange={(e) => {
                                                 setNewUsername(normalizeUsername(e.target.value));
                                                 setCreateError(null);
                                             }}
-                                            placeholder="yourname" 
+                                            placeholder="yourname"
                                             className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-right pr-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
                                         />
                                         <span className="text-xl md:text-2xl font-bold text-gray-400 select-none tracking-tight shrink-0">.portyo.me</span>
                                     </div>
-                                    
+
                                     <div className={`ml-4 transition-all duration-300 ${isUsernameValid || createError ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
                                         {createError ? (
                                             <div className="bg-red-500 rounded-full p-1 text-white shadow-sm">
@@ -162,8 +165,8 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     </div>
                                 </div>
                             </div>
-                            
-                            <button 
+
+                            <button
                                 disabled={!isUsernameValid}
                                 onClick={handleCreateBio}
                                 className="btn btn-primary w-full justify-center gap-2"
@@ -173,9 +176,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>, document.body
             )}
-            
+
             <aside className={`
                 w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-white
                 transition-transform duration-300 ease-out border-r border-gray-100
@@ -198,7 +201,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 {/* Workspace Switcher */}
                 <div className="px-4 mb-2 mt-2" ref={dropdownRef}>
                     <div className="relative">
-                        <button 
+                        <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-900 p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
                             aria-label="Switch workspace"
@@ -222,13 +225,13 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-black/5 p-2">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20 ring-1 ring-black/5 p-2">
                                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                     Your Pages
                                 </div>
                                 <div className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar">
                                     {bios.length > 0 && bios.map((b) => (
-                                        <button 
+                                        <button
                                             key={b.id}
                                             onClick={() => {
                                                 selectBio(b);
@@ -248,10 +251,10 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                         </button>
                                     ))}
                                 </div>
-                                
+
                                 <div className="h-px bg-gray-100 my-2 mx-2" />
-                                
-                                <button 
+
+                                <button
                                     onClick={() => {
                                         setIsDropdownOpen(false);
                                         setIsCreateModalOpen(true);
@@ -275,7 +278,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         Menu
                     </div>
                     {bio ? (
-                        navItems.filter((item:any) => {
+                        navItems.filter((item: any) => {
                             if (!item.minPlan) return true;
                             if (user?.plan === 'free') return false;
                             if (item.minPlan === 'pro' && user?.plan !== 'pro') return false;
@@ -284,11 +287,10 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${
-                                    isActive(item.path)
-                                        ? "bg-primary/15 text-gray-900 font-bold"
-                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
-                                }`}
+                                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${isActive(item.path)
+                                    ? "bg-primary/15 text-gray-900 font-bold"
+                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                    }`}
                             >
                                 <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
                                 <span className="flex-1 text-sm">{item.name}</span>
@@ -303,7 +305,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     ) : (
                         <div className="px-3 py-4 text-center">
                             <p className="text-sm text-gray-500 mb-3">Select or create a page to access the menu.</p>
-                            <button 
+                            <button
                                 onClick={() => setIsCreateModalOpen(true)}
                                 className="btn btn-primary w-full justify-center text-xs"
                             >
@@ -317,9 +319,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 <div className="border-t border-gray-100 bg-white flex flex-col">
                     {bio && (
                         <div className="p-3 pb-0">
-                            <a 
-                                href={`https://${bio.sufix}.portyo.me`} 
-                                target="_blank" 
+                            <a
+                                href={`https://${bio.sufix}.portyo.me`}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
                             >
@@ -338,7 +340,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         </div>
                     )}
 
-                    <Link 
+                    <Link
                         to="/dashboard/settings"
                         className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group cursor-pointer"
                     >
