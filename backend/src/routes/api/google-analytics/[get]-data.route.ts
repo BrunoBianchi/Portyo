@@ -22,7 +22,11 @@ router.get("/", async (req, res) => {
         });
 
         if (!integration) {
-            res.status(404).json({ error: "Integration not found" });
+            res.status(404).json({ 
+                error: "Google Analytics not connected", 
+                message: "Please connect your Google Analytics account first in the Integrations page.",
+                connected: false 
+            });
             return;
         }
 

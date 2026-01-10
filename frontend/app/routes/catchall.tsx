@@ -1,17 +1,26 @@
-import { useRouteError, isRouteErrorResponse, Link } from "react-router";
+import { Link } from "react-router";
 
 export default function CatchAll() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="text-center">
-        <h1 className="text-9xl font-black text-gray-200">404</h1>
-        <p className="text-2xl font-bold text-gray-900 mt-4">Page not found</p>
-        <p className="text-gray-500 mt-2 mb-8">Sorry, we couldn't find the page you're looking for.</p>
-        <Link 
-          to="/" 
-          className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
+    <div className="min-h-screen flex flex-col items-center justify-center bg-transparent px-4 relative overflow-hidden">
+      {/* Background Decorative Elements matches Auth/Dashboard vibe - REMOVED for transparency */}
+      {/* <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-purple-200/30 rounded-full blur-[120px] pointer-events-none" /> */}
+      {/* <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-200/30 rounded-full blur-[120px] pointer-events-none" /> */}
+
+      <div className="text-center relative z-10 max-w-lg mx-auto">
+        <h1 className="text-[150px] font-black text-gray-900 leading-none tracking-tighter opacity-10">404</h1>
+        <div className="mt-[-80px] mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">Page not found</h2>
+          <p className="text-lg text-gray-500 font-medium">
+            Oops! The page you are looking for seems to have wandered off.
+          </p>
+        </div>
+
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center justify-center px-8 py-4 bg-black text-white rounded-2xl font-bold text-lg hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-200"
         >
-          Go back home
+          Back to Dashboard
         </Link>
       </div>
     </div>

@@ -19,5 +19,7 @@ export type Bio = BaseType & {
     ogImage?: string;
     noIndex?: boolean;
     enableSubscribeButton?: boolean;
+    removeBranding?: boolean;
+    customDomain?: string;
     integrations:any[]
 }

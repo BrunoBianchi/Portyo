@@ -4,6 +4,8 @@ import { BioEntity } from "../../database/entity/bio-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
 import { isUserPro } from "./user-pro.service";
 
+import { PLAN_LIMITS, PlanType } from "../constants/plan-limits";
+
 const repository = AppDataSource.getRepository(EmailTemplateEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
 
@@ -15,13 +17,13 @@ export const createTemplate = async (bioId: string, data: { name: string, conten
 
     if (!bio) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
 
-    const isPro = await isUserPro(bio.user.id);
-    if (!isPro) {
-        throw new ApiError(APIErrors.paymentRequiredError, "Email Templates are a PRO feature", 402);
-    }
+    const userPlan = (bio.user?.plan as PlanType) || 'free';
+    const limit = PLAN_LIMITS[userPlan].emailTemplatesPerBio;
 
-    if (bio.emailTemplates && bio.emailTemplates.length >= 5) {
-        throw new ApiError(APIErrors.badRequestError, "You have reached the maximum limit of 5 email templates", 400);
+    const count = await repository.count({ where: { bio: { id: bioId } } });
+
+    if (count >= limit) {
+         throw new ApiError(APIErrors.forbiddenError, `You have reached the limit of ${limit} email template(s) for your ${userPlan} plan. Upgrade to create more.`, 403);
     }
 
     const template = repository.create({

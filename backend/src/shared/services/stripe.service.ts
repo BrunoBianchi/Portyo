@@ -5,6 +5,7 @@ import { findBioById } from "./bio.service";
 import { createIntegration } from "./integration.service";
 import { IntegrationEntity } from "../../database/entity/integration-entity";
 import { env } from "../../config/env";
+import { PLAN_LIMITS, PlanType } from "../constants/plan-limits";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-12-15.clover",
@@ -94,8 +95,12 @@ export const createProductLink = async (productId: string, bioId: string) => {
         ],
     };
 
-    if ((bioObject.user as UserEntity).plan !== 'pro') {
-        params.application_fee_percent = 2.5;
+    const userPlan = (bioObject.user as UserEntity).plan as PlanType || 'free';
+    const feeMetric = PLAN_LIMITS[userPlan].storeFee; // 0.03, 0, etc.
+    const feePercent = feeMetric * 100;
+
+    if (feePercent > 0) {
+        params.application_fee_percent = feePercent;
     }
 
     const paymentLink = await stripe.paymentLinks.create(params, {

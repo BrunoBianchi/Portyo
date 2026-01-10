@@ -2,21 +2,24 @@ import { useContext, useState, useEffect } from "react";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import type { Route } from "../+types/root";
-import { 
-    Save, 
-    Lock, 
-    BarChart3, 
+import {
+    Save,
+    Lock,
+    BarChart3,
     Facebook,
     Sparkles,
-    Settings
+    Settings,
+    X,
+    ExternalLink
 } from "lucide-react";
 import { api } from "~/services/api";
+import { Link } from "react-router";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Analytics Settings | Portyo" },
-    { name: "description", content: "Manage your page analytics settings" },
-  ];
+export function meta({ }: Route.MetaArgs) {
+    return [
+        { title: "Analytics Settings | Portyo" },
+        { name: "description", content: "Manage your page analytics settings" },
+    ];
 }
 
 export default function DashboardAnalytics() {
@@ -27,13 +30,14 @@ export default function DashboardAnalytics() {
     const [isSaving, setIsSaving] = useState(false);
     const [analyticsData, setAnalyticsData] = useState<any>(null);
     const [isLoadingData, setIsLoadingData] = useState(false);
+    const [showGAPopup, setShowGAPopup] = useState(false);
 
     useEffect(() => {
         if (bio) {
             setGoogleAnalyticsId(bio.googleAnalyticsId || "");
             setFacebookPixelId(bio.facebookPixelId || "");
             setNoIndex(bio.noIndex || false);
-            
+
             // Check if connected to GA and fetch data
             checkGAConnection();
         }
@@ -49,8 +53,11 @@ export default function DashboardAnalytics() {
             if (res.data) {
                 setAnalyticsData(res.data);
             }
-        } catch (error) {
-            // Not connected or error
+        } catch (error: any) {
+            // Check if it's the "not connected" error
+            if (error.response?.status === 404 && error.response?.data?.connected === false) {
+                setShowGAPopup(true);
+            }
             console.log("GA Data fetch failed (likely not connected)", error);
         } finally {
             setIsLoadingData(false);
@@ -74,7 +81,7 @@ export default function DashboardAnalytics() {
     };
 
     return (
-        <AuthorizationGuard minPlan="free" fallback={
+        <AuthorizationGuard minPlan="standard" fallback={
             <div className="p-6 max-w-4xl mx-auto text-center flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
@@ -86,13 +93,57 @@ export default function DashboardAnalytics() {
                 </button>
             </div>
         }>
+            {/* Google Analytics Not Connected Popup */}
+            {showGAPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setShowGAPopup(false)}
+                            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            <X className="w-5 h-5 text-gray-400" />
+                        </button>
+
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <BarChart3 className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Google Analytics Not Connected</h3>
+                                <p className="text-sm text-gray-500">Connect to see your data</p>
+                            </div>
+                        </div>
+
+                        <p className="text-gray-600 mb-6">
+                            To view Google Analytics data, you need to connect your Google Analytics account first in the Integrations page.
+                        </p>
+
+                        <div className="flex gap-3">
+                            <Link
+                                to="/dashboard/integrations"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                            >
+                                Go to Integrations
+                                <ExternalLink className="w-4 h-4" />
+                            </Link>
+                            <button
+                                onClick={() => setShowGAPopup(false)}
+                                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="p-4 md:p-6 max-w-5xl mx-auto pb-12">
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">Analytics Settings</h1>
                         <p className="text-text-muted text-sm">Tracking codes and other advanced configurations.</p>
                     </div>
-                    <button 
+                    <button
                         onClick={handleSave}
                         disabled={isSaving}
                         className="flex items-center justify-center gap-2 px-6 py-2.5 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-900 transition-all shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -169,8 +220,8 @@ export default function DashboardAnalytics() {
                                     <BarChart3 className="w-3 h-3" />
                                     Google Analytics ID
                                 </label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={googleAnalyticsId}
                                     onChange={(e) => setGoogleAnalyticsId(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
@@ -183,20 +234,20 @@ export default function DashboardAnalytics() {
                                     <Facebook className="w-3 h-3" />
                                     Facebook Pixel ID
                                 </label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={facebookPixelId}
                                     onChange={(e) => setFacebookPixelId(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                                     placeholder="123456789012345"
                                 />
                             </div>
-                            
+
                             <div className="md:col-span-2">
                                 <label className="flex items-center gap-4 p-4 rounded-xl border border-border bg-surface-alt cursor-pointer hover:bg-surface-muted transition-colors group">
                                     <div className="relative flex items-center">
-                                        <input 
-                                            type="checkbox" 
+                                        <input
+                                            type="checkbox"
                                             checked={noIndex}
                                             onChange={(e) => setNoIndex(e.target.checked)}
                                             className="peer sr-only"

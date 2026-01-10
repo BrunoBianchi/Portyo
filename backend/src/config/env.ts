@@ -18,8 +18,8 @@ const envSchema = z.object({
   DB_SSL: z.string().transform((val) => val === "true").default(false),
   
   // Security
-  SESSION_SECRET: z.string().default("secret"),
-  JWT_SECRET: z.string().default("secret"),
+  SESSION_SECRET: z.string().min(1, "SESSION_SECRET is required"),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters for security"),
   
   // Logging
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),

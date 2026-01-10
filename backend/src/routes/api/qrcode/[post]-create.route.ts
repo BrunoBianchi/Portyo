@@ -2,9 +2,11 @@ import { Router, Request, Response, NextFunction } from "express";
 import z from "zod"
 import { createQrCode } from "../../../shared/services/qrcode.service";
 import { ownerMiddleware } from "../../../middlewares/owner.middleware";
+import { requireAuth } from "../../../middlewares/auth.middleware";
 const router: Router = Router();
 
-router.post("/:id/", ownerMiddleware, async(req: Request, res: Response) => {
+// Create QR code - Requires Auth + Bio ownership
+router.post("/:id/", requireAuth, ownerMiddleware, async(req: Request, res: Response) => {
     const schema = z.object({
         value: z.string()
     }).parse(req.body)

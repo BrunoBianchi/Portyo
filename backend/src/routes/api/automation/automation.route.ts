@@ -11,11 +11,15 @@ import {
     getExecutionsByAutomation,
 } from "../../../shared/services/automation.service";
 import { ownerMiddleware } from "../../../middlewares/owner.middleware";
+import { requireAuth } from "../../../middlewares/auth.middleware";
+import { isUserPro, requirePaidPlan } from "../../../middlewares/user-pro.middleware";
+import { requireAutomationOwner } from "../../../middlewares/automation-owner.middleware";
 
 const router: Router = Router();
 
-// Create automation
-router.post("/:id", ownerMiddleware, async (req, res) => {
+
+// Create automation - Requires Paid Plan + Bio ownership
+router.post("/:id", requireAuth, ownerMiddleware, requirePaidPlan, async (req, res) => {
     try {
         const { id: bioId } = z.object({ id: z.string().uuid() }).parse(req.params);
         const { name, nodes, edges } = z.object({
@@ -31,8 +35,8 @@ router.post("/:id", ownerMiddleware, async (req, res) => {
     }
 });
 
-// List automations for a bio
-router.get("/bio/:id", ownerMiddleware, async (req, res) => {
+// List automations for a bio - Requires Paid Plan + Bio ownership
+router.get("/bio/:id", requireAuth, ownerMiddleware, requirePaidPlan, async (req, res) => {
     try {
         const { id: bioId } = z.object({ id: z.string().uuid() }).parse(req.params);
         const automations = await getAutomationsByBio(bioId);
@@ -42,8 +46,8 @@ router.get("/bio/:id", ownerMiddleware, async (req, res) => {
     }
 });
 
-// Get single automation
-router.get("/:automationId", async (req, res) => {
+// Get single automation - Requires Paid Plan + Automation ownership
+router.get("/:automationId", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         const automation = await getAutomationById(automationId);
@@ -56,8 +60,8 @@ router.get("/:automationId", async (req, res) => {
     }
 });
 
-// Update automation
-router.put("/:automationId", async (req, res) => {
+// Update automation - Requires Paid Plan + Automation ownership
+router.put("/:automationId", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         const data = z.object({
@@ -74,8 +78,8 @@ router.put("/:automationId", async (req, res) => {
     }
 });
 
-// Delete automation
-router.delete("/:automationId", async (req, res) => {
+// Delete automation - Requires Paid Plan + Automation ownership
+router.delete("/:automationId", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         await deleteAutomation(automationId);
@@ -85,8 +89,8 @@ router.delete("/:automationId", async (req, res) => {
     }
 });
 
-// Activate automation
-router.post("/:automationId/activate", async (req, res) => {
+// Activate automation - Requires Paid Plan + Automation ownership
+router.post("/:automationId/activate", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         const automation = await activateAutomation(automationId);
@@ -96,8 +100,8 @@ router.post("/:automationId/activate", async (req, res) => {
     }
 });
 
-// Deactivate automation
-router.post("/:automationId/deactivate", async (req, res) => {
+// Deactivate automation - Requires Paid Plan + Automation ownership
+router.post("/:automationId/deactivate", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         const automation = await deactivateAutomation(automationId);
@@ -107,8 +111,8 @@ router.post("/:automationId/deactivate", async (req, res) => {
     }
 });
 
-// Get executions for automation
-router.get("/:automationId/executions", async (req, res) => {
+// Get executions for automation - Requires Paid Plan + Automation ownership
+router.get("/:automationId/executions", requireAuth, requirePaidPlan, requireAutomationOwner, async (req, res) => {
     try {
         const { automationId } = z.object({ automationId: z.string().uuid() }).parse(req.params);
         const executions = await getExecutionsByAutomation(automationId);

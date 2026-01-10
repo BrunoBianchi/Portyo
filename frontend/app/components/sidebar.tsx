@@ -26,8 +26,13 @@ import {
     QrCode,
     Bell,
     Calendar,
-    LayoutTemplate
+    LayoutTemplate,
+    Lock
 } from "lucide-react";
+import { PLAN_LIMITS } from "~/constants/plan-limits";
+import type { PlanType } from "~/constants/plan-limits";
+
+import { UpgradePopup } from "./upgrade-popup";
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -43,6 +48,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
     const [newUsername, setNewUsername] = useState("");
+
+    const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
+    const [forcedPlan, setForcedPlan] = useState<'standard' | 'pro' | undefined>(undefined);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isActive = (path: string) => location.pathname === path;
@@ -58,7 +66,19 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     const isUsernameValid = newUsername.length >= 3 && !newUsername.endsWith("-");
 
+    const userPlan = (user?.plan || 'free') as PlanType;
+    const bioLimit = PLAN_LIMITS[userPlan]?.bios || 1;
+    const canCreateBio = bios.length < bioLimit;
+
     const handleCreateBio = async () => {
+        if (!canCreateBio) {
+            setIsCreateModalOpen(false);
+            if (userPlan === 'standard') {
+                setForcedPlan('pro');
+            }
+            setIsUpgradePopupOpen(true);
+            return;
+        }
         if (!isUsernameValid) return;
         setCreateError(null);
         try {
@@ -88,8 +108,8 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
-        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar },
-        { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true },
+        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true },
+        { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
@@ -105,6 +125,17 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     onClick={onClose}
                 />
             )}
+
+
+
+            <UpgradePopup
+                isOpen={isUpgradePopupOpen}
+                onClose={() => {
+                    setIsUpgradePopupOpen(false);
+                    setForcedPlan(undefined);
+                }}
+                forcePlan={forcedPlan}
+            />
 
             {/* Create Bio Modal */}
             {isCreateModalOpen && typeof document !== 'undefined' && createPortal(
@@ -263,9 +294,12 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     aria-label="Create new page"
                                 >
                                     <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-500 group-hover:text-gray-700">
-                                        <Plus className="w-4 h-4" />
+                                        {canCreateBio ? <Plus className="w-4 h-4" /> : <Lock className="w-3 h-3" />}
                                     </div>
-                                    <span className="font-bold text-sm">Create new page</span>
+                                    <div className="flex flex-col items-start">
+                                        <span className="font-bold text-sm">Create new page</span>
+                                        {!canCreateBio && <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Limit Reached</span>}
+                                    </div>
                                 </button>
                             </div>
                         )}
@@ -278,38 +312,57 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         Menu
                     </div>
                     {bio ? (
-                        navItems.filter((item: any) => {
-                            if (!item.minPlan) return true;
-                            if (user?.plan === 'free') return false;
-                            if (item.minPlan === 'pro' && user?.plan !== 'pro') return false;
-                            return true;
-                        }).map((item) => (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${isActive(item.path)
-                                    ? "bg-primary/15 text-gray-900 font-bold"
-                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
-                                    }`}
-                            >
-                                <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
-                                <span className="flex-1 text-sm">{item.name}</span>
-                                {/* @ts-ignore */}
-                                {item.isPro && (
-                                    <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
-                                        Pro
-                                    </span>
-                                )}
-                            </Link>
-                        ))
+                        navItems.map((item) => {
+                            // @ts-ignore
+                            const isLocked = item.isProOnly ? userPlan !== 'pro' : (item.isPro && userPlan === 'free');
+                            // @ts-ignore  
+                            const badgeText = item.isProOnly ? 'PRO' : 'Standard';
+
+                            return (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={(e) => {
+                                        if (isLocked) {
+                                            e.preventDefault();
+                                            if (item.isProOnly && userPlan === 'standard') {
+                                                setForcedPlan('pro');
+                                            } else {
+                                                setForcedPlan(undefined);
+                                            }
+                                            setIsUpgradePopupOpen(true);
+                                        }
+                                    }}
+                                    className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${isActive(item.path)
+                                        ? "bg-primary/15 text-gray-900 font-bold"
+                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                        }`}
+                                >
+                                    <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
+                                    <span className="flex-1 text-sm">{item.name}</span>
+                                    {isLocked && (
+                                        <span className={`px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
+                                            {badgeText}
+                                        </span>
+                                    )}
+                                </Link>
+                            )
+                        })
                     ) : (
                         <div className="px-3 py-4 text-center">
                             <p className="text-sm text-gray-500 mb-3">Select or create a page to access the menu.</p>
                             <button
-                                onClick={() => setIsCreateModalOpen(true)}
+                                onClick={() => {
+                                    if (canCreateBio) {
+                                        setIsCreateModalOpen(true);
+                                    } else {
+                                        setIsUpgradePopupOpen(true);
+                                    }
+                                }}
                                 className="btn btn-primary w-full justify-center text-xs"
                             >
-                                <Plus className="w-3 h-3 mr-1" /> Create Page
+                                {canCreateBio ? <Plus className="w-3 h-3 mr-1" /> : <Lock className="w-3 h-3 mr-1" />}
+                                {canCreateBio ? "Create Page" : "Unlock More Pages"}
                             </button>
                         </div>
                     )}
@@ -350,8 +403,11 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold truncate text-gray-900">{user?.fullname || "User"}</p>
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 uppercase tracking-wider border border-gray-200">
-                                    Free
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${userPlan === 'free'
+                                    ? 'bg-gray-100 text-gray-600 border-gray-200'
+                                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-yellow-500 shadow-sm'
+                                    }`}>
+                                    {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)}
                                 </span>
                             </div>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>

@@ -1,36 +1,50 @@
-
 import React from 'react';
-import { Linkedin } from "lucide-react";
-import { TwitterXIcon, TikTokIcon, ProductHuntIcon } from "./icons";
+import { ProductHuntIcon } from "./icons";
 
 export default function FeaturedSection() {
   return (
-    <section className="w-full py-12 px-4">
+    <section className="w-full py-20 px-4 bg-transparent">
       <div className="max-w-6xl mx-auto text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-text-main mb-12 font-sans">
-          As featured in...
+        <h2 className="text-sm uppercase tracking-widest font-bold text-text-muted mb-12 font-sans opacity-70">
+          As featured in
         </h2>
-        
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+
+        <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20">
+
+          {/* Product Hunt */}
+          <div className="group transition-transform hover:-translate-y-1 duration-300">
+            <div className="h-14 w-auto flex items-center justify-center opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">
+              <ProductHuntIcon className="h-14 w-14 text-[#DA552F]" />
+            </div>
+          </div>
+
           {/* Twitter (X) */}
-          <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <TwitterXIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
+          <div className="group transition-transform hover:-translate-y-1 duration-300">
+            <img
+              src="/icons/twitter-x-seeklogo.png"
+              alt="Twitter X"
+              className="h-12 w-auto object-contain opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+            />
           </div>
 
           {/* TikTok */}
-          <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <TikTokIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
-          </div>
-
-          {/* Product Hunt */}
-          <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <ProductHuntIcon className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
+          <div className="group transition-transform hover:-translate-y-1 duration-300">
+            <img
+              src="/icons/tiktok-seeklogo.png"
+              alt="TikTok"
+              className="h-14 w-auto object-contain opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+            />
           </div>
 
           {/* LinkedIn */}
-          <div className="bg-white rounded-full px-10 py-6 shadow-sm flex items-center justify-center min-w-[200px] transition-transform hover:-translate-y-1 duration-300 group cursor-default">
-            <Linkedin className="w-8 h-8 text-text-main group-hover:scale-110 transition-transform duration-300" />
+          <div className="group transition-transform hover:-translate-y-1 duration-300">
+            <img
+              src="/icons/linkedin-new-2020-seeklogo.png"
+              alt="LinkedIn"
+              className="h-14 w-auto object-contain opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+            />
           </div>
+
         </div>
       </div>
     </section>

@@ -37,6 +37,7 @@ import {
   FlagIcon,
   ArrowRightLongIcon
 } from "~/components/icons";
+import { UpgradePrompt } from "~/components/upgrade-prompt";
 
 export const meta: MetaFunction = () => {
   return [
@@ -722,27 +723,26 @@ export default function DashboardEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog", "Layout"]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog"]);
   const [expandedSettings, setExpandedSettings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"blocks" | "settings">("blocks");
-  const [bgType, setBgType] = useState<"color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta">("color");
+  const [bgType, setBgType] = useState<"color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat">("color");
   const [bgColor, setBgColor] = useState("#f8fafc");
   const [bgSecondaryColor, setBgSecondaryColor] = useState("#e2e8f0");
   const [bgImage, setBgImage] = useState("");
   const [bgVideo, setBgVideo] = useState("");
+
+  // Card Styles
+  const [cardStyle, setCardStyle] = useState<"none" | "solid" | "frosted">("none");
+  const [cardBackgroundColor, setCardBackgroundColor] = useState("#ffffff");
+  const [cardOpacity, setCardOpacity] = useState(100);
+  const [cardBlur, setCardBlur] = useState(10); // Standard blur amount
+
   const [usernameColor, setUsernameColor] = useState("#111827");
   const [imageStyle, setImageStyle] = useState("circle");
   const [enableSubscribeButton, setEnableSubscribeButton] = useState(false);
-
-  // Card/Layout State
-  const [cardStyle, setCardStyle] = useState("none");
-  const [cardBackgroundColor, setCardBackgroundColor] = useState("#ffffff");
-  const [cardBorderColor, setCardBorderColor] = useState("#e2e8f0");
-  const [cardBorderWidth, setCardBorderWidth] = useState(0);
-  const [cardBorderRadius, setCardBorderRadius] = useState(16);
-  const [cardShadow, setCardShadow] = useState("none");
-  const [cardPadding, setCardPadding] = useState(24);
-  const [maxWidth, setMaxWidth] = useState(640);
+  const [removeBranding, setRemoveBranding] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState<'branding' | null>(null);
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -793,24 +793,22 @@ export default function DashboardEditor() {
       setBgSecondaryColor(bio.bgSecondaryColor || "#e2e8f0");
       setBgImage(bio.bgImage || "");
       setBgVideo(bio.bgVideo || "");
+
+      setCardStyle((bio.cardStyle as any) || "none");
+      setCardBackgroundColor(bio.cardBackgroundColor || "#ffffff");
+      setCardOpacity(bio.cardOpacity !== undefined ? bio.cardOpacity : 100);
+      setCardBlur(bio.cardBlur !== undefined ? bio.cardBlur : 10);
+
       setUsernameColor(bio.usernameColor || "#111827");
       setImageStyle(bio.imageStyle || "circle");
       setEnableSubscribeButton(bio.enableSubscribeButton || false);
+      setRemoveBranding(bio.removeBranding || false);
 
-      // Load Card/Layout settings
-      setCardStyle(bio.cardStyle || "none");
-      setCardBackgroundColor(bio.cardBackgroundColor || "#ffffff");
-      setCardBorderColor(bio.cardBorderColor || "#e2e8f0");
-      setCardBorderWidth(Number(bio.cardBorderWidth ?? 0));
-      setCardBorderRadius(Number(bio.cardBorderRadius ?? 16));
-      setCardShadow(bio.cardShadow || "none");
-      setCardPadding(Number(bio.cardPadding ?? 24));
-      setMaxWidth(Number(bio.maxWidth ?? 640));
 
       // Fetch QR Codes
       getQrCodes(bio.id).then(setAvailableQrCodes).catch(console.error);
     }
-  }, [bio?.id, bio?.blocks]);
+  }, [bio?.id]);
 
   const handleCreateQrCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -968,18 +966,8 @@ export default function DashboardEditor() {
     setIsSaving(true);
     setStatus("idle");
     try {
-      const layoutSettings = {
-        cardStyle,
-        cardBackgroundColor,
-        cardBorderColor,
-        cardBorderWidth: Number(cardBorderWidth),
-        cardBorderRadius: Number(cardBorderRadius),
-        cardShadow,
-        cardPadding: Number(cardPadding),
-        maxWidth: Number(maxWidth)
-      };
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, ...layoutSettings });
-      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, ...layoutSettings });
+      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding });
+      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
     } catch (error) {
@@ -987,7 +975,7 @@ export default function DashboardEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, updateBio, cardStyle, cardBackgroundColor, cardBorderColor, cardBorderWidth, cardBorderRadius, cardShadow, cardPadding, maxWidth]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, updateBio, removeBranding]);
 
   const handleFieldChange = useCallback((id: string, key: keyof BioBlock, value: any) => {
     setBlocks((prev) => prev.map((block) => (block.id === id ? { ...block, [key]: value } : block)));
@@ -1035,17 +1023,14 @@ export default function DashboardEditor() {
       bgSecondaryColor,
       bgImage,
       bgVideo,
+      cardStyle,
+      cardBackgroundColor,
+      cardOpacity,
+      cardBlur,
       usernameColor,
       imageStyle,
       enableSubscribeButton,
-      cardStyle,
-      cardBackgroundColor,
-      cardBorderColor,
-      cardBorderWidth,
-      cardBorderRadius,
-      cardShadow,
-      cardPadding,
-      maxWidth
+      isPreview: true,
     };
     const html = blocksToHtml(blocks, user, tempBio);
     return {
@@ -1053,681 +1038,582 @@ export default function DashboardEditor() {
       html,
       htmlBase64: null
     };
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, usernameColor, imageStyle, enableSubscribeButton, cardStyle, cardBackgroundColor, cardBorderColor, cardBorderWidth, cardBorderRadius, cardShadow, cardPadding, maxWidth]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton]);
+
+  const [debouncedHtml, setDebouncedHtml] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedHtml(previewBio?.html || "");
+    }, 300); // 300ms debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [previewBio?.html]);
+
+  // Real-time preview update for smoother experience
+  useEffect(() => {
+    if (!iframeRef.current?.contentDocument) return;
+
+    const container = iframeRef.current.contentDocument.getElementById('profile-container');
+    if (!container) return;
+
+    if (cardStyle === 'none') {
+      const style = container.style as any;
+      style.backgroundColor = 'transparent';
+      style.backdropFilter = 'none';
+      style.webkitBackdropFilter = 'none';
+      style.boxShadow = 'none';
+      style.border = 'none';
+      style.padding = '0'; // Or whatever default padding logic was
+    } else {
+      const hex = cardBackgroundColor || '#ffffff';
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      const alpha = (cardOpacity !== undefined ? cardOpacity : 100) / 100;
+
+      const style = container.style as any;
+      style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      style.borderRadius = '24px';
+      style.padding = '32px 24px';
+      style.boxShadow = '0 4px 20px rgba(0,0,0,0.05)';
+
+      if (cardStyle === 'frosted') {
+        const blur = cardBlur !== undefined ? cardBlur : 10;
+        style.backdropFilter = `blur(${blur}px)`;
+        style.webkitBackdropFilter = `blur(${blur}px)`;
+        style.border = '1px solid rgba(255,255,255,0.1)';
+      } else {
+        style.backdropFilter = 'none';
+        style.webkitBackdropFilter = 'none';
+        style.border = 'none';
+      }
+    }
+
+  }, [cardStyle, cardBackgroundColor, cardOpacity, cardBlur]);
 
   if (!bio) {
     return (
-      <div className="p-8">
-        <div className="max-w-3xl mx-auto bg-surface border border-border rounded-2xl p-8 text-center">
-          <p className="text-lg text-text-muted">Create or select a bio to start editing.</p>
+      <div className="p-8 min-h-screen bg-[#f9f7f2] flex items-center justify-center">
+        <div className="max-w-md w-full bg-white border border-gray-100 rounded-2xl p-8 text-center shadow-sm">
+          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <SearchIcon className="text-gray-400 w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No Bio Selected</h3>
+          <p className="text-sm text-gray-500 mb-6">Create or select a bio to start editing.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-surface-alt/60">
+    <div className="min-h-screen bg-[#f9f7f2] font-sans text-gray-900 flex flex-col h-screen overflow-hidden">
       <style>{`
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        @keyframes wobble { 0% { transform: translateX(0%); } 15% { transform: translateX(-25%) rotate(-5deg); } 30% { transform: translateX(20%) rotate(3deg); } 45% { transform: translateX(-15%) rotate(-3deg); } 60% { transform: translateX(10%) rotate(2deg); } 75% { transform: translateX(-5%) rotate(-1deg); } 100% { transform: translateX(0%); } }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        /* Custom Scrollbar for inner content */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #e5e7eb;
+          border-radius: 20px;
+        }
       `}</style>
-      <div className="px-4 py-4 max-w-full mx-auto space-y-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs text-text-muted">Drag & drop editor</p>
-            <h1 className="text-2xl font-bold text-text-main">Build your bio</h1>
+
+      {/* Top Bar */}
+      <header className="shrink-0 px-6 py-4 flex items-center justify-between bg-[#f9f7f2] z-10">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Editor</p>
           </div>
-          <div className="flex flex-wrap gap-3 items-center">
-            <button
-              onClick={() => setShowMobilePreview(true)}
-              className="xl:hidden inline-flex items-center gap-2 rounded-xl bg-white border border-border px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition"
-            >
-              <EyeIcon />
-              Preview
-            </button>
-            <div className="flex items-center bg-white rounded-xl border border-border shadow-sm p-1">
-              <button
-                onClick={() => setShareData({ url: `https://${bio.sufix}.portyo.me`, title: `@${bio.sufix}` })}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                Share
-                <ShareIcon />
-              </button>
-              <div className="w-px h-4 bg-gray-200 mx-1"></div>
-              <a
-                href={`https://${bio.sufix}.portyo.me`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                Open page
-                <ExternalLinkIcon />
-              </a>
-            </div>
-            <button
-              onClick={handleSave}
-              className="inline-flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-white shadow-md hover:bg-gray-900 transition"
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save bio"}
-            </button>
-            {status === "saved" && <span className="text-sm text-green-600">Saved</span>}
-            {status === "error" && <span className="text-sm text-red-600">Error saving</span>}
-          </div>
+          <h1 className="text-xl font-bold text-gray-900">{bio.sufix}</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-1 items-start">
-          <section className="bg-white border border-border rounded-xl p-3 shadow-sm h-[calc(100vh-120px)] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
-            <div className="flex p-1 bg-gray-100 rounded-lg mb-4">
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1">
+            <button
+              onClick={() => setShareData({ url: `https://${bio.sufix}.portyo.me`, title: `@${bio.sufix}` })}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Share
+            </button>
+            <div className="w-px h-4 bg-gray-200 mx-1"></div>
+            <a
+              href={`https://${bio.sufix}.portyo.me`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Open page
+              <ExternalLinkIcon width={12} height={12} />
+            </a>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 transition-all text-white disabled:opacity-70 disabled:hover:translate-y-0"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <span>Save bio</span>
+              </>
+            )}
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Grid */}
+      <div className="flex-1 px-6 pb-6 min-h-0">
+        <div className="grid grid-cols-12 gap-6 h-full">
+
+          {/* Left Column: Tools & Settings (Col Span 3) */}
+          <div className="col-span-12 lg:col-span-3 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-100 p-3 bg-white">
               <button
                 onClick={() => setActiveTab("blocks")}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === "blocks" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                  }`}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "blocks" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
               >
                 Blocks
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === "settings" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                  }`}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "settings" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
               >
                 Settings
               </button>
             </div>
 
-            {activeTab === "blocks" ? (
-              <>
-                <div className="mb-6">
-                  <div className="relative">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
+              {activeTab === "blocks" ? (
+                <div className="space-y-6">
+                  {/* Search */}
+                  <div className="relative group">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Search"
+                      placeholder="Search blocks..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
                     />
                   </div>
-                </div>
 
-                <div className="space-y-6">
-                  {Object.entries(groupedPalette).map(([category, items]) => (
-                    <div key={category}>
-                      <h3 className="mb-3">
-                        <button
-                          className="text-sm font-medium text-text-main flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors w-full text-left"
-                          onClick={() => toggleCategory(category)}
-                          aria-expanded={expandedCategories.includes(category)}
-                        >
-                          <span className={`transform transition-transform duration-200 ${expandedCategories.includes(category) ? '' : '-rotate-90'}`}>
-                            <ChevronDownIcon width={14} height={14} />
-                          </span>
-                          {category}
-                        </button>
-                      </h3>
-                      {expandedCategories.includes(category) && (
-                        <div className="grid grid-cols-3 gap-2">
-                          {items.map((item) => {
-                            const isLocked = item.isPro && user?.plan !== 'pro';
-                            return (
-                              <div
-                                key={item.type}
-                                draggable={!isLocked}
-                                onDragStart={() => !isLocked && setDragItem({ source: "palette", type: item.type as BioBlock["type"] })}
-                                onDragEnd={() => setDragItem(null)}
-                                className={`flex flex-col items-center justify-center gap-1 p-1.5 rounded-2xl border border-border bg-white transition-all group shadow-sm relative ${isLocked
-                                  ? 'opacity-60 cursor-not-allowed'
-                                  : 'hover:border-primary hover:bg-primary/5 cursor-grab active:cursor-grabbing hover:shadow-md'
-                                  }`}
-                              >
-                                {isLocked && (
-                                  <div className="absolute top-1 right-1 bg-black text-white text-[8px] px-1 rounded font-bold z-10">
-                                    PRO
+                  {/* Palette Groups */}
+                  <div className="space-y-6 pb-8">
+                    {Object.keys(groupedPalette).length === 0 ? (
+                      <div className="text-center py-10 text-gray-400 text-xs font-medium">No blocks found</div>
+                    ) : (
+                      Object.entries(groupedPalette).map(([category, items]) => (
+                        <div key={category}>
+                          <button
+                            className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                            onClick={() => toggleCategory(category)}
+                          >
+                            {category}
+                            <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedCategories.includes(category) ? 'rotate-0' : '-rotate-90'}`} />
+                          </button>
+
+                          {expandedCategories.includes(category) && (
+                            <div className="grid grid-cols-2 gap-3">
+                              {items.map((item) => {
+                                const isLocked = item.isPro && user?.plan !== 'pro';
+                                return (
+                                  <div
+                                    key={item.type}
+                                    draggable={!isLocked}
+                                    onDragStart={() => !isLocked && setDragItem({ source: "palette", type: item.type as BioBlock["type"] })}
+                                    onDragEnd={() => setDragItem(null)}
+                                    className={`
+                                                    group relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-gray-100 bg-white transition-all duration-200
+                                                    ${isLocked
+                                        ? 'opacity-60 grayscale cursor-not-allowed bg-gray-50'
+                                        : 'cursor-grab active:cursor-grabbing hover:border-blue-200 hover:shadow-md hover:-translate-y-1'
+                                      }
+                                                `}
+                                  >
+                                    {isLocked && <div className="absolute top-2 right-2 flex space-x-1"><div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>}
+
+                                    <div className={`
+                                                    w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-500 mb-1 transition-colors
+                                                    ${!isLocked && 'group-hover:bg-blue-50 group-hover:text-blue-600'}
+                                                 `}>
+                                      <div className="scale-90">
+                                        {item.icon}
+                                      </div>
+                                    </div>
+                                    <span className="text-[11px] font-semibold text-gray-700 text-center leading-tight">{item.label}</span>
                                   </div>
-                                )}
-                                <div className={`text-gray-500 transition-colors [&>svg]:w-5 [&>svg]:h-5 ${!isLocked && 'group-hover:text-primary'}`}>
-                                  {item.icon}
-                                </div>
-                                <p className="font-medium text-[10px] text-text-main text-center leading-tight">{item.label}</p>
-                              </div>
-                            );
-                          })}
+                                )
+                              })}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {Object.keys(groupedPalette).length === 0 && (
-                    <div className="text-center py-8 text-text-muted text-sm">
-                      No blocks found
-                    </div>
-                  )}
+                      ))
+                    )}
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="space-y-6">
-                {/* Background Section */}
-                <div>
-                  <h3 className="mb-3">
+              ) : (
+                /* Settings Tab content */
+                <div className="space-y-8 pb-8">
+                  {/* Background Settings */}
+                  <div>
                     <button
-                      className="text-sm font-medium text-text-main flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors w-full text-left"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("background")}
-                      aria-expanded={expandedSettings.includes("background")}
                     >
-                      <span className={`transform transition-transform duration-200 ${expandedSettings.includes("background") ? '' : '-rotate-90'}`}>
-                        <ChevronDownIcon width={14} height={14} />
-                      </span>
                       Background
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("background") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
-                  </h3>
-
-                  {expandedSettings.includes("background") && (
-                    <div className="pl-2 space-y-6">
-                      <div>
-                        <label className="text-xs font-medium text-gray-700 mb-2 block">Type</label>
-                        <div className="grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
-                          {(['color', 'image', 'video', 'grid', 'dots', 'waves', 'polka', 'stripes', 'zigzag', 'mesh', 'particles', 'noise', 'abstract', 'palm-leaves', 'blueprint', 'marble', 'concrete', 'terracotta'] as const).map((type) => (
+                    {expandedSettings.includes("background") && (
+                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                        <div className="grid grid-cols-3 gap-2">
+                          {(['color', 'image', 'video', 'grid', 'dots', 'waves', 'abstract', 'palm-leaves', 'wheat', 'gradient', 'blueprint', 'marble', 'wood-grain', 'brick', 'frosted-glass', 'steel', 'concrete', 'terracotta']).map((type) => (
                             <button
                               key={type}
-                              onClick={() => setBgType(type)}
-                              className={`py-1.5 text-xs font-medium rounded-md transition-all ${bgType === type ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                                }`}
+                              onClick={() => setBgType(type as any)}
+                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${bgType === type ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                             >
-                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                              {type.replace('-', ' ')}
                             </button>
                           ))}
                         </div>
-                      </div>
 
-                      {bgType === "color" && (
-                        <div>
-                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Background Color</label>
-                          <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                            <div className="relative flex-shrink-0 w-10 h-10">
-                              <input
-                                type="color"
-                                value={bgColor}
-                                onChange={(e) => setBgColor(e.target.value)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                              />
-                              <div
-                                className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                                style={{ backgroundColor: bgColor }}
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <input
-                                type="text"
-                                value={bgColor}
-                                onChange={(e) => setBgColor(e.target.value)}
-                                className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                                placeholder="#000000"
-                              />
-                              <p className="text-[10px] text-gray-400 mt-0.5">Hex color code</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {['grid', 'dots', 'waves', 'polka', 'stripes', 'zigzag', 'mesh', 'particles', 'noise', 'abstract', 'palm-leaves', 'blueprint', 'marble', 'concrete', 'terracotta'].includes(bgType) && (
-                        <div className="flex flex-col gap-4">
+                        {bgType === 'color' && (
                           <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Background Color</label>
-                            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                              <div className="relative flex-shrink-0 w-10 h-10">
-                                <input
-                                  type="color"
-                                  value={bgColor}
-                                  onChange={(e) => setBgColor(e.target.value)}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                />
-                                <div
-                                  className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                                  style={{ backgroundColor: bgColor }}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <input
-                                  type="text"
-                                  value={bgColor}
-                                  onChange={(e) => setBgColor(e.target.value)}
-                                  className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                                  placeholder="#000000"
-                                />
-                                <p className="text-[10px] text-gray-400 mt-0.5">Base color</p>
-                              </div>
+                            <label className="text-xs font-medium text-gray-900 mb-2 block">Overlay Color</label>
+                            <div className="h-10 w-full rounded-lg border border-gray-200 flex items-center px-2 relative bg-gray-50">
+                              <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0" />
+                              <input type="text" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="ml-2 bg-transparent text-xs font-mono text-gray-600 outline-none w-full" />
                             </div>
                           </div>
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Pattern Color</label>
-                            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                              <div className="relative flex-shrink-0 w-10 h-10">
-                                <input
-                                  type="color"
-                                  value={bgSecondaryColor}
-                                  onChange={(e) => setBgSecondaryColor(e.target.value)}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                />
-                                <div
-                                  className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                                  style={{ backgroundColor: bgSecondaryColor }}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <input
-                                  type="text"
-                                  value={bgSecondaryColor}
-                                  onChange={(e) => setBgSecondaryColor(e.target.value)}
-                                  className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                                  placeholder="#000000"
-                                />
-                                <p className="text-[10px] text-gray-400 mt-0.5">Pattern accent</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {bgType === "image" && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">Image URL</label>
-                          <input
-                            type="text"
-                            value={bgImage}
-                            onChange={(e) => setBgImage(e.target.value)}
-                            placeholder="https://example.com/image.jpg"
-                            className="w-full px-3 py-2 bg-gray-50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          />
-                          <p className="text-xs text-gray-500 mt-2">Enter a direct link to an image.</p>
-                        </div>
-                      )}
-
-                      {bgType === "video" && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">Video URL</label>
-                          <input
-                            type="text"
-                            value={bgVideo}
-                            onChange={(e) => setBgVideo(e.target.value)}
-                            placeholder="https://example.com/video.mp4"
-                            className="w-full px-3 py-2 bg-gray-50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          />
-                          <p className="text-xs text-gray-500 mt-2">Enter a direct link to an MP4 video.</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Profile Header Section */}
-                <div>
-                  <h3
-                    className="text-sm font-medium text-text-main mb-3 flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors"
-                    onClick={() => toggleSetting("profile")}
-                  >
-                    <span className={`transform transition-transform duration-200 ${expandedSettings.includes("profile") ? '' : '-rotate-90'}`}>
-                      <ChevronDownIcon width={14} height={14} />
-                    </span>
-                    Profile Header
-                  </h3>
-
-                  {expandedSettings.includes("profile") && (
-                    <div className="pl-2 space-y-4">
-                      <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Username Color</label>
-                        <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                          <div className="relative flex-shrink-0 w-10 h-10">
-                            <input
-                              type="color"
-                              value={usernameColor}
-                              onChange={(e) => setUsernameColor(e.target.value)}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div
-                              className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                              style={{ backgroundColor: usernameColor }}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <input
-                              type="text"
-                              value={usernameColor}
-                              onChange={(e) => setUsernameColor(e.target.value)}
-                              className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                              placeholder="#000000"
-                            />
-                            <p className="text-[10px] text-gray-400 mt-0.5">Text color</p>
-                          </div>
-                        </div>
+                        )}
                       </div>
+                    )}
+                  </div>
 
-                      <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Profile Image Style</label>
-                        <div className="grid grid-cols-5 gap-2">
-                          {[
-                            { id: 'circle', label: 'Circle', style: { borderRadius: '50%' } },
-                            { id: 'rounded', label: 'Rounded', style: { borderRadius: '8px' } },
-                            { id: 'square', label: 'Square', style: { borderRadius: '0' } },
-                            { id: 'star', label: 'Star', style: { clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' } },
-                            { id: 'hexagon', label: 'Hex', style: { clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' } },
-                          ].map((style) => (
-                            <button
-                              key={style.id}
-                              onClick={() => setImageStyle(style.id)}
-                              className={`aspect-square flex items-center justify-center bg-gray-100 rounded-lg border-2 transition-all ${imageStyle === style.id ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent hover:bg-gray-200 text-gray-500'
-                                }`}
-                              title={style.label}
-                            >
-                              <div className="w-6 h-6 bg-current" style={style.style}></div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Layout Section */}
-                <div>
-                  <h3 className="mb-3">
+                  {/* Card Settings */}
+                  <div>
                     <button
-                      className="text-sm font-medium text-text-main flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors w-full text-left"
-                      onClick={() => toggleSetting("layout")}
-                      aria-expanded={expandedSettings.includes("layout")}
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      onClick={() => toggleSetting("card")}
                     >
-                      <span className={`transform transition-transform duration-200 ${expandedSettings.includes("layout") ? '' : '-rotate-90'}`}>
-                        <ChevronDownIcon width={14} height={14} />
-                      </span>
-                      Layout
+                      Card Style
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("card") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
-                  </h3>
+                    {expandedSettings.includes("card") && (
+                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
 
-                  {expandedSettings.includes("layout") && (
-                    <div className="pl-2 space-y-4">
-                      <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Card Style</label>
-                        <div className="grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-lg">
-                          {(['flat', 'card', 'glass', 'neumorphism', 'outline'] as const).map((style) => (
-                            <button
-                              key={style}
-                              onClick={() => setCardStyle(style)}
-                              className={`py-1.5 text-xs font-medium rounded-md transition-all ${cardStyle === style ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                                }`}
-                            >
-                              {style.charAt(0).toUpperCase() + style.slice(1)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {cardStyle !== 'flat' && (
-                        <>
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Card Background</label>
-                            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                              <div className="relative flex-shrink-0 w-10 h-10">
-                                <input
-                                  type="color"
-                                  value={cardBackgroundColor}
-                                  onChange={(e) => setCardBackgroundColor(e.target.value)}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                />
-                                <div
-                                  className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                                  style={{ backgroundColor: cardBackgroundColor }}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <input
-                                  type="text"
-                                  value={cardBackgroundColor}
-                                  onChange={(e) => setCardBackgroundColor(e.target.value)}
-                                  className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                                  placeholder="#ffffff"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Border Color</label>
-                            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-sm">
-                              <div className="relative flex-shrink-0 w-10 h-10">
-                                <input
-                                  type="color"
-                                  value={cardBorderColor}
-                                  onChange={(e) => setCardBorderColor(e.target.value)}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                />
-                                <div
-                                  className="w-full h-full rounded-lg border border-gray-200 shadow-sm transition-transform active:scale-95"
-                                  style={{ backgroundColor: cardBorderColor }}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <input
-                                  type="text"
-                                  value={cardBorderColor}
-                                  onChange={(e) => setCardBorderColor(e.target.value)}
-                                  className="w-full bg-transparent border-none text-sm font-medium text-gray-900 focus:ring-0 p-0 placeholder-gray-400"
-                                  placeholder="#e5e7eb"
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Border Width: {cardBorderWidth}px</label>
-                            <input
-                              type="range"
-                              min="0"
-                              max="10"
-                              value={cardBorderWidth}
-                              onChange={(e) => setCardBorderWidth(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Border Radius: {cardBorderRadius}px</label>
-                            <input
-                              type="range"
-                              min="0"
-                              max="50"
-                              value={cardBorderRadius}
-                              onChange={(e) => setCardBorderRadius(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Shadow</label>
-                            <select
-                              value={cardShadow}
-                              onChange={(e) => setCardShadow(e.target.value)}
-                              className="w-full px-3 py-2 bg-gray-50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            >
-                              <option value="none">None</option>
-                              <option value="0 1px 2px 0 rgb(0 0 0 / 0.05)">Small</option>
-                              <option value="0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)">Medium</option>
-                              <option value="0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)">Large</option>
-                              <option value="0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)">Extra Large</option>
-                            </select>
-                          </div>
-                        </>
-                      )}
-
-                      <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Max Width: {maxWidth}px</label>
-                        <input
-                          type="range"
-                          min="320"
-                          max="1200"
-                          step="10"
-                          value={maxWidth}
-                          onChange={(e) => setMaxWidth(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Padding: {cardPadding}px</label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={cardPadding}
-                          onChange={(e) => setCardPadding(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Features Section */}
-                <div className="border-t border-gray-100 pt-4 mt-4">
-                  <h3 className="mb-3">
-                    <button
-                      className="text-sm font-medium text-text-main flex items-center gap-2 select-none cursor-pointer hover:text-primary transition-colors w-full text-left"
-                      onClick={() => toggleSetting("features")}
-                      aria-expanded={expandedSettings.includes("features")}
-                    >
-                      <span className={`transform transition-transform duration-200 ${expandedSettings.includes("features") ? '' : '-rotate-90'}`}>
-                        <ChevronDownIcon width={14} height={14} />
-                      </span>
-                      Features
-                    </button>
-                  </h3>
-
-                  {expandedSettings.includes("features") && (
-                    <div className="pl-2 space-y-4">
-                      <div className="flex items-center justify-between">
+                        {/* Style Selector */}
                         <div>
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-gray-900 block">Subscribe Button</label>
-                            {user?.plan === 'free' && (
-                              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider bg-gray-900 text-white">
-                                Pro
-                              </span>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">Card Type</label>
+                          <div className="flex bg-gray-100 p-1 rounded-lg">
+                            {[
+                              { value: 'none', label: 'None' },
+                              { value: 'solid', label: 'Solid' },
+                              { value: 'frosted', label: 'Frosted' }
+                            ].map((type) => (
+                              <button
+                                key={type.value}
+                                onClick={() => setCardStyle(type.value as any)}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${cardStyle === type.value ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                              >
+                                {type.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Additional Options when style is active */}
+                        {cardStyle !== 'none' && (
+                          <>
+                            {/* Background Color */}
+                            <div>
+                              <label className="text-xs font-medium text-gray-900 mb-2 block">Card Color</label>
+                              <div className="h-10 w-full rounded-lg border border-gray-200 flex items-center px-2 relative bg-gray-50">
+                                <input type="color" value={cardBackgroundColor} onChange={(e) => setCardBackgroundColor(e.target.value)} className="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0" />
+                                <input type="text" value={cardBackgroundColor} onChange={(e) => setCardBackgroundColor(e.target.value)} className="ml-2 bg-transparent text-xs font-mono text-gray-600 outline-none w-full" />
+                              </div>
+                            </div>
+
+                            {/* Opacity */}
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Opacity</label>
+                                <span className="text-xs text-gray-500 font-mono">{cardOpacity}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={cardOpacity}
+                                onChange={(e) => setCardOpacity(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                              />
+                            </div>
+
+                            {/* Blur (Only for Frosted) */}
+                            {cardStyle === 'frosted' && (
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-xs font-medium text-gray-900">Blur</label>
+                                  <span className="text-xs text-gray-500 font-mono">{cardBlur}px</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="40"
+                                  value={cardBlur}
+                                  onChange={(e) => setCardBlur(parseInt(e.target.value))}
+                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                />
+                              </div>
                             )}
-                          </div>
-                          <p className="text-xs text-gray-500">Allow visitors to subscribe to your newsletter.</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (user?.plan !== 'free') {
-                              setEnableSubscribeButton(!enableSubscribeButton);
-                            } else {
-                              alert("Upgrade to Standard or Pro to enable this feature.");
-                            }
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${enableSubscribeButton ? 'bg-primary' : 'bg-gray-200'
-                            } ${user?.plan === 'free' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${enableSubscribeButton ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                          />
-                        </button>
+                          </>
+                        )}
+
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </section>
+                    )}
+                  </div>
 
-          <section className="bg-white border border-border rounded-xl p-3 shadow-sm h-[calc(100vh-120px)] overflow-y-auto relative lg:sticky top-0 lg:top-4 scrollbar-hide">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-text-main">Layout</h2>
-              <span className="text-xs text-text-muted">Drag to reorder</span>
-            </div>
-            <div
-              className="min-h-[420px] border border-dashed border-border rounded-lg p-3 bg-surface-alt/50"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={(event) => handleDrop(undefined, event)}
-              onDragEnter={(event) => event.preventDefault()}
-            >
-              {blocks.length === 0 && (
-                <div className="h-full flex items-center justify-center text-text-muted text-sm">
-                  Drop a block here to start.
+                  {/* Profile Settings */}
+                  <div>
+                    <button
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      onClick={() => toggleSetting("profile")}
+                    >
+                      Profile
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("profile") ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                    {expandedSettings.includes("profile") && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">Username Color</label>
+                          <div className="h-10 w-full rounded-lg border border-gray-200 flex items-center px-2 relative bg-gray-50">
+                            <input type="color" value={usernameColor} onChange={(e) => setUsernameColor(e.target.value)} className="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0" />
+                            <input type="text" value={usernameColor} onChange={(e) => setUsernameColor(e.target.value)} className="ml-2 bg-transparent text-xs font-mono text-gray-600 outline-none w-full" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">Avatar Shape</label>
+                          <div className="flex gap-2">
+                            {['circle', 'rounded', 'square'].map(s => (
+                              <button
+                                key={s}
+                                onClick={() => setImageStyle(s)}
+                                className={`w-8 h-8 flex items-center justify-center border rounded transition-all ${imageStyle === s ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'}`}
+                              >
+                                <div className={`w-4 h-4 bg-current ${s === 'circle' ? 'rounded-full' : s === 'rounded' ? 'rounded-sm' : 'rounded-none'}`} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Other Settings */}
+                  <div>
+                    <button
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      onClick={() => toggleSetting("features")}
+                    >
+                      Features
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("features") ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                    {expandedSettings.includes("features") && (
+                      <div className="space-y-3">
+                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                          <span className="text-sm font-medium text-gray-700">Email Signup</span>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${enableSubscribeButton ? 'bg-green-500' : 'bg-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              checked={enableSubscribeButton}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setEnableSubscribeButton(checked);
+                                if (bio?.id) updateBio(bio.id, { enableSubscribeButton: checked });
+                              }}
+                              className="hidden"
+                            />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${enableSubscribeButton ? 'left-5.5' : 'left-0.5'}`} />
+                          </div>
+                        </label>
+
+                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">Remove Branding</span>
+                            {user?.plan === 'free' && <span className="text-[10px] text-orange-500 font-bold">PRO FEATURE</span>}
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-green-500' : 'bg-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              checked={removeBranding}
+                              onChange={(e) => {
+                                if (user?.plan === 'free') {
+                                  setShowUpgrade('branding');
+                                } else {
+                                  const checked = e.target.checked;
+                                  setRemoveBranding(checked);
+                                  if (bio?.id) updateBio(bio.id, { removeBranding: checked });
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${removeBranding ? 'left-5.5' : 'left-0.5'}`} />
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               )}
-
-              {blocks.length > 0 && (
-                <div
-                  className={`transition-all duration-200 ease-out rounded-xl border-2 border-dashed flex items-center justify-center mb-2 ${dragItem && dragItem.source === "palette"
-                    ? "h-14 border-primary/30 bg-primary/5 opacity-100 hover:border-primary hover:bg-primary/10"
-                    : "h-0 border-transparent opacity-0 overflow-hidden"
-                    }`}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => handleDrop(0, event)}
-                >
-                  <span className="text-xs font-medium text-primary pointer-events-none">
-                    Insert at top
-                  </span>
-                </div>
-              )}
-
-              {blocks.map((block, index) => (
-                <BlockItem
-                  key={block.id}
-                  block={block}
-                  index={index}
-                  isExpanded={expandedId === block.id}
-                  isDragging={dragItem?.id === block.id}
-                  isDragOver={false}
-                  dragItem={dragItem}
-                  onToggleExpand={handleToggleExpand}
-                  onRemove={handleRemove}
-                  onChange={handleFieldChange}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onDrop={(e, i) => handleDrop(i, e)}
-                  onDragEnter={handleDragEnter}
-                  availableQrCodes={availableQrCodes}
-                  onCreateQrCode={() => {
-                    setCreatingQrForBlockId(block.id);
-                    setShowCreateQrModal(true);
-                  }}
-                />
-              ))}
             </div>
-          </section>
+          </div>
 
-          <section className={showMobilePreview ? 'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4' : 'hidden xl:flex justify-center items-start bg-white/30 border border-border/40 rounded-xl p-3 shadow-sm h-[calc(100vh-120px)] overflow-hidden sticky top-4'}>
-            {showMobilePreview && (
-              <button
-                onClick={() => setShowMobilePreview(false)}
-                className="absolute top-4 right-4 p-3 bg-white rounded-full shadow-lg z-50 text-gray-900 hover:bg-gray-100 transition-colors"
+          {/* Middle Column: Drag & Drop (Col Span 6 - BIGGEST) */}
+          {/* Middle Column: Drag & Drop (Col Span 5 - ADJUSTED) */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
+              <h2 className="font-bold text-gray-900 text-lg">Layout</h2>
+              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Drag to reorder</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
+              <div
+                className="space-y-4 min-h-[500px] pb-20"
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => handleDrop(undefined, event)}
               >
-                <XIcon width={24} height={24} />
-              </button>
-            )}
-            <div className={`relative transition-all duration-300 ${showMobilePreview ? 'scale-90 sm:scale-100' : 'scale-90 2xl:scale-100'}`}>
-              <div className="relative w-[320px] h-[660px] bg-black rounded-[3rem] shadow-2xl border-[8px] border-gray-900 ring-1 ring-white/10">
-                {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-7 w-40 bg-black rounded-b-2xl z-20 border-b border-x border-white/10"></div>
+                {/* Empty State */}
+                {blocks.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/50">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                      <div className="scale-150"><img src="/favicon.ico" className="w-6 h-6 opacity-50 grayscale" alt="" /></div>
+                      {/* Using a placeholder icon since I can't easily import a specific one without checking imports */}
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 mb-1">Your bio is empty</h3>
+                    <p className="text-sm text-gray-500 max-w-xs">Drag blocks from the left sidebar to start building your page.</p>
+                  </div>
+                )}
 
-                {/* Side buttons */}
-                <div className="absolute -left-[10px] top-28 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -left-[10px] top-44 h-12 w-[3px] bg-gray-800 rounded-l-md"></div>
-                <div className="absolute -right-[10px] top-40 h-16 w-[3px] bg-gray-800 rounded-r-md"></div>
+                {/* Drop Zone Top */}
+                {blocks.length > 0 && (
+                  <div
+                    className={`h-2 rounded-lg transition-all ${dragItem ? 'bg-blue-100 my-2' : 'bg-transparent my-0'}`}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(0, e)}
+                  />
+                )}
 
-                {/* Screen */}
-                <div className="w-full h-full rounded-[2.5rem] overflow-hidden bg-white relative">
-                  {previewBio && (
-                    <BioLayout bio={previewBio} subdomain={previewBio.sufix} isPreview />
-                  )}
-                </div>
+                {/* Blocks */}
+                {blocks.map((block, index) => (
+                  <BlockItem
+                    key={block.id}
+                    block={block}
+                    index={index}
+                    isExpanded={expandedId === block.id}
+                    isDragging={dragItem?.id === block.id}
+                    isDragOver={false} /* Simplified, usually managed by BlockItem internal ref or complex state */
+                    dragItem={dragItem}
+                    onToggleExpand={handleToggleExpand}
+                    onRemove={handleRemove}
+                    onChange={handleFieldChange}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDrop={(e, i) => handleDrop(i, e)}
+                    onDragEnter={handleDragEnter}
+                    availableQrCodes={availableQrCodes}
+                    onCreateQrCode={() => {
+                      setCreatingQrForBlockId(block.id);
+                      setShowCreateQrModal(true);
+                    }}
+                  />
+                ))}
               </div>
             </div>
-          </section>
+          </div>
+
+          {/* Right Column: Preview (Col Span 3 - SIMPLIFIED) */}
+          {/* Right Column: Preview (Col Span 4 - ADJUSTED) */}
+          <div className="col-span-12 lg:col-span-4 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden items-center relative">
+            <div className="w-full h-full">
+              <iframe
+                ref={iframeRef}
+                srcDoc={debouncedHtml || ""}
+                className="w-full h-full scrollbar-hide border-none"
+                title="Bio Preview"
+                sandbox="allow-same-origin allow-scripts"
+              />
+            </div>
+
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-gray-500 uppercase tracking-widest z-10 pointer-events-none">
+              <span>Live Preview</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      {/* Modals & Popups */}
+      {showUpgrade && (
+        <UpgradePrompt
+          onClose={() => setShowUpgrade(null)}
+          feature="Pro Branding"
+        />
+      )}
+
+      {showCreateQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Create New QR Code</h3>
+            <form onSubmit={handleCreateQrCode}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Destination URL</label>
+                <input
+                  type="url"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                  placeholder="https://example.com"
+                  value={newQrValue}
+                  onChange={e => setNewQrValue(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
+                  {isCreatingQr ? 'Creating...' : 'Create QR'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

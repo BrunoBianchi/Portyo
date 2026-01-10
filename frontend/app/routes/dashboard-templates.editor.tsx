@@ -522,7 +522,7 @@ export default function DashboardTemplateEditor() {
     }
 
     return (
-        <AuthorizationGuard minPlan="pro">
+        <AuthorizationGuard minPlan="standard">
             <div className="h-screen flex flex-col bg-gray-100 overflow-hidden font-sans">
 
                 {/* Top Bar */}

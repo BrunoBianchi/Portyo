@@ -9,8 +9,12 @@ interface User {
     fullname: string;
     sufix?: string;
     plan?: 'free' | 'standard' | 'pro';
-    verified:boolean;
+    verified: boolean;
     role: number;
+    usage?: {
+        bios: number;
+        automations: number;
+    };
 }
 
 interface AuthContextData {
@@ -21,7 +25,18 @@ interface AuthContextData {
     socialLogin(user: User, token: string): void;
     register(email: string, password: string, fullname: string, sufix: string): Promise<void>;
     logout(): void;
+    // Plan checking helpers
+    isPro: boolean;
+    isStandard: boolean;
+    isFree: boolean;
+    canAccessFeature: (requiredPlan: 'free' | 'standard' | 'pro') => boolean;
 }
+
+const PLAN_LEVELS: Record<'free' | 'standard' | 'pro', number> = {
+    free: 0,
+    standard: 1,
+    pro: 2
+};
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
@@ -39,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (storagedUser) {
                 setUser(typeof storagedUser === 'string' ? JSON.parse(storagedUser) : storagedUser);
             }
-            
+
             api.get('/user/@')
                 .then(response => {
                     setUser(response.data);
@@ -77,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const response = await api.post("/user/", {
             sufix, fullname, email, password
         })
-        const { authentification,bio } = response.data;
+        const { authentification, bio } = response.data;
         setUser(authentification.user);
         api.defaults.headers.common['Authorization'] = `Bearer ${authentification.token}`;
 
@@ -91,6 +106,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeCookie('@App:token', { path: '/' });
     }, [removeCookie]);
 
+    // Plan checking helpers
+    const isPro = user?.plan === 'pro';
+    const isStandard = user?.plan === 'standard';
+    const isFree = user?.plan === 'free' || !user?.plan;
+
+    const canAccessFeature = useCallback((requiredPlan: 'free' | 'standard' | 'pro') => {
+        if (!user) return false;
+        const userPlan = user.plan || 'free';
+        return PLAN_LEVELS[userPlan] >= PLAN_LEVELS[requiredPlan];
+    }, [user]);
+
     const value = useMemo(() => ({
         signed: !!user,
         user,
@@ -98,8 +124,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         register,
-        socialLogin
-    }), [user, loading, login, logout, register, socialLogin]);
+        socialLogin,
+        isPro,
+        isStandard,
+        isFree,
+        canAccessFeature
+    }), [user, loading, login, logout, register, socialLogin, isPro, isStandard, isFree, canAccessFeature]);
 
     return (
         <AuthContext.Provider value={value}>

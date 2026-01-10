@@ -126,6 +126,9 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "varchar", nullable: true, unique: true })
     customDomain: string | null = null;
+    
+    @Column({ type: "boolean", default: false })
+    removeBranding: boolean = false;
 
     @ManyToOne(() => UserEntity, (user) => user.bios)
     @JoinColumn({ name: "userId" })

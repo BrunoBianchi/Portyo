@@ -39,6 +39,7 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         cardPadding: z.number().optional(),
         maxWidth: z.number().optional(),
         enableSubscribeButton: z.boolean().optional(),
+        removeBranding: z.boolean().optional(),
         description: z.string().optional(),
         socials: z.any().optional()
     }).parse(req.body);
@@ -48,6 +49,7 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         blocks: schema.blocks,
         customDomain: schema.customDomain ?? undefined,
         enableSubscribeButton: schema.enableSubscribeButton,
+        removeBranding: schema.removeBranding,
         bgSettings: {
             bgType: schema.bgType,
             bgColor: schema.bgColor,

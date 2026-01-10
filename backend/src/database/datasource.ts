@@ -10,6 +10,8 @@ import { AutomationEntity, AutomationExecutionEntity } from "./entity/automation
 import { EmailTemplateEntity } from "./entity/email-template-entity"
 import { BookingSettingsEntity } from "./entity/booking-settings-entity"
 import { BookingEntity } from "./entity/booking-entity"
+import { BillingEntity } from "./entity/billing-entity"
+
 import { env } from "../config/env"
 
 export const AppDataSource = new DataSource({
@@ -19,8 +21,8 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity],
-    synchronize: env.NODE_ENV !== "production",
+    entities: [UserEntity, BioEntity, PostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity],
+    synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
 })

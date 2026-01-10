@@ -4,6 +4,8 @@ import { BioEntity } from "../../database/entity/bio-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
 import { logger } from "../utils/logger";
 import { env } from "../../config/env";
+import { PLAN_LIMITS, PlanType } from "../constants/plan-limits";
+import { BillingService } from "../../services/billing.service";
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
 
@@ -44,13 +46,13 @@ export const createAutomation = async (
          throw new ApiError(APIErrors.badRequestError, "An automation must have at least one trigger.", 400);
     }
 
-    // Check Automation Limits based on Plan
-    const userPlan = bio.user?.plan || 'free';
-    const limit = userPlan === 'pro' ? 5 : 1;
+    // Check Automation Limits based on Active Plan
+    const activePlan = await BillingService.getActivePlan(bio.user.id);
+    const limit = PLAN_LIMITS[activePlan as PlanType].automationsPerBio;
     
     const count = await automationRepository.count({ where: { bioId } });
     if (count >= limit) {
-        throw new ApiError(APIErrors.forbiddenError, `You have reached the limit of ${limit} automation(s) for your ${userPlan} plan. Upgrade to create more.`, 403);
+        throw new ApiError(APIErrors.forbiddenError, `You have reached the limit of ${limit} automation(s) for your ${activePlan} plan. Upgrade to create more.`, 403);
     }
 
     const automation = automationRepository.create({

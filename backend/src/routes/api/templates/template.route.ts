@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { authMiddleware } from "../../../middlewares/auth.middleware";
+import { isUserPro } from "../../../middlewares/user-pro.middleware";
 import { createTemplate, deleteTemplate, getTemplate, getTemplates, updateTemplate } from "../../../shared/services/email-template.service";
 import { ApiError } from "../../../shared/errors/api-error";
 
@@ -18,7 +19,9 @@ const UpdateTemplateSchema = z.object({
     html: z.string().optional()
 });
 
+// All template routes require authentication and PRO plan
 router.use(authMiddleware);
+router.use(isUserPro);
 
 router.post("/:bioId", async (req, res) => {
     try {

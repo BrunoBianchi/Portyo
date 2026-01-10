@@ -225,7 +225,7 @@ export default function DashboardScheduler() {
     if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>;
 
     return (
-        <AuthorizationGuard minPlan="pro">
+        <AuthorizationGuard minPlan="standard">
             <div className="p-8 max-w-6xl mx-auto font-sans">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -464,8 +464,8 @@ export default function DashboardScheduler() {
                                             Weekly Schedule
                                         </h3>
                                         <div className="space-y-4">
-                                            {days.map(day => {
-                                                const schedule = settings.availability[day]?.[0];
+                                            {settings && days.map(day => {
+                                                const schedule = settings.availability?.[day]?.[0];
                                                 const isActive = !!schedule;
                                                 const [start, end] = schedule ? schedule.split('-') : ["09:00", "17:00"];
 
@@ -564,7 +564,7 @@ export default function DashboardScheduler() {
                                         <h3 className="font-bold text-amber-900 mb-3 text-lg">Meeting Duration</h3>
                                         <div className="relative">
                                             <select
-                                                value={settings.durationMinutes}
+                                                value={settings?.durationMinutes || 30}
                                                 onChange={(e) => setSettings({ ...settings, durationMinutes: parseInt(e.target.value) })}
                                                 className="w-full bg-white border border-amber-200 text-amber-900 font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-amber-500/20 appearance-none"
                                             >

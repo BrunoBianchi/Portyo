@@ -124,6 +124,14 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       css += ` background:linear-gradient(#fff, #fff) padding-box, linear-gradient(to right, ${bg}, ${shadowColor}) border-box; border:2px solid transparent; color:${bg};`;
     } else if (style === "minimal-underline") {
       css += ` background:transparent; border:none; border-bottom:1px solid ${bg}40; border-radius:0; padding-left:0; padding-right:0; color:${bg}; justify-content:${textAlign === 'center' ? 'center' : textAlign === 'right' ? 'flex-end' : 'flex-start'}; transition: all 0.2s;`;
+    } else if (style === "architect") {
+      css += ` background:#ffffff; border:1px solid ${bg}20; color:${bg}; box-shadow:0 1px 2px rgba(0,0,0,0.05); font-weight:600; letter-spacing:0.5px;`;
+    } else if (style === "material") {
+      css += ` background:${bg}; color:${color}; border:none; box-shadow:0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);`;
+    } else if (style === "brutalist") {
+      css += ` background:${bg}; border:4px solid #000000; color:${color}; font-weight:900; text-transform:uppercase; letter-spacing:1px; border-radius:0; box-shadow:8px 8px 0 0 #000000;`;
+    } else if (style === "outline-thick") {
+      css += ` background:transparent; border:3px solid ${bg}; color:${bg}; font-weight:700;`;
     } else if (style as any === "image-grid") {
       // Custom HTML for image grid
       const bgImg = block.mediaUrl || block.buttonImage || "https://via.placeholder.com/300"; // Fallback
@@ -702,23 +710,59 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
 
   const maxWidth = 566;
 
-  const cardStyle = bio.cardStyle || 'flat';
-  const cardBg = bio.cardBackgroundColor || '#ffffff';
-  const cardBorder = bio.cardBorderColor || '#e5e7eb';
-  const cardWidth = bio.cardBorderWidth || 0;
-  const cardRadius = bio.cardBorderRadius || 0;
-  const cardShadow = bio.cardShadow || 'none';
-  const cardPadding = bio.cardPadding || 16;
 
-  const navTextColor = '#111827';
+
+  const darkenColor = (hex: string, amount: number) => {
+    let color = hex.replace('#', '');
+    if (color.length === 3) color = color.split('').map(c => c + c).join('');
+    let r = parseInt(color.substring(0, 2), 16);
+    let g = parseInt(color.substring(2, 4), 16);
+    let b = parseInt(color.substring(4, 6), 16);
+    r = Math.max(0, Math.floor(r * (1 - amount)));
+    g = Math.max(0, Math.floor(g * (1 - amount)));
+    b = Math.max(0, Math.floor(b * (1 - amount)));
+    const toHex = (c: number) => c.toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
+  const navInactive = usernameColor;
+  const navTextColor = darkenColor(usernameColor, 0.35);
+  const navIndicator = navTextColor;
   const navBorder = 'rgba(0,0,0,0.08)';
-  const navInactive = '#9ca3af';
 
  
+
+  /* Card Styling Logic */
+  const cardStyleType = bio.cardStyle || 'none';
+  const cardBgColor = bio.cardBackgroundColor || '#ffffff';
+  const cardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
+  const cardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
+  
+  let cardCss = '';
+  if (cardStyleType !== 'none') {
+    // Convert hex to rgb for rgba
+    const r = parseInt(cardBgColor.substr(1, 2), 16);
+    const g = parseInt(cardBgColor.substr(3, 2), 16);
+    const b = parseInt(cardBgColor.substr(5, 2), 16);
+    const alpha = cardOpacity / 100;
+    
+    cardCss += `background-color: rgba(${r}, ${g}, ${b}, ${alpha}); `;
+    cardCss += `border-radius: 24px; padding: 32px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); `;
+    
+    if (cardStyleType === 'frosted') {
+        cardCss += `backdrop-filter: blur(${cardBlur}px); -webkit-backdrop-filter: blur(${cardBlur}px); border: 1px solid rgba(255,255,255,0.1); `;
+    }
+  }
 
   const headerHtml = `
     <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; align-items:center; position:relative; z-index:10; padding-top: 40px;">
         
+        ${bio.enableSubscribeButton ? `
+        <button onclick="window.openSubscribe()" aria-label="Subscribe" style="position:absolute; top:10px; right:10px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.1); color:#111827; transition:all 0.2s ease; z-index:20;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </button>
+        ` : ''}
+
         <!-- Profile Image -->
         <div style="width:120px; height:120px; border-radius:50%; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6;">
              ${displayProfileImage ? `<img fetchpriority="high" src="/users-photos/${user?.id}.png" onerror="this.src='/users-photos/julia-soares.jpeg'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
@@ -743,6 +787,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
   let bgStyle = 'background:#f8fafc;';
   const bgColor = bio.bgColor || '#f8fafc';
   const bgSecondary = bio.bgSecondaryColor || '#e2e8f0';
+  let extraHtml = '';
 
   if (bio.bgType === 'color') {
     bgStyle = `background:${bgColor};`;
@@ -776,23 +821,218 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     bgStyle = `background: #000;`; // Fallback color
     // We add a pseudo-element or a fixed div for the blur effect in the HTML structure below
   } else if (bio.bgType === 'palm-leaves') {
-    // Tropical palm leaves pattern - SVG based
-    bgStyle = `background-color: ${bgColor}; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(bgSecondary)}' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");`;
+    // Tropical palm leaves pattern - using actual SVG files with repeat and parallax
+    bgStyle = `background-color: ${bgColor}; overflow-x: hidden;`; // Base color
+    
+    // We inject the layers into the HTML structure
+    // Layer 1: Back layer, slower movement
+    if (bio.isPreview) {
+      extraHtml = `
+        <div id="palm-layer-1" style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('/background/Design sem nome (4).svg');
+          background-size: 600px 600px;
+          background-repeat: repeat;
+          opacity: 0.4;
+          z-index: 0;
+          pointer-events: none;
+        "></div>
+        <div id="palm-layer-2" style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('/background/Design sem nome (5).svg');
+          background-size: 500px 500px;
+          background-repeat: repeat;
+          opacity: 0.6;
+          z-index: 1;
+          pointer-events: none;
+        "></div>
+      `;
+    } else {
+      extraHtml = `
+        <div id="palm-layer-1" style="
+          position: fixed;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background-image: url('/background/Design sem nome (4).svg');
+          background-size: 600px 600px;
+          background-repeat: repeat;
+          transform: rotate(15deg) translateZ(0);
+          opacity: 0.4;
+          z-index: 0;
+          pointer-events: none;
+          will-change: transform;
+        "></div>
+        <div id="palm-layer-2" style="
+          position: fixed;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background-image: url('/background/Design sem nome (5).svg');
+          background-size: 500px 500px;
+          background-repeat: repeat;
+          transform: rotate(-10deg) translateZ(0);
+          opacity: 0.6;
+          z-index: 1;
+          pointer-events: none;
+          will-change: transform;
+        "></div>
+        <script>
+          document.addEventListener('scroll', function() {
+            const scrolled = window.scrollY;
+            const layer1 = document.getElementById('palm-layer-1');
+            const layer2 = document.getElementById('palm-layer-2');
+            
+            if (layer1) {
+              layer1.style.transform = 'rotate(15deg) translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
+            }
+            if (layer2) {
+              layer2.style.transform = 'rotate(-10deg) translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
+            }
+          }, { passive: true });
+        </script>
+      `;
+    }
+
+    // We'll append these to the videoBgHtml variable so they get injected into the body
+    // This is a bit of a hack to reuse the existing injection point
+    bio.bgVideo = "true"; // Trigger the injection logic if it wasn't already
+  } else if (bio.bgType === 'wheat') {
+    // Wheat pattern - using actual SVG files with repeat and parallax
+    bgStyle = `background-color: ${bgColor}; overflow-x: hidden;`; // Base color
+    
+    // We inject the layers into the HTML structure
+    if (bio.isPreview) {
+      extraHtml = `
+        <div id="wheat-layer-1" style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('/background/wheat/Design sem nome (7).svg');
+          background-size: 600px 600px;
+          background-repeat: repeat;
+          opacity: 0.4;
+          z-index: 0;
+          pointer-events: none;
+        "></div>
+        <div id="wheat-layer-2" style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('/background/wheat/Design sem nome (8).svg');
+          background-size: 500px 500px;
+          background-repeat: repeat;
+          opacity: 0.6;
+          z-index: 1;
+          pointer-events: none;
+        "></div>
+      `;
+    } else {
+      extraHtml = `
+        <div id="wheat-layer-1" style="
+          position: fixed;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background-image: url('/background/wheat/Design sem nome (7).svg');
+          background-size: 600px 600px;
+          background-repeat: repeat;
+          transform: rotate(15deg) translateZ(0);
+          opacity: 0.4;
+          z-index: 0;
+          pointer-events: none;
+          will-change: transform;
+        "></div>
+        <div id="wheat-layer-2" style="
+          position: fixed;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background-image: url('/background/wheat/Design sem nome (8).svg');
+          background-size: 500px 500px;
+          background-repeat: repeat;
+          transform: rotate(-10deg) translateZ(0);
+          opacity: 0.6;
+          z-index: 1;
+          pointer-events: none;
+          will-change: transform;
+        "></div>
+        <script>
+          document.addEventListener('scroll', function() {
+            const scrolled = window.scrollY;
+            const layer1 = document.getElementById('wheat-layer-1');
+            const layer2 = document.getElementById('wheat-layer-2');
+            
+            if (layer1) {
+              layer1.style.transform = 'rotate(15deg) translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
+            }
+            if (layer2) {
+              layer2.style.transform = 'rotate(-10deg) translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
+            }
+          }, { passive: true });
+        </script>
+      `;
+    }
+
+    // We'll append these to the videoBgHtml variable so they get injected into the body
+    // This is a bit of a hack to reuse the existing injection point
+    bio.bgVideo = "true"; // Trigger the injection logic if it wasn't already
+
+    // We'll append these to the videoBgHtml variable so they get injected into the body
+    // This is a bit of a hack to reuse the existing injection point
+    bio.bgVideo = "true"; // Trigger the injection logic if it wasn't already
+    // We need to make sure we don't break existing reference, so we'll append to the string builder below
   } else if (bio.bgType === 'blueprint') {
     // Architectural blueprint grid pattern
     bgStyle = `background-color: #1e3a5f; background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px; background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;`;
   } else if (bio.bgType === 'marble') {
-    // White marble texture pattern
-    bgStyle = `background-color: #fafafa; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='marble'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.02' numOctaves='3' result='noise' seed='2'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23fff' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23marble)' opacity='0.4'/%3E%3C/svg%3E");`;
+    // White marble texture - simplified version
+    bgStyle = `background-color: #f5f5f5; 
+      background-image: 
+        linear-gradient(90deg, rgba(0,0,0,0.02) 50%, transparent 50%),
+        linear-gradient(rgba(0,0,0,0.02) 50%, transparent 50%),
+        radial-gradient(circle at 20% 30%, rgba(220,220,220,0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(200,200,200,0.3) 0%, transparent 50%),
+        radial-gradient(circle at 60% 40%, rgba(210,210,210,0.35) 0%, transparent 60%);
+      background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
+      background-position: 0 0, 25px 25px, 0 0, 0 0, 0 0;`;
   } else if (bio.bgType === 'concrete') {
     // Industrial concrete texture
     bgStyle = `background-color: #9ca3af; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='concrete'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23concrete)' opacity='0.15'/%3E%3C/svg%3E"), linear-gradient(135deg, rgba(156,163,175,1) 0%, rgba(107,114,128,1) 100%);`;
   } else if (bio.bgType === 'terracotta') {
     // Warm terracotta/clay pattern
     bgStyle = `background-color: #c2410c; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23ea580c' fill-opacity='0.3'%3E%3Cpath fill-rule='evenodd' d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/svg%3E");`;
+  } else if (bio.bgType === 'wood-grain') {
+    // Natural wood grain texture
+    bgStyle = `background-color: #8B7355; background-image: linear-gradient(90deg, rgba(101,67,33,0.1) 50%, transparent 50%), linear-gradient(rgba(101,67,33,0.1) 50%, transparent 50%), linear-gradient(rgba(139,115,85,0.3) 0%, transparent 100%); background-size: 4px 100%, 100% 4px, 100% 100%;`;
+  } else if (bio.bgType === 'brick') {
+    // Classic brick wall pattern
+    bgStyle = `background-color: #8B4513; background-image: linear-gradient(335deg, #b84a1f 23px, transparent 23px), linear-gradient(155deg, #b84a1f 23px, transparent 23px), linear-gradient(335deg, #b84a1f 23px, transparent 23px), linear-gradient(155deg, #b84a1f 23px, transparent 23px); background-size: 58px 58px; background-position: 0 2px, 4px 35px, 29px 31px, 34px 6px;`;
+  } else if (bio.bgType === 'frosted-glass') {
+    // Frosted glass effect with blur
+    bgStyle = `background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);`;
+  } else if (bio.bgType === 'steel') {
+    // Brushed steel metallic texture
+    bgStyle = `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 1px 100%, 100% 1px;`;
   }
 
-  const videoBgHtml = (bio.bgType === 'video' && bio.bgVideo) ? `
+  let videoBgHtml = (bio.bgType === 'video' && bio.bgVideo && bio.bgType !== 'palm-leaves') ? `
     <video autoplay loop muted playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1;">
       <source src="${bio.bgVideo}" type="video/mp4">
     </video>
@@ -802,17 +1042,12 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     <div style="position:fixed; inset:0; z-index:-1; background:rgba(0,0,0,0.2);"></div>
   ` : '';
 
-  let containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:${cardPadding}px; position:relative; z-index:1;`;
-
-  if (cardStyle === 'card') {
-    containerStyle += `background:${cardBg}; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 14px; margin-bottom: 14px;`;
-  } else if (cardStyle === 'glass') {
-    containerStyle += `background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); border:${cardWidth}px solid rgba(255,255,255,0.2); border-radius:${cardRadius}px; box-shadow:${cardShadow}; margin-top: 14px; margin-bottom: 14px;`;
-  } else if (cardStyle === 'neumorphism') {
-     containerStyle += `background:${cardBg}; border-radius:${cardRadius}px; box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff; margin-top: 14px; margin-bottom: 14px;`;
-  } else if (cardStyle === 'outline') {
-     containerStyle += `background:transparent; border:${cardWidth}px solid ${cardBorder}; border-radius:${cardRadius}px; margin-top: 14px; margin-bottom: 14px;`;
+  if (bio.bgType === 'palm-leaves' || bio.bgType === 'wheat') {
+    videoBgHtml += extraHtml;
   }
+
+
+  const containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:16px; position:relative; z-index:1;`;
 
 
 
@@ -821,9 +1056,9 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
   const showTabs = hasProducts || hasBlog;
   const tabsHtml = showTabs ? `
     <div style="display:flex; justify-content:center; gap:24px; border-bottom:1px solid rgba(0,0,0,0.06); margin-bottom:24px; padding-bottom:16px;">
-        <button id="tab-links" onclick="window.switchTab('links')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${usernameColor}; cursor:pointer; position:relative; transition:opacity 0.2s;">
+        <button id="tab-links" onclick="window.switchTab('links')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navTextColor}; cursor:pointer; position:relative; transition:opacity 0.2s;">
             Links
-            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:${usernameColor}; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
+            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:${navIndicator}; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
         </button>
         ${hasProducts ? `
         <button id="tab-shop" onclick="window.switchTab('shop')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.6; cursor:pointer; position:relative; transition:opacity 0.2s;">
@@ -840,7 +1075,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
 
   return `<div style="${bgStyle} min-height:100vh; font-family: 'Inter', system-ui, -apple-system, sans-serif; position:relative;">
     <style>
-      html, body { height: 100%; }
+      html, body { min-height: 100%; }
       body {
         margin: 0;
         padding: 0;
@@ -917,7 +1152,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     </style>
     ${videoBgHtml}
 
-    <main style="${containerStyle} position:relative; z-index:10;">
+    <main id="profile-container" style="${containerStyle} ${cardCss} position:relative; z-index:10;">
       ${headerHtml}
       ${tabsHtml}
       
@@ -1167,7 +1402,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
             shopTab.style.color = '${navTextColor}';
             shopTab.style.opacity = '1';
             const indicator = shopTab.querySelector('span');
-            if (indicator) indicator.style.background = '${usernameColor}';
+            if (indicator) indicator.style.background = '${navIndicator}';
             }
             if (shopFeed) shopFeed.style.display = 'block';
             
@@ -1183,7 +1418,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
             blogTab.style.color = '${navTextColor}';
             blogTab.style.opacity = '1';
             const indicator = blogTab.querySelector('span');
-            if (indicator) indicator.style.background = '${usernameColor}';
+            if (indicator) indicator.style.background = '${navIndicator}';
             }
             if (blogFeed) blogFeed.style.display = 'block';
             
@@ -1199,7 +1434,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
                 linksTab.style.color = '${navTextColor}';
             linksTab.style.opacity = '1';
             const indicator = linksTab.querySelector('span');
-            if (indicator) indicator.style.background = '${usernameColor}';
+            if (indicator) indicator.style.background = '${navIndicator}';
             }
             if (linksFeed) linksFeed.style.display = 'block';
             
@@ -1398,16 +1633,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         }
       };
 
-      // Handle Back/Forward
-      window.onpopstate = function(event) {
-        if (window.location.pathname === '/blog') {
-            window.switchTab('blog');
-        } else if (window.location.pathname === '/shop') {
-            window.switchTab('shop');
-        } else {
-            window.switchTab('links');
-        }
-      };
+      // History handling removed for iframe compatibility
 
       // Initial Load
       if (window.location.pathname === '/blog') {

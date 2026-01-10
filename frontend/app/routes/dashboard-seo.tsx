@@ -2,21 +2,21 @@ import { useContext, useState, useEffect } from "react";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import type { Route } from "../+types/root";
-import { 
-    Search, 
-    Share2, 
-    Settings, 
-    Save, 
-    Image as ImageIcon, 
-    Globe, 
+import {
+    Search,
+    Share2,
+    Settings,
+    Save,
+    Image as ImageIcon,
+    Globe,
     Sparkles
 } from "lucide-react";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "SEO Settings | Portyo" },
-    { name: "description", content: "Manage your page SEO settings" },
-  ];
+export function meta({ }: Route.MetaArgs) {
+    return [
+        { title: "SEO Settings | Portyo" },
+        { name: "description", content: "Manage your page SEO settings" },
+    ];
 }
 
 export default function DashboardSeo() {
@@ -66,7 +66,7 @@ export default function DashboardSeo() {
     };
 
     return (
-        <AuthorizationGuard minPlan="free" fallback={
+        <AuthorizationGuard minPlan="standard" fallback={
             <div className="p-6 max-w-4xl mx-auto text-center flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
@@ -84,7 +84,7 @@ export default function DashboardSeo() {
                         <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">SEO Settings</h1>
                         <p className="text-text-muted text-sm">Customize how your page appears in search results and social media.</p>
                     </div>
-                    <button 
+                    <button
                         onClick={handleSave}
                         disabled={isSaving}
                         className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary-hover transition-all active:scale-95 shadow-lg shadow-primary/20 hover:shadow-primary/30 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
@@ -115,12 +115,12 @@ export default function DashboardSeo() {
                                 <p className="text-text-muted text-sm">Control how your page looks on Google and other search engines.</p>
                             </div>
                         </div>
-                        
+
                         <div className="grid gap-6">
                             <div>
                                 <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Page Title</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={seoTitle}
                                     onChange={(e) => setSeoTitle(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
@@ -133,7 +133,7 @@ export default function DashboardSeo() {
 
                             <div>
                                 <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Meta Description</label>
-                                <textarea 
+                                <textarea
                                     value={seoDescription}
                                     onChange={(e) => setSeoDescription(e.target.value)}
                                     rows={3}
@@ -147,8 +147,8 @@ export default function DashboardSeo() {
 
                             <div>
                                 <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Keywords</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={seoKeywords}
                                     onChange={(e) => setSeoKeywords(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
@@ -174,8 +174,8 @@ export default function DashboardSeo() {
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Title</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={ogTitle}
                                         onChange={(e) => setOgTitle(e.target.value)}
                                         className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
@@ -185,7 +185,7 @@ export default function DashboardSeo() {
 
                                 <div>
                                     <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Description</label>
-                                    <textarea 
+                                    <textarea
                                         value={ogDescription}
                                         onChange={(e) => setOgDescription(e.target.value)}
                                         rows={3}
@@ -198,8 +198,8 @@ export default function DashboardSeo() {
                             <div>
                                 <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Image URL</label>
                                 <div className="space-y-4">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={ogImage}
                                         onChange={(e) => setOgImage(e.target.value)}
                                         className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"

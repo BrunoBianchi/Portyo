@@ -3,7 +3,7 @@ import { BookingEntity, BookingStatus } from "../../database/entity/booking-enti
 import { BookingSettingsEntity } from "../../database/entity/booking-settings-entity";
 import { BioEntity } from "../../database/entity/bio-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
-import { isUserPro } from "./user-pro.service";
+import { BillingService } from "../../services/billing.service";
 import { sendBookingConfirmationEmail, sendBookingConfirmedEmail } from "./mailer.service";
 import { MoreThan, Between } from "typeorm";
 import { startOfDay, endOfDay, addMinutes, format, parse, isBefore, isAfter, isSameDay } from "date-fns";
@@ -24,11 +24,8 @@ export const getBookingSettings = async (bioId: string) => {
         const bio = await bioRepository.findOne({ where: { id: bioId }, relations: ['user'] });
         if (!bio) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
 
-        // Check if PRO
-        // const isPro = await isUserPro(bio.user.id);
-        // if (!isPro) throw new ApiError(APIErrors.paymentRequiredError, "Booking is a PRO feature", 402); 
-        // Logic note: we might allow checking settings but enforce PRO on update/public usage. 
-        // For now, let's create default settings.
+        // Note: Settings can be fetched but only PAID users can save/use booking features.
+        // The middleware enforces this at the route level.
 
         settings = settingsRepository.create({
             bioId,
@@ -49,10 +46,13 @@ export const getBookingSettings = async (bioId: string) => {
 export const updateBookingSettings = async (bioId: string, updates: Partial<BookingSettingsEntity>) => {
     const settings = await getBookingSettings(bioId);
     
-    // Validate PRO
+    // Validate user has paid plan (Standard or Pro)
     const bio = await bioRepository.findOne({ where: { id: bioId }, relations: ['user'] });
-    if (bio && !(await isUserPro(bio.user.id))) {
-        throw new ApiError(APIErrors.paymentRequiredError, "Booking is a PRO feature", 402);
+    if (bio) {
+        const activePlan = await BillingService.getActivePlan(bio.user.id);
+        if (activePlan === 'free') {
+            throw new ApiError(APIErrors.paymentRequiredError, "Booking requires a paid plan (Standard or Pro)", 402);
+        }
     }
 
     Object.assign(settings, updates);

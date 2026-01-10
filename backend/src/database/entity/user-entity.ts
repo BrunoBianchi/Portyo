@@ -4,6 +4,8 @@ import { BioEntity } from "./bio-entity";
 import { PostEntity } from "./posts-entity";
 import * as bcrypt from "bcrypt";
 import { QRCodeEntity } from "./qrcode-entity";
+import { BillingEntity } from "./billing-entity";
+
 
 @Entity()
 export class UserEntity extends BaseEntity {
@@ -38,8 +40,13 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
 
+
     @OneToMany(() => PostEntity, (post) => post.user)
     posts!: PostEntity[];
+
+    @OneToMany(() => BillingEntity, (billing) => billing.user)
+    billings!: BillingEntity[];
+
 
 
 }

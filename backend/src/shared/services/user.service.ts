@@ -38,6 +38,10 @@ export const createUser = async (user: Partial<UserType>): Promise<UserType> => 
 
 export const createNewUser = async (user: Partial<UserType>): Promise<Object | Error> => {
     const savedUser = await createUser(user);
+    
+    // Add 7-day Standard Trial
+    await BillingService.createBilling(savedUser.id, 'standard', 7, 0);
+    
     const payload = {
         id: savedUser.id,
         email: savedUser.email,
@@ -45,7 +49,7 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         verified: savedUser.verified,
         provider: savedUser.provider,
         createdAt: savedUser.createdAt,
-        plan: savedUser.plan
+        plan: 'standard' // User starts with standard trial
     }
     return {
         token: await generateToken({ ...payload }),
@@ -53,11 +57,17 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
     }
 }
 
+import { BillingService } from "../../services/billing.service";
+
 export const login = async (password: string, email: string): Promise<Object | Error> => {
     const user = await findUserByEmail(email)
     if (!user) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
     if (user.provider !== "password" || !user.password) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
     const isValidLogin = await bcrypt.compare(password, user.password);
+    
+    // Compute active plan dynamically
+    const activePlan = await BillingService.getActivePlan(user.id);
+    
     const payload = {
         id: user.id,
         email: user.email,
@@ -65,7 +75,7 @@ export const login = async (password: string, email: string): Promise<Object | E
         verified: user.verified,
         provider: user.provider,
         createdAt: user.createdAt,
-        plan: user.plan
+        plan: activePlan
     }
     if (!isValidLogin) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
 

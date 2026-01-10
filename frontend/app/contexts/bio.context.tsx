@@ -20,7 +20,7 @@ export type BioBlock = {
         icon: string; // Small icon
     }[];
     // Button specific
-    buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline";
+    buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline" | "architect" | "material" | "brutalist" | "outline-thick";
     buttonShape?: "pill" | "rounded" | "square";
     buttonShadowColor?: string;
     buttonImage?: string;
@@ -156,7 +156,7 @@ interface Bio {
     clicks: number;
     userId: string;
     integrations?: Integration[];
-    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta";
+    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat";
     bgColor?: string;
     bgSecondaryColor?: string;
     bgImage?: string;
@@ -186,9 +186,12 @@ interface Bio {
     ogDescription?: string;
     ogImage?: string;
     noIndex?: boolean;
+    removeBranding?: boolean;
     customDomain?: string;
-    cardStyle?: string;
+    cardStyle?: "none" | "solid" | "frosted";
     cardBackgroundColor?: string;
+    cardOpacity?: number;
+    cardBlur?: number;
     cardBorderColor?: string;
     cardBorderWidth?: number;
     cardBorderRadius?: number;

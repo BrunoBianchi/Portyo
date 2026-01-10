@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 export default function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
+  const [expandedFree, setExpandedFree] = useState(false);
+  const [expandedStandard, setExpandedStandard] = useState(false);
+  const [expandedPro, setExpandedPro] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,12 +114,31 @@ export default function PricingSection() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    {['Customizable link-in-bio', 'Basic Analytics', 'Unlimited Links', 'Social Icons', 'Basic Themes','2.5% Transaction Fees'].map((feature, i) => (
+                    {['Create only one page', 'No branding removal', 'No custom domain', 'Basic analytics', '3% store fee'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <Check className="w-4 h-4 text-green-500" />
                             <span className="text-text-main text-sm font-medium">{feature}</span>
                         </div>
                     ))}
+                    
+                    {expandedFree && (
+                        <>
+                            {['Limited integrations'].map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <Check className="w-4 h-4 text-green-500" />
+                                    <span className="text-text-main text-sm font-medium">{feature}</span>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                    
+                    <button 
+                        onClick={() => setExpandedFree(!expandedFree)}
+                        className="flex items-center gap-1 text-text-muted hover:text-text-main text-sm font-medium transition-colors mt-2"
+                    >
+                        {expandedFree ? 'Show less' : 'Show more'}
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedFree ? 'rotate-180' : ''}`} />
+                    </button>
                 </div>
 
                 <div className="mt-auto pt-6">
@@ -149,12 +171,31 @@ export default function PricingSection() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    {['Everything in Free', 'Remove Branding', 'Custom Domain', 'Priority Support', 'Advanced Analytics', 'Email Collection'].map((feature, i) => (
+                    {['Create up to 3 bios', 'Branding removal', 'Custom domain', 'Scheduler', 'Email collection', '0% store fee'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <Check className="w-4 h-4 text-black" />
                             <span className="text-primary-foreground text-sm font-medium">{feature}</span>
                         </div>
                     ))}
+                    
+                    {expandedStandard && (
+                        <>
+                            {['Automation (2 per bio)', 'Email template (2 per bio)', 'SEO settings', 'Google and Facebook analytics', 'More customizations'].map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <Check className="w-4 h-4 text-black" />
+                                    <span className="text-primary-foreground text-sm font-medium">{feature}</span>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                    
+                    <button 
+                        onClick={() => setExpandedStandard(!expandedStandard)}
+                        className="flex items-center gap-1 text-primary-foreground/70 hover:text-primary-foreground text-sm font-medium transition-colors mt-2"
+                    >
+                        {expandedStandard ? 'Show less' : 'Show more'}
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedStandard ? 'rotate-180' : ''}`} />
+                    </button>
                 </div>
 
                 <div className="mt-auto pt-6">
@@ -183,12 +224,31 @@ export default function PricingSection() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    {['Everything in Standard', '0% Transaction Fees', 'API Access', 'Dedicated Manager', 'White Labeling', 'Newsletter Tool'].map((feature, i) => (
+                    {['Everything in Standard', 'Create up to 6 bios', 'Automation (4 per bio)', 'Email template (4 per bio)', 'More customizations'].map((feature, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <Check className="w-4 h-4 text-primary" />
                             <span className="text-gray-300 text-sm font-medium">{feature}</span>
                         </div>
                     ))}
+                    
+                    {expandedPro && (
+                        <>
+                            {[].map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <Check className="w-4 h-4 text-primary" />
+                                    <span className="text-gray-300 text-sm font-medium">{feature}</span>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                    
+                    <button 
+                        onClick={() => setExpandedPro(!expandedPro)}
+                        className="flex items-center gap-1 text-gray-500 hover:text-gray-300 text-sm font-medium transition-colors mt-2"
+                    >
+                        {expandedPro ? 'Show less' : 'Show more'}
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedPro ? 'rotate-180' : ''}`} />
+                    </button>
                 </div>
 
                 <div className="mt-auto pt-6">

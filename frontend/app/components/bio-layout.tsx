@@ -1044,169 +1044,6 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             background-color: ${bio?.bgColor || bio?.cardBackgroundColor || '#f3f4f6'};
                         }
 
-                        .portyo-mini-navbar {
-                            position: ${isPreview ? 'absolute' : 'fixed'};
-                            top: 24px;
-                            left: 0;
-                            right: 0;
-                            z-index: 1000;
-                            padding: 0 16px;
-                            display: flex;
-                            justify-content: center;
-                            opacity: 0;
-                            transform: translateY(-20px) scale(0.96);
-                            transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
-                            pointer-events: none;
-                        }
-
-                        .portyo-mini-navbar.visible {
-                            opacity: 1;
-                            transform: translateY(0) scale(1);
-                            pointer-events: auto;
-                        }
-
-                        .portyo-mini-navbar-wrapper {
-                            width: auto;
-                            min-width: 320px;
-                            max-width: 640px;
-                            padding: 5px 5px 5px 8px;
-                            border-radius: 9999px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            gap: 12px;
-                            backdrop-filter: blur(20px) saturate(180%);
-                            -webkit-backdrop-filter: blur(20px) saturate(180%);
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                            box-shadow: 
-                                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                                0 10px 15px -3px rgba(0, 0, 0, 0.05),
-                                0 20px 25px -5px rgba(0, 0, 0, 0.05);
-                        }
-
-                        .portyo-mini-navbar-left {
-                            display: flex;
-                            align-items: center;
-                            gap: 10px;
-                            padding-right: 12px;
-                            border-right: 1px solid rgba(125,125,125,0.2);
-                        }
-
-                        .portyo-mini-navbar-avatar {
-                            width: 32px;
-                            height: 32px;
-                            border-radius: 50%;
-                            background: rgba(125,125,125,0.1);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            overflow: hidden;
-                            border: 1px solid rgba(255, 255, 255, 0.2);
-                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                        }
-
-                        .portyo-mini-navbar-avatar img {
-                            width: 100%;
-                            height: 100%;
-                            object-fit: cover;
-                        }
-
-                        .portyo-mini-navbar-avatar span {
-                            font-size: 13px;
-                            font-weight: 700;
-                            color: #111827;
-                        }
-
-                        .portyo-mini-navbar-name {
-                            font-size: 13px;
-                            font-weight: 600;
-                            letter-spacing: -0.2px;
-                            white-space: nowrap;
-                            max-width: 140px;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
-
-                        .portyo-mini-navbar-tabs {
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            gap: 20px;
-                            flex: 1;
-                        }
-
-                        .portyo-mini-navbar-tab {
-                            background: none;
-                            border: none;
-                            padding: 6px 0;
-                            font-size: 13px;
-                            font-weight: 600;
-                            letter-spacing: -0.2px;
-                            position: relative;
-                            cursor: pointer;
-                            transition: opacity 0.2s ease;
-                        }
-                        
-                        .portyo-mini-navbar-tab:hover {
-                            opacity: 0.7;
-                        }
-
-                        .portyo-mini-navbar-tab-underline {
-                            display: none;
-                        }
-
-                        .portyo-mini-navbar-subscribe {
-                            height: 32px;
-                            padding: 0 16px;
-                            border-radius: 9999px;
-                            font-size: 13px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            transition: all 0.2s ease;
-                            white-space: nowrap;
-                            border: none !important;
-                            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-                        }
-
-                        .portyo-mini-navbar-subscribe:hover {
-                            transform: translateY(-1px);
-                            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-                            opacity: 0.95;
-                        }
-                        
-                        .portyo-mini-navbar-subscribe:active {
-                            transform: translateY(0);
-                        }
-
-                        @media (max-width: 600px) {
-                            .portyo-mini-navbar-wrapper {
-                                padding: 5px;
-                                gap: 8px;
-                            }
-                            
-                            .portyo-mini-navbar-left {
-                                padding-right: 8px;
-                                gap: 8px;
-                            }
-
-                            .portyo-mini-navbar-name {
-                                display: none;
-                            }
-                            
-                            .portyo-mini-navbar-tabs {
-                                gap: 14px;
-                            }
-                            
-                            .portyo-mini-navbar-tab {
-                                font-size: 13px;
-                            }
-
-                            .portyo-mini-navbar-subscribe {
-                                height: 32px;
-                                padding: 0 14px;
-                                font-size: 12.5px;
-                            }
-                        }
     `;
 
     return (
@@ -1322,7 +1159,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         config={popupConfig}
                     />
                 )}
-                <BioContent ref={containerRef} html={(htmlContent || "").replace(/(<img\s+)(src="\/users-photos\/[^"]+")/i, '$1fetchpriority="high" $2').replace(/<\/div>\s*$/, `
+                <BioContent ref={containerRef} html={(htmlContent || "").replace(/(<img\s+)(src="\/users-photos\/[^"]+")/i, '$1fetchpriority="high" $2').replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
                 <div style="display:flex;justify-content:center;padding:24px 0 32px 0;width:100%;position:relative;z-index:10">
                     <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12px; color: #4b5563; font-weight: 500; padding: 6px 14px; border-radius: 999px; background-color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;">
                         <span>Powered by</span>
@@ -1332,7 +1169,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 </div>`)} />
 
                 {/* Sticky Promo Banner */}
-                {!isPreview && showPromo && (
+                {!isPreview && showPromo && !bio.removeBranding && (
                     <div style={{
                         position: 'fixed',
                         bottom: '24px',
