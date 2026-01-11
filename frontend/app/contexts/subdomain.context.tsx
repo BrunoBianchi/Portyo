@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useRef } from "react";
 import { api } from "../services/api";
 import { Links, Meta, Scripts } from "react-router";
+import { sanitizeHtml } from "../utils/security";
 
 interface Bio {
     id: string;
@@ -39,24 +40,24 @@ const BioRenderer = ({ html }: { html: string }) => {
 
     useEffect(() => {
         if (!containerRef.current) return;
-        
+
         // Store interval IDs to clear them on unmount
         const intervals: number[] = [];
 
         const startTimer = (timer: Element) => {
             if (timer.hasAttribute('data-initialized')) return;
-            
+
             const dateStr = timer.getAttribute('data-date');
             if (!dateStr) return;
-            
+
             timer.setAttribute('data-initialized', 'true');
             const target = new Date(dateStr).getTime();
-            
+
             let intervalId: number | null = null;
             const update = () => {
                 const now = new Date().getTime();
                 const diff = target - now;
-                
+
                 if (diff < 0) {
                     timer.innerHTML = '<div style="font-size:18px; font-weight:600; padding:12px;">Event Started</div>';
                     if (intervalId !== null) {
@@ -64,23 +65,23 @@ const BioRenderer = ({ html }: { html: string }) => {
                     }
                     return;
                 }
-                
+
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-                
+
                 const daysEl = timer.querySelector('.days');
                 const hoursEl = timer.querySelector('.hours');
                 const minsEl = timer.querySelector('.minutes');
                 const secsEl = timer.querySelector('.seconds');
-                
+
                 if (daysEl) daysEl.textContent = d.toString().padStart(2, '0');
                 if (hoursEl) hoursEl.textContent = h.toString().padStart(2, '0');
                 if (minsEl) minsEl.textContent = m.toString().padStart(2, '0');
                 if (secsEl) secsEl.textContent = s.toString().padStart(2, '0');
             };
-            
+
             update();
             // Use window.setInterval to ensure we get a number ID
             intervalId = window.setInterval(update, 1000);
@@ -98,20 +99,20 @@ const BioRenderer = ({ html }: { html: string }) => {
 
                 const username = feed.getAttribute('data-username');
                 const displayType = feed.getAttribute('data-display-type') || 'grid';
-                
+
                 if (!username || username === 'instagram') return;
 
                 // Add spinner styles if not present
                 if (!document.getElementById('instagram-styles')) {
-                     const style = document.createElement('style');
-                     style.id = 'instagram-styles';
-                     style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-                     document.head.appendChild(style);
+                    const style = document.createElement('style');
+                    style.id = 'instagram-styles';
+                    style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                    document.head.appendChild(style);
                 }
 
                 const imageStyle = displayType === 'grid'
-                  ? "aspect-ratio:1; width:100%;"
-                  : "aspect-ratio:1; width:100%; max-height:400px;";
+                    ? "aspect-ratio:1; width:100%;"
+                    : "aspect-ratio:1; width:100%; max-height:400px;";
 
                 api.get(`/public/instagram/${username}`)
                     .then(res => res.data)
@@ -147,20 +148,20 @@ const BioRenderer = ({ html }: { html: string }) => {
 
                 const url = feed.getAttribute('data-url');
                 const displayType = feed.getAttribute('data-display-type') || 'grid';
-                
+
                 if (!url) return;
 
                 // Add spinner styles if not present
                 if (!document.getElementById('youtube-styles')) {
-                     const style = document.createElement('style');
-                     style.id = 'youtube-styles';
-                     style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-                     document.head.appendChild(style);
+                    const style = document.createElement('style');
+                    style.id = 'youtube-styles';
+                    style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                    document.head.appendChild(style);
                 }
 
                 const imageStyle = displayType === 'grid'
-                  ? "aspect-ratio:16/9; width:100%;"
-                  : "aspect-ratio:16/9; width:100%;";
+                    ? "aspect-ratio:16/9; width:100%;"
+                    : "aspect-ratio:16/9; width:100%;";
 
                 api.get(`/public/youtube/fetch?url=${encodeURIComponent(url)}`)
                     .then(res => res.data)
@@ -190,70 +191,70 @@ const BioRenderer = ({ html }: { html: string }) => {
 
         const initShareModal = () => {
             (window as any).currentShareUrl = '';
-            (window as any).openShare = function(e: any, url: string, title: string) {
-                if(e) { e.preventDefault(); e.stopPropagation(); }
+            (window as any).openShare = function (e: any, url: string, title: string) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
                 (window as any).currentShareUrl = url;
                 const modal = document.getElementById('share-modal');
                 if (modal) modal.style.display = 'flex';
-                
+
                 const titleEl = document.getElementById('share-title');
                 if (titleEl) titleEl.textContent = title;
-                
+
                 const qrEl = document.getElementById('share-qr') as HTMLImageElement;
                 if (qrEl) qrEl.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(url);
-                
+
                 const twitterEl = document.getElementById('share-twitter') as HTMLAnchorElement;
                 if (twitterEl) twitterEl.href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(url);
-                
+
                 const facebookEl = document.getElementById('share-facebook') as HTMLAnchorElement;
                 if (facebookEl) facebookEl.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
-                
+
                 const whatsappEl = document.getElementById('share-whatsapp') as HTMLAnchorElement;
                 if (whatsappEl) whatsappEl.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(url);
-                
+
                 const linkedinEl = document.getElementById('share-linkedin') as HTMLAnchorElement;
                 if (linkedinEl) linkedinEl.href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
             };
-            (window as any).closeShare = function() {
+            (window as any).closeShare = function () {
                 const modal = document.getElementById('share-modal');
                 if (modal) modal.style.display = 'none';
             };
-            (window as any).copyShareLink = function() {
+            (window as any).copyShareLink = function () {
                 navigator.clipboard.writeText((window as any).currentShareUrl);
                 alert('Link copied to clipboard!');
             };
         };
 
         const initSubscribeModal = () => {
-            (window as any).openSubscribe = function() {
+            (window as any).openSubscribe = function () {
                 const modal = document.getElementById('subscribe-modal');
                 if (modal) modal.style.display = 'flex';
             };
-            (window as any).closeSubscribe = function() {
+            (window as any).closeSubscribe = function () {
                 const modal = document.getElementById('subscribe-modal');
                 if (modal) modal.style.display = 'none';
                 const successMsg = document.getElementById('subscribe-success');
                 if (successMsg) successMsg.style.display = 'none';
             };
-            (window as any).submitSubscribe = function(e: any) {
+            (window as any).submitSubscribe = function (e: any) {
                 e.preventDefault();
                 const emailInput = e.target.querySelector('input[type="email"]');
                 const email = emailInput ? emailInput.value : '';
-                
+
                 if (email) {
                     // Here you would typically send the email to your backend
-                    console.log('Subscribing email:', email);
-                    
+
+
                     // Show success message
                     const successMsg = document.getElementById('subscribe-success');
                     if (successMsg) {
                         successMsg.style.display = 'block';
                         successMsg.textContent = 'Thanks for subscribing!';
                     }
-                    
+
                     // Clear input
                     if (emailInput) emailInput.value = '';
-                    
+
                     // Close modal after delay
                     setTimeout(() => {
                         (window as any).closeSubscribe();
@@ -278,7 +279,7 @@ const BioRenderer = ({ html }: { html: string }) => {
         const observer = new MutationObserver((mutations) => {
             scanAndInit();
         });
-        
+
         if (containerRef.current) {
             observer.observe(containerRef.current, { childList: true, subtree: true });
         }
@@ -326,7 +327,7 @@ const BioRenderer = ({ html }: { html: string }) => {
 
         // Instagram embeds don't execute via innerHTML; trigger them explicitly.
         ensureInstagramEmbeds();
-        
+
         return () => {
             observer.disconnect();
             window.clearInterval(safetyInterval);
@@ -334,7 +335,7 @@ const BioRenderer = ({ html }: { html: string }) => {
         };
     }, [html]);
 
-    return <div ref={containerRef} dangerouslySetInnerHTML={{ __html: html }} />;
+    return <div ref={containerRef} dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />;
 };
 
 export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -390,7 +391,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             // For now, let's assume we can search by custom domain
             // This might require backend changes to support finding by custom domain
             // Or we can try to find by sufix if the custom domain is mapped to a sufix
-            
+
             // Ideally: GET /public/bio/domain/:domain
             const response = await api.get(`/public/bio/domain/${domain}`);
             setBio(response.data);
@@ -434,7 +435,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 </html>
             );
         }
-        
+
         if (bio) {
             return (
                 <html lang="en">
@@ -445,7 +446,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                         {bio.seoDescription && <meta name="description" content={bio.seoDescription} />}
                         {bio.seoKeywords && <meta name="keywords" content={bio.seoKeywords} />}
                         {bio.favicon && <link rel="icon" href={bio.favicon} />}
-                        
+
                         {/* Open Graph / Social Media */}
                         <meta property="og:title" content={bio.ogTitle || bio.seoTitle || subdomain} />
                         <meta property="og:description" content={bio.ogDescription || bio.seoDescription || ""} />
@@ -488,8 +489,8 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                                         fbq('track', 'PageView');
                                     `
                                 }} />
-                                <noscript><img height="1" width="1" style={{display:'none'}}
-                                src={`https://www.facebook.com/tr?id=${bio.facebookPixelId}&ev=PageView&noscript=1`}
+                                <noscript><img height="1" width="1" style={{ display: 'none' }}
+                                    src={`https://www.facebook.com/tr?id=${bio.facebookPixelId}&ev=PageView&noscript=1`}
                                 /></noscript>
                             </>
                         )}
@@ -499,7 +500,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                     </head>
                     <body>
                         <BioRenderer html={bio.html} />
-                        
+
                         <Scripts />
                     </body>
                 </html>
@@ -528,16 +529,16 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                                 <p className="text-[#737373] mb-8 text-lg">
                                     The bio for <span className="font-bold text-[#171717]">@{subdomain}</span> hasn't been created yet.
                                 </p>
-                                
+
                                 <div className="space-y-4">
                                     <p className="text-sm text-[#737373] font-medium uppercase tracking-wide">Is this your brand?</p>
-                                    <a 
-                                        href={claimUrl} 
+                                    <a
+                                        href={claimUrl}
                                         className="block w-full py-4 px-6 bg-[#d2e823] hover:bg-[#c4d922] text-[#171717] font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                                     >
                                         Claim <span className="underline decoration-2 decoration-black/20">{subdomain}</span> now
                                     </a>
-                                    <a 
+                                    <a
                                         href={`${protocol}//${mainDomain}`}
                                         className="block w-full py-4 px-6 bg-white border-2 border-[#e5e5e5] hover:border-[#d4d4d4] hover:bg-[#f5f5f5] text-[#171717] font-bold rounded-xl transition-all duration-200"
                                     >
@@ -545,7 +546,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                                     </a>
                                 </div>
                             </div>
-                            
+
                             <div className="mt-8 text-[#737373] text-sm">
                                 Powered by <span className="font-bold text-[#171717]">Portyo</span>
                             </div>

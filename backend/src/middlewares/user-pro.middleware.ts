@@ -18,7 +18,7 @@ export const isUserPro = async (req: Request, res: Response, next: NextFunction)
         const activePlan = await BillingService.getActivePlan(req.user.id);
         
         // Debug log
-        console.log(`[isUserPro] User: ${req.user.id}, Computed Plan: "${activePlan}"`);
+
 
         // Update req.user.plan so subsequent handlers have the fresh value
         req.user.plan = activePlan;
@@ -53,7 +53,7 @@ export const requirePaidPlan = async (req: Request, res: Response, next: NextFun
         const activePlan = await BillingService.getActivePlan(req.user.id);
         
         // Debug log
-        console.log(`[requirePaidPlan] User: ${req.user.id}, Computed Plan: "${activePlan}"`);
+
 
         // Update req.user.plan so subsequent handlers have the fresh value
         req.user.plan = activePlan;

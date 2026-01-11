@@ -6,6 +6,7 @@ import { logger } from "../utils/logger";
 import { env } from "../../config/env";
 import { PLAN_LIMITS, PlanType } from "../constants/plan-limits";
 import { BillingService } from "../../services/billing.service";
+import { checkEmailLimit, incrementEmailCount } from "./email-limit.service";
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
 
@@ -201,6 +202,7 @@ export const executeAutomation = async (
             bioClicks: bio?.clicks || 0,
             
             // User (owner) info - available but be careful with privacy
+            userId: bio?.user?.id || "",
             ownerName: bio?.user?.fullName || "",
             ownerFirstName: bio?.user?.fullName?.split(" ")[0] || "",
             ownerEmail: bio?.user?.email || "",
@@ -208,7 +210,6 @@ export const executeAutomation = async (
             // Social links
             instagram: bio?.socials?.instagram || "",
             tiktok: bio?.socials?.tiktok || "",
-            twitter: bio?.socials?.twitter || "",
             youtube: bio?.socials?.youtube || "",
             linkedin: bio?.socials?.linkedin || "",
             website: bio?.socials?.website || "",
@@ -332,6 +333,7 @@ const processNode = async (
 const processEmailAction = async (node: AutomationNode, context: any): Promise<any> => {
     const { subject, content } = node.data;
     const recipientEmail = context.email;
+    const userId = context.userId;
 
     logger.info(`[Automation] Processing email action - recipient: ${recipientEmail}`);
 
@@ -345,6 +347,19 @@ const processEmailAction = async (node: AutomationNode, context: any): Promise<a
         logger.warn("[Automation] Mailgun not configured, email will not be sent. Set MAILGUN_API_SECRET in environment variables.");
         logger.info(`[Automation] Would have sent email to ${recipientEmail} with subject: "${subject || 'Welcome!'}"`);
         return { ...context, emailSent: false, emailSkipped: true };
+    }
+
+    // Check email limit for the user
+    try {
+        if (userId) {
+            await checkEmailLimit(userId);
+            logger.info(`[Automation] Email limit check passed for user ${userId}`);
+        } else {
+            logger.warn("[Automation] No userId in context, skipping email limit check");
+        }
+    } catch (error: any) {
+        logger.error(`[Automation] Email limit check failed: ${error.message}`);
+        throw error; // Propagate the error to fail the automation
     }
 
     try {
@@ -363,6 +378,13 @@ const processEmailAction = async (node: AutomationNode, context: any): Promise<a
 
         logger.info(`[Automation] Email sent successfully to ${recipientEmail}: ${processedSubject}`);
         logger.info(`[Automation] Mailgun response: ${JSON.stringify(data)}`);
+        
+        // Increment email count after successful send
+        if (userId) {
+            await incrementEmailCount(userId);
+            logger.info(`[Automation] Email count incremented for user ${userId}`);
+        }
+        
         return { ...context, emailSent: true, mailgunResponse: data };
     } catch (error: any) {
         logger.error(`[Automation] Failed to send email via Mailgun: ${error.message}`);

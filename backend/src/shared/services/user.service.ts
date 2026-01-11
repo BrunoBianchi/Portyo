@@ -1,9 +1,10 @@
 import { UserType } from "../types/user.type";
 import { AppDataSource } from "../../database/datasource";
 import { UserEntity } from "../../database/entity/user-entity";
-import { generateToken } from "./jwt.service";
+import { generateToken, generateRefreshToken } from "./jwt.service";
 import bcrypt from "bcrypt"
 import { ApiError, APIErrors } from "../errors/api-error";
+import { BillingService } from "../../services/billing.service";
 
 const repository = AppDataSource.getRepository(UserEntity);
 
@@ -53,11 +54,10 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
     }
     return {
         token: await generateToken({ ...payload }),
+        refreshToken: await generateRefreshToken(savedUser.id),
         user: payload
     }
 }
-
-import { BillingService } from "../../services/billing.service";
 
 export const login = async (password: string, email: string): Promise<Object | Error> => {
     const user = await findUserByEmail(email)
@@ -65,6 +65,8 @@ export const login = async (password: string, email: string): Promise<Object | E
     if (user.provider !== "password" || !user.password) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
     const isValidLogin = await bcrypt.compare(password, user.password);
     
+    if (!isValidLogin) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
+
     // Compute active plan dynamically
     const activePlan = await BillingService.getActivePlan(user.id);
     
@@ -77,10 +79,10 @@ export const login = async (password: string, email: string): Promise<Object | E
         createdAt: user.createdAt,
         plan: activePlan
     }
-    if (!isValidLogin) throw new ApiError(APIErrors.unauthorizedError, "Invalid Credentials", 401);
 
     return {
         token: await generateToken({ ...payload }),
+        refreshToken: await generateRefreshToken(user.id),
         user: payload
     }
 }

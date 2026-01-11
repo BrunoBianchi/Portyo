@@ -22,12 +22,12 @@ export const getGoogleAnalyticsAuthUrl = (bioId: string) => {
     state: bioId // Pass bioId in state to link it back
   });
   const url = `${googleAuthUrl}?${params.toString()}`;
-  console.log("Generated Google Analytics Auth URL:", url);
+
   return url;
 };
 
 export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) => {
-  console.log("Parsing Google Analytics Callback. Code:", code, "BioID:", bioId);
+
   const response = await axios.post(
     googleTokenUrl,
     new URLSearchParams({
@@ -45,8 +45,7 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
   );
 
   const { access_token, refresh_token } = response.data;
-  console.log("Received Access Token:", access_token ? "Yes" : "No");
-  console.log("Received Refresh Token:", refresh_token ? "Yes" : "No");
+
 
   // Fetch user's analytics accounts to get the ID (optional, or just store tokens)
   // For now, we just store the tokens. 
@@ -64,13 +63,11 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
   integration.bio = bio;
 
   await integrationRepository.save(integration);
-  console.log("Saved Integration Entity:", integration.id);
+
 
   // Try to fetch properties and auto-select or create the correct one
   try {
-      console.log("Attempting to fetch analytics properties...");
       const properties = await getAnalyticsProperties(integration.id);
-      console.log("Fetched Properties:", JSON.stringify(properties, null, 2));
       
       const targetName = `Portyo - ${bio.sufix}`;
       let targetProperty = null;
@@ -89,7 +86,7 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
       }
 
       if (targetProperty) {
-          console.log("Found existing property:", targetProperty.displayName);
+
           integration.account_id = targetProperty.property;
           await integrationRepository.save(integration);
 
@@ -97,17 +94,17 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
           let measurementId = await getMeasurementId(integration.accessToken!, targetProperty.property);
           
           if (!measurementId) {
-              console.log("Property exists but no data stream. Creating one...");
+
               measurementId = await createDataStream(integration.accessToken!, targetProperty.property, bio.sufix);
           }
 
           if (measurementId) {
               bio.googleAnalyticsId = measurementId;
               await bioRepository.save(bio);
-              console.log("Updated Bio with Google Analytics ID:", measurementId);
+
           }
       } else {
-          console.log("Property not found. Creating a new one...");
+
           const newProperty = await createAnalyticsProperty(integration.accessToken!, bio.sufix);
           
           if (newProperty) {
@@ -116,7 +113,7 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
               
               bio.googleAnalyticsId = newProperty.measurementId;
               await bioRepository.save(bio);
-              console.log("Created new property and updated Bio with ID:", newProperty.measurementId);
+
           }
       }
   } catch (error: any) {
@@ -132,7 +129,7 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
 };
 
 const refreshAccessToken = async (integration: IntegrationEntity) => {
-    console.log("Refreshing Google Access Token...");
+
     try {
         if (!integration.refreshToken) {
             throw new Error("No refresh token available");
@@ -159,7 +156,7 @@ const refreshAccessToken = async (integration: IntegrationEntity) => {
         }
         
         await integrationRepository.save(integration);
-        console.log("Token refreshed successfully");
+
         
         return access_token;
     } catch (error: any) {
@@ -206,7 +203,7 @@ const createDataStream = async (accessToken: string, propertyId: string, bioName
             { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         const measurementId = streamResponse.data.webStreamData.measurementId;
-        console.log("Created Data Stream with Measurement ID:", measurementId);
+
         return measurementId;
     } catch (error: any) {
         console.error("Failed to create data stream", error.response?.data || error);
@@ -230,7 +227,7 @@ const createAnalyticsProperty = async (accessToken: string, bioName: string) => 
         }
 
         // 2. Create Property
-        console.log(`Creating property for ${bioName} in account ${accountId}`);
+
         const propertyResponse = await axios.post(
             `https://analyticsadmin.googleapis.com/v1beta/properties`,
             {
@@ -243,7 +240,7 @@ const createAnalyticsProperty = async (accessToken: string, bioName: string) => 
         );
         
         const propertyName = propertyResponse.data.name; // "properties/123456"
-        console.log("Created Property:", propertyName);
+
 
         // 3. Create Data Stream
         const measurementId = await createDataStream(accessToken, propertyName, bioName);
@@ -272,7 +269,7 @@ export const getAnalyticsProperties = async (integrationId: string) => {
         return response.data.accountSummaries;
     } catch (error: any) {
         if (error.response?.status === 401) {
-            console.log("Analytics properties fetch 401. Refreshing token...");
+
             const newAccessToken = await refreshAccessToken(integration);
             
             const retryResponse = await axios.get("https://analyticsadmin.googleapis.com/v1beta/accountSummaries", {
@@ -346,7 +343,7 @@ export const getAnalyticsData = async (integrationId: string, startDate: string,
         return await fetchData(integration.accessToken!);
     } catch (error: any) {
         if (error.response?.status === 401) {
-            console.log("Analytics data fetch 401. Refreshing token...");
+
             const newAccessToken = await refreshAccessToken(integration);
             return await fetchData(newAccessToken);
         }

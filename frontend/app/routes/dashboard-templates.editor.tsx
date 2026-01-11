@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from "react";
+import { sanitizeHtml } from "~/utils/security";
 import type { Route } from "../+types/root";
 import { useParams, useNavigate } from "react-router";
 import {
@@ -82,7 +83,7 @@ function SortableItem({ block, isSelected, onClick, onDelete }: any) {
                         lineHeight: block.style?.lineHeight || '1.5',
                         fontFamily: 'inherit' // Inherits from editor or set specifically
                     }}>
-                        {block.content ? <div dangerouslySetInnerHTML={{ __html: block.content }} /> : <span className="text-gray-400 italic">Empty Text Block</span>}
+                        {block.content ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }} /> : <span className="text-gray-400 italic">Empty Text Block</span>}
                     </div>
                 )}
                 {block.type === 'image' && (

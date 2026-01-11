@@ -1,5 +1,5 @@
 import { z } from "zod";
-import * as dotenv from "dotenv";
+import * as dotenv from "@dotenvx/dotenvx";
 import * as path from "path";
 
 // Load .env from src directory
@@ -39,6 +39,7 @@ const envSchema = z.object({
 
   // Stripe
   STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // Frontend
   FRONTEND_URL: z.string().default("http://localhost:5173"),

@@ -87,8 +87,11 @@ export default function DashboardQrCode() {
     // Default bio QR code if list is empty or to show as default option
     const defaultBioUrl = bio ? `https://${bio.sufix}.portyo.me` : "";
 
-    // Determine what to show
-    const currentQrValue = selectedQrCode ? selectedQrCode.value : defaultBioUrl;
+    // Determine what to show - use frontend redirect URL for tracking
+    const FRONTEND_BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://portyo.me';
+    const currentQrValue = selectedQrCode
+        ? `${FRONTEND_BASE_URL}/redirect-qrcode/${selectedQrCode.id}`
+        : defaultBioUrl;
     const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(currentQrValue)}&color=${fgColor.replace('#', '')}&bgcolor=${bgColor.replace('#', '')}`;
 
     return (

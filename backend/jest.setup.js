@@ -1,0 +1,1 @@
+require('@dotenvx/dotenvx').config();

@@ -58,7 +58,7 @@ export default function DashboardAnalytics() {
             if (error.response?.status === 404 && error.response?.data?.connected === false) {
                 setShowGAPopup(true);
             }
-            console.log("GA Data fetch failed (likely not connected)", error);
+
         } finally {
             setIsLoadingData(false);
         }

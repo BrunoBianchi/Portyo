@@ -24,3 +24,23 @@ export const getAllQrCodes = async(bioId:string) => {
     })
 }
 
+export const trackQrCodeView = async(id: string, country?: string, device?: string) => {
+    const qrCode = await repository.findOneBy({id});
+    if (!qrCode) return null;
+    
+    qrCode.views += 1;
+    qrCode.lastScannedAt = new Date();
+    if (country) qrCode.country = country;
+    if (device) qrCode.device = device;
+    
+    await repository.save(qrCode);
+    return qrCode;
+}
+
+export const getQrCodeByIdPublic = async(id: string) => {
+    return await repository.findOne({
+        where: { id },
+        select: ['id', 'value', 'views', 'clicks']
+    });
+}
+

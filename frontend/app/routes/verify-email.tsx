@@ -5,8 +5,8 @@ import { useContext } from "react";
 import AuthContext from "~/contexts/auth.context";
 import { EnvelopeIcon } from "~/components/icons";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Verify Email - Portyo" }];
+export function meta({ }: Route.MetaArgs) {
+    return [{ title: "Verify Email - Portyo" }];
 }
 
 export default function VerifyEmail() {
@@ -14,7 +14,7 @@ export default function VerifyEmail() {
 
     const handleResend = () => {
         // TODO: Implement resend verification email
-        console.log("Resend email requested");
+
     };
 
     return (
@@ -22,7 +22,7 @@ export default function VerifyEmail() {
             <AuthBackground />
             <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
                 <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-white/50 text-center">
-                    
+
                     <div className="mb-6 flex justify-center">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                             <EnvelopeIcon className="w-8 h-8" />
@@ -36,13 +36,13 @@ export default function VerifyEmail() {
                     </p>
 
                     <div className="space-y-4">
-                        <button 
+                        <button
                             onClick={handleResend}
                             className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 active:scale-[0.98]"
                         >
                             Resend Email
                         </button>
-                        
+
                         <Link to="/login" className="block w-full text-center text-sm text-text-muted hover:text-primary transition-colors">
                             Back to Login
                         </Link>

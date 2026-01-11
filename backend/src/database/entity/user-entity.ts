@@ -37,6 +37,12 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "varchar", default: "free" })
     plan: string = "free";
 
+    @Column({ type: "int", default: 0 })
+    emailsSentThisMonth: number = 0;
+
+    @Column({ type: "varchar", nullable: true })
+    emailsLastResetMonth?: string; // Format: "YYYY-MM"
+
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
 

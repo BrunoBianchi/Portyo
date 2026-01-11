@@ -8,6 +8,7 @@ import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { logger } from "./shared/utils/logger";
 
@@ -39,7 +40,7 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       
-      const allowedOrigins = [env.CORS_ORIGIN, "http://localhost:3000"];
+      const allowedOrigins = [env.CORS_ORIGIN, "http://localhost:3000", "http://localhost:5173"];
       const isAllowed = allowedOrigins.includes(origin) || /^http:\/\/.*\.localhost:5173$/.test(origin);
 
       if (isAllowed) {
@@ -66,10 +67,39 @@ const limiter = rateLimit({
     });
   },
 });
+
+// Stricter rate limiter for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many authentication attempts, please try again later." },
+});
+
 app.use(limiter);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Extend Express Request to include rawBody
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody?: Buffer;
+    }
+  }
+}
+
+// Body parsers with size limits to prevent DoS attacks
+// Capture raw body for Stripe webhook verification
+app.use(express.json({ 
+  limit: '100mb',
+  verify: (req, res, buf) => {
+    (req as any).rawBody = buf;
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
+// Cookie parser for refresh tokens
+app.use(cookieParser());
 
 app.use(
   session.default({
@@ -104,3 +134,5 @@ export const InitializateServer = () => {
   process.on("SIGINT", shutdown);
 };
 
+// Export auth limiter for use in auth routes
+export { authLimiter, app };

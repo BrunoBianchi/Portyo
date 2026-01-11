@@ -481,17 +481,17 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("InstagramBlockPreview useEffect triggered", { username });
+
     if (!username || username === "instagram") {
-      console.log("InstagramBlockPreview: username is invalid or default, skipping fetch");
+
       return;
     }
     setLoading(true);
-    console.log("InstagramBlockPreview: starting fetch for", username);
+
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      console.log("InstagramBlockPreview: fetch timed out");
+
       controller.abort();
     }, 10000);
 
@@ -499,11 +499,11 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
     // Note: api is axios instance, so we use api.get
     api.get(`/public/instagram/${username}`, { signal: controller.signal })
       .then(res => {
-        console.log("InstagramBlockPreview: fetch response received", res.status);
+
         return res.data;
       })
       .then(data => {
-        console.log("InstagramBlockPreview: data received", data);
+
         if (Array.isArray(data)) {
           setPosts(data);
         } else {
@@ -515,13 +515,13 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
         setPosts([]);
       })
       .finally(() => {
-        console.log("InstagramBlockPreview: fetch completed (finally)");
+
         clearTimeout(timeoutId);
         setLoading(false);
       });
 
     return () => {
-      console.log("InstagramBlockPreview: cleanup");
+
       clearTimeout(timeoutId);
       controller.abort();
     };
@@ -861,7 +861,7 @@ export default function DashboardEditor() {
       const email = emailInput ? emailInput.value : '';
 
       if (email) {
-        console.log('Subscribing email:', email);
+
         const successMsg = document.getElementById('subscribe-success');
         if (successMsg) {
           successMsg.style.display = 'block';

@@ -1,4 +1,5 @@
 import { type BioBlock } from "~/contexts/bio.context";
+import { isValidUrl } from "~/utils/security";
 
 const escapeHtml = (value = "") =>
   value
@@ -84,8 +85,9 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const textAlign = block.buttonTextAlign || "center";
     
     const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
+    const cleanHref = isValidUrl(block.href) ? block.href : '#';
     const tag = block.href ? 'a' : 'div';
-    const hrefAttr = block.href ? ` href="${escapeHtml(block.href)}"` : ' role="button"';
+    const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"` : ' role="button"';
     const cursorStyle = block.href ? 'cursor:pointer;' : 'cursor:default;';
 
     let css = `display:flex; align-items:center; position:relative; min-height:48px; padding:14px 28px; text-decoration:none; font-weight:700; font-size:15px; letter-spacing:-0.3px; width:100%; transition:all 280ms cubic-bezier(0.34, 1.56, 0.64, 1); ${animationStyle}`;
@@ -145,6 +147,8 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
           : `<div style="height:34px;"></div>`;
 
       // Custom HTML for image grid as requested
+      const cleanHref = isValidUrl(block.href) ? block.href : '#';
+      const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"` : ' role="button"';
       return `\n${extraHtml}<section style="padding:6px; display:inline-block; width:50%; box-sizing:border-box; vertical-align:top;">
         <${tag}${hrefAttr} class="${animationClass}" style="position: relative; display: block; aspect-ratio: 261 / 151; width: 100%; border-radius: 20px; overflow: hidden; text-decoration: none; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1); ${cursorStyle}" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" ${nsfwAttr}>
           <div style="position:absolute; inset:0; background-color:#1f2937;">
@@ -169,7 +173,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const textStyle = `flex:1; text-align:${textAlign}; ${textPadding}`;
 
     const shareButtonHtml = `
-      <button aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(block.href || "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
+      <button aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(isValidUrl(block.href) ? block.href : "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
       </button>
     `;
@@ -207,7 +211,8 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
         ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; font-weight:700; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`
         : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`;
 
-      return `<a href="${escapeHtml(url)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
+      const safeUrl = isValidUrl(url) ? url : '#';
+      return `<a href="${escapeHtml(safeUrl)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
     }).join("");
 
     const containerStyle = layout === 'column' 
@@ -332,7 +337,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const title = block.featuredTitle || "Glow lipstick";
     const price = block.featuredPrice || "$19.99";
     const image = block.featuredImage || "https://placehold.co/300x300";
-    const url = block.featuredUrl || "#";
+    const url = isValidUrl(block.featuredUrl) ? block.featuredUrl : "#";
     const bgColor = block.featuredColor || "#1f4d36";
     const textColor = block.featuredTextColor || "#ffffff";
     
@@ -374,7 +379,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const title = block.affiliateTitle || "Copy my coupon code";
     const code = block.affiliateCode || "CODE123";
     const image = block.affiliateImage || "https://placehold.co/300x300";
-    const url = block.affiliateUrl || "#";
+    const url = isValidUrl(block.affiliateUrl) ? block.affiliateUrl : "#";
     const bgColor = block.affiliateColor || "#ffffff";
     const textColor = block.affiliateTextColor || "#374151";
     
@@ -398,7 +403,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const bgColor = block.eventColor || "#111827";
     const textColor = block.eventTextColor || "#ffffff";
     const btnText = block.eventButtonText || "Register Now";
-    const btnUrl = block.eventButtonUrl || "#";
+    const btnUrl = isValidUrl(block.eventButtonUrl) ? block.eventButtonUrl : "#";
     const uniqueId = `countdown-${block.id}`;
 
     return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
@@ -440,7 +445,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       const bgImage = tour.image || "";
       const date = tour.date || "TBA";
       const location = tour.location || "Location";
-      const ticketUrl = tour.ticketUrl || "#";
+      const ticketUrl = isValidUrl(tour.ticketUrl) ? tour.ticketUrl : "#";
       const isSoldOut = tour.soldOut;
       const isSellingFast = tour.sellingFast;
 
@@ -496,7 +501,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       const bgImg = item.image || item.icon || "";
       const iconImg = item.icon || "";
       const title = item.title || "";
-      const url = item.url || "#";
+      const url = isValidUrl(item.url) ? item.url : "#";
 
       return `
         <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="position:relative; display:block; aspect-ratio:261/151; width:100%; border-radius:15px; overflow:hidden; text-decoration:none; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);" onmouseover="const i=this.querySelector('img');if(i)i.style.transform='scale(1.1)'" onmouseout="const i=this.querySelector('img');if(i)i.style.transform='scale(1)'">
@@ -690,6 +695,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
       let url = value as string;
       if (key === 'email' && !url.startsWith('mailto:')) url = `mailto:${url}`;
       else if (!url.startsWith('http') && key !== 'email') url = `https://${url}`;
+      
+      if (!isValidUrl(url)) url = '#';
       
       const colorMap: Record<string, string> = {
         instagram: '#E4405F',
@@ -1061,12 +1068,12 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
             <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:${navIndicator}; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
         </button>
         ${hasProducts ? `
-        <button id="tab-shop" onclick="window.switchTab('shop')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.6; cursor:pointer; position:relative; transition:opacity 0.2s;">
+        <button id="tab-shop" onclick="window.switchTab('shop')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.85; cursor:pointer; position:relative; transition:opacity 0.2s;">
             Shop
             <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
         </button>` : ''}
         ${hasBlog ? `
-        <button id="tab-blog" onclick="window.switchTab('blog')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.6; cursor:pointer; position:relative; transition:opacity 0.2s;">
+        <button id="tab-blog" onclick="window.switchTab('blog')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.85; cursor:pointer; position:relative; transition:opacity 0.2s;">
             Blog
             <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
         </button>` : ''}
@@ -1247,8 +1254,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         <h3 style="font-size:22px; font-weight:900; color:#111827; margin:0 0 8px 0; letter-spacing:-0.5px;">Join the list</h3>
         <p style="font-size:14px; color:#6b7280; margin:0 0 24px 0; font-weight:500;">Get the latest updates delivered to your inbox.</p>
         
-        <form onsubmit="window.submitSubscribe(event)" style="display:flex; gap:12px;">
-          <input type="email" placeholder="your@email.com" required style="flex:1; padding:14px 16px; border-radius:12px; border:1.5px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb; font-weight:500; transition:all 200ms ease;" onfocus="this.style.borderColor='#111827'; this.style.background='#ffffff'" onblur="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb'" />
+        <form onsubmit="window.submitSubscribe(event)" style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:12px;">
+          <input type="email" placeholder="your@email.com" required style="flex:1; min-width:0; padding:14px 16px; border-radius:12px; border:1.5px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb; font-weight:500; transition:all 200ms ease;" onfocus="this.style.borderColor='#111827'; this.style.background='#ffffff'" onblur="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb'" />
           <button type="submit" aria-label="Subscribe" style="width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg, #111827, #1f2937); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0; transition:all 200ms ease; box-shadow:0 4px 12px -2px rgba(17, 24, 39, 0.2);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 20px -2px rgba(17, 24, 39, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px -2px rgba(17, 24, 39, 0.2)'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
@@ -1311,7 +1318,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
                 body: JSON.stringify({ email })
               });
 
-              console.log('Response status:', response.status);
+
 
               if (response.ok) {
                 const successMsg = document.getElementById('subscribe-success');

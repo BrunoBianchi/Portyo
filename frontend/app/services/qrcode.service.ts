@@ -17,3 +17,8 @@ export const createQrCode = async (bioId: string, value: string): Promise<QrCode
     const response = await api.post(`/qrcode/${bioId}`, { value });
     return response.data;
 };
+
+export const trackQrCodeView = async (qrcodeId: string): Promise<{ url: string; tracked: boolean }> => {
+    const response = await api.post(`/redirect/${qrcodeId}`);
+    return response.data;
+};

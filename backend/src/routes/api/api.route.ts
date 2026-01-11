@@ -12,6 +12,7 @@ import QrRoute from "./qrcode/qrcode.route"
 import emailRoute from "./email/email.route"
 import stripeRoute from "./stripe/stripe.route"
 import generateProductLinkRoute from "./stripe/[post]-generate-product-link"
+import webhookRoute from "./stripe/[post]-webhook.route"
 import integrationRoute from "./integration/integration.route"
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import googleRoute from "../api/google/google.route"
@@ -23,6 +24,7 @@ import publicEventsRoute from "./public/events.public.route"
 import templateRoute from "./templates/template.route"
 import bookingRoute from "./bookings/booking.route"
 import publicBookingRoute from "./public/booking.public.route"
+import redirectRoute from "./redirect/[get]-redirect.route"
 
 import googleCalendarRoute from "./google-calendar/google-calendar.route";
 
@@ -38,9 +40,11 @@ router.use('/public/email', publicEmailRoute)
 router.use('/public/blog', publicBlogRoute)
 router.use('/public/products', publicProductsRoute)
 router.use('/public/stripe', generateProductLinkRoute)
+router.use('/public/stripe', webhookRoute)
 router.use('/public/automation', automationTriggerRoute)
 router.use('/public/events', publicEventsRoute)
 router.use('/public/bookings', publicBookingRoute)
+router.use('/redirect', redirectRoute)
 
 router.use('/qrcode/',authMiddleware ,QrRoute)
 router.use('/email', authMiddleware, emailRoute)

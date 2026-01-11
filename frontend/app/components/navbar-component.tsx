@@ -448,9 +448,9 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
         className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
       >
         <div className="w-9 h-9 rounded-full bg-[#E8F0B8] flex items-center justify-center text-[#A3B808] font-bold text-sm border border-[#D2E823]/30">
-          {user.fullname.charAt(0).toUpperCase()}
+          {user.fullname?.charAt(0).toUpperCase() ?? "U"}
         </div>
-        <span className="hidden sm:inline font-semibold text-[#A3B808]">{user.fullname}</span>
+        <span className="hidden sm:inline font-semibold text-[#A3B808]">{user.fullname ?? "User"}</span>
         <ChevronDown
           className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
             }`}
@@ -468,7 +468,7 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
             className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-75"
           >
             <div className="px-5 py-4 border-b border-border/50">
-              <p className="text-base font-bold text-text-main truncate">{user.fullname}</p>
+              <p className="text-base font-bold text-text-main truncate">{user.fullname ?? "User"}</p>
               <p className="text-xs text-text-muted truncate mb-3 font-medium">{user.email}</p>
               <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${planColors[userPlan]}`}>
                 {userPlan} Plan

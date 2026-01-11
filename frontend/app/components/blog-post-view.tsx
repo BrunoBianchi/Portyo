@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { format } from "date-fns";
 import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
+import { sanitizeHtml } from "../utils/security";
 
 interface BlogPost {
     id: string;
@@ -172,7 +173,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
                         lineHeight: 1.8,
                         color: '#374151',
                     }}
-                    dangerouslySetInnerHTML={{ __html: post.content }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
                 />
 
                 <style>{`

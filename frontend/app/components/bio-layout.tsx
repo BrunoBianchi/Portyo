@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Links, Meta, Scripts, ScrollRestoration, useLocation } from "react-router";
 import { api } from "../services/api";
-import { BlogPostPopup } from "./blog-post-popup";
-import { BookingWidget } from "./booking-widget";
+const BlogPostPopup = React.lazy(() => import("./blog-post-popup").then(module => ({ default: module.BlogPostPopup })));
+const BookingWidget = React.lazy(() => import("./booking-widget").then(module => ({ default: module.BookingWidget })));
 import { BlogPostView } from "./blog-post-view";
 
-const BioContent = React.memo(React.forwardRef<HTMLDivElement, { html: string }>(({ html }, ref) => {
-    return <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} suppressHydrationWarning={true} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%' }} />;
+import { sanitizeHtml } from "../utils/security";
+
+import { useBioScripts } from "~/hooks/use-bio-scripts";
+
+const BioContent = React.memo(React.forwardRef<HTMLDivElement, { html: string; bio: any }>(({ html, bio }, ref) => {
+    return <div ref={ref} dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} suppressHydrationWarning={true} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%' }} />;
 }));
 BioContent.displayName = 'BioContent';
 
@@ -37,6 +41,7 @@ const decodeHtmlFromBase64 = (html?: string | null, htmlBase64?: string | null) 
 };
 
 export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false }) => {
+    useBioScripts(bio);
     const containerRef = useRef<HTMLDivElement>(null);
     const [selectedPost, setSelectedPost] = useState<any>(null);
     const [popupConfig, setPopupConfig] = useState<any>({});
@@ -110,7 +115,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 userAgent: navigator.userAgent,
                 timestamp: new Date().toISOString()
             }
-        }).catch(err => console.log('bio_visit tracking:', err.message));
+        }).catch(err => {/* bio_visit tracking failed */ });
     }, [bio?.id, isPreview]);
 
     // Path-based tab sync is handled inside initTabs/onpopstate; avoid extra listeners to prevent repeated calls.
@@ -471,11 +476,13 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                 const reactRoot = createRoot(block);
                 reactRoot.render(
-                    <BookingWidget
-                        bioId={bioIdStr}
-                        title={title}
-                        description={description}
-                    />
+                    <React.Suspense fallback={<div className="h-24 w-full bg-gray-50 flex items-center justify-center rounded-lg"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+                        <BookingWidget
+                            bioId={bioIdStr}
+                            title={title}
+                            description={description}
+                        />
+                    </React.Suspense>
                 );
             });
         };
@@ -576,7 +583,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
 
                         return `
-                        <a href="#" data-product-id="${product.id}" class="product-card-item" style="display:flex; flex-direction:column; background:white; border-radius:24px; overflow:hidden; box-shadow:0 4px 20px -8px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); text-decoration:none; transition:all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); height:100%; position:relative;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px -10px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px -8px rgba(0,0,0,0.08)'">
+                        <a href="javascript:;" role="button" data-product-id="${product.id}" class="product-card-item" style="display:flex; flex-direction:column; background:white; border-radius:24px; overflow:hidden; box-shadow:0 4px 20px -8px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); text-decoration:none; transition:all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); height:100%; position:relative;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px -10px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px -8px rgba(0,0,0,0.08)'">
                             <div style="position:relative; aspect-ratio:1; overflow:hidden; background:#f3f4f6;">
                                 <img src="${image}" alt="${escapeHtml(product.name)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" />
                                 <div style="position:absolute; bottom:12px; left:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); padding:6px 14px; border-radius:99px; color:#111827; font-size:13px; font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,0.08);">
@@ -797,6 +804,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
             // Initial Load
             const initial = () => {
+                if (typeof (window as any).switchTab !== 'function') return;
+
                 const path = window.location.pathname;
                 if (path === '/blog') {
                     (window as any).switchTab('blog');
@@ -808,7 +817,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             };
 
             setTimeout(initial, 40);
-            setTimeout(initial, 140); // retry after switchTab is definitely defined
+            setTimeout(initial, 140);
+            setTimeout(initial, 500); // extra retry
         };
 
         initTabs();
@@ -943,7 +953,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         w.dataLayer = w.dataLayer || [];
         function gtag(...args: any[]) { w.dataLayer.push(args); }
 
-        console.log('Portyo Analytics: Initializing enhanced tracking...');
+
 
         // 1. Click Tracking (Delegation)
         const handleClick = (e: MouseEvent) => {
@@ -955,7 +965,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 const url = link.href;
                 const text = link.innerText || link.getAttribute('aria-label') || 'Link';
 
-                console.log('Portyo Analytics: Link Click detected', { url, text });
+
 
                 gtag('event', 'click', {
                     event_category: 'outbound',
@@ -974,7 +984,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
             if (button) {
                 const text = button.innerText || 'Button';
-                console.log('Portyo Analytics: Button Click detected', { text });
+
 
                 gtag('event', 'click', {
                     event_category: 'interaction',
@@ -993,7 +1003,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 const thresholds = [25, 50, 75, 90];
                 thresholds.forEach(t => {
                     if (maxScroll < t && scrollPercent >= t) {
-                        console.log(`Portyo Analytics: Scrolled ${t}%`);
+
                         gtag('event', 'scroll_depth', {
                             event_category: 'engagement',
                             event_label: `${t}%`,
@@ -1009,7 +1019,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         const timeIntervals = [10, 30, 60, 120, 300]; // seconds
         const timers = timeIntervals.map(seconds => {
             return setTimeout(() => {
-                console.log(`Portyo Analytics: Time on screen ${seconds}s`);
+
                 gtag('event', 'time_on_page', {
                     event_category: 'engagement',
                     event_label: `${seconds}s`,
@@ -1087,7 +1097,9 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                     "@type": "Person",
                                     "name": bio.seoTitle || subdomain,
                                     "description": bio.seoDescription,
-                                    "image": bio.ogImage
+                                    "image": bio.ogImage,
+                                    "url": `https://${bio.sufix}.portyo.me`,
+                                    "sameAs": bio.socialLinks ? Object.values(bio.socialLinks).filter(Boolean) : []
                                 }
                             }),
                         }}
@@ -1097,7 +1109,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     {bio.googleAnalyticsId && (
                         <>
                             <script dangerouslySetInnerHTML={{
-                                __html: `console.log('Portyo Analytics: Injecting GA4 ID ${bio.googleAnalyticsId}');`
+                                __html: ``
                             }} />
                             <script async src={`https://www.googletagmanager.com/gtag/js?id=${bio.googleAnalyticsId}`}></script>
                             <script dangerouslySetInnerHTML={{
@@ -1153,13 +1165,18 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
 
                 {selectedPost && (
-                    <BlogPostPopup
-                        post={selectedPost}
-                        onClose={() => setSelectedPost(null)}
-                        config={popupConfig}
-                    />
+                    <React.Suspense fallback={null}>
+                        <BlogPostPopup
+                            post={selectedPost}
+                            onClose={() => setSelectedPost(null)}
+                            config={popupConfig}
+                        />
+                    </React.Suspense>
                 )}
-                <BioContent ref={containerRef} html={(htmlContent || "").replace(/(<img\s+)(src="\/users-photos\/[^"]+")/i, '$1fetchpriority="high" $2').replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
+                <BioContent ref={containerRef} bio={bio} html={(htmlContent || "")
+                    .replace(/(<img\s+)(src="\/users-photos\/[^"]+")/i, '$1fetchpriority="high" $2')
+                    .replace(/(<img\s+)(?!.*fetchpriority)(?!.*loading)([^>]+>)/gi, '$1loading="lazy" decoding="async" $2')
+                    .replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
                 <div style="display:flex;justify-content:center;padding:24px 0 32px 0;width:100%;position:relative;z-index:10">
                     <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12px; color: #4b5563; font-weight: 500; padding: 6px 14px; border-radius: 999px; background-color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;">
                         <span>Powered by</span>

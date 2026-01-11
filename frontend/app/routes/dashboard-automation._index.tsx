@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
@@ -11,7 +12,9 @@ import {
     Trash2,
     Loader2,
     BarChart2,
-    Activity
+    Activity,
+    Mail,
+    TrendingUp
 } from "lucide-react";
 import { useBio } from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
@@ -25,6 +28,7 @@ import {
 } from "~/services/automation.service";
 import type { Route } from "../+types/root";
 import { DeleteConfirmationModal } from "~/components/delete-confirmation-modal";
+import { EmailUsageService, type EmailUsage } from "~/services/email-usage.service";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -46,6 +50,8 @@ export default function DashboardAutomationList() {
         id: null
     });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [emailUsage, setEmailUsage] = useState<EmailUsage | null>(null);
+    const [loadingUsage, setLoadingUsage] = useState(true);
 
     // Load automations
     const loadAutomations = async () => {
@@ -61,8 +67,22 @@ export default function DashboardAutomationList() {
         }
     };
 
+    // Load email usage
+    const loadEmailUsage = async () => {
+        try {
+            setLoadingUsage(true);
+            const usage = await EmailUsageService.getEmailUsage();
+            setEmailUsage(usage);
+        } catch (error) {
+            console.error("Failed to load email usage:", error);
+        } finally {
+            setLoadingUsage(false);
+        }
+    };
+
     useEffect(() => {
         loadAutomations();
+        loadEmailUsage();
     }, [bio?.id]);
 
     const handleCreate = async () => {
@@ -153,6 +173,75 @@ export default function DashboardAutomationList() {
                             Create Automation
                         </button>
                     </div>
+
+                    {/* Email Usage Card */}
+                    {emailUsage && (
+                        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                                        <Mail className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 text-lg">Email Usage</h3>
+                                        <p className="text-sm text-gray-500 mt-0.5">Monthly limit for automations</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {emailUsage.sent} <span className="text-base font-normal text-gray-400">/ {emailUsage.limit}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">
+                                        {emailUsage.plan} Plan
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="mt-4">
+                                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-500 ${emailUsage.sent / emailUsage.limit >= 0.9
+                                            ? 'bg-red-500'
+                                            : emailUsage.sent / emailUsage.limit >= 0.7
+                                                ? 'bg-yellow-500'
+                                                : 'bg-blue-500'
+                                            }`}
+                                        style={{ width: `${Math.min((emailUsage.sent / emailUsage.limit) * 100, 100)}%` }}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between mt-2 text-sm">
+                                    <span className="text-gray-600">
+                                        {emailUsage.limit - emailUsage.sent} emails remaining
+                                    </span>
+                                    <span className="text-gray-500">
+                                        {((emailUsage.sent / emailUsage.limit) * 100).toFixed(0)}% used
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Upgrade CTA if close to limit */}
+                            {emailUsage.sent / emailUsage.limit >= 0.8 && emailUsage.plan !== 'pro' && (
+                                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                    <div className="flex items-start gap-3">
+                                        <TrendingUp className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-blue-900 text-sm">Running low on emails?</h4>
+                                            <p className="text-blue-700 text-sm mt-1">
+                                                Upgrade to {emailUsage.plan === 'free' ? 'Standard' : 'Pro'} for more email sends per month.
+                                            </p>
+                                            <Link
+                                                to="/pricing"
+                                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 mt-2"
+                                            >
+                                                View Plans →
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* List */}
                     {loading ? (

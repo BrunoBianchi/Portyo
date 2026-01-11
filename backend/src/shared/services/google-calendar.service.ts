@@ -112,7 +112,7 @@ export const createGoogleCalendarEvent = async (bioId: string, booking: BookingE
     });
 
     if (!integration || !integration.accessToken) {
-        console.log("No Google Calendar integration found for bio", bioId);
+
         return null;
     }
 
@@ -153,7 +153,7 @@ export const createGoogleCalendarEvent = async (bioId: string, booking: BookingE
         return response.data;
     } catch (error: any) {
         if (error.response?.status === 401) {
-            console.log("Calendar 401. Refreshing token...");
+
             const newToken = await refreshAccessToken(integration);
             const response = await attemptCreate(newToken);
             return response.data;
@@ -172,7 +172,7 @@ export const deleteGoogleCalendarEvent = async (bioId: string, eventId: string) 
     });
 
     if (!integration || !integration.accessToken) {
-        console.log("No Google Calendar integration found for cancellation", bioId);
+
         return;
     }
 
@@ -187,19 +187,19 @@ export const deleteGoogleCalendarEvent = async (bioId: string, eventId: string) 
 
     try {
         await attemptDelete(integration.accessToken);
-        console.log(`[Google Calendar] Deleted event ${eventId}`);
+
     } catch (error: any) {
          if (error.response?.status === 401) {
-            console.log("Calendar 401 during delete. Refreshing token...");
+
             try {
                 const newToken = await refreshAccessToken(integration);
                 await attemptDelete(newToken);
-                console.log(`[Google Calendar] Deleted event ${eventId} after refresh`);
+
             } catch (retryError) {
                 console.error("Failed to delete event even after refresh:", retryError);
             }
         } else if (error.response?.status === 410 || error.response?.status === 404) {
-            console.log(`[Google Calendar] Event ${eventId} already deleted or not found.`);
+
         } else {
             console.error("Failed to delete calendar event:", error.response?.data || error);
         }

@@ -7,6 +7,8 @@ export default [
     {path:'/verify-email',file:"routes/verify-email.tsx"},
     {path:'/robots.txt',file:"routes/robots.ts", id: "robots-txt"},
     {path:'/robot.txt',file:"routes/robots.ts", id: "robot-txt"},
+    {path:'/sitemap.xml',file:"routes/sitemap.ts", id: "sitemap-xml"},
+    {path:'/sitemap',file:"routes/sitemap.ts", id: "sitemap"},
     {
         path:'/dashboard',
         file:"routes/dashboard.tsx",
@@ -28,6 +30,7 @@ export default [
             { path: "templates/:id", file: "routes/dashboard-templates.editor.tsx" },
         ]
     },
+    { path: "redirect-qrcode/:id", file: "routes/redirect-qrcode.$id.tsx" },
     { path: "bookings/manage", file: "routes/booking-manage.tsx" },
     { path: "blog", file: "routes/home.tsx", id: "home-blog" },
     { path: "blog/post/:postId", file: "routes/blog-post.tsx" },

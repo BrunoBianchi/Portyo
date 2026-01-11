@@ -4,15 +4,56 @@ import { env } from '../../config/env';
 import { ApiError, APIErrors } from '../errors/api-error';
 import { logger } from '../utils/logger';
 
+// Access token - short-lived (15 minutes)
 export const generateToken = async (payload: object): Promise<string> => {
     const secret = new TextEncoder().encode(env.JWT_SECRET);
     const token = await new jose.SignJWT(payload as jose.JWTPayload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setIssuer('portyo-backend')
+        .setExpirationTime('15m') // Reduced from 7d for security
+        .sign(secret);
+    return token;
+}
+
+// Refresh token - long-lived (7 days)
+export const generateRefreshToken = async (userId: string): Promise<string> => {
+    const secret = new TextEncoder().encode(env.JWT_SECRET);
+    const token = await new jose.SignJWT({ userId, type: 'refresh' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setIssuer('portyo-backend-refresh')
         .setExpirationTime('7d')
         .sign(secret);
     return token;
+}
+
+// Verify refresh token
+export const verifyRefreshToken = async (token: string): Promise<string> => {
+    if (!token || typeof token !== 'string' || token.trim().length === 0) {
+        throw new ApiError(APIErrors.unauthorizedError, "Invalid refresh token", 401);
+    }
+
+    try {
+        const secret = new TextEncoder().encode(env.JWT_SECRET);
+        const { payload } = await jose.jwtVerify(token, secret, {
+            algorithms: ['HS256'],
+            issuer: 'portyo-backend-refresh', // Different issuer for refresh tokens
+            clockTolerance: 10
+        });
+
+        if (!payload.userId || payload.type !== 'refresh') {
+            throw new ApiError(APIErrors.unauthorizedError, "Invalid refresh token payload", 401);
+        }
+
+        return payload.userId as string;
+    } catch (err: any) {
+        if (err.code === 'ERR_JWT_EXPIRED') {
+            throw new ApiError(APIErrors.unauthorizedError, "Refresh token expired", 401);
+        }
+        if (err instanceof ApiError) throw err;
+        throw new ApiError(APIErrors.unauthorizedError, "Invalid refresh token", 401);
+    }
 }
 
 export const decryptToken = async (token: string): Promise<Partial<UserType>> => {

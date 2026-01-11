@@ -62,10 +62,11 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
-  },
+  // Fonts are loaded non-blocking in the Layout component
+  // {
+  //   rel: "stylesheet",
+  //   href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
+  // },
   { rel: "manifest", href: "/manifest.json" },
 ];
 
@@ -82,7 +83,7 @@ export function headers() {
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const host = url.host;
-  
+
   const hostname = host.split(':')[0];
   const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
   const parts = hostname.split('.').filter(Boolean);
@@ -94,39 +95,39 @@ export async function loader({ request }: Route.LoaderArgs) {
   const apiUrl = process.env.API_URL || 'http://localhost:3000/api';
 
   if (isLocalhost) {
-      if (parts.length > 1) subdomain = parts[0];
+    if (parts.length > 1) subdomain = parts[0];
   } else if (isOnRenderDomain) {
-      if (parts.length > 3) subdomain = parts[0];
+    if (parts.length > 3) subdomain = parts[0];
   } else if (isPortyoDomain) {
-      if (parts.length > 2) subdomain = parts[0];
+    if (parts.length > 2) subdomain = parts[0];
   } else {
-      // Custom domain
-      try {
-          const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
-          if (res.ok) {
-              const bio = serializeBioHtml(await res.json());
-              return { bio, subdomain: bio?.sufix };
-          }
-      } catch (e) {
-          // ignore
+    // Custom domain
+    try {
+      const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
+      if (res.ok) {
+        const bio = serializeBioHtml(await res.json());
+        return { bio, subdomain: bio?.sufix };
       }
-      return { bio: null, subdomain: null };
+    } catch (e) {
+      // ignore
+    }
+    return { bio: null, subdomain: null };
   }
 
   if (subdomain === "www") subdomain = "";
 
   if (subdomain) {
-      try {
-          const res = await fetch(`${apiUrl}/public/bio/${subdomain}`);
-          if (res.ok) {
-            const bio = serializeBioHtml(await res.json());
-            return { bio, subdomain };
-          }
-      } catch (e) {
-          console.error("SSR Bio Fetch Error", e);
+    try {
+      const res = await fetch(`${apiUrl}/public/bio/${subdomain}`);
+      if (res.ok) {
+        const bio = serializeBioHtml(await res.json());
+        return { bio, subdomain };
       }
+    } catch (e) {
+      console.error("SSR Bio Fetch Error", e);
+    }
   }
-  
+
   return { bio: null, subdomain: null };
 }
 
@@ -145,39 +146,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <CookiesProvider>
       <SubDomainProvider>
         <AuthProvider>
-            <html lang="en">
-              <head>
-                <meta charSet="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="preload" as="image" href="/Street%20Life%20-%20Head.svg" media="(min-width: 768px)" />
-                <Meta />
-                <Links />
-                <link 
-                  rel="stylesheet" 
-                  href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" 
-                  media="print"
-                  onLoad={(e) => { e.currentTarget.media = 'all' }}
-                />
-                <noscript>
-                  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" />
-                </noscript>
-              </head>
-              <body>
+          <html lang="en">
+            <head>
+              <meta charSet="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <link rel="preload" as="image" href="/Street%20Life%20-%20Head.svg" media="(min-width: 768px)" />
+              <Meta />
+              <Links />
+              <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+                media="print"
+                onLoad={(e) => { e.currentTarget.media = 'all' }}
+              />
+              <noscript>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" />
+              </noscript>
+            </head>
+            <body>
               {!isDashboard && (
                 <Suspense fallback={null}>
                   <Navbar />
                 </Suspense>
               )}
-                {children}
-                {!isDashboard && (
-                  <Suspense fallback={null}>
-                    <Footer />
-                  </Suspense>
-                )}
-                <ScrollRestoration />
-                <Scripts />
-              </body>
-            </html>
+              {children}
+              {!isDashboard && (
+                <Suspense fallback={null}>
+                  <Footer />
+                </Suspense>
+              )}
+              <ScrollRestoration />
+              <Scripts />
+            </body>
+          </html>
         </AuthProvider>
       </SubDomainProvider>
     </CookiesProvider>
