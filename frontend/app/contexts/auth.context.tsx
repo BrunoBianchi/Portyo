@@ -31,6 +31,7 @@ interface AuthContextData {
     isStandard: boolean;
     isFree: boolean;
     canAccessFeature: (requiredPlan: 'free' | 'standard' | 'pro') => boolean;
+    refreshUser: () => Promise<void>;
 }
 
 const PLAN_LEVELS: Record<'free' | 'standard' | 'pro', number> = {
@@ -125,6 +126,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return PLAN_LEVELS[userPlan] >= PLAN_LEVELS[requiredPlan];
     }, [user]);
 
+    const refreshUser = useCallback(async () => {
+        try {
+            const response = await api.get('/user/me');
+            setUser(response.data);
+            setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
+        } catch (error) {
+            console.error("Failed to refresh user profile", error);
+        }
+    }, [setCookie]);
+
     const value = useMemo(() => ({
         signed: !!user,
         user,
@@ -133,11 +144,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         register,
         socialLogin,
+        refreshUser,
         isPro,
         isStandard,
         isFree,
         canAccessFeature
-    }), [user, loading, login, logout, register, socialLogin, isPro, isStandard, isFree, canAccessFeature]);
+    }), [user, loading, login, logout, register, socialLogin, refreshUser, isPro, isStandard, isFree, canAccessFeature]);
 
     return (
         <AuthContext.Provider value={value}>

@@ -32,6 +32,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
 
   // Mailgun (for email automation)
+  MAILGUN_API_KEY: z.string().optional(),
   MAILGUN_API_SECRET: z.string().optional(),
   MAILGUN_DOMAIN: z.string().default("portyo.me"),
   MAILGUN_FROM_EMAIL: z.string().default("Portyo <noreply@portyo.me>"),

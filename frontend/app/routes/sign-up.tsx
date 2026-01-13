@@ -27,6 +27,21 @@ export default function Signup() {
         return value.replace(/\s+/g, "-").toLowerCase();
     }
 
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasMinLength = password.length >= 8;
+    const hasFullName = username.trim().length > 0;
+
+    const isPasswordValid = hasUppercase && hasMinLength;
+    const isFormValid = hasFullName && isPasswordValid && email.length > 0;
+
+    const CheckIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4"><path d="M20 6 9 17l-5-5" /></svg>
+    );
+
+    const CircleIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle w-4 h-4"><circle cx="12" cy="12" r="10" /></svg>
+    );
+
 
     const handleContinue = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -124,6 +139,23 @@ export default function Signup() {
                                         {showPassword ? "Hide" : "Show"}
                                     </button>
                                 </div>
+                                <div className="mt-2 text-xs">
+                                    <p className="text-text-muted mb-2 font-medium">Requirements:</p>
+                                    <ul className="space-y-1.5 pl-1">
+                                        <li className={`flex items-center gap-2 ${hasFullName ? 'text-green-600' : 'text-text-muted'}`}>
+                                            {hasFullName ? <CheckIcon /> : <CircleIcon />}
+                                            <span>Full name is required</span>
+                                        </li>
+                                        <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-600' : 'text-text-muted'}`}>
+                                            {hasUppercase ? <CheckIcon /> : <CircleIcon />}
+                                            <span>At least one uppercase letter</span>
+                                        </li>
+                                        <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-600' : 'text-text-muted'}`}>
+                                            {hasMinLength ? <CheckIcon /> : <CircleIcon />}
+                                            <span>At least 8 characters</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </>
                         ) : (
                             <div className="space-y-4">
@@ -157,7 +189,11 @@ export default function Signup() {
                                     Back
                                 </button>
                             )}
-                            <button type="submit" className="flex-1 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm mt-2">
+                            <button
+                                type="submit"
+                                disabled={step === "1" && !isFormValid}
+                                className="flex-1 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                                 {step === "1" ? "Continue" : "Create Account"}
                             </button>
                         </div>

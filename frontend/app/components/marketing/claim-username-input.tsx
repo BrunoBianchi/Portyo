@@ -5,7 +5,7 @@ export default function ClaimUsernameInput() {
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleClaim() {
     navigate('/sign-up?step=1&sufix=' + username);
   }
 
@@ -41,7 +41,7 @@ export default function ClaimUsernameInput() {
         </div>
         <button
           disabled={!isValid}
-          onClick={(e: any) => handleChange(e)}
+          onClick={handleClaim}
           className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-lg md:text-xl py-3 px-8 md:px-10 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:translate-y-0 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
         >
           Claim Now

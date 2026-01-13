@@ -11,7 +11,7 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function VerifyEmail() {
-    const { user } = useContext(AuthContext);
+    const { user, loading, refreshUser } = useContext(AuthContext);
     const [code, setCode] = useState(["", "", "", "", "", ""]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -26,6 +26,14 @@ export default function VerifyEmail() {
         useRef<HTMLInputElement>(null),
         useRef<HTMLInputElement>(null),
     ];
+
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate("/login");
+        }
+    }, [user, loading, navigate]);
+
+
 
     const handleChange = (index: number, value: string) => {
         if (value.length > 1) value = value[0];
@@ -65,8 +73,10 @@ export default function VerifyEmail() {
 
         setIsLoading(true);
         setError(null);
+        if (!user?.email) return;
         try {
-            await api.post("/user/auth/verify-email", { email: user?.email, code: verificationCode });
+            await api.post("/user/verify-email", { email: user.email, code: verificationCode });
+            await refreshUser();
             setSuccess("Email verified successfully! Redirecting...");
             setTimeout(() => {
                 navigate("/dashboard");
@@ -90,12 +100,15 @@ export default function VerifyEmail() {
         setError(null);
         setSuccess(null);
         try {
-            await api.post("/user/auth/resend-verification", { email: user?.email });
+            if (!user?.email) return;
+            await api.post("/user/resend-verification", { email: user.email });
             setSuccess("Verification code sent!");
         } catch (err: any) {
             setError(err.response?.data?.message || "Failed to resend code.");
         }
     };
+
+    if (loading || !user) return null;
 
     return (
         <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">

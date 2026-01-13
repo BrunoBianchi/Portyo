@@ -551,7 +551,7 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (isNotFound) {
             const mainDomain = window.location.host.replace(`${subdomain}.`, '');
             const protocol = window.location.protocol;
-            const claimUrl = `${protocol}//${mainDomain}/signup?claim=${subdomain}`;
+            const claimUrl = `${protocol}//${mainDomain}/sign-up?step=1&sufix=${subdomain}`;
 
             return (
                 <html lang="en">
