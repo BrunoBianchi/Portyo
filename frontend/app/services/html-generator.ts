@@ -1365,8 +1365,9 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           if (forced) return forced;
           const origin = window.location.origin || '';
           if (origin.includes('localhost:5173')) return 'http://localhost:3000/api';
+          if (origin.includes('portyo.me')) return 'https://api.portyo.me/api';
           if (origin.includes('127.0.0.1:5173')) return 'http://127.0.0.1:3000/api';
-          return origin ? (origin + '/api') : 'http://localhost:3000/api';
+          return origin ? (origin + '/api') : 'https://api.portyo.me/api';
         })();
 
         if (email) {
@@ -1527,7 +1528,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
       window.loadProducts = async function() {
         const container = document.getElementById('shop-products-container');
-        const API_BASE_URL = 'http://localhost:3000/api'; 
+        const API_BASE_URL = 'https://api.portyo.me/api'; 
         
         try {
             const response = await fetch(\`\${API_BASE_URL}/public/products/${bio.id}\`);
@@ -1572,7 +1573,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
       window.loadBlogPosts = async function() {
         const container = document.getElementById('blog-posts-container');
-        const API_BASE_URL = 'http://localhost:3000/api'; 
+        const API_BASE_URL = 'https://api.portyo.me/api'; 
         
         try {
             const response = await fetch(\`\${API_BASE_URL}/public/blog/${bio.id}\`);
@@ -1721,7 +1722,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         const containers = document.querySelectorAll('.custom-form-block');
         if (containers.length === 0) return;
 
-        const API_BASE_URL = 'http://localhost:3000/api';
+        const API_BASE_URL = 'https://api.portyo.me/api';
 
         const escapeHtml = (unsafe) => {
             return (unsafe || "")

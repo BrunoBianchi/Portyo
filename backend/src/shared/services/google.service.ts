@@ -18,7 +18,7 @@ export const getGoogleAuthUrl = () => {
   }
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri: "http://localhost:3000/api/google/callback",
+    redirect_uri: `${env.BACKEND_URL}/api/google/callback`,
     response_type: "code",
     scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
     access_type: "offline",
@@ -38,7 +38,7 @@ export const parseGoogleCallbackCode = async (code: string) => {
         code: code.trim(),
         client_id: env.GOOGLE_CLIENT_ID,
         client_secret: env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: "http://localhost:3000/api/google/callback",
+        redirect_uri: `${env.BACKEND_URL}/api/google/callback`,
         grant_type: "authorization_code",
         }),
         {

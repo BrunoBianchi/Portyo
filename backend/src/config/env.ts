@@ -25,7 +25,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(["error", "warn", "info", "http", "debug"]).default("info"),
 
   // CORS
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  CORS_ORIGIN: z.string().default("https://portyo.me"),
 
   // Google
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -50,8 +50,8 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // Frontend
-  FRONTEND_URL: z.string().default("http://localhost:5173"),
-  BACKEND_URL: z.string().default("http://localhost:3000"),
+  FRONTEND_URL: z.string().default("https://portyo.me"),
+  BACKEND_URL: z.string().default("https://api.portyo.me"),
 
   // Redis
   REDIS_HOST: z.string().default("localhost"),

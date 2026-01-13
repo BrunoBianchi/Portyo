@@ -40,8 +40,8 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       
-      const allowedOrigins = [env.CORS_ORIGIN, "http://localhost:3000", "http://localhost:5173"];
-      const isAllowed = allowedOrigins.includes(origin) || /^http:\/\/.*\.localhost:5173$/.test(origin);
+      const allowedOrigins = [env.CORS_ORIGIN, "http://localhost:3000", "http://localhost:5173", "https://portyo.me", "https://www.portyo.me", "https://api.portyo.me"];
+      const isAllowed = allowedOrigins.includes(origin) || /^http:\/\/.*\.localhost:5173$/.test(origin) || /^https:\/\/.*\.portyo\.me$/.test(origin);
 
       if (isAllowed) {
         callback(null, true);

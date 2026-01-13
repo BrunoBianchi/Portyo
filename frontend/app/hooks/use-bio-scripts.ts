@@ -75,7 +75,7 @@ export const useBioScripts = (bio: any) => {
             // In dev: localhost:3000. In prod: relative or env var.
             // We'll use relative URL '/api' which should be proxied or handled.
             // In dev: localhost:3000. In prod: relative or env var.
-            const API_BASE_URL = 'http://localhost:3000/api'; 
+            const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000/api' : 'https://api.portyo.me/api'; 
             
             try {
                 const response = await fetch(`${API_BASE_URL}/public/products/${bio.id}`);
@@ -123,7 +123,7 @@ export const useBioScripts = (bio: any) => {
         (window as any).loadBlogPosts = async () => {
             const container = document.getElementById('blog-posts-container');
             if (!container) return;
-            const API_BASE_URL = 'http://localhost:3000/api';
+            const API_BASE_URL = window.location.hostname.includes('localhost') ? 'http://localhost:3000/api' : 'https://api.portyo.me/api';
             
             try {
                 const response = await fetch(`${API_BASE_URL}/public/blog/${bio.id}`);

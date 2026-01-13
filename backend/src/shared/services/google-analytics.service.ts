@@ -14,7 +14,7 @@ import { env } from "../../config/env";
 export const getGoogleAnalyticsAuthUrl = (bioId: string) => {
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID!,
-    redirect_uri: "http://localhost:3000/api/google-analytics/callback",
+    redirect_uri: `${env.BACKEND_URL}/api/google-analytics/callback`,
     response_type: "code",
     scope: "https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/analytics https://www.googleapis.com/auth/analytics.edit",
     access_type: "offline",
@@ -34,7 +34,7 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
       code: code.trim(),
       client_id: env.GOOGLE_CLIENT_ID!,
       client_secret: env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: "http://localhost:3000/api/google-analytics/callback",
+      redirect_uri: `${env.BACKEND_URL}/api/google-analytics/callback`,
       grant_type: "authorization_code",
     }),
     {

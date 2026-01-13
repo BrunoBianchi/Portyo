@@ -16,7 +16,7 @@ import { env } from "../../config/env";
 export const getGoogleCalendarAuthUrl = (bioId: string) => {
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID!,
-    redirect_uri: "http://localhost:3000/api/google-calendar/callback",
+    redirect_uri: `${env.BACKEND_URL}/api/google-calendar/callback`,
     response_type: "code",
     scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
     access_type: "offline",
@@ -33,7 +33,7 @@ export const parseGoogleCalendarCallback = async (code: string, bioId: string) =
       code: code.trim(),
       client_id: process.env.GOOGLE_CLIENT_ID!,
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: "http://localhost:3000/api/google-calendar/callback",
+      redirect_uri: `${env.BACKEND_URL}/api/google-calendar/callback`,
       grant_type: "authorization_code",
     }),
     {

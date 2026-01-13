@@ -38,13 +38,13 @@ export default function Login() {
         const top = window.screen.height / 2 - height / 2;
 
         const popup = window.open(
-            "http://localhost:3000/api/google/auth",
+            "https://api.portyo.me/api/google/auth",
             "Google Login",
             `width = ${width}, height = ${height}, left = ${left}, top = ${top} `
         );
 
         const handleMessage = async (event: MessageEvent) => {
-            if (event.origin !== "http://localhost:3000") return;
+            if (event.origin !== "https://api.portyo.me" && event.origin !== "http://localhost:3000") return;
 
             const data = event.data;
             if (data.token && data.user) {
