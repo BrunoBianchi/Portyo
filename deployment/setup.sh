@@ -58,6 +58,19 @@ fi
 echo "[6/7] Configuring environment..."
 cd deployment
 
+if [ -f .env ]; then
+    export $(cat .env | xargs)
+    # Extract DOMAIN_NAME if needed or just rely on the env if the variable matches. 
+    # However, our .env usually doesn't have DOMAIN_NAME explicit variable unless we put it there. 
+    # We replaced portyo.me in the files. 
+    # Let's try to verify if we can extract it or just rely on the user knowing it. 
+    # Actually, the simplest way is to read it from the .env if we stored it, but we only did text replacement.
+    # We can try to grep it from nginx.conf which is reliable.
+    DOMAIN_NAME=$(grep "server_name" nginx.conf | head -n 1 | awk '{print $2}' | sed 's/portyo.me//' | sed 's/www.//' | sed 's/;//' | sed 's/ //g')
+    # Use fallback if grep fails
+    if [ -z "$DOMAIN_NAME" ]; then DOMAIN_NAME="portyo.me"; fi
+fi
+
 if [ ! -f .env ]; then
     cp .env.example .env
     echo "Created .env file."
