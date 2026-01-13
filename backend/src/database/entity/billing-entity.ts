@@ -20,6 +20,9 @@ export class BillingEntity extends BaseEntity {
     @Column({ type: "varchar" })
     userId!: string;
 
+    @Column({ type: "varchar", nullable: true })
+    stripeCustomerId?: string;
+
     @ManyToOne(() => UserEntity, user => user.billings)
     @JoinColumn({ name: "userId" })
     user!: UserEntity;

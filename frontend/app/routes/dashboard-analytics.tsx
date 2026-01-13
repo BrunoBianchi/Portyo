@@ -10,7 +10,8 @@ import {
     Sparkles,
     Settings,
     X,
-    ExternalLink
+    ExternalLink,
+    Globe
 } from "lucide-react";
 import { api } from "~/services/api";
 import { Link } from "react-router";
@@ -154,6 +155,7 @@ export default function DashboardAnalytics() {
                 </header>
 
                 <div className="space-y-6">
+
                     <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
                             <div className="p-2.5 bg-gray-100 text-gray-600 rounded-lg">

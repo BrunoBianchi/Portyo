@@ -11,10 +11,10 @@ router.get("/:bioId", async (req, res) => {
     
     // Check if user is authenticated and owns the bio
     let isOwner = false;
-    if (req.session && req.session.user) {
+    if (req.user) {
         const bio = await findBioById(bioId);
         // @ts-ignore
-        if (bio && bio.userId === req.session.user.id) {
+        if (bio && bio.userId === req.user.id) {
             isOwner = true;
         }
     }

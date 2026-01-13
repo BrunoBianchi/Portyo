@@ -5,6 +5,9 @@ import { QrCode as QrCodeIcon, Download, Plus, Link as LinkIcon, Loader2, Copy, 
 import type { MetaFunction } from "react-router";
 import QRCode from "react-qr-code";
 import { createQrCode, getQrCodes, type QrCode } from "~/services/qrcode.service";
+import { useAuth } from "~/contexts/auth.context";
+import { PLAN_LIMITS } from "~/constants/plan-limits";
+import { UpgradePopup } from "~/components/shared/upgrade-popup";
 
 const PRESET_COLORS = [
     { name: "Classic", fg: "#000000", bg: "#FFFFFF" },
@@ -24,6 +27,7 @@ export const meta: MetaFunction = () => {
 
 export default function DashboardQrCode() {
     const { bio } = useContext(BioContext);
+    const { user } = useAuth();
     const [qrCodes, setQrCodes] = useState<QrCode[]>([]);
     const [selectedQrCode, setSelectedQrCode] = useState<QrCode | null>(null);
     const [newValue, setNewValue] = useState("");
@@ -32,6 +36,12 @@ export default function DashboardQrCode() {
     const [copied, setCopied] = useState(false);
     const [fgColor, setFgColor] = useState("#000000");
     const [bgColor, setBgColor] = useState("#FFFFFF");
+    const [showUpgrade, setShowUpgrade] = useState(false);
+
+    const plan = user?.plan || 'free';
+    const limits = PLAN_LIMITS[plan];
+    const qrLimit = limits.qrcodesPerBio;
+    const canCreate = qrCodes.length < qrLimit;
 
     useEffect(() => {
         if (bio?.id) {
@@ -60,14 +70,22 @@ export default function DashboardQrCode() {
         e.preventDefault();
         if (!bio?.id || !newValue) return;
 
+        if (!canCreate) {
+            setShowUpgrade(true);
+            return;
+        }
+
         setIsCreating(true);
         try {
             const newQr = await createQrCode(bio.id, newValue);
             setQrCodes([...qrCodes, newQr]);
             setSelectedQrCode(newQr);
             setNewValue("");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to create QR code", error);
+            if (error.response?.status === 403) {
+                setShowUpgrade(true);
+            }
         } finally {
             setIsCreating(false);
         }
@@ -90,7 +108,7 @@ export default function DashboardQrCode() {
     // Determine what to show - use frontend redirect URL for tracking
     const FRONTEND_BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://portyo.me';
     const currentQrValue = selectedQrCode
-        ? `${FRONTEND_BASE_URL}/redirect-qrcode/${selectedQrCode.id}`
+        ? `${FRONTEND_BASE_URL}/redirect-qrcode/${selectedQrCode.id}i`
         : defaultBioUrl;
     const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(currentQrValue)}&color=${fgColor.replace('#', '')}&bgcolor=${bgColor.replace('#', '')}`;
 
@@ -131,19 +149,28 @@ export default function DashboardQrCode() {
                                 </div>
                                 <button
                                     type="submit"
-                                    disabled={isCreating || !newValue}
-                                    className="btn btn-primary w-full justify-center"
+                                    disabled={isCreating || !newValue || !canCreate}
+                                    className={`btn w-full justify-center ${!canCreate ? 'bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100 border-none' : 'btn-primary'}`}
+                                    onClick={(e) => {
+                                        if (!canCreate) {
+                                            e.preventDefault();
+                                            setShowUpgrade(true);
+                                        }
+                                    }}
                                 >
                                     {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                    <span>Generate QR Code</span>
+                                    <span>{canCreate ? 'Generate QR Code' : 'Limit Reached'}</span>
                                 </button>
                             </form>
                         </div>
 
                         {/* List */}
                         <div className="card overflow-hidden flex flex-col max-h-[600px]">
-                            <div className="p-4 border-b border-border bg-surface-alt/30">
+                            <div className="p-4 border-b border-border bg-surface-alt/30 flex justify-between items-center">
                                 <h3 className="font-bold text-text-main text-sm">Your QR Codes</h3>
+                                <div className={`text-xs font-bold px-2 py-1 rounded-full ${!canCreate ? 'bg-red-100 text-red-700' : 'bg-surface text-text-muted border border-border'}`}>
+                                    {qrCodes.length} / {qrLimit}
+                                </div>
                             </div>
                             <div className="overflow-y-auto flex-1 p-2 space-y-1 custom-scrollbar">
                                 {/* Default Bio Link Option */}
@@ -342,6 +369,10 @@ export default function DashboardQrCode() {
                     </div>
                 </div>
             </div>
+            <UpgradePopup
+                isOpen={showUpgrade}
+                onClose={() => setShowUpgrade(false)}
+            />
         </AuthorizationGuard>
     );
 }

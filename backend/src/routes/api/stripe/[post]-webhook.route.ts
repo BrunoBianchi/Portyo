@@ -54,6 +54,40 @@ router.post("/webhook", async (req: Request, res: Response) => {
             case "customer.subscription.deleted":
                 await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
                 break;
+            
+            // Invoices
+            case "invoice.created":
+            case "invoice.finalization_failed":
+            case "invoice.finalized":
+            case "invoice.payment_action_required":
+            case "invoice.payment_failed":
+            case "invoice.upcoming":
+            case "invoice.updated":
+                await handleInvoiceEvent(event.data.object as Stripe.Invoice, event.type);
+                break;
+
+            // Payment Intents
+            case "payment_intent.created":
+            case "payment_intent.succeeded":
+                await handlePaymentIntentEvent(event.data.object as Stripe.PaymentIntent, event.type);
+                break;
+
+            // Subscription Schedules
+            case "subscription_schedule.aborted":
+            case "subscription_schedule.canceled":
+            case "subscription_schedule.completed":
+            case "subscription_schedule.created":
+            case "subscription_schedule.expiring":
+            case "subscription_schedule.released":
+            case "subscription_schedule.updated":
+                await handleSubscriptionScheduleEvent(event.data.object as Stripe.SubscriptionSchedule, event.type);
+                break;
+
+            // Entitlements
+            case "entitlements.active_entitlement_summary.updated":
+                await handleEntitlementEvent(event.data.object as any, event.type);
+                break;
+
             default:
                 // logger.debug(`Unhandled event type: ${event.type}`);
                 break;
@@ -84,9 +118,19 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     // Default to 30 days if not specified
     const days = 30;
     const amount = session.amount_total ? session.amount_total / 100 : 0;
+    
+    // Determine days based on plan or interval if available
+    // Note: Checkout session for subscription doesn't always have 'interval' in metadata if we don't put it there. 
+    // But we added it in create-checkout-session.
+    let duration = 30;
+    if (session.metadata?.interval === 'annually') {
+        duration = 365;
+    }
 
-    await BillingService.createBilling(userId, plan, days, amount);
-    logger.info(`Processed checkout for user ${userId}: ${plan} plan activated`);
+    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+
+    await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId);
+    logger.info(`Processed checkout for user ${userId}: ${plan} plan activated for ${duration} days`);
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -98,24 +142,62 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     const user = await findUserByEmail(email);
     if (!user) return;
 
-    // Detect plan from lines or metadata
-    // Simplification: Check if "pro" or "standard" is in description
-    // In production, use Product ID lookup
-    const lineItem = invoice.lines.data[0];
-    const description = lineItem?.description?.toLowerCase() || "";
+    // Detect plan from subscription or metadata
+    // In a real scenario, we might want to store the plan in the User/Subscription entity.
+    // However, for now we infer from the product ID or description as requested.
+    
+    // The user provided specific product IDs:
+    // Standard: prod_TmL2bxw13AR6SV
+    // Pro:      prod_TmL0xo0zPO4aAg
+    
     let plan: 'standard' | 'pro' = 'standard';
+    let duration = 30;
     
-    if (description.includes('pro')) plan = 'pro';
+    // Check lines for plan
+    if (invoice.lines?.data) {
+        for (const line of invoice.lines.data) {
+            const price = (line as any).price;
+            if (price?.product === 'prod_TmL2bxw13AR6SV') {
+                plan = 'standard';
+            } else if (price?.product === 'prod_TmL0xo0zPO4aAg') {
+                plan = 'pro';
+            }
+            
+            // Check interval
+             if (price?.recurring?.interval === 'year') {
+                duration = 365;
+            } else if (price?.recurring?.interval === 'month') {
+                duration = 30;
+            }
+        }
+    }
     
-    // Add 30 days
-    await BillingService.createBilling(user.id, plan, 30, invoice.amount_paid / 100);
-    logger.info(`Processed invoice renewal for user ${user.id} (${email})`);
+    const stripeCustomerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
+    
+    await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId);
+    logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     // We rely on billing expiration, so explicit deletion isn't strictly necessary per BillingService 
     // functionality (getActivePlan checks date), but logging is good.
     logger.info(`Subscription deleted for customer ${subscription.customer}`);
+}
+
+async function handleInvoiceEvent(invoice: Stripe.Invoice, eventType: string) {
+    logger.info(`Received invoice event: ${eventType} for invoice ${invoice.id}, customer ${invoice.customer_email || invoice.customer}`);
+}
+
+async function handlePaymentIntentEvent(paymentIntent: Stripe.PaymentIntent, eventType: string) {
+    logger.info(`Received payment_intent event: ${eventType} for intent ${paymentIntent.id}, amount ${paymentIntent.amount}`);
+}
+
+async function handleSubscriptionScheduleEvent(schedule: Stripe.SubscriptionSchedule, eventType: string) {
+    logger.info(`Received subscription_schedule event: ${eventType} for schedule ${schedule.id}`);
+}
+
+async function handleEntitlementEvent(entitlement: any, eventType: string) {
+    logger.info(`Received entitlement event: ${eventType}`, { entitlementId: entitlement?.id });
 }
 
 export default router;

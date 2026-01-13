@@ -1,0 +1,446 @@
+import { useState, useEffect } from "react";
+import type { MetaFunction } from "react-router";
+import { useParams, useNavigate } from "react-router";
+import { useBio } from "~/contexts/bio.context";
+import { api } from "~/services/api";
+import {
+    DndContext,
+    DragOverlay,
+    useDraggable,
+    useDroppable,
+    type DragEndEvent,
+    type DragStartEvent,
+} from "@dnd-kit/core";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import {
+    Type,
+    Mail,
+    Smartphone,
+    CheckSquare,
+    AlignLeft,
+    GripVertical,
+    Trash2,
+    Plus,
+    ArrowLeft,
+    X,
+    Edit,
+    Save,
+    Loader2,
+    Menu,
+    ChevronLeft,
+    ChevronRight,
+    Settings as SettingsIcon,
+    Palette
+} from "lucide-react";
+
+export const meta: MetaFunction = () => {
+    return [
+        { title: "Form Editor | Portyo" },
+        { name: "description", content: "Create custom forms for your bio page." },
+    ];
+};
+
+type FormFieldType = "text" | "email" | "phone" | "textarea" | "checkbox";
+
+interface FormField {
+    id: string;
+    type: FormFieldType;
+    label: string;
+    placeholder?: string;
+    required: boolean;
+}
+
+const TOOLBOX_ITEMS: { type: FormFieldType; label: string; icon: any }[] = [
+    { type: "text", label: "Text Input", icon: Type },
+    { type: "email", label: "Email Address", icon: Mail },
+    { type: "phone", label: "Phone Number", icon: Smartphone },
+    { type: "textarea", label: "Long Text", icon: AlignLeft },
+    { type: "checkbox", label: "Checkbox", icon: CheckSquare },
+];
+
+function DraggableToolboxItem({ type, label, icon: Icon }: { type: FormFieldType; label: string; icon: any }) {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: `toolbox-${type}`,
+        data: {
+            type,
+            isToolboxItem: true,
+            label
+        },
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            className={`flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-grab hover:border-primary hover:shadow-sm transition-all ${isDragging ? "opacity-50" : ""}`}
+        >
+            <div className="p-2 bg-gray-50 rounded-md text-gray-500">
+                <Icon className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-medium text-gray-700">{label}</span>
+        </div>
+    );
+}
+
+function FormCanvas({ fields, onRemove, selectedFieldId, onSelect }: {
+    fields: FormField[];
+    onRemove: (id: string, e?: React.MouseEvent) => void;
+    selectedFieldId: string | null;
+    onSelect: (id: string) => void;
+}) {
+    const { setNodeRef, isOver } = useDroppable({
+        id: "form-canvas",
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={`flex-1 bg-white rounded-xl border-2 border-dashed transition-colors min-h-[500px] p-8 shadow-sm ${isOver ? "border-primary bg-primary/5" : "border-gray-200"}`}
+        >
+            {fields.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-gray-400 min-h-[400px]">
+                    <Plus className="w-12 h-12 mb-3 text-gray-300" />
+                    <p className="text-lg font-medium">Drag fields here</p>
+                    <p className="text-sm">Start building your custom form</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {fields.map((field) => (
+                        <div
+                            key={field.id}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onSelect(field.id);
+                            }}
+                            className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${selectedFieldId === field.id
+                                ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
+                                : "border-gray-200 hover:border-primary/50 hover:shadow-sm"
+                                }`}
+                        >
+                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-gray-100">
+                                <button
+                                    onClick={(e) => onRemove(field.id, e)}
+                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                                <div className="p-1.5 text-gray-400 cursor-grab active:cursor-grabbing">
+                                    <GripVertical className="w-4 h-4" />
+                                </div>
+                            </div>
+
+                            <div className="mb-2 pointer-events-none">
+                                <label className="block text-sm font-bold text-gray-900 mb-1">
+                                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                                </label>
+                                {field.placeholder && <p className="text-xs text-gray-500 mb-2">{field.placeholder}</p>}
+                            </div>
+
+                            <div className="pointer-events-none opacity-60">
+                                {field.type === "textarea" ? (
+                                    <div className="w-full h-24 bg-gray-50 rounded-lg border border-gray-200" />
+                                ) : field.type === "checkbox" ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 rounded border border-gray-300 bg-gray-50" />
+                                        <span className="text-sm text-gray-500">Matches label</span>
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-10 bg-gray-50 rounded-lg border border-gray-200" />
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function DashboardFormsEditor() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { bio } = useBio();
+    const [fields, setFields] = useState<FormField[]>([]);
+    const [formTitle, setFormTitle] = useState("Untitled Form");
+    const [activeDragItem, setActiveDragItem] = useState<any>(null);
+    const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isToolboxOpen, setIsToolboxOpen] = useState(true); // Open by default on desktop
+    const [isMobileToolboxOpen, setIsMobileToolboxOpen] = useState(false);
+
+    // Load form data
+    useEffect(() => {
+        if (!id) return;
+
+        const fetchForm = async () => {
+            try {
+                const response = await api.get(`/form/forms/${id}`);
+                setFields(response.data.fields || []);
+                setFormTitle(response.data.title || "Untitled Form");
+            } catch (err) {
+                console.error("Failed to load form", err);
+                navigate("/dashboard/forms");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchForm();
+    }, [id]);
+
+    const saveForm = async () => {
+        if (!id) return;
+
+        try {
+            setIsSaving(true);
+            await api.patch(`/form/forms/${id}`, {
+                title: formTitle,
+                fields
+            });
+            // Show success toast/message in future
+        } catch (err) {
+            console.error("Failed to save form", err);
+            alert("Failed to save form");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveDragItem(event.active.data.current);
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        setActiveDragItem(null);
+
+        if (!over) return;
+
+        if (active.data.current?.isToolboxItem && over.id === "form-canvas") {
+            const type = active.data.current.type as FormFieldType;
+            const label = active.data.current.label;
+
+            const newField: FormField = {
+                id: crypto.randomUUID(),
+                type,
+                label,
+                required: false,
+                placeholder: ""
+            };
+
+            setFields((prev) => [...prev, newField]);
+            setSelectedFieldId(newField.id);
+        }
+    };
+
+    const removeField = (id: string, e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setFields((prev) => prev.filter(f => f.id !== id));
+        if (selectedFieldId === id) setSelectedFieldId(null);
+    };
+
+    const updateField = (id: string, updates: Partial<FormField>) => {
+        setFields((prev) => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    };
+
+    const selectedField = fields.find(f => f.id === selectedFieldId);
+
+    if (isLoading) {
+        return (
+            <div className="h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    return (
+        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div className="flex flex-col h-screen bg-white overflow-hidden relative">
+                {/* Header Bar - Mobile & Desktop */}
+                <header className="h-16 border-b border-gray-100 bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-30">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate("/dashboard/forms")}
+                            className="p-2 hover:bg-gray-50 rounded-lg text-gray-500 transition-colors"
+                            title="Back to Forms"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <div className="w-px h-6 bg-gray-100 hidden md:block"></div>
+                        <div className="flex flex-col">
+                            <input
+                                type="text"
+                                value={formTitle}
+                                onChange={(e) => setFormTitle(e.target.value)}
+                                className="text-base font-bold bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-300 w-40 md:w-64 focus:ring-0 p-0"
+                                placeholder="Untitled Form"
+                            />
+                            <p className="text-[10px] text-gray-500 md:hidden">Editor Mode</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setIsMobileToolboxOpen(true)}
+                            className="md:hidden p-2 bg-gray-50 text-gray-600 rounded-lg"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+
+                        <button
+                            onClick={saveForm}
+                            disabled={isSaving}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span className="hidden md:inline">{isSaving ? "Saving..." : "Save Form"}</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div className="flex-1 flex overflow-hidden relative">
+                    {/* Toolbox Sidebar - Desktop (Collapsible) */}
+                    <aside className={`hidden md:flex flex-col border-r border-gray-100 bg-white transition-all duration-300 ${isToolboxOpen ? 'w-64' : 'w-0 opacity-0 overflow-hidden'}`}>
+                        <div className="p-6 space-y-6 overflow-y-auto">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Form Elements</h3>
+                            <div className="space-y-3">
+                                {TOOLBOX_ITEMS.map((item) => (
+                                    <DraggableToolboxItem key={item.type} {...item} />
+                                ))}
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Mobile Toolbox Overlay */}
+                    {isMobileToolboxOpen && (
+                        <div className="fixed inset-0 z-50 md:hidden">
+                            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMobileToolboxOpen(false)} />
+                            <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="font-bold text-gray-900">Add Field</h3>
+                                    <button onClick={() => setIsMobileToolboxOpen(false)} className="p-2 text-gray-400">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {TOOLBOX_ITEMS.map((item) => (
+                                        <DraggableToolboxItem key={item.type} {...item} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Canvas Area */}
+                    <main
+                        className="flex-1 bg-gray-50/30 overflow-y-auto p-4 md:p-12"
+                        onClick={() => setSelectedFieldId(null)}
+                    >
+                        <div className="max-w-2xl mx-auto min-h-full">
+                            <FormCanvas
+                                fields={fields}
+                                onRemove={removeField}
+                                selectedFieldId={selectedFieldId}
+                                onSelect={(id) => {
+                                    setSelectedFieldId(id);
+                                    // In a real responsive app, we might close the toolbox
+                                    setIsMobileToolboxOpen(false);
+                                }}
+                            />
+                        </div>
+                    </main>
+
+                    {/* Property Editor Sidebar - Desktop & Tablet */}
+                    {selectedField && (
+                        <aside className="fixed md:relative inset-y-0 right-0 w-full md:w-80 bg-white border-l border-gray-100 shadow-2xl md:shadow-none z-40 flex flex-col animate-in slide-in-from-right duration-300">
+                            <div className="p-6 border-b border-gray-50 flex items-center justify-between shrink-0">
+                                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                    <Edit className="w-4 h-4 text-primary" />
+                                    Edit Field
+                                </h3>
+                                <button
+                                    onClick={() => setSelectedFieldId(null)}
+                                    className="p-2 text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Display Label</label>
+                                    <input
+                                        type="text"
+                                        value={selectedField.label}
+                                        onChange={(e) => updateField(selectedField.id, { label: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Your Name"
+                                    />
+                                </div>
+
+                                {selectedField.type !== 'checkbox' && (
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Placeholder Text</label>
+                                        <input
+                                            type="text"
+                                            value={selectedField.placeholder || ""}
+                                            onChange={(e) => updateField(selectedField.id, { placeholder: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                            placeholder="e.g. Enter your name..."
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <label htmlFor="required_field" className="text-sm font-bold text-gray-700">Required Field</label>
+                                        <input
+                                            type="checkbox"
+                                            id="required_field"
+                                            checked={selectedField.required}
+                                            onChange={(e) => updateField(selectedField.id, { required: e.target.checked })}
+                                            className="w-5 h-5 text-primary rounded-lg border-gray-300 focus:ring-primary cursor-pointer"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-500">Users must fill this field to submit the form.</p>
+                                </div>
+
+                                <div className="pt-6 mt-6 border-t border-gray-100">
+                                    <button
+                                        onClick={() => removeField(selectedField.id)}
+                                        className="w-full flex items-center justify-center gap-2 p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl text-sm font-bold transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Delete Field
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-6 border-t border-gray-50 bg-gray-50/30">
+                                <button
+                                    onClick={() => setSelectedFieldId(null)}
+                                    className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all"
+                                >
+                                    Done Editing
+                                </button>
+                            </div>
+                        </aside>
+                    )}
+                </div>
+            </div>
+
+            <DragOverlay modifiers={[restrictToWindowEdges]}>
+                {activeDragItem ? (
+                    <div className="flex items-center gap-3 p-3 bg-white border border-primary/50 shadow-xl rounded-lg cursor-grabbing w-64 transform scale-105">
+                        <div className="p-2 bg-primary/10 rounded-md text-primary">
+                            <Plus className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{activeDragItem.label}</span>
+                    </div>
+                ) : null}
+            </DragOverlay>
+        </DndContext>
+    );
+}

@@ -11,6 +11,7 @@ interface User {
     plan?: 'free' | 'standard' | 'pro';
     verified: boolean;
     role: number;
+    provider?: string;
     usage?: {
         bios: number;
         automations: number;
@@ -55,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUser(typeof storagedUser === 'string' ? JSON.parse(storagedUser) : storagedUser);
             }
 
-            api.get('/user/@')
+            api.get('/user/me')
                 .then(response => {
                     setUser(response.data);
                     setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
@@ -100,10 +101,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCookie('@App:token', authentification.token, { path: '/' });
     }, [setCookie]);
 
-    const logout = useCallback(() => {
-        setUser(null);
-        removeCookie('@App:user', { path: '/' });
-        removeCookie('@App:token', { path: '/' });
+    const logout = useCallback(async () => {
+        try {
+            await api.post('/user/logout');
+        } catch (error) {
+            console.error("Logout failed on server", error);
+        } finally {
+            setUser(null);
+            removeCookie('@App:user', { path: '/' });
+            removeCookie('@App:token', { path: '/' });
+            // Ideally also clear local storage or other persistence if any
+        }
     }, [removeCookie]);
 
     // Plan checking helpers

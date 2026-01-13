@@ -13,6 +13,7 @@ export type Post = {
     scheduledAt: string | null;
     createdAt: string;
     updatedAt: string;
+    thumbnail?: string | null;
 };
 
 interface BlogContextType {

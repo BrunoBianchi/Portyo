@@ -6,6 +6,7 @@ import { Bio } from "../types/bio.type"
 import { findUserByEmail, findUserById } from "./user.service"
 import { PLAN_LIMITS, PlanType } from "../constants/plan-limits"
 import { BillingService } from "../../services/billing.service"
+import redisClient from "../../config/redis.client"
 
 const repository = AppDataSource.getRepository(BioEntity)
 
@@ -22,6 +23,7 @@ export interface BackgroundSettings {
     description?: string;
     socials?: any;
     displayProfileImage?: boolean;
+    profileImage?: string;
 }
 
 export interface SeoSettings {
@@ -57,44 +59,62 @@ export interface UpdateBioOptions {
     layoutSettings?: LayoutSettings;
     enableSubscribeButton?: boolean;
     removeBranding?: boolean;
+    profileImage?: string;
+}
+
+import { env } from "../../config/env"
+// ... existing code ...
+
+const normalizeBio = (bio: BioEntity | null): Bio | null => {
+    if (!bio) return null;
+    if (!bio.profileImage && bio.userId) {
+        bio.profileImage = `${env.BACKEND_URL}/api/images/${bio.userId}/medium.png`;
+    }
+    return bio as unknown as Bio;
 }
 
 // ==================== Query Functions ====================
 
 export const findBioBySufixWithUser = async (sufix: string): Promise<Bio | null> => { 
-        return await repository.findOne({ 
+        const bio = await repository.findOne({ 
             where:{
                 sufix
             },
             relations:['user']
-        }) as Bio || null
+        });
+        return normalizeBio(bio);
 }
 
 export const findBioByCustomDomain = async (customDomain: string): Promise<Bio | null> => { 
-    return await repository.findOne({ 
+    const bio = await repository.findOne({ 
         where:{
             customDomain
         },
         relations:['user']
-    }) as Bio || null
+    });
+    return normalizeBio(bio);
 }
 
 export const findBioBySufix = async (sufix: string): Promise<Bio | null> => {
-    return await repository.findOneBy({ sufix }) as Bio || null
+    const bio = await repository.findOneBy({ sufix });
+    // findOneBy doesn't load relations, so userId might be missing if not eager loaded.
+    // However, bio entity usually has userId column. 
+    return normalizeBio(bio);
 }
 export const findBioById= async (id: string,relations?:string[]): Promise<Bio | null> => {
-    return await repository.findOne({ 
+    const bio = await repository.findOne({ 
         where:{
             id
         },
         relations
-    } ) as Bio || null
+    } );
+    return normalizeBio(bio);
 }
 export const updateBioById = async (id: string, options: UpdateBioOptions): Promise<Bio | null> => {
     const bio = await findBioById(id, ['integrations', 'user']) as BioEntity;
     if (!bio) return null;
 
-    const { html, blocks, bgSettings, seoSettings, customDomain, layoutSettings, enableSubscribeButton, removeBranding } = options;
+    const { html, blocks, bgSettings, seoSettings, customDomain, layoutSettings, enableSubscribeButton, removeBranding, profileImage } = options;
 
     // Check Plan Limits using Active Plan
     const activePlan = await BillingService.getActivePlan(bio.user.id);
@@ -127,6 +147,7 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     if (customDomain !== undefined) bio.customDomain = customDomain === "" ? null : customDomain;
     if (enableSubscribeButton !== undefined) bio.enableSubscribeButton = enableSubscribeButton;
     if (removeBranding !== undefined) bio.removeBranding = removeBranding;
+    if (profileImage !== undefined) bio.profileImage = profileImage;
 
     // Background settings
     if (bgSettings) {
@@ -153,7 +174,24 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     }
 
     await repository.save(bio);
-    return bio as Bio;
+
+    // Refresh Cache
+    try {
+        // 1. Invalidate old keys
+        await invalidateBioCache(bio as BioEntity);
+        
+        // 2. Refresh/Pre-warm: Generate public version for sufix
+        // (This simulates a visit to the public page to store the "compiled" version)
+        await getPublicBio(bio.sufix, 'sufix');
+
+        if (bio.customDomain) {
+            await getPublicBio(bio.customDomain, 'domain');
+        }
+    } catch (err) {
+        console.error("Redis Cache Refresh Error:", err);
+    }
+
+    return normalizeBio(bio);
 };
 
 /**
@@ -212,6 +250,17 @@ export const createNewBio = async (sufix: string, userEmail: string): Promise<Pa
  * that the user's current plan does not support.
  */
 export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain'): Promise<Bio | null> => {
+    // 1. Try Cache
+    try {
+        const cacheKey = getBioCacheKey(identifier, type);
+        const cached = await redisClient.get(cacheKey);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (err) {
+        console.error("Redis Cache Error (Get):", err);
+    }
+
     let bio: Bio | null = null;
     
     if (type === 'domain') {
@@ -245,8 +294,9 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
 
     if (Array.isArray(bio.blocks)) {
         bio.blocks = bio.blocks.filter((block: any) => {
-            // Filter Pro-only blocks
+    // Filter Pro-only blocks
             if (block.type === 'tour' && !isPro) return false;
+            if (block.type === 'calendar' && !isPro) return false;
             
             // Filter other potential pro blocks if defined in future
             // e.g. if we add more pro blocks, add them here
@@ -255,5 +305,44 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
         });
     }
 
+    // Ensure frontend gets the correct active plan
+    if (bio.user && typeof bio.user !== 'string') {
+        (bio.user as any).plan = activePlan;
+    }
+
+    // Cache the verified result
+    await cacheBioData(identifier, type, bio);
+
     return bio;
+}
+
+// ==================== Cache Helpers ====================
+
+const BIO_CACHE_TTL = 3600; // 1 hour in seconds
+
+function getBioCacheKey(identifier: string, type: 'sufix' | 'domain'): string {
+    return `bio:public:${type}:${identifier}`;
+}
+
+async function cacheBioData(identifier: string, type: 'sufix' | 'domain', data: any): Promise<void> {
+    try {
+        const key = getBioCacheKey(identifier, type);
+        await redisClient.set(key, JSON.stringify(data), 'EX', BIO_CACHE_TTL);
+    } catch (err) {
+        console.error("Redis Cache Error (Set):", err);
+    }
+}
+
+async function invalidateBioCache(bio: BioEntity): Promise<void> {
+    try {
+        const keys = [
+            getBioCacheKey(bio.sufix, 'sufix')
+        ];
+        if (bio.customDomain) {
+            keys.push(getBioCacheKey(bio.customDomain, 'domain'));
+        }
+        await redisClient.del(keys);
+    } catch (err) {
+        console.error("Redis Cache Error (Del):", err);
+    }
 }

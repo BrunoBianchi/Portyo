@@ -36,6 +36,17 @@ router.post("/:qrcodeId", async (req: Request, res: Response) => {
         // Track the view with analytics
         await trackQrCodeView(qrcodeId, country, device);
         
+        // Trigger Automation
+        if (qrCode.bio?.id) {
+            const { triggerAutomation } = await import("../../../shared/services/automation.service");
+            triggerAutomation(qrCode.bio.id, 'qr_scanned', {
+                qrId: qrcodeId,
+                qrValue: qrCode.value,
+                country,
+                device
+            }).catch(err => console.error("Failed to trigger QR automation", err));
+        }
+
         // Return the destination URL for frontend redirect
         return res.status(200).json({ 
             url: qrCode.value,

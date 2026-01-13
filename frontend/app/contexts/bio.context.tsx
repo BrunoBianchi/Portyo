@@ -3,9 +3,13 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form";
     title?: string;
     body?: string;
+    // Form specific
+    formId?: string;
+    formBackgroundColor?: string;
+    formTextColor?: string;
     href?: string;
     align?: "left" | "center" | "right";
     accent?: string;
@@ -164,6 +168,7 @@ interface Bio {
     usernameColor?: string;
     imageStyle?: string;
     displayProfileImage?: boolean;
+    profileImage?: string;
     description?: string;
     socials?: {
         instagram?: string;
@@ -187,7 +192,7 @@ interface Bio {
     ogImage?: string;
     noIndex?: boolean;
     removeBranding?: boolean;
-    customDomain?: string;
+    customDomain?: string | null;
     cardStyle?: "none" | "solid" | "frosted";
     cardBackgroundColor?: string;
     cardOpacity?: number;

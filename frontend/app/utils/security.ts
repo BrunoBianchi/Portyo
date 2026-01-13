@@ -45,7 +45,7 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'ul', 'ol', 'li', 
             'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'blockquote', 'code', 'pre',
             'img', 'iframe', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon',
-            'video', 'source', 'style', 'button', 'input', 'label',
+            'video', 'source', 'style', 'button', 'input', 'label', 'form', 'textarea', 'select', 'option',
             'section', 'article', 'aside', 'main', 'header', 'footer',
             'g', 'defs', 'linearGradient', 'stop', 'mask', 'pattern'
         ],
@@ -57,10 +57,11 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
             'd', 'x', 'y', 'r', 'rx', 'ry', 'cx', 'cy', 'points', // SVG attributes
             'x1', 'y1', 'x2', 'y2', // SVG line attributes
-            'onclick', 'onmouseover', 'onmouseout', 'onsubmit' // Allow interactive events used by the generator
+            'onclick', 'onmouseover', 'onmouseout', 'onsubmit',
+            'method', 'action', 'enctype', 'autocomplete', 'required', 'minlength', 'maxlength', 'rows', 'cols'
         ],
         ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|sms|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-        ADD_TAGS: ['iframe', 'style', 'script'], // Allowing script because some widgets might inject it, though risky. Controlled by generator.
-        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout'],
+        ADD_TAGS: ['iframe', 'style', 'script', 'form', 'textarea', 'select', 'option', 'input', 'button'], // allow form controls in rendered HTML
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'aria-label'],
     });
 };

@@ -36,7 +36,15 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  Code
+  Code,
+  Calculator,
+  Calendar,
+  QrCode,
+  Trophy,
+  GitBranch,
+  Timer,
+  Globe,
+  MessageSquare
 } from "lucide-react";
 import { useBio } from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
@@ -62,7 +70,7 @@ export function meta({ }: Route.MetaArgs) {
 
 // --- Node Configuration ---
 
-type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'sms' | 'webhook' | 'tag' | 'split_test' | 'notification';
+type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'sms' | 'webhook' | 'tag' | 'split_test' | 'notification' | 'math_operation' | 'wait' | 'discord';
 
 interface NodeData {
   title: string;
@@ -74,18 +82,21 @@ interface NodeData {
 const NODE_CONFIG: Record<NodeType, NodeData> = {
   trigger: { title: "Trigger", icon: Zap, color: "bg-amber-500" },
   action: { title: "Email", icon: Mail, color: "bg-blue-500" },
-  condition: { title: "Condition", icon: Settings, color: "bg-gray-500" },
+  condition: { title: "Condition", icon: GitBranch, color: "bg-orange-500" },
   delay: { title: "Delay", icon: Clock, color: "bg-purple-500" },
   instagram: { title: "Instagram", icon: Instagram, color: "bg-pink-600" },
   youtube: { title: "YouTube", icon: Youtube, color: "bg-red-600" },
   integration: { title: "Integration", icon: Share2, color: "bg-indigo-500" },
   page_event: { title: "Page Event", icon: Layout, color: "bg-teal-500" },
-  update_element: { title: "Update Element", icon: Edit, color: "bg-orange-500" },
+  update_element: { title: "Update Element", icon: Edit, color: "bg-amber-500" },
   sms: { title: "SMS", icon: Mail, color: "bg-green-500" },
-  webhook: { title: "Webhook", icon: Share2, color: "bg-violet-600" },
+  webhook: { title: "Webhook", icon: Globe, color: "bg-violet-600" },
   tag: { title: "Add Tag", icon: CheckCircle, color: "bg-emerald-500" },
   split_test: { title: "A/B Split", icon: Settings, color: "bg-cyan-500" },
   notification: { title: "Push Notify", icon: AlertCircle, color: "bg-rose-500" },
+  math_operation: { title: "Math", icon: Calculator, color: "bg-indigo-600" },
+  wait: { title: "Wait", icon: Timer, color: "bg-slate-500" },
+  discord: { title: "Discord", icon: MessageSquare, color: "bg-blue-600" },
 };
 
 // --- Custom Node Component ---
@@ -97,18 +108,20 @@ const CustomNode = ({ id, data, type, selected }: any) => {
 
   const onDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setNodes((nodes: any) => nodes.filter((n: any) => n.id !== id));
-    setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
+    if (confirm('Are you sure you want to delete this step?')) {
+      setNodes((nodes: any) => nodes.filter((n: any) => n.id !== id));
+      setEdges((edges) => edges.filter((edge) => edge.source !== id && edge.target !== id));
+    }
   };
 
   return (
-    <div className={`w-[280px] bg-white rounded-xl shadow-sm border transition-all duration-200 group relative
+    <div className={`w-[280px] bg-white rounded-2xl shadow-sm border transition-all duration-200 group relative
       ${selected
         ? 'border-primary ring-2 ring-primary/20 shadow-lg'
         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
       }
     `}>
-      {/* Input Handle */}
+      {/* Input Handle (Top) */}
       {type !== 'trigger' && (
         <Handle
           type="target"
@@ -117,101 +130,111 @@ const CustomNode = ({ id, data, type, selected }: any) => {
         />
       )}
 
-      {/* Node Content */}
-      <div className="p-4">
-        <div className="flex items-start gap-4">
-          {/* Icon */}
-          <div className={`w-10 h-10 rounded-full ${config.color} flex items-center justify-center text-white shadow-sm shrink-0`}>
-            <Icon className="w-5 h-5" />
-          </div>
-
-          {/* Text Content */}
-          <div className="flex-1 min-w-0 pt-0.5">
-            <h3 className="text-sm font-bold text-gray-900 truncate leading-tight mb-1">{data.label}</h3>
-            <p className="text-[10px] text-gray-500 font-bold tracking-wider uppercase">{config.title}</p>
-          </div>
-
-          {/* Options (Delete) */}
-          <button
-            onClick={onDelete}
-            className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-red-50 rounded"
-            title="Delete Step"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+      {/* Main Content */}
+      <div className="p-4 flex items-center gap-4">
+        <div className={`w-10 h-10 rounded-xl ${config.color} flex items-center justify-center text-white shadow-sm shrink-0`}>
+          <Icon className="w-5 h-5" />
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gray-100 my-3" />
-
-        {/* Body/Details */}
-        <div className="text-xs text-gray-600 leading-relaxed">
-          {type === 'action' && (
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
-              <span className="truncate">Subject: <span className="font-medium text-gray-900">{data.subject || 'Welcome to Portyo!'}</span></span>
-            </div>
-          )}
-          {type === 'delay' && (
-            <div className="flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-gray-400" />
-              <span>Wait for <span className="font-medium text-gray-900">{data.duration || '24'} {data.unit || 'hours'}</span></span>
-            </div>
-          )}
-          {type === 'trigger' && (
-            <div>
-              When someone subscribes to <span className="font-medium text-gray-900">Newsletter</span>
-            </div>
-          )}
-          {type === 'condition' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Check:</span>
-              <span className="font-medium text-gray-900">
-                {data.conditionType === 'element_property'
-                  ? `${data.property} ${data.operator} ${data.value}`
-                  : `Has Tag "${data.tagName || 'VIP'}"`}
-              </span>
-            </div>
-          )}
-          {type === 'instagram' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Action:</span>
-              <span className="font-medium text-gray-900">{data.actionType === 'reply_comment' ? 'Reply to Comment' : 'Send DM'}</span>
-            </div>
-          )}
-          {type === 'youtube' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Action:</span>
-              <span className="font-medium text-gray-900">Reply to Comment</span>
-            </div>
-          )}
-          {type === 'integration' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Platform:</span>
-              <span className="font-medium text-gray-900">{data.platform || 'Google Sheets'}</span>
-            </div>
-          )}
-          {type === 'page_event' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Event:</span>
-              <span className="font-medium text-gray-900">{data.eventType === 'page_load' ? 'Page Load' : 'Custom'}</span>
-            </div>
-          )}
-          {type === 'update_element' && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500">Target:</span>
-              <span className="font-medium text-gray-900">{data.elementId ? 'Selected Element' : 'None'}</span>
-            </div>
-          )}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-bold text-gray-900 truncate leading-tight mb-0.5">{data.label || config.title}</h3>
+          <p className="text-[10px] text-gray-400 font-bold tracking-wider uppercase">{config.title}</p>
         </div>
+
+        <button
+          onClick={onDelete}
+          className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-red-50 rounded-lg"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Output Handle */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!w-4 !h-4 !bg-white !border-[3px] !border-gray-300 !-bottom-2 hover:!border-primary transition-colors"
-      />
+      {/* Divider */}
+      <div className="h-px bg-gray-100 mx-4" />
+
+      {/* Node Details / Preview */}
+      <div className="p-3 px-4 text-[11px] text-gray-500 min-h-[44px] flex items-center">
+        {type === 'trigger' && (
+          <div className="flex items-center gap-2">
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span>Event: <span className="font-semibold text-gray-700">{data.eventType || 'Select event...'}</span></span>
+          </div>
+        )}
+        {type === 'action' && (
+          <div className="flex flex-col gap-0.5 overflow-hidden">
+            <span className="font-semibold text-gray-700 truncate">{data.subject || 'No subject'}</span>
+            <span className="truncate opacity-75">{data.content || 'No content...'}</span>
+          </div>
+        )}
+        {type === 'condition' && (
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            <GitBranch className="w-3.5 h-3.5 text-orange-400" />
+            <span className="truncate italic">
+              {data.conditionKey ? `${data.conditionKey} ${data.conditionOperator} ${data.conditionValue}` : 'Configure branching...'}
+            </span>
+          </div>
+        )}
+        {type === 'wait' && (
+          <div className="flex items-center gap-2">
+            <Timer className="w-3.5 h-3.5 text-blue-400" />
+            <span>Delay: <span className="font-semibold text-gray-700">{data.waitDuration || 1} {data.waitUnit || 'minutes'}</span></span>
+          </div>
+        )}
+        {type === 'webhook' && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <Globe className="w-3.5 h-3.5 text-violet-400" />
+            <span className="truncate font-mono">{data.webhookUrl || 'Enter URL...'}</span>
+          </div>
+        )}
+        {type === 'discord' && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="truncate italic">{data.discordMessage || 'Alert message...'}</span>
+          </div>
+        )}
+        {type === 'math_operation' && (
+          <div className="flex items-center gap-1.5 font-mono">
+            <Calculator className="w-3.5 h-3.5 text-indigo-400" />
+            <span>{data.operand1 || '?'} {data.mathOperator || '+'} {data.operand2 || '?'} = {'{{'}{data.resultVarName || 'res'}{'}}'}</span>
+          </div>
+        )}
+        {!['trigger', 'action', 'condition', 'wait', 'webhook', 'discord', 'math_operation'].includes(type) && (
+          <span className="italic opacity-60">Ready to configure...</span>
+        )}
+      </div>
+
+      {/* Output Handles (Bottom) */}
+      {type === 'condition' ? (
+        <>
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="true"
+            style={{ left: '30%' }}
+            className="!w-4 !h-4 !bg-white !border-[3px] !border-green-500 !-bottom-2 hover:!border-green-600 transition-colors"
+          />
+          <div className="absolute -bottom-6 left-1/4 -translate-x-1/2 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1">
+            <CheckCircle className="w-2.5 h-2.5" /> TRUE
+          </div>
+
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="false"
+            style={{ left: '70%' }}
+            className="!w-4 !h-4 !bg-white !border-[3px] !border-red-500 !-bottom-2 hover:!border-red-600 transition-colors"
+          />
+          <div className="absolute -bottom-6 left-3/4 -translate-x-1/2 text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
+            <X className="w-2.5 h-2.5" /> FALSE
+          </div>
+        </>
+      ) : (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!w-4 !h-4 !bg-white !border-[3px] !border-gray-300 !-bottom-2 hover:!border-primary transition-colors"
+        />
+      )}
     </div>
   );
 };
@@ -231,6 +254,9 @@ const nodeTypes = {
   tag: CustomNode,
   split_test: CustomNode,
   notification: CustomNode,
+  math_operation: CustomNode,
+  wait: CustomNode,
+  discord: CustomNode,
 };
 
 // --- Main Component ---
@@ -263,11 +289,17 @@ export default function DashboardAutomation() {
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [automationName, setAutomationName] = useState("My Automation");
   const [templates, setTemplates] = useState<any[]>([]);
+  const [forms, setForms] = useState<any[]>([]);
 
   useEffect(() => {
     // Only load templates if user is PRO
     if (bio?.id && user?.plan === 'pro') {
       api.get(`/templates/${bio.id}`).then(res => setTemplates(res.data)).catch(() => { });
+    }
+
+    // Load available forms
+    if (bio?.id) {
+      api.get(`/form/bios/${bio.id}/forms`).then(res => setForms(res?.data || [])).catch(() => { });
     }
   }, [bio?.id, user?.plan]);
 
@@ -391,7 +423,84 @@ export default function DashboardAutomation() {
     }
   };
 
-  const onConnect = useCallback((params: Connection) => setEdges((eds: any) => addEdge(params, eds)), [setEdges]);
+  // Check if a node is connected to a Form Submit trigger
+  const isConnectedToFormSubmitTrigger = useCallback((nodeId: string): boolean => {
+    const findConnectedTrigger = (currentNodeId: string, visited: Set<string> = new Set()): boolean => {
+      if (visited.has(currentNodeId)) return false;
+      visited.add(currentNodeId);
+
+      const currentNode = nodes.find(n => n.id === currentNodeId);
+      if (!currentNode) return false;
+
+      if (currentNode.type === 'trigger' && currentNode.data.eventType === 'form_submit') {
+        return true;
+      }
+
+      const incomingEdges = edges.filter(e => e.target === currentNodeId);
+      for (const edge of incomingEdges) {
+        if (findConnectedTrigger(edge.source, visited)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    return findConnectedTrigger(nodeId);
+  }, [nodes, edges]);
+
+  const onConnect = useCallback((params: Connection) => {
+    // 1. Validation for Form Submit Trigger (Direct Connection)
+    const sourceNode = nodes.find(n => n.id === params.source);
+    if (sourceNode?.type === 'trigger' && sourceNode.data.eventType === 'form_submit') {
+      const formId = sourceNode.data.elementId;
+
+      if (!formId) {
+        setStatusMessage({ type: 'error', message: "Please select a form before connecting." });
+        return;
+      }
+
+      const selectedForm = forms.find(f => f.id === formId);
+      if (!selectedForm) {
+        setStatusMessage({ type: 'error', message: "Selected form not found or invalid." });
+        return;
+      }
+
+      const hasRequiredEmail = selectedForm.fields.some((f: any) =>
+        (f.type === 'email' || f.label.toLowerCase().includes('email')) && f.required
+      );
+
+      if (!hasRequiredEmail) {
+        setStatusMessage({ type: 'error', message: "Selected form must have a REQUIRED email field." });
+        return;
+      }
+
+      // Validate Target Node Type (Must be 'action' i.e., Email)
+      const targetNode = nodes.find(n => n.id === params.target);
+      if (targetNode?.type !== 'action') {
+        setStatusMessage({ type: 'error', message: "Form Submit triggers can ONLY connect to Email actions." });
+        return;
+      }
+
+      // Ensure only ONE connection allowed from the trigger
+      const existingConnections = edges.filter(e => e.source === sourceNode.id);
+      if (existingConnections.length > 0) {
+        setStatusMessage({ type: 'error', message: "Form Submit triggers can only have ONE email action." });
+        return;
+      }
+    }
+
+    // 2. Prevent chaining after Email action for Form Submit workflows
+    // If the source is an Action (Email) node, check if it's connected to a Form Submit trigger
+    if (sourceNode?.type === 'action') {
+      if (isConnectedToFormSubmitTrigger(sourceNode.id)) {
+        setStatusMessage({ type: 'error', message: "Form Submit automations end after the Email action. No further steps allowed." });
+        return;
+      }
+    }
+
+    setEdges((eds: any) => addEdge(params, eds));
+  }, [setEdges, nodes, forms, isConnectedToFormSubmitTrigger, edges]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -447,168 +556,200 @@ export default function DashboardAutomation() {
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
+  // Helper function to check if an action node is connected to a blog_post_published trigger
+  const isConnectedToBlogPostTrigger = useCallback((nodeId: string): boolean => {
+    // Find the trigger node that this action is connected to (traverse up the edges)
+    const findConnectedTrigger = (currentNodeId: string, visited: Set<string> = new Set()): boolean => {
+      if (visited.has(currentNodeId)) return false;
+      visited.add(currentNodeId);
+
+      const currentNode = nodes.find(n => n.id === currentNodeId);
+      if (!currentNode) return false;
+
+      // If this is a trigger node, check if it's a blog_post_published trigger
+      if (currentNode.type === 'trigger') {
+        return currentNode.data.eventType === 'blog_post_published';
+      }
+
+      // Find edges that point to this node (upstream connections)
+      const incomingEdges = edges.filter(e => e.target === currentNodeId);
+      for (const edge of incomingEdges) {
+        if (findConnectedTrigger(edge.source, visited)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    return findConnectedTrigger(nodeId);
+  }, [nodes, edges]);
+
+  const showLeadSelectionOptions = selectedNode?.type === 'action' && selectedNode?.id && isConnectedToBlogPostTrigger(selectedNode.id);
+
   return (
     <AuthorizationGuard minPlan="standard">
-      <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50">
-        <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50 flex-1">
-          {/* Status Message Toast */}
-          {statusMessage && (
-            <div className={`absolute top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top duration-300 ${statusMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-              }`}>
-              {statusMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              <span className="text-sm font-medium">{statusMessage.message}</span>
-            </div>
-          )}
+      <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50 flex-1 overflow-hidden">
+        {/* Status Message Toast */}
+        {statusMessage && (
+          <div className={`absolute top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top duration-300 ${statusMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}>
+            {statusMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            <span className="text-sm font-medium">{statusMessage.message}</span>
+          </div>
+        )}
 
-          {/* Header Bar */}
-          <div className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-6 z-40 relative">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/dashboard/automation")}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="w-px h-6 bg-gray-200"></div>
-              <input
-                type="text"
-                value={automationName}
-                onChange={(e) => setAutomationName(e.target.value)}
-                className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
-                placeholder="Automation Name"
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Status Indicator */}
-              {currentAutomation && (
-                <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${currentAutomation.isActive
-                  ? 'bg-green-100 text-green-700 border border-green-200'
-                  : 'bg-gray-100 text-gray-500 border border-gray-200'
-                  }`}>
-                  <span className={`w-2 h-2 rounded-full ${currentAutomation.isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-                  {currentAutomation.isActive ? 'Active' : 'Draft'}
-                </div>
-              )}
-
-              <div className="w-px h-6 bg-gray-200 mx-2"></div>
-
-              <button
-                onClick={handleSaveDraft}
-                disabled={isSaving}
-                className="px-4 py-2 hover:bg-white hover:shadow-sm text-gray-600 rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-gray-200"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {isSaving ? 'Saving...' : 'Save Draft'}
-              </button>
-
-              <button
-                onClick={handleActivate}
-                disabled={isActivating}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 ${currentAutomation?.isActive
-                  ? 'bg-red-50 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100'
-                  : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-md'
-                  }`}
-              >
-                {isActivating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : currentAutomation?.isActive ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-                {isActivating ? 'Processing...' : currentAutomation?.isActive ? 'Deactivate' : 'Activate'}
-              </button>
-            </div>
+        {/* Header Bar */}
+        <div className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-6 z-40 relative">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/dashboard/automation")}
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="w-px h-6 bg-gray-200"></div>
+            <input
+              type="text"
+              value={automationName}
+              onChange={(e) => setAutomationName(e.target.value)}
+              className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              placeholder="Automation Name"
+            />
           </div>
 
-          <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
-            <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onInit={setReactFlowInstance}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                onNodeClick={onNodeClick}
-                onPaneClick={onPaneClick}
-                nodeTypes={nodeTypes}
-                fitView
-                fitViewOptions={{ maxZoom: 1 }}
-                minZoom={0.1}
-                maxZoom={1}
-                className="bg-gray-50"
-              >
-                <Background color="#94a3b8" gap={20} size={1} />
-                <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4" />
+          <div className="flex items-center gap-3">
+            {/* Status Indicator */}
+            {currentAutomation && (
+              <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${currentAutomation.isActive
+                ? 'bg-green-100 text-green-700 border border-green-200'
+                : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}>
+                <span className={`w-2 h-2 rounded-full ${currentAutomation.isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                {currentAutomation.isActive ? 'Active' : 'Draft'}
+              </div>
+            )}
 
-                <Panel position="top-left" className="!m-4 !top-4">
-                  <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 p-2 flex flex-col gap-1 w-14 items-center">
-                    {[
-                      { type: 'trigger', label: 'Trigger', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
-                      { type: 'action', label: 'Email', icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
-                      { type: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-pink-600 bg-pink-50 hover:bg-pink-100' },
-                      { type: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-red-600 bg-red-50 hover:bg-red-100' },
-                      { type: 'delay', label: 'Delay', icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
-                      { type: 'condition', label: 'Condition', icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
-                      { type: 'integration', label: 'Integration', icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
-                      { type: 'page_event', label: 'Page Event', icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
-                      { type: 'update_element', label: 'Update Element', icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
-                    ].map((item) => (
-                      <div
-                        key={item.type}
-                        className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing relative group`}
-                        onDragStart={(event) => {
-                          event.dataTransfer.setData('application/reactflow', item.type);
-                          event.dataTransfer.setData('application/label', item.label);
-                          event.dataTransfer.effectAllowed = 'move';
-                        }}
-                        draggable
-                        title={`Add ${item.label}`}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        <span className="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </Panel>
-              </ReactFlow>
-            </ReactFlowProvider>
+            <div className="w-px h-6 bg-gray-200 mx-2"></div>
 
-            {/* Properties Panel */}
-            {selectedNode && (
-              <div className="absolute right-6 top-6 bottom-6 w-[340px] bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-300">
-                {/* Header */}
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 rounded-t-2xl">
-                  <h2 className="font-bold text-lg text-gray-900">Configuration</h2>
-                  <button
-                    onClick={() => setSelectedNodeId(null)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+            <button
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+              className="px-4 py-2 hover:bg-white hover:shadow-sm text-gray-600 rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-gray-200"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {isSaving ? 'Saving...' : 'Save Draft'}
+            </button>
+
+            <button
+              onClick={handleActivate}
+              disabled={isActivating}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 ${currentAutomation?.isActive
+                ? 'bg-red-50 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100'
+                : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-md'
+                }`}
+            >
+              {isActivating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : currentAutomation?.isActive ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+              {isActivating ? 'Processing...' : currentAutomation?.isActive ? 'Deactivate' : 'Activate'}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onInit={setReactFlowInstance}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ maxZoom: 1 }}
+              minZoom={0.1}
+              maxZoom={1}
+              className="bg-gray-50"
+            >
+              <Background color="#94a3b8" gap={20} size={1} />
+              <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4" />
+
+              <Panel position="top-left" className="!m-4 !top-4">
+                <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 p-2 flex flex-col gap-1 w-14 items-center">
+                  {[
+                    { type: 'trigger', label: 'Trigger', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
+                    { type: 'action', label: 'Email', icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
+                    { type: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-pink-600 bg-pink-50 hover:bg-pink-100' },
+                    { type: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-red-600 bg-red-50 hover:bg-red-100' },
+                    { type: 'delay', label: 'Delay', icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
+                    { type: 'condition', label: 'Condition', icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
+                    { type: 'integration', label: 'Integration', icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                    { type: 'page_event', label: 'Page Event', icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
+                    { type: 'update_element', label: 'Update Element', icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
+                    { type: 'math_operation', label: 'Math', icon: Calculator, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                  ].map((item) => (
+                    <div
+                      key={item.type}
+                      className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing relative group`}
+                      onDragStart={(event) => {
+                        event.dataTransfer.setData('application/reactflow', item.type);
+                        event.dataTransfer.setData('application/label', item.label);
+                        event.dataTransfer.effectAllowed = 'move';
+                      }}
+                      draggable
+                      title={`Add ${item.label}`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span className="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </ReactFlow>
+          </ReactFlowProvider>
+
+          {/* Properties Panel */}
+          {selectedNode && (
+            <div className="absolute right-6 top-6 bottom-6 w-[340px] bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-300">
+              {/* Header */}
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 rounded-t-2xl">
+                <h2 className="font-bold text-lg text-gray-900">Configuration</h2>
+                <button
+                  onClick={() => setSelectedNodeId(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+                {/* Common: Label */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Step Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                    value={selectedNode.data.label}
+                    onChange={(e) => updateNodeData('label', e.target.value)}
+                  />
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
-                  {/* Common: Label */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Step Name</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                      value={selectedNode.data.label}
-                      onChange={(e) => updateNodeData('label', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Trigger Configuration */}
-                  {selectedNode.type === 'trigger' && (
+                {/* Trigger Configuration */}
+                {(selectedNode as any).type === 'trigger' && (
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Event Type</label>
                       <div className="relative">
@@ -617,40 +758,25 @@ export default function DashboardAutomation() {
                           value={selectedNode.data.eventType || 'newsletter_subscribe'}
                           onChange={(e) => updateNodeData('eventType', e.target.value)}
                         >
-                          <optgroup label="📧 Subscriber Events">
-                            <option value="newsletter_subscribe">New Subscriber</option>
-                            <option value="subscriber_unsubscribe">Unsubscribed</option>
-                            <option value="email_opened">Email Opened</option>
-                            <option value="email_clicked">Email Link Clicked</option>
+                          <optgroup label="📅 Appointments">
+                            <option value="booking_created">New Booking</option>
                           </optgroup>
                           <optgroup label="👁️ Page Events">
                             <option value="bio_visit">Bio Page Visit</option>
+                            <option value="qr_scanned">QR Code Scanned</option>
+                            <option value="visit_milestone">Visit Milestone Reached</option>
                             <option value="link_click">Link Click</option>
-                            <option value="qrcode_scan">QR Code Scanned</option>
-                            <option value="video_watch">Video Watched</option>
-                            <option value="scroll_depth">Scroll Depth Reached</option>
                           </optgroup>
-                          <optgroup label="💳 E-commerce">
-                            <option value="product_purchase">Product Purchase</option>
-                            <option value="cart_abandoned">Cart Abandoned</option>
-                            <option value="checkout_started">Checkout Started</option>
-                            <option value="refund_requested">Refund Requested</option>
+                          <optgroup label="📧 Subscriber Events">
+                            <option value="newsletter_subscribe">New Subscriber</option>
+                            <option value="subscriber_unsubscribe">Unsubscribed</option>
                           </optgroup>
-                          <optgroup label="📊 Analytics">
-                            <option value="milestone_reached">Milestone Reached</option>
-                            <option value="views_milestone">Views Milestone (100, 1K, 10K)</option>
-                            <option value="followers_milestone">Followers Milestone</option>
-                          </optgroup>
-                          <optgroup label="📅 Time-based">
-                            <option value="schedule_daily">Daily Schedule</option>
-                            <option value="schedule_weekly">Weekly Schedule</option>
-                            <option value="date_trigger">Specific Date/Time</option>
-                            <option value="subscriber_anniversary">Subscriber Anniversary</option>
+                          <optgroup label="📝 Content">
+                            <option value="form_submit">Form Submit</option>
+                            <option value="blog_post_published">Blog Post Published</option>
                           </optgroup>
                           <optgroup label="⚡ Other">
-                            <option value="form_submit">Form Submit</option>
-                            <option value="social_follow">Social Follow</option>
-                            <option value="webhook_received">Webhook Received</option>
+                            <option value="webhook_received">Incoming Webhook</option>
                             <option value="custom_event">Custom Event</option>
                           </optgroup>
                         </select>
@@ -659,306 +785,485 @@ export default function DashboardAutomation() {
                         </div>
                       </div>
                     </div>
-                  )}
 
+                    {/* Trigger Configuration Extras */}
+                    {/* Milestone Selector */}
+                    {selectedNode.data.eventType === 'visit_milestone' && (
+                      <div className="space-y-2 p-4 bg-amber-50 rounded-xl border border-amber-200/50">
+                        <label className="block text-xs font-bold text-amber-700 uppercase tracking-wider">Milestone (Views)</label>
+                        <select
+                          className="w-full px-4 py-2 bg-white border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                          value={selectedNode.data.milestoneCount || '100'}
+                          onChange={(e) => updateNodeData('milestoneCount', parseInt(e.target.value))}
+                        >
+                          <option value="10">10 Views</option>
+                          <option value="50">50 Views</option>
+                          <option value="100">100 Views</option>
+                          <option value="500">500 Views</option>
+                          <option value="1000">1,000 Views (Kilo)</option>
+                          <option value="5000">5,000 Views</option>
+                          <option value="10000">10,000 Views (Mega)</option>
+                        </select>
+                      </div>
+                    )}
 
+                    {/* Form Selector (Existing) */}
+                    {selectedNode.data.eventType === 'form_submit' && (
+                      <div className="space-y-2 p-4 bg-orange-50 rounded-xl border border-orange-200/50">
+                        <label className="block text-xs font-bold text-orange-700 uppercase tracking-wider">Select Form</label>
+                        <select
+                          className="w-full px-4 py-2 bg-white border border-orange-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                          value={selectedNode.data.elementId || ''}
+                          onChange={(e) => updateNodeData('elementId', e.target.value)}
+                        >
+                          <option value="">Select a form...</option>
+                          {forms
+                            .filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && field.required))
+                            .map(f => (
+                              <option key={f.id} value={f.id}>{f.title}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-orange-600">
+                          Only forms with a <strong>Required Email</strong> field are listed here.
+                        </p>
 
-                  {/* Action Configuration */}
-                  {selectedNode.type === 'action' && (
-                    <>
-                      {/* Only show template selector for PRO users */}
-                      {user?.plan === 'pro' && templates.length > 0 && (
-                        <div className="space-y-4 mb-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
-                              <Mail className="w-3 h-3 text-white" />
-                            </div>
-                            <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider">Load from Template</label>
+                        {/* Warnings for problematic forms */}
+                        {forms.length > 0 && (
+                          <>
+                            {forms.filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && field.required)).length === 0 && (
+                              <p className="text-xs text-red-500 font-bold mt-1">
+                                No compatible forms found. Please ensure you have a form with a REQUIRED email field.
+                              </p>
+                            )}
+
+                            {forms.filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && !field.required)).length > 0 && (
+                              <div className="mt-2 p-2 bg-red-50 rounded border border-red-100">
+                                <p className="text-xs text-red-600 font-semibold mb-1">
+                                  Forms missing required email:
+                                </p>
+                                <ul className="list-disc list-inside text-[10px] text-red-500">
+                                  {forms
+                                    .filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && !field.required))
+                                    .map(f => (
+                                      <li key={f.id}>{f.title} (Make email required)</li>
+                                    ))}
+                                </ul>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Action Configuration */}
+                {(selectedNode as any).type === 'action' && (
+                  <div className="space-y-4">
+                    {/* Only show template selector for PRO users */}
+                    {user?.plan === 'pro' && templates.length > 0 && (
+                      <div className="space-y-4 mb-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                            <Mail className="w-3 h-3 text-white" />
                           </div>
-                          <select
-                            className="w-full px-4 py-2 bg-white border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
-                            onChange={(e) => {
-                              const template = templates.find(t => t.id === e.target.value);
-                              if (template && template.html) {
-                                if (confirm("This will overwrite existing content. Continue?")) {
-                                  updateNodeData('content', template.html);
-                                }
+                          <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider">Load from Template</label>
+                        </div>
+                        <select
+                          className="w-full px-4 py-2 bg-white border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                          onChange={(e) => {
+                            const template = templates.find(t => t.id === e.target.value);
+                            if (template && template.html) {
+                              if (confirm("This will overwrite existing content. Continue?")) {
+                                updateNodeData('content', template.html);
                               }
-                            }}
-                            value=""
+                            }
+                          }}
+                          value=""
+                        >
+                          <option value="">Select a template...</option>
+                          {templates.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Subject</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="Welcome {{ownerFirstName}}'s newsletter!"
+                        value={selectedNode.data.subject || ''}
+                        onChange={(e) => updateNodeData('subject', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Content</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[120px] resize-y"
+                        placeholder="Hi there! Thanks for subscribing to {{bioName}}..."
+                        value={selectedNode.data.content || ''}
+                        onChange={(e) => updateNodeData('content', e.target.value)}
+                      ></textarea>
+                    </div>
+
+                    {/* Template Variables Documentation */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-blue-700">
+                        <Code className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Template Variables</span>
+                      </div>
+                      <p className="text-xs text-blue-600">Use these variables in subject or content. They'll be replaced with real values.</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Subscriber</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Your Bio</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Owner (You)</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Date/Time</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
+                        </div>
+                        {showLeadSelectionOptions && (
+                          <div className="space-y-1">
+                            <p className="font-semibold text-gray-700">Blog Post</p>
+                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postTitle}}"}</code>
+                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postUrl}}"}</code>
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Analytics</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{milestoneCount}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">Appointments</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bookingDate}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{customerName}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">QR Code</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{qrValue}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{country}}"}</code>
+                        </div>
+
+                        {/* Form Variables - Show when connected to Form Trigger */}
+                        {(() => {
+                          const triggerNode = nodes.find(n => n.type === 'trigger' && n.data.eventType === 'form_submit');
+                          const formId = triggerNode?.data.elementId;
+                          const form = forms.find(f => f.id === formId);
+
+                          if (form) {
+                            return (
+                              <div className="space-y-1 col-span-2 mt-2 pt-2 border-t border-blue-200">
+                                <p className="font-semibold text-gray-700">Form: {form.title}</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {form.fields.map((field: any) => {
+                                    const safeLabel = field.label.replace(/[^a-zA-Z0-9]/g, '_');
+                                    return (
+                                      <code key={field.id} className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{" + safeLabel + "}}"}</code>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+
+                      </div>
+                      <details className="text-xs">
+                        <summary className="text-blue-600 cursor-pointer hover:text-blue-800 font-medium">More variables...</summary>
+                        <div className="mt-2 grid grid-cols-2 gap-1 text-blue-600">
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
+                        </div>
+                      </details>
+                    </div>
+
+                    {/* Lead Selection Options - Only for Blog Post Trigger */}
+                    {showLeadSelectionOptions && (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 rounded-xl p-4 space-y-4">
+                        <div className="flex items-center gap-2 text-green-700">
+                          <Mail className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Lead Recipients</span>
+                        </div>
+                        <p className="text-xs text-green-600">
+                          Choose how many leads should receive this email when a new blog post is published.
+                        </p>
+
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-3 cursor-pointer group">
+                            <input
+                              type="radio"
+                              name="leadSelection"
+                              checked={selectedNode.data.sendToAllLeads !== false}
+                              onChange={() => {
+                                updateNodeData('sendToAllLeads', true);
+                                updateNodeData('leadCount', null);
+                              }}
+                              className="w-4 h-4 text-green-600 focus:ring-green-500"
+                            />
+                            <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+                              Send to all leads
+                            </span>
+                          </label>
+
+                          <label className="flex items-start gap-3 cursor-pointer group">
+                            <input
+                              type="radio"
+                              name="leadSelection"
+                              checked={selectedNode.data.sendToAllLeads === false}
+                              onChange={() => {
+                                updateNodeData('sendToAllLeads', false);
+                                if (!selectedNode.data.leadCount) {
+                                  updateNodeData('leadCount', 10);
+                                }
+                              }}
+                              className="w-4 h-4 text-green-600 focus:ring-green-500 mt-0.5"
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+                                Send to specific quantity
+                              </span>
+                              {selectedNode.data.sendToAllLeads === false && (
+                                <div className="mt-2 flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="10000"
+                                    className="w-24 px-3 py-2 bg-white border border-green-200 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400"
+                                    value={selectedNode.data.leadCount || 10}
+                                    onChange={(e) => updateNodeData('leadCount', parseInt(e.target.value) || 10)}
+                                  />
+                                  <span className="text-xs text-gray-500">leads</span>
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Delay Configuration */}
+                {(selectedNode as any).type === 'delay' && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="col-span-2 space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</label>
+                      <input
+                        type="number"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        defaultValue="1"
+                        value={selectedNode.data.duration || '1'}
+                        onChange={(e) => updateNodeData('duration', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.unit || 'Days'}
+                        onChange={(e) => updateNodeData('unit', e.target.value)}
+                      >
+                        <option>Days</option>
+                        <option>Hours</option>
+                        <option>Minutes</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Condition Configuration */}
+                {(selectedNode as any).type === 'condition' && (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Condition Type</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.conditionType || 'tag'}
+                        onChange={(e) => updateNodeData('conditionType', e.target.value)}
+                      >
+                        <option value="tag">Has Tag</option>
+                        <option value="element_property">Element Property</option>
+                      </select>
+                    </div>
+
+                    {selectedNode.data.conditionType === 'element_property' && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                          <select
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            value={selectedNode.data.elementId || ''}
+                            onChange={(e) => updateNodeData('elementId', e.target.value)}
                           >
-                            <option value="">Select a template...</option>
-                            {templates.map(t => (
-                              <option key={t.id} value={t.id}>{t.name}</option>
+                            <option value="">Select an element...</option>
+                            {bio?.blocks?.map((block) => (
+                              <option key={block.id} value={block.id}>
+                                {block.title || block.type} ({block.id.substr(0, 4)})
+                              </option>
                             ))}
                           </select>
                         </div>
-                      )}
 
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Subject</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="Welcome {{ownerFirstName}}'s newsletter!"
-                          value={selectedNode.data.subject || ''}
-                          onChange={(e) => updateNodeData('subject', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Content</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[120px] resize-y"
-                          placeholder="Hi there! Thanks for subscribing to {{bioName}}..."
-                          value={selectedNode.data.content || ''}
-                          onChange={(e) => updateNodeData('content', e.target.value)}
-                        ></textarea>
-                      </div>
-
-                      {/* Template Variables Documentation */}
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-4 space-y-3">
-                        <div className="flex items-center gap-2 text-blue-700">
-                          <Code className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Template Variables</span>
-                        </div>
-                        <p className="text-xs text-blue-600">Use these variables in subject or content. They'll be replaced with real values.</p>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-700">Subscriber</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-700">Your Bio</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-700">Owner (You)</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-700">Date/Time</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
-                          </div>
-                        </div>
-                        <details className="text-xs">
-                          <summary className="text-blue-600 cursor-pointer hover:text-blue-800 font-medium">More variables...</summary>
-                          <div className="mt-2 grid grid-cols-2 gap-1 text-blue-600">
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
-                            <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
-                          </div>
-                        </details>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Delay Configuration */}
-                  {selectedNode.type === 'delay' && (
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="col-span-2 space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</label>
-                        <input
-                          type="number"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          defaultValue="1"
-                          value={selectedNode.data.duration || '1'}
-                          onChange={(e) => updateNodeData('duration', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.unit || 'Days'}
-                          onChange={(e) => updateNodeData('unit', e.target.value)}
-                        >
-                          <option>Days</option>
-                          <option>Hours</option>
-                          <option>Minutes</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Condition Configuration */}
-                  {selectedNode.type === 'condition' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Condition Type</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.conditionType || 'tag'}
-                          onChange={(e) => updateNodeData('conditionType', e.target.value)}
-                        >
-                          <option value="tag">Has Tag</option>
-                          <option value="element_property">Element Property</option>
-                        </select>
-                      </div>
-
-                      {selectedNode.data.conditionType === 'element_property' && (
-                        <>
-                          <div className="space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
-                            <select
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                              value={selectedNode.data.elementId || ''}
-                              onChange={(e) => updateNodeData('elementId', e.target.value)}
-                            >
-                              <option value="">Select an element...</option>
-                              {bio?.blocks?.map((block) => (
-                                <option key={block.id} value={block.id}>
-                                  {block.title || block.type} ({block.id.substr(0, 4)})
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property</label>
-                            <select
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                              value={selectedNode.data.property || 'title'}
-                              onChange={(e) => updateNodeData('property', e.target.value)}
-                            >
-                              <option value="title">Title</option>
-                              <option value="body">Body</option>
-                              <option value="href">URL</option>
-                              <option value="visible">Visibility</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
-                            <select
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                              value={selectedNode.data.operator || 'equals'}
-                              onChange={(e) => updateNodeData('operator', e.target.value)}
-                            >
-                              <option value="equals">Equals</option>
-                              <option value="contains">Contains</option>
-                              <option value="not_equals">Not Equals</option>
-                              <option value="starts_with">Starts With</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Value</label>
-                            <input
-                              type="text"
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                              placeholder="Value to check..."
-                              value={selectedNode.data.value || ''}
-                              onChange={(e) => updateNodeData('value', e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {(!selectedNode.data.conditionType || selectedNode.data.conditionType === 'tag') && (
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property</label>
+                          <select
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            value={selectedNode.data.property || 'title'}
+                            onChange={(e) => updateNodeData('property', e.target.value)}
+                          >
+                            <option value="title">Title</option>
+                            <option value="body">Body</option>
+                            <option value="href">URL</option>
+                            <option value="visible">Visibility</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
+                          <select
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            value={selectedNode.data.operator || 'equals'}
+                            onChange={(e) => updateNodeData('operator', e.target.value)}
+                          >
+                            <option value="equals">Equals</option>
+                            <option value="contains">Contains</option>
+                            <option value="not_equals">Not Equals</option>
+                            <option value="starts_with">Starts With</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Value</label>
                           <input
                             type="text"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                            placeholder="e.g. VIP"
-                            value={selectedNode.data.tagName || ''}
-                            onChange={(e) => updateNodeData('tagName', e.target.value)}
+                            placeholder="Value to check..."
+                            value={selectedNode.data.value || ''}
+                            onChange={(e) => updateNodeData('value', e.target.value)}
                           />
                         </div>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    )}
 
-                  {/* Instagram Configuration */}
-                  {selectedNode.type === 'instagram' && (
-                    <>
+                    {(!selectedNode.data.conditionType || selectedNode.data.conditionType === 'tag') && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.actionType || 'send_dm'}
-                          onChange={(e) => updateNodeData('actionType', e.target.value)}
-                        >
-                          <option value="send_dm">Send DM</option>
-                          <option value="reply_comment">Reply to Comment</option>
-                          <option value="post_story">Post Story</option>
-                        </select>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          placeholder="e.g. VIP"
+                          value={selectedNode.data.tagName || ''}
+                          onChange={(e) => updateNodeData('tagName', e.target.value)}
+                        />
                       </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
-                          placeholder="Enter message..."
-                          value={selectedNode.data.message || ''}
-                          onChange={(e) => updateNodeData('message', e.target.value)}
-                        ></textarea>
-                      </div>
-                    </>
-                  )}
+                    )}
+                  </div>
+                )}
 
-                  {/* YouTube Configuration */}
-                  {selectedNode.type === 'youtube' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.actionType || 'reply_comment'}
-                          onChange={(e) => updateNodeData('actionType', e.target.value)}
-                        >
-                          <option value="reply_comment">Reply to Comment</option>
-                          <option value="pin_comment">Pin Comment</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Comment Text</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
-                          placeholder="Enter comment..."
-                          value={selectedNode.data.comment || ''}
-                          onChange={(e) => updateNodeData('comment', e.target.value)}
-                        ></textarea>
-                      </div>
-                    </>
-                  )}
+                {/* Instagram Configuration */}
+                {(selectedNode as any).type === 'instagram' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.actionType || 'send_dm'}
+                        onChange={(e) => updateNodeData('actionType', e.target.value)}
+                      >
+                        <option value="send_dm">Send DM</option>
+                        <option value="reply_comment">Reply to Comment</option>
+                        <option value="post_story">Post Story</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        placeholder="Enter message..."
+                        value={selectedNode.data.message || ''}
+                        onChange={(e) => updateNodeData('message', e.target.value)}
+                      ></textarea>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Integration Configuration */}
-                  {selectedNode.type === 'integration' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Platform</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.platform || 'google_sheets'}
-                          onChange={(e) => updateNodeData('platform', e.target.value)}
-                        >
-                          <option value="google_sheets">Google Sheets</option>
-                          <option value="slack">Slack</option>
-                          <option value="webhook">Webhook</option>
-                          <option value="zapier">Zapier</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Connection</label>
-                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 flex items-center justify-between">
-                          <span>No account connected</span>
-                          <button className="text-primary font-bold text-xs hover:underline">Connect</button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                {/* YouTube Configuration */}
+                {(selectedNode as any).type === 'youtube' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.actionType || 'reply_comment'}
+                        onChange={(e) => updateNodeData('actionType', e.target.value)}
+                      >
+                        <option value="reply_comment">Reply to Comment</option>
+                        <option value="pin_comment">Pin Comment</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Comment Text</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        placeholder="Enter comment..."
+                        value={selectedNode.data.comment || ''}
+                        onChange={(e) => updateNodeData('comment', e.target.value)}
+                      ></textarea>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Page Event Configuration */}
-                  {selectedNode.type === 'page_event' && (
+                {/* Integration Configuration */}
+                {(selectedNode as any).type === 'integration' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Platform</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.platform || 'google_sheets'}
+                        onChange={(e) => updateNodeData('platform', e.target.value)}
+                      >
+                        <option value="google_sheets">Google Sheets</option>
+                        <option value="slack">Slack</option>
+                        <option value="webhook">Webhook</option>
+                        <option value="zapier">Zapier</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Connection</label>
+                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 flex items-center justify-between">
+                        <span>No account connected</span>
+                        <button className="text-primary font-bold text-xs hover:underline">Connect</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Page Event Configuration */}
+                {(selectedNode as any).type === 'page_event' && (
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Event Type</label>
                       <select
@@ -971,253 +1276,328 @@ export default function DashboardAutomation() {
                         <option value="exit_intent">Exit Intent</option>
                       </select>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {selectedNode.type === 'update_element' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.elementId || ''}
-                          onChange={(e) => updateNodeData('elementId', e.target.value)}
-                        >
-                          <option value="">Select an element...</option>
-                          {bio?.blocks?.map((block) => (
-                            <option key={block.id} value={block.id}>
-                              {block.title || block.type} ({block.id.substr(0, 4)})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                {/* Update Element Configuration */}
+                {(selectedNode as any).type === 'update_element' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.elementId || ''}
+                        onChange={(e) => updateNodeData('elementId', e.target.value)}
+                      >
+                        <option value="">Select an element...</option>
+                        {bio?.blocks?.map((block) => (
+                          <option key={block.id} value={block.id}>
+                            {block.title || block.type} ({block.id.substr(0, 4)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property to Update</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.property || 'title'}
-                          onChange={(e) => updateNodeData('property', e.target.value)}
-                        >
-                          <option value="title">Title</option>
-                          <option value="body">Body</option>
-                          <option value="href">URL</option>
-                          <option value="buttonStyle">Button Style</option>
-                          <option value="visible">Visibility</option>
-                        </select>
-                      </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property to Update</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.property || 'title'}
+                        onChange={(e) => updateNodeData('property', e.target.value)}
+                      >
+                        <option value="title">Title</option>
+                        <option value="body">Body</option>
+                        <option value="href">URL</option>
+                        <option value="buttonStyle">Button Style</option>
+                        <option value="visible">Visibility</option>
+                      </select>
+                    </div>
 
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">New Value</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="Enter new value..."
-                          value={selectedNode.data.value || ''}
-                          onChange={(e) => updateNodeData('value', e.target.value)}
-                        />
-                      </div>
-                    </>
-                  )}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">New Value</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="Enter new value..."
+                        value={selectedNode.data.value || ''}
+                        onChange={(e) => updateNodeData('value', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
 
-                  {/* SMS Configuration */}
-                  {selectedNode.type === 'sms' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number</label>
-                        <input
-                          type="tel"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="+55 11 99999-9999 or {{phone}}"
-                          value={selectedNode.data.phone || ''}
-                          onChange={(e) => updateNodeData('phone', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
-                          placeholder="Hi {{ownerFirstName}}! Thanks for subscribing..."
-                          value={selectedNode.data.message || ''}
-                          onChange={(e) => updateNodeData('message', e.target.value)}
-                        />
-                        <p className="text-xs text-gray-500">Max 160 characters for SMS. Use template variables.</p>
-                      </div>
-                    </>
-                  )}
+                {/* SMS Configuration */}
+                {(selectedNode as any).type === 'sms' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number</label>
+                      <input
+                        type="tel"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="+55 11 99999-9999 or {{phone}}"
+                        value={selectedNode.data.phone || ''}
+                        onChange={(e) => updateNodeData('phone', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        placeholder="Hi {{ownerFirstName}}! Thanks for subscribing..."
+                        value={selectedNode.data.message || ''}
+                        onChange={(e) => updateNodeData('message', e.target.value)}
+                      />
+                      <p className="text-xs text-gray-500">Max 160 characters for SMS. Use template variables.</p>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Webhook Configuration */}
-                  {selectedNode.type === 'webhook' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Method</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.method || 'POST'}
-                          onChange={(e) => updateNodeData('method', e.target.value)}
-                        >
-                          <option value="POST">POST</option>
-                          <option value="GET">GET</option>
-                          <option value="PUT">PUT</option>
-                          <option value="PATCH">PATCH</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">URL</label>
-                        <input
-                          type="url"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="https://api.example.com/webhook"
-                          value={selectedNode.data.webhookUrl || ''}
-                          onChange={(e) => updateNodeData('webhookUrl', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Headers (JSON)</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[60px] resize-y font-mono text-xs"
-                          placeholder='{"Authorization": "Bearer token"}'
-                          value={selectedNode.data.headers || ''}
-                          onChange={(e) => updateNodeData('headers', e.target.value)}
-                        />
-                      </div>
-                      <div className="bg-violet-50 border border-violet-200/50 rounded-xl p-3">
-                        <p className="text-xs text-violet-700">📤 All context data will be sent in the request body as JSON.</p>
-                      </div>
-                    </>
-                  )}
+                {/* Webhook Configuration */}
+                {(selectedNode as any).type === 'webhook' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Method</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.method || 'POST'}
+                        onChange={(e) => updateNodeData('method', e.target.value)}
+                      >
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">URL</label>
+                      <input
+                        type="url"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="https://api.example.com/webhook"
+                        value={selectedNode.data.webhookUrl || ''}
+                        onChange={(e) => updateNodeData('webhookUrl', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Headers (JSON)</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[60px] resize-y font-mono text-xs"
+                        placeholder='{"Authorization": "Bearer token"}'
+                        value={selectedNode.data.headers || ''}
+                        onChange={(e) => updateNodeData('headers', e.target.value)}
+                      />
+                    </div>
+                    <div className="bg-violet-50 border border-violet-200/50 rounded-xl p-3">
+                      <p className="text-xs text-violet-700">📤 All context data will be sent in the request body as JSON.</p>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Tag Configuration */}
-                  {selectedNode.type === 'tag' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.tagAction || 'add'}
-                          onChange={(e) => updateNodeData('tagAction', e.target.value)}
-                        >
-                          <option value="add">Add Tag</option>
-                          <option value="remove">Remove Tag</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="e.g. VIP, Newsletter, Engaged"
-                          value={selectedNode.data.tagName || ''}
-                          onChange={(e) => updateNodeData('tagName', e.target.value)}
-                        />
-                      </div>
-                      <div className="bg-emerald-50 border border-emerald-200/50 rounded-xl p-3">
-                        <p className="text-xs text-emerald-700">🏷️ Tags help segment your subscribers for targeted automations.</p>
-                      </div>
-                    </>
-                  )}
+                {/* Tag Configuration */}
+                {(selectedNode as any).type === 'tag' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.tagAction || 'add'}
+                        onChange={(e) => updateNodeData('tagAction', e.target.value)}
+                      >
+                        <option value="add">Add Tag</option>
+                        <option value="remove">Remove Tag</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="e.g. VIP, Newsletter, Engaged"
+                        value={selectedNode.data.tagName || ''}
+                        onChange={(e) => updateNodeData('tagName', e.target.value)}
+                      />
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-200/50 rounded-xl p-3">
+                      <p className="text-xs text-emerald-700">🏷️ Tags help segment your subscribers for targeted automations.</p>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Split Test Configuration */}
-                  {selectedNode.type === 'split_test' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Split Ratio</label>
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1">
-                            <label className="text-xs text-gray-500 mb-1 block">Path A</label>
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                              value={selectedNode.data.splitA || '50'}
-                              onChange={(e) => updateNodeData('splitA', e.target.value)}
-                            />
-                          </div>
-                          <span className="text-gray-400 font-bold mt-6">:</span>
-                          <div className="flex-1">
-                            <label className="text-xs text-gray-500 mb-1 block">Path B</label>
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                              value={selectedNode.data.splitB || '50'}
-                              onChange={(e) => updateNodeData('splitB', e.target.value)}
-                            />
-                          </div>
+                {/* Split Test Configuration */}
+                {(selectedNode as any).type === 'split_test' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Split Ratio</label>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <label className="text-xs text-gray-500 mb-1 block">Path A</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            value={selectedNode.data.splitA || '50'}
+                            onChange={(e) => updateNodeData('splitA', e.target.value)}
+                          />
+                        </div>
+                        <span className="text-gray-400 font-bold mt-6">:</span>
+                        <div className="flex-1">
+                          <label className="text-xs text-gray-500 mb-1 block">Path B</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            value={selectedNode.data.splitB || '50'}
+                            onChange={(e) => updateNodeData('splitB', e.target.value)}
+                          />
                         </div>
                       </div>
-                      <div className="bg-cyan-50 border border-cyan-200/50 rounded-xl p-3">
-                        <p className="text-xs text-cyan-700">🔀 Connect two different paths from this node. Traffic will be randomly split.</p>
-                      </div>
-                    </>
-                  )}
+                    </div>
+                    <div className="bg-cyan-50 border border-cyan-200/50 rounded-xl p-3">
+                      <p className="text-xs text-cyan-700">🔀 Connect two different paths from this node. Traffic will be randomly split.</p>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Notification Configuration */}
-                  {selectedNode.type === 'notification' && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Notification Type</label>
-                        <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
-                          value={selectedNode.data.notifyType || 'owner'}
-                          onChange={(e) => updateNodeData('notifyType', e.target.value)}
-                        >
-                          <option value="owner">Notify Me (Owner)</option>
-                          <option value="email">Email Alert</option>
-                          <option value="slack">Slack Message</option>
-                        </select>
+                {/* Notification Configuration */}
+                {(selectedNode as any).type === 'notification' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Notification Type</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.notifyType || 'owner'}
+                        onChange={(e) => updateNodeData('notifyType', e.target.value)}
+                      >
+                        <option value="owner">Notify Me (Owner)</option>
+                        <option value="email">Email Alert</option>
+                        <option value="slack">Slack Message</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        placeholder="New subscriber!"
+                        value={selectedNode.data.notifyTitle || ''}
+                        onChange={(e) => updateNodeData('notifyTitle', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[80px] resize-y"
+                        placeholder="{{email}} subscribed to your newsletter!"
+                        value={selectedNode.data.notifyMessage || ''}
+                        onChange={(e) => updateNodeData('notifyMessage', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Math Configuration */}
+                {(selectedNode as any).type === 'math_operation' && (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { op: '+', label: 'Add' },
+                          { op: '-', label: 'Sub' },
+                          { op: '*', label: 'Mult' },
+                          { op: '/', label: 'Div' }
+                        ].map(({ op, label }) => (
+                          <button
+                            key={op}
+                            onClick={() => updateNodeData('mathOperator', op)}
+                            className={`py-3 rounded-xl border text-sm font-bold transition-all ${selectedNode.data.mathOperator === op
+                              ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200'
+                              : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-200 hover:bg-indigo-50'
+                              }`}
+                          >
+                            {op}
+                          </button>
+                        ))}
                       </div>
+                    </div>
+
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Value 1</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                          placeholder="New subscriber!"
-                          value={selectedNode.data.notifyTitle || ''}
-                          onChange={(e) => updateNodeData('notifyTitle', e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          placeholder="Number or {{Var}}"
+                          value={selectedNode.data.operand1 || ''}
+                          onChange={(e) => updateNodeData('operand1', e.target.value)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
-                        <textarea
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[80px] resize-y"
-                          placeholder="{{email}} subscribed to your newsletter!"
-                          value={selectedNode.data.notifyMessage || ''}
-                          onChange={(e) => updateNodeData('notifyMessage', e.target.value)}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
 
-                {/* Footer */}
-                <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex gap-3">
-                  <button
-                    onClick={() => {
-                      if (selectedNodeId) {
-                        setNodes((nds: any) => nds.filter((n: any) => n.id !== selectedNodeId));
-                        setEdges((eds: any) => eds.filter((edge: any) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
-                        setSelectedNodeId(null);
-                      }
-                    }}
-                    className="px-4 py-3.5 bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-xl font-bold transition-all shadow-sm"
-                    title="Delete Step"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setSelectedNodeId(null)}
-                    className="flex-1 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98]"
-                  >
-                    Apply Changes
-                  </button>
-                </div>
+                      <div className="flex justify-center">
+                        <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-indigo-600 font-bold shadow-sm">
+                          {selectedNode.data.mathOperator || '+'}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Value 2</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          placeholder="Number or {{Var}}"
+                          value={selectedNode.data.operand2 || ''}
+                          onChange={(e) => updateNodeData('operand2', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Save Result As</label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">{"{{"}</div>
+                        <input
+                          type="text"
+                          className="w-full pl-8 pr-8 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          placeholder="result_name"
+                          value={selectedNode.data.resultVarName || ''}
+                          onChange={(e) => updateNodeData('resultVarName', e.target.value)}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">{"}}"}</div>
+                      </div>
+                      <p className="text-[10px] text-gray-500 italic">You can use this name in following steps like {"{{result_name}}"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex gap-3">
+                <button
+                  onClick={() => {
+                    if (selectedNodeId) {
+                      setNodes((nds: any) => nds.filter((n: any) => n.id !== selectedNodeId));
+                      setEdges((eds: any) => eds.filter((edge: any) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
+                      setSelectedNodeId(null);
+                    }
+                  }}
+                  className="px-4 py-3.5 bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-xl font-bold transition-all shadow-sm"
+                  title="Delete Step"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setSelectedNodeId(null)}
+                  className="flex-1 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98]"
+                >
+                  Apply Changes
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </AuthorizationGuard>
+    </AuthorizationGuard >
   );
 }

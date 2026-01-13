@@ -97,10 +97,16 @@ export const createProductLink = async (productId: string, bioId: string) => {
 
     const userPlan = (bioObject.user as UserEntity).plan as PlanType || 'free';
     const feeMetric = PLAN_LIMITS[userPlan].storeFee; // 0.03, 0, etc.
-    const feePercent = feeMetric * 100;
 
-    if (feePercent > 0) {
-        params.application_fee_percent = feePercent;
+    if (feeMetric > 0) {
+        const priceObject = product.default_price as Stripe.Price;
+        
+        if (priceObject.type === 'recurring') {
+             params.application_fee_percent = feeMetric * 100;
+        } else if (priceObject.unit_amount) {
+            // Provide exact amount for one-time payments
+            params.application_fee_amount = Math.round(priceObject.unit_amount * feeMetric);
+        }
     }
 
     const paymentLink = await stripe.paymentLinks.create(params, {

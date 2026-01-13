@@ -2,14 +2,14 @@ import { useContext, useEffect, useMemo, useState, useRef, useCallback } from "r
 import type { MetaFunction } from "react-router";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
-import BlockItem from "~/components/dashboard-editor/block-item";
-import { BlogPostPopup } from "~/components/blog-post-popup";
+import BlockItem from "~/components/dashboard/editor/block-item";
+import { BlogPostPopup } from "~/components/bio/blog-post-popup";
 import { palette } from "~/data/editor-palette";
 import { blocksToHtml } from "~/services/html-generator";
 import { api } from "~/services/api";
 import QRCode from "react-qr-code";
 import { getQrCodes, createQrCode, type QrCode } from "~/services/qrcode.service";
-import BioLayout from "~/components/bio-layout";
+import BioLayout from "~/components/bio/bio-layout";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -36,8 +36,8 @@ import {
   WhatsAppIcon,
   FlagIcon,
   ArrowRightLongIcon
-} from "~/components/icons";
-import { UpgradePrompt } from "~/components/upgrade-prompt";
+} from "~/components/shared/icons";
+import { UpgradePopup } from "~/components/shared/upgrade-popup";
 
 export const meta: MetaFunction = () => {
   return [
@@ -742,7 +742,7 @@ export default function DashboardEditor() {
   const [imageStyle, setImageStyle] = useState("circle");
   const [enableSubscribeButton, setEnableSubscribeButton] = useState(false);
   const [removeBranding, setRemoveBranding] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState<'branding' | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState<string | null>(null);
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -753,6 +753,54 @@ export default function DashboardEditor() {
   const [creatingQrForBlockId, setCreatingQrForBlockId] = useState<string | null>(null);
   const [newQrValue, setNewQrValue] = useState("");
   const [isCreatingQr, setIsCreatingQr] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    setIsUploading(true);
+    try {
+      const res = await api.post('/user/upload-photo', formData);
+      // Append timestamp to prevent caching
+      const newImageUrl = `${res.data.medium}?v=${Date.now()}`;
+
+      if (bio?.id) {
+        // Regenerate HTML to ensure public page updates immediately
+        const tempBio = {
+          ...bio,
+          blocks,
+          bgType,
+          bgColor,
+          bgSecondaryColor,
+          bgImage,
+          bgVideo,
+          cardStyle,
+          cardBackgroundColor,
+          cardOpacity,
+          cardBlur,
+          usernameColor,
+          imageStyle,
+          enableSubscribeButton,
+          profileImage: newImageUrl // Use the new image
+        };
+
+        const newHtml = blocksToHtml(blocks, user, tempBio, window.location.origin);
+
+        await updateBio(bio.id, {
+          profileImage: newImageUrl,
+          html: newHtml
+        });
+      }
+    } catch (error) {
+      console.error("Failed to upload image", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const toggleCategory = useCallback((category: string) => {
     setExpandedCategories((prev) =>
@@ -787,7 +835,50 @@ export default function DashboardEditor() {
 
   useEffect(() => {
     if (bio) {
-      setBlocks((bio.blocks as BioBlock[] | null) ?? defaultBlocks());
+      // Filter out PRO-only blocks if user is not PRO
+      const PRO_BLOCK_TYPES = ['calendar', 'tour'];
+      const originalBlocks = (bio.blocks as BioBlock[] | null) ?? defaultBlocks();
+      let loadedBlocks = originalBlocks;
+      let needsSave = false;
+      const updates: Record<string, any> = {};
+
+      // Check PRO-only blocks
+      if (user?.plan !== 'pro') {
+        loadedBlocks = originalBlocks.filter(block => !PRO_BLOCK_TYPES.includes(block.type));
+
+        if (loadedBlocks.length < originalBlocks.length) {
+          needsSave = true;
+          updates.blocks = loadedBlocks;
+        }
+      }
+
+      // Check Standard/Pro features for Free users
+      if (user?.plan === 'free') {
+        // Remove Email Signup if enabled
+        if (bio.enableSubscribeButton) {
+          needsSave = true;
+          updates.enableSubscribeButton = false;
+        }
+
+        // Remove Branding removal if enabled
+        if (bio.removeBranding) {
+          needsSave = true;
+          updates.removeBranding = false;
+        }
+      }
+
+      // Auto-save if any changes were made
+      if (needsSave) {
+        const finalBlocks = updates.blocks || loadedBlocks;
+        const html = blocksToHtml(finalBlocks, user, {
+          ...bio,
+          enableSubscribeButton: updates.enableSubscribeButton ?? bio.enableSubscribeButton,
+          removeBranding: updates.removeBranding ?? bio.removeBranding
+        }, window.location.origin);
+        updateBio(bio.id, { html, ...updates }).catch(console.error);
+      }
+
+      setBlocks(loadedBlocks);
       setBgType((bio.bgType as any) || "color");
       setBgColor(bio.bgColor || "#f8fafc");
       setBgSecondaryColor(bio.bgSecondaryColor || "#e2e8f0");
@@ -801,14 +892,16 @@ export default function DashboardEditor() {
 
       setUsernameColor(bio.usernameColor || "#111827");
       setImageStyle(bio.imageStyle || "circle");
-      setEnableSubscribeButton(bio.enableSubscribeButton || false);
-      setRemoveBranding(bio.removeBranding || false);
+
+      // For Free users, force these to false
+      setEnableSubscribeButton(user?.plan === 'free' ? false : (bio.enableSubscribeButton || false));
+      setRemoveBranding(user?.plan === 'free' ? false : (bio.removeBranding || false));
 
 
       // Fetch QR Codes
       getQrCodes(bio.id).then(setAvailableQrCodes).catch(console.error);
     }
-  }, [bio?.id]);
+  }, [bio?.id, user?.plan]);
 
   const handleCreateQrCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -842,6 +935,16 @@ export default function DashboardEditor() {
       setIsCreatingQr(false);
     }
   };
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'TRIGGER_IMAGE_UPLOAD') {
+        document.getElementById('avatar-upload')?.click();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   useEffect(() => {
     // Initialize Subscribe Modal logic for Preview
@@ -966,7 +1069,7 @@ export default function DashboardEditor() {
     setIsSaving(true);
     setStatus("idle");
     try {
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding });
+      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding }, window.location.origin);
       await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
@@ -1032,7 +1135,7 @@ export default function DashboardEditor() {
       enableSubscribeButton,
       isPreview: true,
     };
-    const html = blocksToHtml(blocks, user, tempBio);
+    const html = blocksToHtml(blocks, user, tempBio, window.location.origin);
     return {
       ...tempBio,
       html,
@@ -1409,6 +1512,9 @@ export default function DashboardEditor() {
                     </button>
                     {expandedSettings.includes("profile") && (
                       <div className="space-y-4">
+
+
+
                         <div>
                           <label className="text-xs font-medium text-gray-900 mb-2 block">Username Color</label>
                           <div className="h-10 w-full rounded-lg border border-gray-200 flex items-center px-2 relative bg-gray-50">
@@ -1416,20 +1522,7 @@ export default function DashboardEditor() {
                             <input type="text" value={usernameColor} onChange={(e) => setUsernameColor(e.target.value)} className="ml-2 bg-transparent text-xs font-mono text-gray-600 outline-none w-full" />
                           </div>
                         </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">Avatar Shape</label>
-                          <div className="flex gap-2">
-                            {['circle', 'rounded', 'square'].map(s => (
-                              <button
-                                key={s}
-                                onClick={() => setImageStyle(s)}
-                                className={`w-8 h-8 flex items-center justify-center border rounded transition-all ${imageStyle === s ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'}`}
-                              >
-                                <div className={`w-4 h-4 bg-current ${s === 'circle' ? 'rounded-full' : s === 'rounded' ? 'rounded-sm' : 'rounded-none'}`} />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+
                       </div>
                     )}
                   </div>
@@ -1446,12 +1539,19 @@ export default function DashboardEditor() {
                     {expandedSettings.includes("features") && (
                       <div className="space-y-3">
                         <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                          <span className="text-sm font-medium text-gray-700">Email Signup</span>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${enableSubscribeButton ? 'bg-green-500' : 'bg-gray-300'}`}>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">Email Signup</span>
+                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">STANDARD / PRO</span>}
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${enableSubscribeButton ? 'bg-green-500' : 'bg-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={enableSubscribeButton}
                               onChange={(e) => {
+                                if (user?.plan === 'free') {
+                                  setShowUpgrade('email_signup');
+                                  return;
+                                }
                                 const checked = e.target.checked;
                                 setEnableSubscribeButton(checked);
                                 if (bio?.id) updateBio(bio.id, { enableSubscribeButton: checked });
@@ -1465,7 +1565,7 @@ export default function DashboardEditor() {
                         <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
                           <div className="flex flex-col">
                             <span className="text-sm font-medium text-gray-700">Remove Branding</span>
-                            {user?.plan === 'free' && <span className="text-[10px] text-orange-500 font-bold">PRO FEATURE</span>}
+                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">STANDARD / PRO</span>}
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-green-500' : 'bg-gray-300'}`}>
                             <input
@@ -1580,41 +1680,54 @@ export default function DashboardEditor() {
       </div>
 
       {/* Modals & Popups */}
-      {showUpgrade && (
-        <UpgradePrompt
-          onClose={() => setShowUpgrade(null)}
-          feature="Pro Branding"
-        />
-      )}
+      {
+        showUpgrade && (
+          <UpgradePopup
+            isOpen={!!showUpgrade}
+            onClose={() => setShowUpgrade(null)}
+          />
+        )
+      }
 
-      {showCreateQrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Create New QR Code</h3>
-            <form onSubmit={handleCreateQrCode}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Destination URL</label>
-                <input
-                  type="url"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                  placeholder="https://example.com"
-                  value={newQrValue}
-                  onChange={e => setNewQrValue(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-                <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
-                  {isCreatingQr ? 'Creating...' : 'Create QR'}
-                </button>
-              </div>
-            </form>
+      {
+        showCreateQrModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Create New QR Code</h3>
+              <form onSubmit={handleCreateQrCode}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination URL</label>
+                  <input
+                    type="url"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    placeholder="https://example.com"
+                    value={newQrValue}
+                    onChange={e => setNewQrValue(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                  <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
+                    {isCreatingQr ? 'Creating...' : 'Create QR'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-    </div>
+      {/* Hidden Global Inputs */}
+      <input
+        type="file"
+        id="avatar-upload"
+        className="hidden"
+        accept="image/*"
+        onChange={handleImageUpload}
+      />
+
+    </div >
   );
 }
 

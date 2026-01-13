@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: "Merriweather", "Georgia", "Cambria", "Times New Roman", Times, serif;
 
   /* Brand Colors */
   --color-primary: #d2e823;
@@ -268,4 +270,76 @@ body {
 
 .stagger-6 {
   animation-delay: 0.6s;
+}
+
+/* Editorial Content - Markdown Overrides */
+.editorial-content a {
+  @apply text-gray-900 no-underline font-semibold transition-colors;
+  border-bottom: 2px solid rgba(210, 232, 35, 0.5);
+  /* Primary color at 50% opacity */
+}
+
+.editorial-content a:hover {
+  border-bottom-color: var(--color-primary);
+}
+
+.editorial-content h1,
+.editorial-content h2,
+.editorial-content h3,
+.editorial-content h4 {
+  @apply font-bold tracking-tight text-gray-900;
+}
+
+.editorial-content h1 {
+  @apply text-4xl mb-8 leading-tight;
+}
+
+.editorial-content h2 {
+  @apply text-3xl mt-12 mb-6 leading-tight;
+}
+
+.editorial-content h3 {
+  @apply text-2xl mt-8 mb-4 leading-tight;
+}
+
+.editorial-content blockquote {
+  @apply not-italic font-medium text-gray-900 bg-white py-4 px-6 rounded-r-lg shadow-sm border-l-4 border-primary my-8;
+  quotes: none;
+}
+
+.editorial-content ul {
+  @apply list-disc pl-6 my-6 text-gray-800;
+}
+
+.editorial-content ol {
+  @apply list-decimal pl-6 my-6 text-gray-800;
+}
+
+.editorial-content li {
+  @apply mb-2 pl-2;
+}
+
+.editorial-content li::marker {
+  @apply text-primary font-bold;
+}
+
+.editorial-content img {
+  @apply rounded-3xl shadow-md cursor-pointer transition-transform duration-300;
+}
+
+.editorial-content img:hover {
+  @apply scale-[1.01];
+}
+
+.editorial-content code {
+  @apply bg-gray-100 px-1.5 py-0.5 rounded-md text-gray-900 font-mono text-sm;
+}
+
+.editorial-content code::before,
+.editorial-content code::after {
+  content: "" !important;
+}
+
+.editorial-content pre {
+  @apply bg-gray-900 text-gray-100 rounded-2xl p-6 overflow-x-auto my-8;
 }

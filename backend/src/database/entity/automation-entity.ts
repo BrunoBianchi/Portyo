@@ -4,11 +4,11 @@ import { BioEntity } from "./bio-entity";
 
 export interface AutomationNode {
     id: string;
-    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element';
+    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'math_operation' | 'wait' | 'webhook' | 'discord';
     position: { x: number; y: number };
     data: {
         label: string;
-        eventType?: string;
+        eventType?: 'email_signup' | 'form_submit' | 'booking_created' | 'qr_scanned' | 'visit_milestone';
         subject?: string;
         content?: string;
         duration?: string;
@@ -23,6 +23,29 @@ export interface AutomationNode {
         message?: string;
         comment?: string;
         platform?: string;
+        sendToAllLeads?: boolean;
+        leadCount?: number;
+        // Math Operation Fields
+        mathOperator?: '+' | '-' | '*' | '/';
+        operand1?: string;
+        operand2?: string;
+        resultVarName?: string;
+        // Condition Fields
+        conditionKey?: string;
+        conditionOperator?: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+        conditionValue?: string | number;
+        // Wait Fields
+        waitDuration?: number;
+        waitUnit?: 'minutes' | 'hours' | 'days';
+        // Webhook / Discord Fields
+        webhookUrl?: string;
+        webhookMethod?: 'POST' | 'GET';
+        webhookHeaders?: Record<string, string>;
+        webhookBody?: string; // Liquid/Template support
+        discordWebhookUrl?: string;
+        discordMessage?: string;
+        // Milestone Fields
+        milestoneCount?: number;
     };
 }
 
@@ -30,6 +53,7 @@ export interface AutomationEdge {
     id: string;
     source: string;
     target: string;
+    sourceHandle?: string;
 }
 
 @Entity()

@@ -1,9 +1,11 @@
 import type { MetaFunction } from "react-router";
 import { User, Mail, Lock, Bell, Trash2, Save, CreditCard, Shield, Check, Zap, Plus, Receipt, Clock, Download } from "lucide-react";
 import { Link } from "react-router";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import AuthContext from "~/contexts/auth.context";
 import { EmailUsageService, type EmailUsage } from "~/services/email-usage.service";
+import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
+import { UpgradePopup } from "~/components/shared/upgrade-popup";
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,6 +20,115 @@ export default function DashboardSettings() {
   const [activeTab, setActiveTab] = useState<'general' | 'billing'>('general');
   const [billingHistory, setBillingHistory] = useState<any[]>([]);
   const [emailUsage, setEmailUsage] = useState<EmailUsage | null>(null);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
+
+  const resolvedPlan = ((user?.plan as PlanType) || "free") as PlanType;
+  const planLabel = `${resolvedPlan.charAt(0).toUpperCase()}${resolvedPlan.slice(1)}`;
+  const planLimits = PLAN_LIMITS[resolvedPlan] ?? PLAN_LIMITS.free;
+
+  const planFeatureItems = [
+    {
+      key: "bios",
+      label: "Bios",
+      description: `${planLimits.bios} bio${planLimits.bios === 1 ? "" : "s"}`,
+      enabled: planLimits.bios > 0,
+    },
+    {
+      key: "qrcodes",
+      label: "QR codes per bio",
+      description: `${planLimits.qrcodesPerBio} QR codes available per bio`,
+      enabled: planLimits.qrcodesPerBio > 0,
+    },
+    {
+      key: "automations",
+      label: "Automations per bio",
+      description: `${planLimits.automationsPerBio} configurable automations per bio`,
+      enabled: planLimits.automationsPerBio > 0,
+    },
+    {
+      key: "templates",
+      label: "Email templates per bio",
+      description: `${planLimits.emailTemplatesPerBio} email templates per bio`,
+      enabled: planLimits.emailTemplatesPerBio > 0,
+    },
+    {
+      key: "email-collection",
+      label: "Email capture",
+      description: planLimits.emailCollection ? "Contact capture enabled" : "Not available on this plan",
+      enabled: planLimits.emailCollection,
+    },
+    {
+      key: "custom-domain",
+      label: "Custom domain",
+      description: planLimits.customDomain ? "Connect your own domain" : "Upgrade to use custom domains",
+      enabled: planLimits.customDomain,
+    },
+    {
+      key: "remove-branding",
+      label: "Remove branding",
+      description: planLimits.removeBranding ? "Pages without Portyo branding" : "Portyo branding visible",
+      enabled: planLimits.removeBranding,
+    },
+    {
+      key: "seo",
+      label: "SEO settings",
+      description: planLimits.seoSettings ? "Meta tags and indexing controls" : "Feature not available on this plan",
+      enabled: planLimits.seoSettings,
+    },
+    {
+      key: "analytics",
+      label: `${planLimits.analytics === "advanced" ? "Advanced analytics" : "Basic analytics"}`,
+      description: planLimits.analytics === "advanced" ? "Google and Facebook analytics support" : "Core metrics included",
+      enabled: true,
+    },
+    {
+      key: "store-fee",
+      label: "Store fee",
+      description: planLimits.storeFee === 0 ? "0% fee on sales" : `${(planLimits.storeFee * 100).toFixed(1).replace(/\.0$/, "")}% fee on sales`,
+      enabled: planLimits.storeFee === 0,
+    },
+    {
+      key: "integrations",
+      label: "Integrations",
+      description: planLimits.integrations === "full" ? "Full integrations enabled" : "Limited integrations",
+      enabled: planLimits.integrations === "full",
+    },
+  ];
+
+  const featureLimit = 6;
+  const hasHiddenFeatures = planFeatureItems.length > featureLimit;
+  const visibleFeatureItems = showAllFeatures ? planFeatureItems : planFeatureItems.slice(0, featureLimit);
+  const hiddenCount = hasHiddenFeatures ? planFeatureItems.length - featureLimit : 0;
+
+  const planDuration = useMemo(() => {
+    if (!billingHistory.length) return null;
+
+    const sorted = [...billingHistory].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    const current = sorted[0];
+    const start = new Date(current.startDate);
+    const end = current.endDate ? new Date(current.endDate) : null;
+    if (Number.isNaN(start.getTime())) return null;
+
+    const now = new Date();
+    const totalDays = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 86400000));
+    const months = Math.floor(totalDays / 30);
+    const days = totalDays % 30;
+
+    const monthsLabel = months > 0 ? `${months} ${months === 1 ? 'month' : 'months'}` : '';
+    const daysLabel = `${days} ${days === 1 ? 'day' : 'days'}`;
+    const durationText = monthsLabel ? `${monthsLabel} and ${daysLabel}` : daysLabel;
+
+    let remainingDays: number | null = null;
+    if (end && !Number.isNaN(end.getTime())) {
+      remainingDays = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000));
+    }
+
+    const startLabel = start.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    const endLabel = end ? end.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+
+    return { durationText, startLabel, endLabel, remainingDays };
+  }, [billingHistory]);
 
   useEffect(() => {
     if (activeTab === 'billing') {
@@ -81,16 +192,15 @@ export default function DashboardSettings() {
       </div>
 
       {activeTab === 'general' ? (
-        <div className="space-y-6">
-          {/* Profile Section */}
+        <div className="space-y-8">
           <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
                 <User className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
-                <p className="text-sm text-gray-500">Update your personal details.</p>
+                <h2 className="text-lg font-bold text-gray-900">Profile</h2>
+                <p className="text-sm text-gray-500">Update your basic account information.</p>
               </div>
             </div>
 
@@ -98,11 +208,14 @@ export default function DashboardSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    defaultValue={user?.fullname || ""}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
-                  />
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      defaultValue={user?.fullname || ""}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
@@ -228,208 +341,206 @@ export default function DashboardSettings() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Current Plan */}
             <div className="lg:col-span-2 space-y-8">
-              <section className="card p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <Shield className="w-48 h-48" />
+              <section className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                  <Shield className="w-64 h-64 rotate-12" />
                 </div>
 
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-8">
                     <div>
-                      <h2 className="text-2xl font-bold text-text-main mb-2">Current Plan</h2>
-                      <p className="text-text-muted">You are currently on the <span className="font-bold text-text-main capitalize">{user?.plan || 'Free'} Plan</span></p>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">Current Plan</h2>
+                      <p className="text-gray-500">You are currently on the <span className="font-bold text-gray-900 capitalize">{planLabel} Plan</span></p>
                     </div>
-                    <span className="px-4 py-1.5 rounded-full bg-surface-muted text-text-main text-xs font-bold uppercase tracking-wider border border-border">
-                      {user?.plan || 'Free'} Tier
+                    <span className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-900 text-xs font-bold uppercase tracking-wider border border-gray-200">
+                      {planLabel} Tier
                     </span>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6 mb-8">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-sm font-medium text-text-muted">
-                        <div className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Unlimited links</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm font-medium text-text-muted">
-                        <div className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Basic analytics</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm font-medium text-text-muted">
-                        <div className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Standard themes</span>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-sm font-medium text-text-muted opacity-50">
-                        <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Custom domains</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm font-medium text-text-muted opacity-50">
-                        <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span>Remove branding</span>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  <div className="bg-surface-alt rounded-xl p-6 border border-border mb-8">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="p-3 bg-primary/20 text-primary-foreground rounded-xl">
-                        <Zap className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-text-main">Upgrade to Pro</h3>
-                        <p className="text-sm text-text-muted">Unlock all features for just $9/month</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-text-muted">
-                        <span>Usage</span>
-                        <span>75%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div className="bg-primary h-full rounded-full w-[75%] shadow-sm"></div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-xs text-text-muted">750 / 1000 visits used</p>
-                      </div>
-                    </div>
-                  </div>
-
-                {/* Email Usage Card */}
-                {emailUsage && (
-                  <div className="bg-surface-alt rounded-xl p-6 border border-border">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                        <Mail className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-text-main">Email Usage</h3>
-                        <p className="text-sm text-text-muted">Monthly email limit for automations</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-text-muted">
-                        <span>Usage</span>
-                        <span>{emailUsage.limit > 0 ? Math.round((emailUsage.sent / emailUsage.limit) * 100) : 0}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 mb-8">
+                    {visibleFeatureItems.map((item) => (
+                      <div
+                        key={item.key}
+                        className={`flex items-start gap-3 text-sm font-medium ${item.enabled ? 'text-gray-900' : 'text-gray-400 opacity-70'}`}
+                      >
                         <div
-                          className={`h-full rounded-full shadow-sm transition-all duration-500 ${emailUsage.limit === 0
-                              ? 'bg-gray-400'
-                              : emailUsage.sent / emailUsage.limit >= 0.9
-                                ? 'bg-red-500'
-                                : emailUsage.sent / emailUsage.limit >= 0.7
-                                  ? 'bg-yellow-500'
-                                  : 'bg-primary'
+                          className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${item.enabled
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-gray-100 text-gray-400'
                             }`}
-                          style={{ width: `${emailUsage.limit > 0 ? Math.min((emailUsage.sent / emailUsage.limit) * 100, 100) : 0}%` }}
-                        />
+                        >
+                          {item.enabled ? <Check className="w-3 h-3" /> : <div className="w-2 h-0.5 bg-current rounded-full" />}
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="leading-tight block">{item.label}</span>
+                          <p className="text-xs font-normal text-gray-500">{item.description}</p>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-xs text-text-muted">
-                          {emailUsage.sent} / {emailUsage.limit} emails sent
-                        </p>
-                        <span className="text-xs font-semibold text-text-muted uppercase">
-                          {emailUsage.plan} plan
-                        </span>
+                    ))}
+                  </div>
+
+                  {hasHiddenFeatures && (
+                    <div className="mt-4 mb-6">
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                        onClick={() => setShowAllFeatures((prev) => !prev)}
+                      >
+                        {showAllFeatures ? "Show fewer features" : `Show all features (+${hiddenCount})`}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Usage Stats Grid - simplified */}
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 space-y-4">
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Resource Usage</h3>
+
+                    {emailUsage && (
+                      <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+                            <Mail className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="text-sm">
+                            <p className="font-bold text-gray-900">Email usage</p>
+                            <p className="text-xs text-gray-500">Monthly automation emails</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">{emailUsage.sent} / {emailUsage.limit}</span>
                       </div>
+                    )}
+
+                    <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-purple-50 text-purple-600 rounded-md">
+                          <User className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="text-sm">
+                          <p className="font-bold text-gray-900">Bio pages</p>
+                          <p className="text-xs text-gray-500">Active bios online</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">{user?.usage?.bios || 0} / {planLimits.bios}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-orange-50 text-orange-600 rounded-md">
+                          <Zap className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="text-sm">
+                          <p className="font-bold text-gray-900">Automations</p>
+                          <p className="text-xs text-gray-500">Total active automations</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">{user?.usage?.automations || 0}</span>
                     </div>
                   </div>
-                )}
 
-                <Link to="/pricing" className="btn btn-primary w-full md:w-auto inline-block text-center">
-                  Upgrade Plan
-                </Link>
-              </div>
-            </section>
+                  <div className="mt-8">
+                    <button
+                      onClick={() => {
+                        if (resolvedPlan === 'free') {
+                          // Navigate to pricing or open popup? 
+                          // Existing behavior was Link to /pricing. Let's keep it consistent or use popup.
+                          // If I use button for both, I can redirect for free.
+                          window.location.href = "/pricing";
+                        } else {
+                          setIsUpgradePopupOpen(true);
+                        }
+                      }}
+                      className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-black bg-yellow-400 hover:bg-yellow-500 transition-colors w-full md:w-auto"
+                    >
+                      {resolvedPlan === 'free' ? 'Upgrade to Pro' : 'Manage Subscription'}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
 
-            <section className="card p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-text-main">Payment Methods</h2>
-                <button className="btn btn-secondary btn-sm">
-                  <Plus className="w-4 h-4" /> Add Method
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-border rounded-xl hover:border-primary/50 hover:bg-surface-alt/30 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-10 bg-white rounded border border-border flex items-center justify-center shadow-sm">
-                      <CreditCard className="w-6 h-6 text-text-muted" />
+            {/* Billing History */}
+            <div className="lg:col-span-1">
+              <div className="space-y-4 self-start">
+                <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                      <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-bold text-text-main">•••• •••• •••• 4242</p>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-muted text-text-muted uppercase tracking-wider border border-border">Default</span>
-                      </div>
-                      <p className="text-xs text-text-muted mt-0.5">Expires 12/25</p>
+                      <h2 className="text-lg font-bold text-gray-900">Plan duration</h2>
+                      <p className="text-sm text-gray-500">Current plan: {planLabel}</p>
                     </div>
                   </div>
-                  <button className="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
-                </div>
-              </div>
-            </section>
-          </div>
 
-          {/* Billing History */}
-          <div className="lg:col-span-1">
-            <section className="card p-6 h-full flex flex-col">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-surface-alt rounded-lg text-text-muted">
-                  <Receipt className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-bold text-text-main">Billing History</h2>
-              </div>
+                  {planDuration ? (
+                    <>
+                      <p className="text-2xl font-bold text-gray-900">{planDuration.durationText}</p>
+                      <p className="text-sm text-gray-500 mt-1">Started on {planDuration.startLabel}</p>
+                      {planDuration.endLabel && (
+                        <p className="text-sm text-gray-500">Ends in {planDuration.remainingDays ?? 0} days (until {planDuration.endLabel})</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">No history available to calculate plan duration.</p>
+                  )}
+                </section>
 
-              <div className="space-y-1 flex-1 overflow-y-auto max-h-[400px] custom-scrollbar">
-                {billingHistory.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 text-sm">No billing history found.</div>
-                ) : (
-                  billingHistory.map((bill) => (
-                    <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-alt transition-colors group cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center text-text-muted group-hover:bg-white group-hover:shadow-sm transition-all">
-                          <Clock className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-text-main">
-                            {new Date(bill.startDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
-                          </p>
-                          <p className="text-xs text-text-muted capitalize">{bill.plan} Plan</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-text-main">${bill.price.toFixed(2)}</p>
-                        <button className="text-[10px] font-bold text-primary uppercase tracking-wider hover:underline flex items-center gap-1 justify-end mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          PDF <Download className="w-3 h-3" />
-                        </button>
-                      </div>
+                <section className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-gray-100 rounded-lg text-gray-600">
+                      <Receipt className="w-5 h-5" />
                     </div>
-                  ))
-                )}
-              </div>
+                    <h2 className="text-xl font-bold text-gray-900">Billing History</h2>
+                  </div>
 
-              <button className="w-full mt-6 btn btn-secondary btn-sm">
-                View All Invoices
-              </button>
-            </section>
+                  <div className="space-y-1 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+                    {billingHistory.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-3">
+                          <Receipt className="w-6 h-6" />
+                        </div>
+                        <p className="text-gray-500 text-sm">No billing history available.</p>
+                      </div>
+                    ) : (
+                      billingHistory.map((bill) => (
+                        <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer border border-transparent hover:border-gray-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 border border-green-100">
+                              <Check className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">
+                                {new Date(bill.startDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </p>
+                              <p className="text-xs text-gray-500 capitalize">{bill.plan} Plan</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-gray-900">${bill.price.toFixed(2)}</p>
+                            <button className="text-[10px] font-bold text-blue-600 uppercase tracking-wider hover:underline flex items-center gap-1 justify-end mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <button className="w-full mt-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                    View All Invoices
+                  </button>
+                </section>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    )}
-  </div>
+      )}
+
+
+      <UpgradePopup
+        isOpen={isUpgradePopupOpen}
+        onClose={() => setIsUpgradePopupOpen(false)}
+      />
+    </div>
   );
 }

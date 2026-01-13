@@ -1,14 +1,14 @@
 import { Router, Request, Response } from "express";
 import { getBookingSettings, updateBookingSettings, getBookings } from "../../../shared/services/booking.service";
 import { authMiddleware } from "../../../middlewares/auth.middleware";
-import { requirePaidPlan } from "../../../middlewares/user-pro.middleware";
+import { isUserPro } from "../../../middlewares/user-pro.middleware";
 import { requireBioOwner } from "../../../middlewares/resource-owner.middleware";
 import z from "zod";
 
 const router = Router();
 
-// Get Settings - Requires Paid Plan (Standard/Pro) + Bio ownership
-router.get("/settings/:bioId", authMiddleware, requirePaidPlan, async (req: Request, res: Response) => {
+// Get Settings - Requires PRO Plan + Bio ownership
+router.get("/settings/:bioId", authMiddleware, isUserPro, async (req: Request, res: Response) => {
     try {
         const { bioId } = z.object({ bioId: z.string() }).parse(req.params);
         const settings = await getBookingSettings(bioId);
@@ -18,8 +18,8 @@ router.get("/settings/:bioId", authMiddleware, requirePaidPlan, async (req: Requ
     }
 });
 
-// Update Settings - Requires Paid Plan (Standard/Pro) + Bio ownership  
-router.put("/settings/:bioId", authMiddleware, requirePaidPlan, async (req: Request, res: Response) => {
+// Update Settings - Requires PRO Plan + Bio ownership  
+router.put("/settings/:bioId", authMiddleware, isUserPro, async (req: Request, res: Response) => {
     try {
         const { bioId } = z.object({ bioId: z.string() }).parse(req.params);
         const updates = req.body; // Validation could be stricter here with Zod
@@ -30,8 +30,8 @@ router.put("/settings/:bioId", authMiddleware, requirePaidPlan, async (req: Requ
     }
 });
 
-// Get Bookings List - Requires Paid Plan (Standard/Pro) + Bio ownership
-router.get("/:bioId", authMiddleware, requirePaidPlan, async (req: Request, res: Response) => {
+// Get Bookings List - Requires PRO Plan + Bio ownership
+router.get("/:bioId", authMiddleware, isUserPro, async (req: Request, res: Response) => {
     try {
         const { bioId } = z.object({ bioId: z.string() }).parse(req.params);
         const page = parseInt(req.query.page as string) || 1;
@@ -47,3 +47,4 @@ router.get("/:bioId", authMiddleware, requirePaidPlan, async (req: Request, res:
 });
 
 export default router;
+

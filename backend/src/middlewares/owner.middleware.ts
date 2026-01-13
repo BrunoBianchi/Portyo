@@ -8,6 +8,9 @@ export const ownerMiddleware = async(req:Request,res:Response,next:NextFunction)
     const bio = await findBioById(id) as BioEntity | null;
 
     if (!bio) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
-    if(bio.userId != req.session.user!.id) throw new ApiError(APIErrors.authorizationError,"User not authorized",403)
+    
+    if (!req.user?.id) throw new ApiError(APIErrors.unauthorizedError, "Not Authenticated", 401);
+    
+    if(bio.userId != req.user.id) throw new ApiError(APIErrors.authorizationError,"User not authorized",403)
     next()
 }

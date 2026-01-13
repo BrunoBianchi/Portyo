@@ -30,7 +30,7 @@ export class BillingService {
         return activeBilling.plan;
     }
 
-    static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number) {
+    static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number, stripeCustomerId?: string) {
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + days);
@@ -40,7 +40,8 @@ export class BillingService {
             plan,
             price,
             startDate,
-            endDate
+            endDate,
+            stripeCustomerId
         });
 
         return await this.repository.save(billing);

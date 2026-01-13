@@ -16,7 +16,7 @@ import {
   TikTokIcon,
   SpotifyIcon,
   ProductHuntIcon
-} from "~/components/icons";
+} from "~/components/shared/icons";
 import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
 
 export const meta: MetaFunction = () => {

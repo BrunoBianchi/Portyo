@@ -108,7 +108,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
-        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true },
+        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
         { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
@@ -325,7 +325,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     onClick={(e) => {
                                         if (isLocked) {
                                             e.preventDefault();
-                                            if (item.isProOnly && userPlan === 'standard') {
+                                            if (item.isProOnly) {
                                                 setForcedPlan('pro');
                                             } else {
                                                 setForcedPlan(undefined);
@@ -341,7 +341,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
                                     <span className="flex-1 text-sm">{item.name}</span>
                                     {isLocked && (
-                                        <span className={`px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
+                                        <span
+                                            className="px-1 py-0.5 text-[8px] md:text-[8px] font-black rounded-full uppercase tracking-[0.08em] bg-gradient-to-r from-emerald-400 via-emerald-600 to-black text-white shadow-sm shadow-emerald-500/40 border border-emerald-900/60"
+                                        >
                                             {badgeText}
                                         </span>
                                     )}

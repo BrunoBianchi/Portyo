@@ -10,6 +10,16 @@ export const createQrCode = async(bioId:string,value:string) =>{
     return newqr;
 }
 
+export const countQrCodes = async(bioId:string) => {
+    return await repository.count({
+        where:{
+            bio:{
+                id:bioId
+            }
+        }
+    })
+}
+
 export const getQrCodeById = async(id:string) => {
     return await repository.findOneBy({id})
 }
@@ -40,7 +50,16 @@ export const trackQrCodeView = async(id: string, country?: string, device?: stri
 export const getQrCodeByIdPublic = async(id: string) => {
     return await repository.findOne({
         where: { id },
-        select: ['id', 'value', 'views', 'clicks']
+        relations: ['bio'],
+        select: {
+            id: true,
+            value: true,
+            views: true,
+            clicks: true,
+            bio: {
+                id: true
+            }
+        }
     });
 }
 

@@ -9,6 +9,41 @@ const escapeHtml = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
+const joinBaseUrl = (baseUrl: string, path: string) => {
+  if (!path) return path;
+  if (isValidUrl(path)) return path;
+  if (!baseUrl) return path;
+  if (path.startsWith('/')) return `${baseUrl}${path}`;
+  return `${baseUrl}/${path}`;
+};
+
+const normalizeProfileImageSrc = (input: string | null | undefined, userId: string | null | undefined, baseUrl: string) => {
+  const trimmed = (input || '').trim();
+
+  // Legacy/static fallback format: /users-photos/<something> -> /api/images/<userId>/medium.png
+  // NOTE: the /api/images route uses Redis keys based on userId, not the legacy filename.
+  if (trimmed.startsWith('/users-photos/') && userId) {
+    return joinBaseUrl(baseUrl, `/api/images/${userId}/medium.png?v=${Date.now()}`);
+  }
+
+  if (trimmed) {
+    return joinBaseUrl(baseUrl, trimmed);
+  }
+
+  if (userId) {
+    return joinBaseUrl(baseUrl, `/api/images/${userId}/medium.png?v=${Date.now()}`);
+  }
+
+  return joinBaseUrl(baseUrl, '/users-photos/julia-soares.jpeg');
+};
+
+const normalizeBackgroundImageSrc = (input: string | null | undefined, userId: string | null | undefined, baseUrl: string) => {
+  const trimmed = (input || '').trim();
+  if (trimmed) return joinBaseUrl(baseUrl, trimmed);
+  if (userId) return joinBaseUrl(baseUrl, `/api/images/${userId}/original.png?v=${Date.now()}`);
+  return '';
+};
+
 export const blockToHtml = (block: BioBlock, bio: any): string => {
   const align = block.align || "left";
   
@@ -234,6 +269,21 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
   if (block.type === "product") {
     return "";
+  }
+
+  if (block.type === "form") {
+    const formId = block.formId;
+    if (!formId) return "";
+    
+    // We render a placeholder that React will hydrate
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div class="custom-form-block" data-form-id="${escapeHtml(formId)}" data-bg-color="${escapeHtml(block.formBackgroundColor || "#ffffff")}" data-text-color="${escapeHtml(block.formTextColor || "#1f2937")}">
+         <!-- Loading State for SSR/No-JS -->
+         <div style="padding:24px; text-align:center; background:${escapeHtml(block.formBackgroundColor || "#ffffff")}; border-radius:24px; color:${escapeHtml(block.formTextColor || "#1f2937")}; border:1px solid rgba(0,0,0,0.1);">
+           Loading form...
+         </div>
+      </div>
+    </section>`;
   }
 
   if (block.type === "calendar") {
@@ -645,7 +695,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   return "\n<hr style=\"border:none; border-top:1px solid #E5E7EB; margin:18px 0;\" />";
 };
 
-export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
+export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: string = "") => {
   const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://${bio.sufix}.portyo.me`;
   const encodedShareUrl = encodeURIComponent(shareUrl);
 
@@ -761,18 +811,26 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     }
   }
 
+  const profileImageSrc = normalizeProfileImageSrc(bio.profileImage, user?.id, baseUrl);
+
   const headerHtml = `
     <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; align-items:center; position:relative; z-index:10; padding-top: 40px;">
         
         ${bio.enableSubscribeButton ? `
-        <button onclick="window.openSubscribe()" aria-label="Subscribe" style="position:absolute; top:10px; right:10px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.1); color:#111827; transition:all 0.2s ease; z-index:20;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+        <button type="button" data-open-subscribe onclick="window.openSubscribe()" aria-label="Subscribe" style="position:absolute; top:10px; right:10px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.1); color:#111827; transition:all 0.2s ease; z-index:20;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         </button>
         ` : ''}
 
         <!-- Profile Image -->
-        <div style="width:120px; height:120px; border-radius:50%; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6;">
-             ${displayProfileImage ? `<img fetchpriority="high" src="/users-photos/${user?.id}.png" onerror="this.src='/users-photos/julia-soares.jpeg'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
+        <div style="width:120px; height:120px; border-radius:50%; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
+               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/users-photos/julia-soares.jpeg')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
+               
+               ${bio.isPreview ? `
+               <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+               </div>
+               ` : ''}
         </div>
 
         <!-- Name & Handle -->
@@ -824,7 +882,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     bgStyle = `background-color: ${bgColor}; background-image: linear-gradient(30deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(150deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(30deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(150deg, ${bgSecondary} 12%, transparent 12.5%, transparent 87%, ${bgSecondary} 87.5%, ${bgSecondary}), linear-gradient(60deg, ${bgSecondary}77 25%, transparent 25.5%, transparent 75%, ${bgSecondary}77 75%, ${bgSecondary}77), linear-gradient(60deg, ${bgSecondary}77 25%, transparent 25.5%, transparent 75%, ${bgSecondary}77 75%, ${bgSecondary}77); background-size: 20px 35px; background-position: 0 0, 0 0, 10px 18px, 10px 18px, 0 0, 10px 18px;`;
   } else if (bio.bgType === 'dynamic-blur') {
     // Use bgImage if available, otherwise fallback to user profile picture
-    const bgImg = bio.bgImage || `/users-photos/${user?.id}.png`;
+    const bgImg = normalizeBackgroundImageSrc(bio.bgImage, user?.id, baseUrl);
     bgStyle = `background: #000;`; // Fallback color
     // We add a pseudo-element or a fixed div for the blur effect in the HTML structure below
   } else if (bio.bgType === 'palm-leaves') {
@@ -1045,7 +1103,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     </video>
     <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:-1;"></div>
   ` : (bio.bgType === 'dynamic-blur') ? `
-    <div style="position:fixed; inset:-20px; z-index:-1; background:url('${bio.bgImage || `/users-photos/${user?.id}.png`}') no-repeat center center; background-size:cover; filter:blur(40px) brightness(0.6); transform:scale(1.1);"></div>
+    <div style="position:fixed; inset:-20px; z-index:-1; background:url('${normalizeBackgroundImageSrc(bio.bgImage, user?.id, baseUrl)}') no-repeat center center; background-size:cover; filter:blur(40px) brightness(0.6); transform:scale(1.1);"></div>
     <div style="position:fixed; inset:0; z-index:-1; background:rgba(0,0,0,0.2);"></div>
   ` : '';
 
@@ -1246,7 +1304,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
     </div>
 
     <div id="subscribe-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
-      <div style="background:white; border-radius:24px; padding:36px; width:100%; max-width:420px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); position:relative; animation:zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div style="background:white; border-radius:24px; padding:24px; width:100%; max-width:400px; margin:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); position:relative; animation:zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
         <button onclick="window.closeSubscribe()" aria-label="Close subscribe modal" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.05); border:none; cursor:pointer; color:#6b7280; padding:8px; border-radius:9999px; display:flex; transition:all 200ms ease;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -1254,11 +1312,13 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         <h3 style="font-size:22px; font-weight:900; color:#111827; margin:0 0 8px 0; letter-spacing:-0.5px;">Join the list</h3>
         <p style="font-size:14px; color:#6b7280; margin:0 0 24px 0; font-weight:500;">Get the latest updates delivered to your inbox.</p>
         
-        <form onsubmit="window.submitSubscribe(event)" style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:12px;">
-          <input type="email" placeholder="your@email.com" required style="flex:1; min-width:0; padding:14px 16px; border-radius:12px; border:1.5px solid #e5e7eb; font-size:16px; outline:none; background:#f9fafb; font-weight:500; transition:all 200ms ease;" onfocus="this.style.borderColor='#111827'; this.style.background='#ffffff'" onblur="this.style.borderColor='#e5e7eb'; this.style.background='#f9fafb'" />
-          <button type="submit" aria-label="Subscribe" style="width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg, #111827, #1f2937); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0; transition:all 200ms ease; box-shadow:0 4px 12px -2px rgba(17, 24, 39, 0.2);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 20px -2px rgba(17, 24, 39, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px -2px rgba(17, 24, 39, 0.2)'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
+        <form id="subscribe-form" onsubmit="window.submitSubscribe(event)" style="width:100%; display:flex; align-items:stretch; gap:0;">
+          <div style="display:flex; align-items:center; gap:8px; padding:6px; width:100%; background:#f9fafb; border:1.5px solid #e5e7eb; border-radius:16px; box-shadow:0 15px 35px -16px rgba(0,0,0,0.15);">
+            <input type="email" placeholder="your@email.com" required style="flex:1; min-width:0; padding:14px 14px; border:none; background:transparent; font-size:16px; outline:none; font-weight:600; color:#111827;" />
+            <button type="submit" aria-label="Subscribe" style="width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg, #111827, #1f2937); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0; transition:all 200ms ease; box-shadow:0 4px 12px -2px rgba(17, 24, 39, 0.2);" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 20px -2px rgba(17, 24, 39, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px -2px rgba(17, 24, 39, 0.2)'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
         </form>
         <p style="margin:16px 0 0 0; font-size:13px; color:#6b7280; text-align:center; display:none;" id="subscribe-success">✓ Thanks for subscribing!</p>
       </div>
@@ -1299,8 +1359,15 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
         const email = emailInput ? emailInput.value : '';
         const submitBtn = e.target.querySelector('button[type="submit"]');
         
-        // API Base URL - Change this for production
-        const API_BASE_URL = 'http://localhost:3000/api';
+        // API Base URL - resolves to backend even when preview is on :5173
+        const API_BASE_URL = (function() {
+          const forced = window.API_BASE_URL;
+          if (forced) return forced;
+          const origin = window.location.origin || '';
+          if (origin.includes('localhost:5173')) return 'http://localhost:3000/api';
+          if (origin.includes('127.0.0.1:5173')) return 'http://127.0.0.1:3000/api';
+          return origin ? (origin + '/api') : 'http://localhost:3000/api';
+        })();
 
         if (email) {
             if(submitBtn) {
@@ -1368,6 +1435,13 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
             }
         }
       };
+
+      // Safety: wire handler in case onsubmit is stripped by sanitization
+      const subscribeForm = document.getElementById('subscribe-form');
+      if (subscribeForm && !subscribeForm.getAttribute('data-wired')) {
+        subscribeForm.setAttribute('data-wired', 'true');
+        subscribeForm.addEventListener('submit', window.submitSubscribe);
+      }
 
       // Blog & Tabs Logic
       window.blogLoaded = false;
@@ -1642,12 +1716,90 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any) => {
 
       // History handling removed for iframe compatibility
 
+      // Form Loader
+      window.loadForms = async function() {
+        const containers = document.querySelectorAll('.custom-form-block');
+        if (containers.length === 0) return;
+
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        const escapeHtml = (unsafe) => {
+            return (unsafe || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        containers.forEach(async (container) => {
+            const formId = container.getAttribute('data-form-id');
+            const bgColor = container.getAttribute('data-bg-color') || '#ffffff';
+            const textColor = container.getAttribute('data-text-color') || '#1f2937';
+
+            if (!formId) return;
+
+            try {
+                const response = await fetch(\`\${API_BASE_URL}/public/forms/\${formId}\`);
+                if (!response.ok) throw new Error('Failed to fetch form');
+                const form = await response.json();
+
+                // Build HTML
+                let fieldsHtml = '';
+                if (form.fields) {
+                    fieldsHtml = form.fields.map(field => {
+                        let inputHtml = '';
+                        const commonClass = "w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none bg-white/50 text-gray-900";
+                        const labelHtml = \`<label style="display:block; font-size:14px; font-weight:600; opacity:0.9; margin-bottom:6px;">\${escapeHtml(field.label)} \${field.required ? '<span style="color:#ef4444">*</span>' : ''}</label>\`;
+                        
+                        if (field.type === 'textarea') {
+                            inputHtml = \`<textarea placeholder="\${escapeHtml(field.placeholder)}" rows="3" class="\${commonClass}" style="width:100%; box-sizing:border-box; display:block; resize:vertical; padding:10px 16px; border-radius:12px; border:1px solid #e5e7eb; background:rgba(255,255,255,0.5);"></textarea>\`;
+                        } else if (field.type === 'select') {
+                            const options = (field.options || []).map(opt => \`<option>\${escapeHtml(typeof opt === 'string' ? opt : opt.label)}</option>\`).join('');
+                            inputHtml = \`<select class="\${commonClass}" style="width:100%; box-sizing:border-box; display:block; padding:10px 16px; border-radius:12px; border:1px solid #e5e7eb; background:rgba(255,255,255,0.5); appearance:auto;">
+                                <option disabled selected>Select an option</option>
+                                \${options}
+                            </select>\`;
+                        } else {
+                            inputHtml = \`<input type="\${field.type}" placeholder="\${escapeHtml(field.placeholder)}" class="\${commonClass}" style="width:100%; box-sizing:border-box; display:block; padding:10px 16px; border-radius:12px; border:1px solid #e5e7eb; background:rgba(255,255,255,0.5);" />\`;
+                        }
+
+                        return \`<div style="margin-bottom:16px;">\${labelHtml}\${inputHtml}</div>\`;
+                    }).join('');
+                }
+
+                const btnBg = textColor === '#ffffff' ? '#ffffff' : '#111827';
+                const btnColor = textColor === '#ffffff' ? '#111827' : '#ffffff';
+
+                container.innerHTML = \`
+                    <div style="padding:24px; border-radius:16px; border:1px solid rgba(0,0,0,0.05); background:\${bgColor}; color:\${textColor}; text-align:left;">
+                        <h3 style="font-size:20px; font-weight:700; margin:0 0 8px 0;">\${escapeHtml(form.title)}</h3>
+                        \${form.description ? \`<p style="font-size:14px; opacity:0.8; margin:0 0 24px 0; white-space:pre-wrap;">\${escapeHtml(form.description)}</p>\` : ''}
+                        <form onsubmit="event.preventDefault(); alert('This is a preview. Forms work on the live page.');">
+                            \${fieldsHtml}
+                            <button type="submit" style="width:100%; padding:12px 24px; border-radius:12px; font-weight:700; background:\${btnBg}; color:\${btnColor}; border:none; cursor:pointer; margin-top:8px;">
+                                \${escapeHtml(form.submitButtonText || "Submit")}
+                            </button>
+                        </form>
+                    </div>
+                \`;
+
+            } catch (err) {
+                console.error("Form load error", err);
+                container.innerHTML = \`<div style="padding:24px; text-align:center; color:#ef4444;">Failed to load form definitions.</div>\`;
+            }
+        });
+      };
+
       // Initial Load
       if (window.location.pathname === '/blog') {
         window.switchTab('blog');
       } else if (window.location.pathname === '/shop') {
         window.switchTab('shop');
       }
+
+      // Load Forms
+      if (window.loadForms) window.loadForms();
 
     </script>
 

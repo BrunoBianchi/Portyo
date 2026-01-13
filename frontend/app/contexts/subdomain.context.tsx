@@ -357,6 +357,8 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const isOnRenderDomain = host.endsWith('.onrender.com');
         const isPortyoDomain = host.endsWith('portyo.me');
 
+
+
         if (isLocalhost) {
             // username.localhost (or username.localhost:5173)
             if (parts.length > 1) currentSubdomain = parts[0];
@@ -371,16 +373,21 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             // Custom domain logic
             // If it's not localhost, not render, and not portyo.me, it's likely a custom domain
             // We need to fetch the bio by custom domain
+
             fetchBioByCustomDomain(host);
             return;
         }
 
         if (currentSubdomain === "www") currentSubdomain = "";
+
+
         setSubDomain(currentSubdomain);
 
         if (currentSubdomain) {
+
             fetchBio(currentSubdomain);
         } else {
+
             setIsLoading(false);
         }
     }, []);
@@ -396,6 +403,23 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             const response = await api.get(`/public/bio/domain/${domain}`);
             setBio(response.data);
             setSubDomain(response.data.sufix); // Set the sufix for context consistency
+
+            // Track page view for analytics (Only for Pro users)
+            if (response.data.user?.plan === 'pro') {
+                try {
+                    const sessionId = sessionStorage.getItem('portyo_session') ||
+                        Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    sessionStorage.setItem('portyo_session', sessionId);
+
+                    await api.post('/public/track', {
+                        bioId: response.data.id,
+                        referrer: document.referrer || undefined,
+                        sessionId
+                    });
+                } catch (trackError) {
+                    // Silently fail tracking
+                }
+            }
         } catch (error) {
             console.error("Error fetching bio by domain", error);
             setIsNotFound(true);
@@ -408,6 +432,23 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
             const response = await api.get(`/public/bio/${sufix}`);
             setBio(response.data);
+
+            // Track page view for analytics (Only for Pro users)
+            if (response.data.user?.plan === 'pro') {
+                try {
+                    const sessionId = sessionStorage.getItem('portyo_session') ||
+                        Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    sessionStorage.setItem('portyo_session', sessionId);
+
+                    await api.post('/public/track', {
+                        bioId: response.data.id,
+                        referrer: document.referrer || undefined,
+                        sessionId
+                    });
+                } catch (trackError) {
+                    // Silently fail tracking
+                }
+            }
         } catch (error) {
             console.error("Error fetching bio", error);
             setIsNotFound(true);

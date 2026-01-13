@@ -2,6 +2,8 @@ import { UserType } from "../types/user.type";
 import { AppDataSource } from "../../database/datasource";
 import { UserEntity } from "../../database/entity/user-entity";
 import { generateToken, generateRefreshToken } from "./jwt.service";
+import { VerificationTokenEntity } from "../../database/entity/verification-token-entity";
+import { MailService } from "./mail.service";
 import bcrypt from "bcrypt"
 import { ApiError, APIErrors } from "../errors/api-error";
 import { BillingService } from "../../services/billing.service";
@@ -39,6 +41,25 @@ export const createUser = async (user: Partial<UserType>): Promise<UserType> => 
 
 export const createNewUser = async (user: Partial<UserType>): Promise<Object | Error> => {
     const savedUser = await createUser(user);
+
+    // If password provider, generate verification token
+    if (savedUser.provider === "password" && !savedUser.verified) {
+        const tokenRepository = AppDataSource.getRepository(VerificationTokenEntity);
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        const token = new VerificationTokenEntity();
+        token.userId = savedUser.id;
+        token.token = code;
+        token.expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        await tokenRepository.save(token);
+
+        try {
+            await MailService.sendVerificationEmail(savedUser.email, code, savedUser.fullName);
+        } catch (error) {
+            console.error("Failed to send verification email", error);
+        }
+    }
     
     // Add 7-day Standard Trial
     await BillingService.createBilling(savedUser.id, 'standard', 7, 0);

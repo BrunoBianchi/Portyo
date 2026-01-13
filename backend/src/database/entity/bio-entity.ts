@@ -8,6 +8,7 @@ import { IntegrationEntity } from "./integration-entity";
 import { EmailTemplateEntity } from "./email-template-entity";
 import { BookingSettingsEntity } from "./booking-settings-entity";
 import { BookingEntity } from "./booking-entity";
+import { FormEntity } from "./form-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -50,6 +51,9 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "boolean", default: true })
     displayProfileImage: boolean = true;
+
+    @Column({ type: "varchar", nullable: true })
+    profileImage: string | null = null;
 
     @Column({ type: "text", nullable: true })
     description: string | null = null;
@@ -158,4 +162,7 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => BookingEntity, (booking) => booking.bio)
     bookings!: BookingEntity[];
+
+    @OneToMany(() => FormEntity, (form) => form.bio)
+    forms!: FormEntity[];
 }

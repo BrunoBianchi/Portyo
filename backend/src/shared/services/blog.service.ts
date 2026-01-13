@@ -4,6 +4,8 @@ import { Post } from "../types/post.type"
 import { UserEntity } from "../../database/entity/user-entity"
 import { BioEntity } from "../../database/entity/bio-entity"
 import { LessThanOrEqual, IsNull } from "typeorm"
+import { triggerAutomation } from "./automation.service"
+import { logger } from "../utils/logger"
 
 const repository = AppDataSource.getRepository(PostEntity)
 
@@ -23,12 +25,51 @@ export const createPost = async (postData: Partial<Post>, userId: string, bioId:
         user,
         bio
     });
-    return await repository.save(post) as unknown as Post;
+    const savedPost = await repository.save(post) as unknown as Post;
+
+    // Trigger automation if post is published immediately
+    if (savedPost.status === 'published' && (!savedPost.scheduledAt || new Date(savedPost.scheduledAt) <= new Date())) {
+        try {
+            logger.info(`[Blog] Triggering automation for new post ${savedPost.id}`);
+            await triggerAutomation(bioId, 'blog_post_published', { 
+                post: savedPost,
+                postId: savedPost.id,
+                postTitle: savedPost.title,
+                postUrl: `https://portyo.me/${bio.sufix}/blog/${savedPost.id}`
+            });
+        } catch (error: any) {
+            logger.error(`[Blog] Failed to trigger automation: ${error.message}`);
+        }
+    }
+
+    return savedPost;
 }
 
 export const updatePost = async (id: string, postData: Partial<Post>): Promise<Post | null> => {
     await repository.update(id, postData as PostEntity);
-    return await repository.findOneBy({ id }) as unknown as Post;
+    const updatedPost = await repository.findOne({ where: { id }, relations: ['bio'] }) as unknown as Post;
+
+    // Trigger automation if post is published (and wasn't before, or just updated)
+    // Note: This matches the simple requirement. In a real app we might want to check if it was already published to avoid duplicates.
+    if (updatedPost && updatedPost.status === 'published' && (!updatedPost.scheduledAt || new Date(updatedPost.scheduledAt) <= new Date())) {
+        // Simple check: if we are setting status to published in this update
+        if (postData.status === 'published') {
+            try {
+                logger.info(`[Blog] Triggering automation for updated post ${updatedPost.id}`);
+                const bioSufix = (updatedPost as any).bio?.sufix;
+                await triggerAutomation((updatedPost as any).bio.id, 'blog_post_published', { 
+                    post: updatedPost,
+                    postId: updatedPost.id,
+                    postTitle: updatedPost.title,
+                    postUrl: bioSufix ? `https://portyo.me/${bioSufix}/blog/${updatedPost.id}` : ''
+                });
+            } catch (error: any) {
+                logger.error(`[Blog] Failed to trigger automation: ${error.message}`);
+            }
+        }
+    }
+
+    return updatedPost;
 }
 
 export const deletePost = async (id: string): Promise<void> => {

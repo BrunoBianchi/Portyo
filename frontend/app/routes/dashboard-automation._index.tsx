@@ -13,8 +13,7 @@ import {
     Loader2,
     BarChart2,
     Activity,
-    Mail,
-    TrendingUp
+    Mail
 } from "lucide-react";
 import { useBio } from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
@@ -27,7 +26,7 @@ import {
     type Automation
 } from "~/services/automation.service";
 import type { Route } from "../+types/root";
-import { DeleteConfirmationModal } from "~/components/delete-confirmation-modal";
+import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 import { EmailUsageService, type EmailUsage } from "~/services/email-usage.service";
 
 export function meta({ }: Route.MetaArgs) {
@@ -35,6 +34,16 @@ export function meta({ }: Route.MetaArgs) {
         { title: "Automations | Portyo" },
         { name: "description", content: "Manage your email automation workflows" },
     ];
+}
+
+// Helper function to get automation limit based on plan
+function getAutomationLimit(plan: string): number {
+    const planLimits: { [key: string]: number } = {
+        'free': 0,
+        'standard': 2,
+        'pro': 4
+    };
+    return planLimits[plan.toLowerCase()] || 0;
 }
 
 export default function DashboardAutomationList() {
@@ -147,7 +156,7 @@ export default function DashboardAutomationList() {
 
     return (
         <AuthorizationGuard minPlan="standard">
-            <div className="flex-1 p-8 bg-gray-50 min-h-screen">
+            <div className="flex-1 p-8 bg-surface-alt min-h-screen">
                 <DeleteConfirmationModal
                     isOpen={deleteModal.isOpen}
                     onClose={() => setDeleteModal({ isOpen: false, id: null })}
@@ -166,11 +175,11 @@ export default function DashboardAutomationList() {
                         </div>
                         <button
                             onClick={handleCreate}
-                            disabled={creating}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-gray-200"
+                            disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                            Create Automation
+                            Create Automation {emailUsage && `(${automations.length}/${getAutomationLimit(emailUsage.plan)})`}
                         </button>
                     </div>
 
@@ -224,7 +233,6 @@ export default function DashboardAutomationList() {
                             {emailUsage.sent / emailUsage.limit >= 0.8 && emailUsage.plan !== 'pro' && (
                                 <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
                                     <div className="flex items-start gap-3">
-                                        <TrendingUp className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                                         <div className="flex-1">
                                             <h4 className="font-semibold text-blue-900 text-sm">Running low on emails?</h4>
                                             <p className="text-blue-700 text-sm mt-1">

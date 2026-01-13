@@ -1,8 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
-import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, Sparkles, ExternalLink, PenTool, ShoppingBag, Mail, Eye } from "lucide-react";
+import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, ExternalLink, PenTool, ShoppingBag, Mail, Eye, DollarSign, ShoppingCart, Package, Receipt, CreditCard } from "lucide-react";
 import { api } from "~/services/api";
+import { Link } from "react-router";
+import { AnalyticsService, type SalesData, type AnalyticsData } from "~/services/analytics.service";
+import WorldMap from "~/components/dashboard/world-map";
+import { useAuth } from "~/contexts/auth.context";
 
 interface Activity {
     id: string;
@@ -14,19 +18,25 @@ interface Activity {
 
 export default function DashboardHome() {
     const { bio } = useContext(BioContext);
+    const { isPro } = useAuth();
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filterType, setFilterType] = useState("ALL");
+    const [sales, setSales] = useState<SalesData | null>(null);
+    const [loadingSales, setLoadingSales] = useState(true);
+    const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(true);
 
     useEffect(() => {
         if (bio?.id) {
             setLoading(true);
+            setLoadingAnalytics(true);
+
+            // Fetch recent activities
             api.get(`/activity?bioId=${bio.id}&limit=5&page=${page}&type=${filterType}`)
                 .then(res => {
-                    // Check if response has data/meta structure (new) or just array (old fallback)
                     if (res.data.data) {
                         setActivities(res.data.data);
                         setTotalPages(res.data.meta.totalPages);
@@ -36,6 +46,19 @@ export default function DashboardHome() {
                 })
                 .catch(err => console.error("Failed to fetch activities", err))
                 .finally(() => setLoading(false));
+
+            // Load analytics overview
+            AnalyticsService.getAnalytics(bio.id)
+                .then(data => setAnalytics(data))
+                .catch(err => console.error("Failed to fetch analytics", err))
+                .finally(() => setLoadingAnalytics(false));
+
+            // Load sales data
+            setLoadingSales(true);
+            AnalyticsService.getSales(bio.id)
+                .then(data => setSales(data))
+                .catch(err => console.error("Failed to fetch sales", err))
+                .finally(() => setLoadingSales(false));
         }
     }, [bio?.id, page, filterType]);
 
@@ -47,6 +70,17 @@ export default function DashboardHome() {
             case "VIEW": return <Eye className="w-5 h-5 text-gray-500" />;
             default: return <Sparkles className="w-5 h-5 text-yellow-500" />;
         }
+    };
+
+    const renderTrend = (change: number) => {
+        const isPositive = change >= 0;
+        return (
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                <TrendingUp className={`w-3 h-3 ${!isPositive && 'rotate-180'}`} />
+                <span>{isPositive ? '+' : ''}{change}%</span>
+                <span className={`${isPositive ? 'text-green-600/70' : 'text-red-600/70'} font-medium`}>vs last month</span>
+            </div>
+        );
     };
 
     return (
@@ -98,12 +132,12 @@ export default function DashboardHome() {
                                 </div>
                                 <h3 className="label mb-0">Total Views</h3>
                             </div>
-                            <p className="text-4xl font-extrabold text-text-main mb-2">{bio?.views || 0}</p>
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-bold">
-                                <TrendingUp className="w-3 h-3" />
-                                <span>+12%</span>
-                                <span className="text-green-600/70 font-medium">vs last month</span>
-                            </div>
+                            {loadingAnalytics ? (
+                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                            ) : (
+                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.views.total || bio?.views || 0}</p>
+                            )}
+                            {!loadingAnalytics && analytics && renderTrend(analytics.views.change)}
                         </div>
                     </div>
 
@@ -118,12 +152,12 @@ export default function DashboardHome() {
                                 </div>
                                 <h3 className="label mb-0">Total Clicks</h3>
                             </div>
-                            <p className="text-4xl font-extrabold text-text-main mb-2">{bio?.clicks || 0}</p>
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-bold">
-                                <TrendingUp className="w-3 h-3" />
-                                <span>+5%</span>
-                                <span className="text-green-600/70 font-medium">vs last month</span>
-                            </div>
+                            {loadingAnalytics ? (
+                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                            ) : (
+                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.clicks.total || bio?.clicks || 0}</p>
+                            )}
+                            {!loadingAnalytics && analytics && renderTrend(analytics.clicks.change)}
                         </div>
                     </div>
 
@@ -138,13 +172,139 @@ export default function DashboardHome() {
                                 </div>
                                 <h3 className="label mb-0">Avg. CTR</h3>
                             </div>
-                            <p className="text-4xl font-extrabold text-text-main mb-2">4.2%</p>
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 text-red-700 text-xs font-bold">
-                                <TrendingUp className="w-3 h-3 rotate-180" />
-                                <span>-1%</span>
-                                <span className="text-red-600/70 font-medium">vs last month</span>
+                            {loadingAnalytics ? (
+                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                            ) : (
+                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.ctr.average || 0}%</p>
+                            )}
+                            {!loadingAnalytics && analytics && renderTrend(analytics.ctr.change)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sales & Revenue Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Main Sales Card */}
+                    <div className="card p-6">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center shrink-0">
+                                    <DollarSign className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-text-main text-lg">Sales & Revenue</h3>
+                                    <p className="text-sm text-text-muted mt-0.5">Your product sales this month</p>
+                                </div>
                             </div>
                         </div>
+
+                        {loadingSales ? (
+                            <div className="space-y-3">
+                                <div className="h-6 w-32 bg-gray-100 rounded animate-pulse" />
+                                <div className="h-6 w-40 bg-gray-100 rounded animate-pulse" />
+                            </div>
+                        ) : sales && sales.connected ? (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p className="text-sm text-text-muted mb-1">Total Sales</p>
+                                        <p className="text-2xl font-bold text-text-main">{sales.sales.current}</p>
+                                        <div className="mt-1 flex items-center gap-1.5 text-sm">
+                                            {sales.sales.change >= 0 ? (
+                                                <>
+                                                    <ArrowUpRight className="w-4 h-4 text-green-600" />
+                                                    <span className="text-green-600 font-semibold">+{sales.sales.change}%</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ArrowDownRight className="w-4 h-4 text-red-600" />
+                                                    <span className="text-red-600 font-semibold">{sales.sales.change}%</span>
+                                                </>
+                                            )}
+                                            <span className="text-text-muted">vs last month</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-text-muted mb-1">Total Revenue</p>
+                                        <p className="text-2xl font-bold text-text-main">
+                                            {sales.revenue.currency} ${sales.revenue.current.toFixed(2)}
+                                        </p>
+                                        <div className="mt-1 flex items-center gap-1.5 text-sm">
+                                            {sales.revenue.change >= 0 ? (
+                                                <>
+                                                    <ArrowUpRight className="w-4 h-4 text-green-600" />
+                                                    <span className="text-green-600 font-semibold">+{sales.revenue.change}%</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ArrowDownRight className="w-4 h-4 text-red-600" />
+                                                    <span className="text-red-600 font-semibold">{sales.revenue.change}%</span>
+                                                </>
+                                            )}
+                                            <span className="text-text-muted">vs last month</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Avg Order Value */}
+                                <div className="pt-4 border-t border-border">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm text-text-muted mb-1">Avg. Order Value</p>
+                                            <p className="text-xl font-bold text-text-main">
+                                                {sales.revenue.currency} ${sales.averageOrderValue.toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                                            <ShoppingCart className="w-6 h-6" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Revenue Sparkline */}
+                                {sales.dailyRevenue && sales.dailyRevenue.length > 0 && (
+                                    <div className="pt-4 border-t border-border">
+                                        <p className="text-sm text-text-muted mb-3">Revenue Trend (30 days)</p>
+                                        <div className="h-16 flex items-end gap-[2px]">
+                                            {sales.dailyRevenue.map((day) => {
+                                                const maxAmount = Math.max(...sales.dailyRevenue.map(d => d.amount), 1);
+                                                const height = (day.amount / maxAmount) * 100;
+                                                return (
+                                                    <div
+                                                        key={day.date}
+                                                        className="flex-1 bg-green-200 hover:bg-green-400 rounded-t transition-colors cursor-pointer group relative"
+                                                        style={{ height: `${Math.max(height, 4)}%` }}
+                                                        title={`${day.date}: $${day.amount.toFixed(2)}`}
+                                                    >
+                                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
+                                                            ${day.amount.toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CreditCard className="w-8 h-8 text-text-muted" />
+                                </div>
+                                <p className="text-sm text-text-muted mb-4">Connect Stripe to see your sales analytics</p>
+                                <Link
+                                    to="/dashboard/integrations"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition-colors"
+                                >
+                                    Connect Stripe
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Top Products & Transactions */}
+                    <div className="space-y-6">
+                        {bio && <WorldMap bioId={bio.id} mini={true} blocked={!isPro} />}
                     </div>
                 </div>
 

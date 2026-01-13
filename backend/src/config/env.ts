@@ -37,12 +37,26 @@ const envSchema = z.object({
   MAILGUN_FROM_EMAIL: z.string().default("Portyo <noreply@portyo.me>"),
   MAILGUN_BASE_URL: z.string().optional(),
 
+  // SMTP (for system emails)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+
   // Stripe
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // Frontend
   FRONTEND_URL: z.string().default("http://localhost:5173"),
+  BACKEND_URL: z.string().default("http://localhost:3000"),
+
+  // Redis
+  REDIS_HOST: z.string().default("localhost"),
+  REDIS_PORT: z.any().transform((val) => Number(val)).default(6379),
+  REDIS_USERNAME: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

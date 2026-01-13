@@ -98,7 +98,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Main Marketing Site Sitemap
     urls.push(toUrl('https://portyo.me/', undefined, 'daily', 1.0));
     urls.push(toUrl('https://portyo.me/login', undefined, 'monthly', 0.5));
-    urls.push(toUrl('https://portyo.me/signup', undefined, 'monthly', 0.8));
+    urls.push(toUrl('https://portyo.me/sign-up', undefined, 'monthly', 0.8));
     // Add other static pages here
   }
 

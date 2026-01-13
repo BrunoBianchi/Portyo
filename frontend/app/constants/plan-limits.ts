@@ -1,30 +1,35 @@
 export const PLAN_LIMITS = {
     free: {
         bios: 1,
+        qrcodesPerBio: 4,
         automationsPerBio: 0,
         emailTemplatesPerBio: 0,
         emailCollection: false,
         removeBranding: false,
         customDomain: false,
         seoSettings: false,
-        storeFee: 0.025, // 2.5%
+        storeFee: 0.03, // 3%
         analytics: 'basic', // basic or advanced
-        integrations: 'limited'
+        integrations: 'limited',
+        formsPerBio: 1,
     },
     standard: {
-        bios: 3,
+        bios: 2,
+        qrcodesPerBio: 8,
         automationsPerBio: 2,
-        emailTemplatesPerBio: 0,
+        emailTemplatesPerBio: 2,
         emailCollection: true,
         removeBranding: true,
         customDomain: true,
         seoSettings: true,
-        storeFee: 0,
+        storeFee: 0.01, // 1%
         analytics: 'advanced', // Google and Facebook analytics
-        integrations: 'full' // More customizations
+        integrations: 'full', // More customizations
+        formsPerBio: 2,
     },
     pro: {
-        bios: 6,
+        bios: 5,
+        qrcodesPerBio: 12,
         automationsPerBio: 4,
         emailTemplatesPerBio: 4,
         emailCollection: true,
@@ -33,8 +38,9 @@ export const PLAN_LIMITS = {
         seoSettings: true, // Everything from standard
         storeFee: 0,
         analytics: 'advanced',
-        integrations: 'full'
-    }
+        integrations: 'full',
+        formsPerBio: 3,
+    },
 } as const;
 
 export type PlanType = keyof typeof PLAN_LIMITS;

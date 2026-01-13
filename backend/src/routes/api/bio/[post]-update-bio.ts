@@ -19,6 +19,7 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         usernameColor: z.string().optional(),
         imageStyle: z.string().optional(),
         displayProfileImage: z.boolean().optional(),
+        profileImage: z.string().nullable().optional(),
         seoTitle: z.string().optional(),
         seoDescription: z.string().optional(),
         favicon: z.string().optional(),
@@ -50,6 +51,7 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         customDomain: schema.customDomain ?? undefined,
         enableSubscribeButton: schema.enableSubscribeButton,
         removeBranding: schema.removeBranding,
+        profileImage: schema.profileImage ?? undefined,
         bgSettings: {
             bgType: schema.bgType,
             bgColor: schema.bgColor,

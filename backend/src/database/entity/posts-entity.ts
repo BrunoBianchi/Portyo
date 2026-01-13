@@ -11,6 +11,9 @@ export class PostEntity extends BaseEntity {
 @Column({ type: "text" })
 title!:string;
 
+@Column({ type: "text", nullable: true })
+thumbnail!: string | null;
+
 @Column({ type: "text" })
 content!:string;
 

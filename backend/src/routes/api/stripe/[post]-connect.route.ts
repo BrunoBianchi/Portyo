@@ -11,7 +11,8 @@ const router: Router = Router();
 router.post("/connect", authMiddleware, async (req, res) => {
     try {
         const { bioId } = z.object({ bioId: z.string() }).parse(req.body);
-        const userId = req.session.user!.id;
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ message: "Not Authenticated" });
 
         const bio = await findBioById(bioId, ['user']);
         if (!bio) return res.status(404).json({ message: "Bio not found" });

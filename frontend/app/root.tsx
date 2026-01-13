@@ -14,12 +14,12 @@ import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import { SubDomainProvider } from "./contexts/subdomain.context";
 import { CookiesProvider } from 'react-cookie';
-import BioLayout from "./components/bio-layout";
+import BioLayout from "~/components/bio/bio-layout";
 
 const encodeHtmlToBase64 = (html: string) => {
   try {
     if (typeof Buffer !== "undefined") {
-      return Buffer.from(html, "utf-8").toString("base64");
+      return (globalThis as any).Buffer.from(html, "utf-8").toString("base64");
     }
   } catch {
     // ignore
@@ -47,8 +47,8 @@ const serializeBioHtml = (bio: any) => {
   return bio;
 };
 
-const Navbar = lazy(() => import("./components/navbar-component"));
-const Footer = lazy(() => import("./components/footer-section"));
+const Navbar = lazy(() => import("~/components/marketing/navbar-component"));
+const Footer = lazy(() => import("~/components/marketing/footer-section"));
 
 export const meta: Route.MetaFunction = () => [
   { title: "Portyo - Link in Bio" },

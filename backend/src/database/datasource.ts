@@ -2,6 +2,7 @@ import { DataSource } from "typeorm"
 import { UserEntity } from "./entity/user-entity"
 import { BioEntity } from "./entity/bio-entity"
 import { PostEntity } from "./entity/posts-entity"
+import { SitePostEntity } from "./entity/site-post-entity"
 import { QRCodeEntity } from "./entity/qrcode-entity"
 import { EmailEntity } from "./entity/email-entity"
 import { IntegrationEntity } from "./entity/integration-entity"
@@ -11,6 +12,9 @@ import { EmailTemplateEntity } from "./entity/email-template-entity"
 import { BookingSettingsEntity } from "./entity/booking-settings-entity"
 import { BookingEntity } from "./entity/booking-entity"
 import { BillingEntity } from "./entity/billing-entity"
+import { PageViewEntity } from "./entity/page-view-entity"
+import { FormEntity } from "./entity/form-entity"
+import { FormAnswerEntity } from "./entity/form-answer-entity"
 
 import { env } from "../config/env"
 
@@ -21,7 +25,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,

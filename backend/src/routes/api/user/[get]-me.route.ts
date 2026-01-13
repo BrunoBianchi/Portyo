@@ -9,7 +9,7 @@ const router:Router = Router()
 
 import { BillingService } from "../../../services/billing.service";
 
-router.get("/@",authMiddleware,async (req,res)=>{
+router.get("/",authMiddleware,async (req,res)=>{
      const userId = req.user?.id || req.session?.user?.id;
      if (!userId) return res.status(401).send("Unauthorized");
 

@@ -16,9 +16,9 @@ router.get("/:id", async (req, res) => {
      // If public view, check status
      // We can check session here too if we want to allow owner to see drafts
      let isOwner = false;
-     if (req.session && req.session.user) {
+     if (req.user) {
          // @ts-ignore
-         if (post.user.id === req.session.user.id) {
+         if (post.user.id === req.user.id) {
              isOwner = true;
          }
      }

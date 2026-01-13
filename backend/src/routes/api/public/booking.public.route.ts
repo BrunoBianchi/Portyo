@@ -52,6 +52,17 @@ router.post("/:bioId/book", async (req: Request, res: Response) => {
         
         const data = schema.parse(req.body);
         const booking = await createBooking(bioId, data);
+        
+        // Trigger Automation
+        const { triggerAutomation } = await import("../../../shared/services/automation.service");
+        triggerAutomation(bioId, 'booking_created', {
+            email: booking.customerEmail,
+            customerName: booking.customerName,
+            customerEmail: booking.customerEmail,
+            bookingDate: booking.bookingDate.toISOString(),
+            bookingNotes: booking.notes || ''
+        }).catch(err => console.error("Failed to trigger booking automation", err));
+
         res.status(201).json(booking);
     } catch (error: any) {
         if (error instanceof z.ZodError) {

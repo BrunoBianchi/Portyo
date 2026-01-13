@@ -1,0 +1,173 @@
+
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router";
+import { getPublicSitePost, type SitePost } from "~/services/site-blog.service";
+import { format } from "date-fns";
+import { ArrowLeft, Share2 } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function SiteBlogPostPage() {
+    const { id } = useParams();
+    const [post, setPost] = useState<SitePost | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (!id) {
+            setError("Post not found");
+            setLoading(false);
+            return;
+        }
+
+        getPublicSitePost(id).then(fetchedPost => {
+            if (fetchedPost) {
+                setPost(fetchedPost);
+                document.title = `${fetchedPost.title} | Portyo Blog`;
+            } else {
+                setError("Post not found");
+            }
+            setLoading(false);
+        }).catch(() => {
+            setError("Failed to load post");
+            setLoading(false);
+        });
+    }, [id]);
+
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: post?.title,
+                    url: url
+                });
+            } catch (err) {
+                // User cancelled
+            }
+        } else {
+            navigator.clipboard.writeText(url);
+            alert("Link copied to clipboard!");
+        }
+    };
+
+    const getReadTime = (content: string) => {
+        const wordCount = content.replace(/<[^>]*>/g, '').split(/\s+/).length || 0;
+        return Math.max(1, Math.ceil(wordCount / 200));
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-surface-alt">
+                <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (error || !post) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-surface-alt">
+                <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">404</h1>
+                <p className="text-gray-600 mb-6 font-serif italic">Post not found</p>
+                <Link
+                    to="/"
+                    className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:underline transition-all"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Return Home
+                </Link>
+            </div>
+        );
+    }
+
+    const authorName = "Portyo Team";
+    const authorImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=000&color=fff`;
+    const readTime = getReadTime(post.content);
+    const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
+
+
+
+    return (
+        <article className="min-h-screen bg-surface-alt">
+            {/* Minimalist Navigation */}
+            <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
+                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <Link
+                        to={`/`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="font-medium">Back to Home</span>
+                    </Link>
+
+                    <button
+                        onClick={handleShare}
+                        className="p-2 text-gray-400 hover:text-black transition-colors"
+                        title="Share"
+                    >
+                        <Share2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </nav>
+
+            <motion.div
+                className="max-w-3xl mx-auto px-6 py-12 md:py-20"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+            >
+                {/* Editorial Header */}
+                <header className="mb-12 text-center">
+                    <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-gray-400 uppercase mb-6">
+                        <span>{formattedDate}</span>
+                        <span>•</span>
+                        <span>{readTime} min read</span>
+                    </div>
+
+                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
+                        {post.title}
+                    </h1>
+
+                    <div className="flex items-center justify-center gap-3">
+                        <img
+                            src={authorImage}
+                            alt={authorName}
+                            className="w-10 h-10 rounded-full object-cover transition-all"
+                        />
+                        <div className="text-left">
+                            <p className="text-sm font-bold text-gray-900">{authorName}</p>
+                            <p className="text-xs text-gray-500 font-medium">Official Blog</p>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Featured Image */}
+                {post.thumbnail && (
+                    <div className="mb-16 -mx-6 md:-mx-12">
+                        <img
+                            src={post.thumbnail}
+                            alt={post.title}
+                            className="w-full h-auto shadow-sm rounded-lg"
+                        />
+                    </div>
+                )}
+
+                {/* Content */}
+                <div className="prose prose-lg prose-gray max-w-none editorial-content font-sans">
+                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                </div>
+
+                {/* Footer Section */}
+                <div className="mt-24 pt-12 border-t border-gray-100">
+                    <div className="text-center">
+                        <div className="inline-block p-4 border border-black rounded-full mb-8">
+                            <h3 className="font-bold text-xl px-4">The End.</h3>
+                        </div>
+                        <p className="text-gray-500 font-medium mb-8 max-w-md mx-auto">
+                            Thanks for reading. If you enjoyed this piece, please consider sharing it.
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+        </article>
+    );
+}

@@ -11,7 +11,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Pricing() {
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
 
     const plans = [
         {
@@ -20,33 +20,38 @@ export default function Pricing() {
             price: "$0",
             features: [
                 "Customizable link-in-bio",
+                "Create 1 Form",
                 "Basic Analytics",
                 "Unlimited Links",
                 "Social Icons",
                 "Basic Themes",
-                "2.5% Transaction Fees"
+                "3% Transaction Fees"
             ],
             cta: "Get Started",
-            ctaLink: "/signup",
+            ctaLink: "/sign-up",
             style: "white",
             highlight: false
         },
         {
             name: "Standard",
             description: "For growing creators",
-            price: "$7.50",
+            price: billingCycle === 'yearly' ? "$4.12" : "$5.50",
             period: "/mo",
-            billed: "Billed $90 yearly",
+            billed: billingCycle === 'yearly' ? "Billed $49.50 yearly" : "Billed monthly",
             features: [
+                "Up to 2 bios",
+                "Create 3 Forms",
                 "Everything in Free",
                 "Remove Branding",
                 "Custom Domain",
                 "Priority Support",
                 "Advanced Analytics",
-                "Email Collection"
+                "Email Collection",
+                "1% Transaction Fees",
+                "150 emails/month"
             ],
             cta: "Start Trial",
-            ctaLink: "/signup?plan=standard",
+            ctaLink: "/sign-up?plan=standard",
             style: "lime",
             highlight: true,
             badge: "MOST POPULAR"
@@ -54,19 +59,23 @@ export default function Pricing() {
         {
             name: "Pro",
             description: "For serious business",
-            price: "$18.75",
+            price: billingCycle === 'yearly' ? "$11.25" : "$15.00",
             period: "/mo",
-            billed: "Billed $225 yearly",
+            billed: billingCycle === 'yearly' ? "Billed $135 yearly" : "Billed monthly",
             features: [
                 "Everything in Standard",
+                "Up to 5 bios",
+                "Create 4 Forms",
+                "Scheduler",
                 "0% Transaction Fees",
                 "API Access",
                 "Dedicated Manager",
                 "White Labeling",
-                "Newsletter Tool"
+                "Newsletter Tool",
+                "500 emails/month"
             ],
             cta: "Go Pro",
-            ctaLink: "/signup?plan=pro",
+            ctaLink: "/sign-up?plan=pro",
             style: "black",
             highlight: false
         }
@@ -85,8 +94,8 @@ export default function Pricing() {
                         <div
                             key={index}
                             className={`relative rounded-[32px] p-8 md:p-10 transition-transform hover:-translate-y-1 duration-300 flex flex-col h-full ${plan.style === 'lime' ? 'bg-[#D7F000] text-black shadow-xl ring-0' :
-                                    plan.style === 'black' ? 'bg-black text-white shadow-xl' :
-                                        'bg-white text-gray-900 shadow-lg'
+                                plan.style === 'black' ? 'bg-black text-white shadow-xl' :
+                                    'bg-white text-gray-900 shadow-lg'
                                 }`}
                         >
                             {plan.badge && (
@@ -105,8 +114,8 @@ export default function Pricing() {
                                 </div>
                                 {plan.billed && (
                                     <p className={`text-xs font-bold uppercase tracking-wide mt-3 inline-block px-3 py-1 rounded-full ${plan.style === 'black' ? 'bg-gray-800 text-gray-300' :
-                                            plan.style === 'lime' ? 'bg-black/10 text-black' :
-                                                'bg-gray-100 text-gray-500'
+                                        plan.style === 'lime' ? 'bg-black/10 text-black' :
+                                            'bg-gray-100 text-gray-500'
                                         }`}>
                                         {plan.billed}
                                     </p>
@@ -117,8 +126,8 @@ export default function Pricing() {
                                 {plan.features.map((feature, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <Check className={`w-5 h-5 shrink-0 ${plan.style === 'lime' ? 'text-black' :
-                                                plan.style === 'black' ? 'text-[#D7F000]' :
-                                                    'text-green-500'
+                                            plan.style === 'black' ? 'text-[#D7F000]' :
+                                                'text-green-500'
                                             }`} />
                                         <span className={`text-sm font-medium ${plan.style === 'black' ? 'text-gray-300' : 'text-gray-700'
                                             }`}>{feature}</span>
@@ -129,8 +138,8 @@ export default function Pricing() {
                             <Link
                                 to={plan.ctaLink}
                                 className={`w-full py-4 px-6 rounded-2xl font-bold text-center transition-all transform active:scale-95 ${plan.style === 'lime' ? 'bg-black text-white hover:bg-gray-900' :
-                                        plan.style === 'black' ? 'bg-white text-black hover:bg-gray-100' :
-                                            'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                    plan.style === 'black' ? 'bg-white text-black hover:bg-gray-100' :
+                                        'bg-gray-100 text-gray-900 hover:bg-gray-200'
                                     }`}
                             >
                                 {plan.cta}

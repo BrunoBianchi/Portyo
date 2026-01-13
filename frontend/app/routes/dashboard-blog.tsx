@@ -1,7 +1,7 @@
 import type { MetaFunction } from "react-router";
 import { useState } from "react";
 import { Plus, Search, FileText, MoreHorizontal, Calendar, Eye, Filter, Edit2, Trash2 } from "lucide-react";
-import { NewPostModal } from "../components/new-post-modal";
+import { NewPostModal } from "~/components/dashboard/new-post-modal";
 import { useBlog } from "~/contexts/blog.context";
 
 export const meta: MetaFunction = () => {
@@ -133,7 +133,13 @@ export default function DashboardBlog() {
                             {/* Post Info */}
                             <div className="col-span-6 flex items-center gap-4">
                                 <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-border">
-                                    <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                                    {post.thumbnail ? (
+                                        <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                            <FileText className="w-6 h-6" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="text-sm font-bold text-text-main truncate group-hover:text-primary-foreground transition-colors">{post.title}</h3>

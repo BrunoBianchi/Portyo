@@ -5,8 +5,9 @@ import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import { api } from "~/services/api";
 import { Link, useNavigate } from "react-router";
-import { DeleteConfirmationModal } from "~/components/delete-confirmation-modal";
+import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 import AuthContext from "~/contexts/auth.context";
+import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -49,9 +50,11 @@ export default function DashboardTemplates() {
             .finally(() => setLoading(false));
     };
 
+    const templateLimit = PLAN_LIMITS[(user?.plan as PlanType) || 'free'].emailTemplatesPerBio;
+
     const handleCreate = () => {
-        if (templates.length >= 5) {
-            alert("You have reached the maximum limit of 5 templates.");
+        if (templates.length >= templateLimit) {
+            alert(`You have reached the maximum limit of ${templateLimit} templates for your plan.`);
             return;
         }
         // Create a default empty template and redirect to editor
@@ -108,11 +111,11 @@ export default function DashboardTemplates() {
                         </div>
                         <button
                             onClick={handleCreate}
-                            disabled={templates.length >= 5}
+                            disabled={templates.length >= templateLimit}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Plus className="w-5 h-5" />
-                            Create Template ({templates.length}/5)
+                            Create Template ({templates.length}/{templateLimit})
                         </button>
                     </div>
 

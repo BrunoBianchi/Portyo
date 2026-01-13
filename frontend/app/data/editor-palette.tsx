@@ -18,8 +18,9 @@ import {
   InstagramIcon,
   YouTubeIcon,
   DividerIcon,
-  QrCodeIcon
-} from "~/components/icons";
+  QrCodeIcon,
+  FormIcon
+} from "~/components/shared/icons";
 
 export const palette: Array<{ type: BioBlock["type"] | string; label: string; icon: React.ReactNode; category: string; isPro?: boolean }> = [
   {
@@ -86,6 +87,7 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     type: "calendar",
     label: "Calendar",
     category: "Content",
+    isPro: true,
     icon: <CalendarIcon width="24" height="24" />
   },
   {
@@ -142,5 +144,11 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     label: "Divider",
     category: "Layout",
     icon: <DividerIcon width="24" height="24" />
+  },
+  {
+    type: "form",
+    label: "Form",
+    category: "Content",
+    icon: <FormIcon width="24" height="24" />
   },
 ];

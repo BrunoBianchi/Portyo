@@ -78,6 +78,14 @@ export default function DashboardProducts() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Image State for Create
+  const [createImageFile, setCreateImageFile] = useState<File | null>(null);
+  const [createImagePreview, setCreateImagePreview] = useState<string | null>(null);
+
+  // Image State for Edit
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bio?.id) return;
@@ -85,12 +93,23 @@ export default function DashboardProducts() {
     setCreateError(null);
     setIsCreatingProduct(true);
     try {
+      let imageUrl = newProductData.image;
+
+      if (createImageFile) {
+        const formData = new FormData();
+        formData.append("image", createImageFile);
+        const uploadRes = await api.post("/user/upload-product-image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        imageUrl = uploadRes.data.url;
+      }
+
       const res = await api.post("/stripe/create-product", {
         bioId: bio.id,
         title: newProductData.title,
         price: parseFloat(newProductData.price),
         currency: newProductData.currency,
-        image: newProductData.image
+        image: imageUrl
       });
 
       const newProduct: Product = {
@@ -107,9 +126,10 @@ export default function DashboardProducts() {
 
       setIsCreateProductModalOpen(false);
       setNewProductData({ title: "", price: "", currency: "usd", image: "" });
+      setCreateImageFile(null);
+      setCreateImagePreview(null);
     } catch (error: any) {
       console.error("Failed to create product", error);
-      // Check if it's the Stripe not connected error
       if (error.response?.data?.error === "Stripe account not connected") {
         setIsCreateProductModalOpen(false);
         setShowStripePopup(true);
@@ -129,6 +149,8 @@ export default function DashboardProducts() {
       currency: product.currency,
       image: product.image || ""
     });
+    setEditImagePreview(product.image || null);
+    setEditImageFile(null);
     setOpenMenuId(null);
   };
 
@@ -139,12 +161,23 @@ export default function DashboardProducts() {
     setEditError(null);
     setIsUpdating(true);
     try {
+      let imageUrl = editFormData.image;
+
+      if (editImageFile) {
+        const formData = new FormData();
+        formData.append("image", editImageFile);
+        const uploadRes = await api.post("/user/upload-product-image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        imageUrl = uploadRes.data.url;
+      }
+
       const res = await api.put(`/stripe/products/${editingProduct.id}`, {
         bioId: bio.id,
         title: editFormData.title,
         price: parseFloat(editFormData.price),
         currency: editFormData.currency,
-        image: editFormData.image
+        image: imageUrl
       });
 
       const updatedProduct = {
@@ -157,6 +190,8 @@ export default function DashboardProducts() {
 
       setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
       setEditingProduct(null);
+      setEditImageFile(null);
+      setEditImagePreview(null);
     } catch (error: any) {
       console.error("Failed to update product", error);
       setEditError(error.response?.data?.message || "Failed to update product");
@@ -190,9 +225,6 @@ export default function DashboardProducts() {
       setIsLoading(true);
       try {
         const res = await api.get(`/stripe/products?bioId=${bio.id}`);
-        // Filter out archived products if you want, or keep them. Stripe usually archives.
-        // For now, let's filter active ones or all.
-        // The API returns everything.
         setProducts(res.data.filter((p: any) => p.status === 'active'));
       } catch (error) {
         console.error("Failed to fetch products", error);
@@ -204,9 +236,26 @@ export default function DashboardProducts() {
     fetchProducts();
   }, [bio?.id]);
 
+  const handleCreateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCreateImageFile(file);
+      setCreateImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEditImageFile(file);
+      setEditImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <AuthorizationGuard>
       <div className="p-6 max-w-7xl mx-auto">
+        {/* ... (Header and Banner code unchanged) ... */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
@@ -220,7 +269,7 @@ export default function DashboardProducts() {
           </button>
         </div>
 
-        {/* Store Fee Banner */}
+        {/* ... (Store Fee Banner and Search) ... */}
         {storeFee > 0 && (
           <div className="mb-8 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -229,7 +278,7 @@ export default function DashboardProducts() {
               </div>
               <div>
                 <h3 className="font-bold text-blue-900">transaction Fee: {storeFeePercent}%</h3>
-                <p className="text-sm text-blue-700">Upgrade to Standard or Pro to remove transaction fees.</p>
+                <p className="text-sm text-blue-700">Upgrade to Pro to remove transaction fees.</p>
               </div>
             </div>
             <button
@@ -241,7 +290,6 @@ export default function DashboardProducts() {
           </div>
         )}
 
-        {/* Search and Filter */}
         <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm mb-8 flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -267,6 +315,7 @@ export default function DashboardProducts() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
             {products.map((product) => (
               <div key={product.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden relative">
+                {/* ... (Product Card content unchanged) ... */}
                 <div className="p-2">
                   <div className="aspect-square relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
                     {product.image ? (
@@ -414,13 +463,24 @@ export default function DashboardProducts() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                  <input
-                    value={newProductData.image}
-                    onChange={(e) => setNewProductData({ ...newProductData, image: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://..."
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <div className="border border-gray-200 rounded-lg p-2 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                      {createImagePreview ? (
+                        <img src={createImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ImageIcon className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      onChange={handleCreateFileChange}
+                      accept="image/*"
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                    />
+                  </div>
                 </div>
                 <div className="pt-2">
                   <button
@@ -505,12 +565,24 @@ export default function DashboardProducts() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                  <input
-                    value={editFormData.image}
-                    onChange={(e) => setEditFormData({ ...editFormData, image: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <div className="border border-gray-200 rounded-lg p-2 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                      {editImagePreview ? (
+                        <img src={editImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ImageIcon className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      onChange={handleEditFileChange}
+                      accept="image/*"
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                    />
+                  </div>
                 </div>
                 <div className="pt-2">
                   <button

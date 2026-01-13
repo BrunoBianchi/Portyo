@@ -5,7 +5,7 @@ import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
-import { DeleteConfirmationModal } from "~/components/delete-confirmation-modal";
+import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 
 export function meta({ }: Route.MetaArgs) {
   return [

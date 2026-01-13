@@ -1,14 +1,14 @@
 import type { Route } from "./+types/home";
 import { lazy, Suspense } from "react";
 
-import HeroSection from "~/components/hero-section";
-const CarouselSection = lazy(() => import("~/components/carousel-section"));
-const AnalyticsSection = lazy(() => import("~/components/analytics-section"));
-const FeaturedSection = lazy(() => import("~/components/featured-section"));
-const FeaturesSection = lazy(() => import("~/components/features-section"));
-const PricingSection = lazy(() => import("~/components/pricing-section"));
-const BlogSection = lazy(() => import("~/components/blog-section"));
-const ClaimUsernameBar = lazy(() => import("~/components/claim-username-bar"));
+import HeroSection from "~/components/marketing/hero-section";
+const CarouselSection = lazy(() => import("~/components/bio/carousel-section"));
+const AnalyticsSection = lazy(() => import("~/components/dashboard/analytics-section"));
+const FeaturedSection = lazy(() => import("~/components/marketing/featured-section"));
+const FeaturesSection = lazy(() => import("~/components/marketing/features-section"));
+const PricingSection = lazy(() => import("~/components/marketing/pricing-section"));
+const BlogSection = lazy(() => import("~/components/bio/blog-section"));
+const ClaimUsernameBar = lazy(() => import("~/components/marketing/claim-username-bar"));
 
 export function meta({ }: Route.MetaArgs) {
   return [

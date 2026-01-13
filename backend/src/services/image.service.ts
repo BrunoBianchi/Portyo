@@ -1,38 +1,133 @@
 import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
+import redisClient from '../config/redis.client';
+import { env } from '../config/env';
 
-const UPLOAD_DIR = path.join(__dirname, '../../../../frontend/public/users-photos');
+// Expiry time for images in Redis (in seconds) - e.g., 30 days
+// Since this is a profile image, maybe we don't want it to expire easily? 
+// Or maybe we depend on user activity. For now, let's keep it persistent or long-lived.
+// Redis default is no expiry which is fine for "storage" simulation requested.
+// But if we want to be safe, maybe 1 year? 31536000 seconds.
+const IMAGE_TTL = 31536000; 
 
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-export const processProfileImage = async (file: Express.Multer.File, userId: string) => {
-    const filename = `${userId}`;
-    
-    // 1. Generate Thumbnail (96x96) - WebP
-    await sharp(file.buffer)
+export const processProfileImage = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // 1. Generate Thumbnail (96x96) - PNG
+    const thumbnailBuffer = await sharp(file.buffer)
         .resize(96, 96, { fit: 'cover' })
-        .webp({ quality: 80 })
-        .toFile(path.join(UPLOAD_DIR, `${filename}-96.webp`));
+        .png({ quality: 80 })
+        .toBuffer();
 
-    // 2. Generate Medium (192x192) for Retina - WebP
-    await sharp(file.buffer)
+    // 2. Generate Medium (192x192) for Retina - PNG
+    const mediumBuffer = await sharp(file.buffer)
         .resize(192, 192, { fit: 'cover' })
-        .webp({ quality: 80 })
-        .toFile(path.join(UPLOAD_DIR, `${filename}-192.webp`));
+        .png({ quality: 80 })
+        .toBuffer();
 
-    // 3. Generate Original/Large (max 512x512) - WebP
-    await sharp(file.buffer)
+    // 3. Generate Original/Large (max 512x512) - PNG
+    const originalBuffer = await sharp(file.buffer)
         .resize(512, 512, { fit: 'cover', withoutEnlargement: true })
-        .webp({ quality: 85 })
-        .toFile(path.join(UPLOAD_DIR, `${filename}.webp`));
+        .png({ quality: 85 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:photo:{size}
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:photo:thumbnail`, thumbnailBuffer, 'EX', IMAGE_TTL);
+    pipeline.set(`user:${userId}:photo:medium`, mediumBuffer, 'EX', IMAGE_TTL);
+    pipeline.set(`user:${userId}:photo:original`, originalBuffer, 'EX', IMAGE_TTL);
+    
+    await pipeline.exec();
         
+    // Return backend URLs that point to the image serving endpoint
+    // We return absolute URLs with .png extension
+    const baseApiUrl = `${baseUrl}/api/images/${userId}`;
     return {
-        thumbnail: `/users-photos/${filename}-96.webp`,
-        medium: `/users-photos/${filename}-192.webp`,
-        original: `/users-photos/${filename}.webp`
+        thumbnail: `${baseApiUrl}/thumbnail.png`,
+        medium: `${baseApiUrl}/medium.png`,
+        original: `${baseApiUrl}/original.png`
     };
+};
+
+export const processBlogThumbnail = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate Blog Thumbnail (Landscape) - 1200x630 (OG standard)
+    // We'll also generate a smaller one for the list view - 600x315
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+    
+    // List processing (smaller)
+    const listBuffer = await sharp(file.buffer)
+        .resize(600, 315, { fit: 'cover' })
+        .png({ quality: 80 })
+        .toBuffer();
+
+    // Full processing (large)
+    const fullBuffer = await sharp(file.buffer)
+        .resize(1200, 630, { fit: 'cover', withoutEnlargement: true })
+        .png({ quality: 85 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:blog:{timestamp}:list
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:blog:${timestamp}-${uniqueId}:list`, listBuffer, 'EX', 31536000); // 1 year
+    pipeline.set(`user:${userId}:blog:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000);
+    
+    await pipeline.exec();
+        
+    // Return backend URL for the full image (can be used as thumbnail)
+    // We could return both but for now the comprehensive requirement just asks for "thumbnail"
+    // Let's return the full one as the main image, or we can create a specific route for serving blog images.
+    // Given the existing pattern, let's stick to a simple path. 
+    // Wait, the existing pattern uses /api/images/:userId/:type. We need to support dynamic blog image IDs.
+    // We should probably create a new route /api/images/blog/:imageId
+    
+    const imageId = `${timestamp}-${uniqueId}`;
+    return `${baseUrl}/api/images/blog/${userId}/${imageId}/full.png`;
+};
+
+export const processProductImage = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate Product Image - 800x800 square (good for storage and Stripe)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    const fullBuffer = await sharp(file.buffer)
+        .resize(800, 800, { fit: 'cover' })
+        .png({ quality: 85 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:product:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:product:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const imageId = `${timestamp}-${uniqueId}`;
+    return `${baseUrl}/api/images/product/${userId}/${imageId}/full.png`;
+};
+
+export const processBlockImage = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate Block Image - max 1200x1200 (responsive, good for full width or small items)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    // We use inside() to ensure it fits within the box without cropping, maintaining aspect ratio
+    // But for block images, cover is often better if we want uniform shapes?
+    // Actually, blocks can be anything (logos, tall images, wide images). 
+    // Let's use `fit: inside` or `withoutEnlargement` to keep original aspect ratio but cap strictly at 1200px.
+    const fullBuffer = await sharp(file.buffer)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .png({ quality: 85 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:block:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:block:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const imageId = `${timestamp}-${uniqueId}`;
+    // We reuse the existing generic image route pattern if possible, or create a 'block' specific one.
+    // Let's use /api/images/block/:userId/:imageId/full.png
+    return `${baseUrl}/api/images/block/${userId}/${imageId}/full.png`;
 };

@@ -15,6 +15,14 @@ export default defineConfig({
   optimizeDeps: {
     include: ["date-fns"]
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: process.env.API_URL || process.env.VITE_API_URL || "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     target: "esnext",
     minify: "esbuild",

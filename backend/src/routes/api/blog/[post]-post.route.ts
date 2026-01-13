@@ -12,11 +12,14 @@ const createPostSchema = z.object({
     status: z.string(),
     bioId: z.string(),
     scheduledAt: z.string().optional().nullable(),
+    thumbnail: z.string().optional().nullable(),
 });
 
 router.post("/", authMiddleware, async (req, res) => {
+    console.log("[CreatePost] Received body:", JSON.stringify(req.body, null, 2));
     const postData = createPostSchema.parse(req.body);
-    const userId = req.session.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: "Not Authenticated" });
     
     const post = await createPost({
         ...postData,

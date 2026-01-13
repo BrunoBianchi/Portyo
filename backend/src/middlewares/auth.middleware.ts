@@ -19,14 +19,7 @@ declare global {
 }
 
 export const deserializeUser = async (req: Request, res: Response, next: NextFunction) => {
-    // 1. Check Session first (for server-side rendered apps with cookies)
-    if (req.session && req.session.user) {
-        req.user = req.session.user;
-        logger.debug('User authenticated via SESSION', { userId: req.user.id });
-        return next();
-    }
-
-    // 2. Check JWT Header (for API requests and mobile apps)
+    // 1. Check JWT Header (Primary Source of Truth)
     const { authorization } = req.headers;
     const token = authorization?.split("Bearer ")[1]?.trim();
 
@@ -45,23 +38,39 @@ export const deserializeUser = async (req: Request, res: Response, next: NextFun
                     verified: user.verified
                 };
                 req.user = payload;
-                // Sync to session for subsequent requests
-                req.session.user = payload;
+                
+                // Sync to session so subsequent requests (without header) might use it
+                // This OVERWRITES any existing session user with the one from the valid token
+                if (req.session) {
+                    req.session.user = payload;
+                }
+                
                 logger.debug('User authenticated via JWT', { userId: req.user.id });
+                return next();
             }
         } catch (error: any) {
-            // Log JWT verification failures for debugging
+            // If JWT fails, we just log and fall through to try session
             if (error instanceof ApiError) {
                 logger.debug(`JWT verification failed: ${error.message}`);
             } else {
                 logger.warn('Unexpected error during JWT verification', { error: error.message });
             }
-            // Don't set req.user, continue without authentication
-            // The requireAuth middleware will handle the rejection
         }
-    } else {
-        logger.debug('No authentication found (no session or JWT token)');
     }
+
+    // 2. Check Session (Secondary Source - for navigation/SSR)
+    // Only proceed here if req.user wasn't already set by JWT
+    if (!req.user && req.session && req.session.user) {
+        req.user = req.session.user;
+        logger.debug('User authenticated via SESSION', { userId: req.user.id });
+        return next();
+    }
+
+    // 3. No Auth found
+    if (!req.user) {
+        logger.debug('No authentication found (no valid JWT or Session)');
+    }
+    
     next();
 };
 

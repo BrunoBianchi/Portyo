@@ -22,6 +22,11 @@ router.post("/login", async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
+        // CRITICAL: Update server-side session
+        if (req.session) {
+            req.session.user = result.user;
+        }
+
         // Return access token and user (refresh token is in cookie)
         res.status(200).json({
             token: result.token,

@@ -6,14 +6,28 @@ import uploadPhotoRoute from "./[post]-upload-photo.route"
 import billingHistoryRoute from "./[get]-billing-history.route"
 import emailUsageRoute from "./[get]-email-usage.route"
 import refreshTokenRoute from "./[post]-refresh-token.route"
+import uploadBlogThumbnailRoute from "./[post]-upload-blog-thumbnail.route";
+import uploadProductImageRoute from "./[post]-upload-product-image.route";
+import uploadBlockImageRoute from "./[post]-upload-block-image.route";
+
+import logoutRoute from "./[post]-logout.route"
+
+import verifyEmailRoute from "./[post]-verify-email.route";
+import resendVerificationRoute from "./[post]-resend-verification.route";
 
 const router: Router = Router();
 router.use(createNewUserRoute);
-router.use(meRoute)
+router.use("/me", meRoute);
 router.use(loginRoute)
-router.use(uploadPhotoRoute)
+router.use(logoutRoute)
+router.use("/upload-photo", uploadPhotoRoute);
+router.use("/upload-blog-thumbnail", uploadBlogThumbnailRoute);
+router.use("/upload-product-image", uploadProductImageRoute);
+router.use("/upload-block-image", uploadBlockImageRoute);
 router.use("/billing", billingHistoryRoute)
 router.use(emailUsageRoute)
 router.use(refreshTokenRoute)
+router.use(verifyEmailRoute)
+router.use(resendVerificationRoute)
 
 export default router;

@@ -1,23 +1,24 @@
 import { Router } from "express";
 import multer from "multer";
 import { processProfileImage } from "../../../services/image.service";
-import { ownerMiddleware } from "../../../middlewares/owner.middleware";
+import { requireAuth } from "../../../middlewares/auth.middleware";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/upload-photo", ownerMiddleware, upload.single("photo"), async (req, res) => {
+router.post("/upload-photo", requireAuth, upload.single("photo"), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
-        const userId = req.session?.user?.id;
+        const userId = req.user?.id;
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized" });
         }
 
-        const paths = await processProfileImage(req.file, userId);
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const paths = await processProfileImage(req.file, userId, baseUrl);
         
         // Here you would typically update the user entity with the new photo URL
         // For now, we just return the paths
