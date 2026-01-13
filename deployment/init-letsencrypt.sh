@@ -40,6 +40,8 @@ echo
 
 
 echo "### Starting nginx ..."
+mkdir -p "$data_path/www"
+chmod 777 "$data_path/www"
 docker compose up --force-recreate -d nginx
 echo
 
