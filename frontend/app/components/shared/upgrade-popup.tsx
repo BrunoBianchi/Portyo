@@ -1,7 +1,9 @@
 import React, { useState, useContext } from 'react';
+import { useCookies } from 'react-cookie';
 import { createPortal } from 'react-dom';
 import { Check, X, ChevronDown } from "lucide-react";
 import AuthContext from "~/contexts/auth.context";
+import { api } from "~/services/api";
 
 interface UpgradePopupProps {
     isOpen: boolean;
@@ -25,21 +27,20 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
 
     const confirmCancel = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = cookies['@App:token'];
             if (!token) return;
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe/cancel-subscription`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            });
+            const response = await api.post('/stripe/cancel-subscription');
+            /* 
+            // Previous fetch implementation for reference:
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe/cancel-subscription`, { ... });
+            */
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Failed to cancel subscription");
-            }
+            // Axios throws on non-2xx, so we don't need manual ok check
+            // but we might want to handle data structure if needed. 
+            // However, the api service interceptor likely handles token.
+
+            /* No data needed from response for success alert */
 
             alert("Subscription canceled. You will retain access until the end of your current period.");
             setShowCancelConfirmation(false);
@@ -50,37 +51,28 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
         }
     };
 
+    const [cookies] = useCookies(['@App:token']);
+
     const handleUpgrade = async (plan: 'standard' | 'pro') => {
         try {
-            const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+            const token = cookies['@App:token'];
             if (!token) {
                 alert("Please log in to upgrade.");
                 return;
             }
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe/create-checkout-session`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    plan,
-                    interval: billingCycle
-                })
+            const response = await api.post('/stripe/create-checkout-session', {
+                plan,
+                interval: billingCycle
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Failed to initiate checkout");
+            if (response.data.url) {
+                window.location.href = response.data.url;
+            } else {
+                throw new Error("No checkout URL received");
             }
 
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error("No checkout URL returned");
-            }
+
 
         } catch (error: any) {
             console.error("Upgrade error:", error);

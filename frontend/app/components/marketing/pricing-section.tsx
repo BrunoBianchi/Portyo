@@ -1,11 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router';
+import { useCookies } from 'react-cookie';
 import { Check, ChevronDown } from "lucide-react";
+import AuthContext from "~/contexts/auth.context";
+import { api } from "~/services/api";
 
 export default function PricingSection() {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
     const [expandedFree, setExpandedFree] = useState(false);
     const [expandedStandard, setExpandedStandard] = useState(false);
     const [expandedPro, setExpandedPro] = useState(false);
+
+    const { user } = useContext(AuthContext);
+    const [cookies] = useCookies(['@App:token']);
+    const navigate = useNavigate();
+
+    const handleUpgrade = async (plan: 'standard' | 'pro') => {
+        if (!user) {
+            navigate(`/sign-up?plan=${plan}`);
+            return;
+        }
+
+        try {
+            const token = cookies['@App:token'];
+            if (!token) {
+                navigate(`/sign-up?plan=${plan}`);
+                return;
+            }
+
+            const response = await api.post('/stripe/create-checkout-session', {
+                plan,
+                interval: billingCycle
+            });
+
+            if (response.data.url) {
+                window.location.href = response.data.url;
+            } else {
+                console.error("No checkout URL received");
+                alert("Something went wrong. Please try again.");
+            }
+
+        } catch (error: any) {
+            console.error("Upgrade error:", error);
+            alert("Failed to initiate checkout. Please try again.");
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -140,7 +179,10 @@ export default function PricingSection() {
                         </div>
 
                         <div className="mt-auto pt-6">
-                            <button className="w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer">
+                            <button
+                                onClick={() => navigate(user ? '/dashboard' : '/sign-up')}
+                                className="w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
+                            >
                                 Get Started
                             </button>
                         </div>
@@ -197,7 +239,10 @@ export default function PricingSection() {
                         </div>
 
                         <div className="mt-auto pt-6">
-                            <button className="w-full bg-black text-white hover:bg-gray-900 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer">
+                            <button
+                                onClick={() => handleUpgrade('standard')}
+                                className="w-full bg-black text-white hover:bg-gray-900 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
+                            >
                                 Start Trial
                             </button>
                         </div>
@@ -250,7 +295,10 @@ export default function PricingSection() {
                         </div>
 
                         <div className="mt-auto pt-6">
-                            <button className="w-full bg-white text-black hover:bg-gray-100 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer">
+                            <button
+                                onClick={() => handleUpgrade('pro')}
+                                className="w-full bg-white text-black hover:bg-gray-100 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
+                            >
                                 Go Pro
                             </button>
                         </div>
