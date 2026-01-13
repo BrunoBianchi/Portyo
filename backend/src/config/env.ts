@@ -16,6 +16,7 @@ const envSchema = z.object({
   DB_PASSWORD: z.string().default("postgres"),
   DB_DATABASE: z.string().default("portyo"),
   DB_SSL: z.string().transform((val) => val === "true").default(false),
+  DB_CA: z.string().optional(),
   
   // Security
   SESSION_SECRET: z.string().min(1, "SESSION_SECRET is required"),

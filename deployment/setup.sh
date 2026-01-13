@@ -87,7 +87,9 @@ if [ ! -f .env ]; then
 
     # Update init-letsencrypt.sh
     sed -i "s/portyo.me/$DOMAIN_NAME/g" init-letsencrypt.sh
-    sed -i "s/domains=(/domains=($DOMAIN_NAME *.$DOMAIN_NAME /g" init-letsencrypt.sh
+    # We replaced portyo.me with the domain, so the array is now (domain www.domain api.domain) which is correct.
+    # We do NOT want to inject *.$DOMAIN for webroot validation.
+    # sed -i "s/domains=(/domains=($DOMAIN_NAME *.$DOMAIN_NAME /g" init-letsencrypt.sh
     
     echo "Secrets generated vs Domain updated."
     echo "IMPORTANT: You may need to edit deployment/.env manually to set Stripe and Email keys."

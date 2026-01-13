@@ -29,6 +29,9 @@ export const AppDataSource = new DataSource({
     entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity],
     synchronize: true,
     logging: false,
-    ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+    ssl: env.DB_SSL ? {
+        rejectUnauthorized: false,
+        ca: env.DB_CA,
+    } : false,
 })
 
