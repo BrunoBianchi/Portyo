@@ -8,6 +8,8 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - PORT=8000
     depends_on:
       - postgres
       - redis
@@ -21,6 +23,9 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
     networks:
       - app-network
 
