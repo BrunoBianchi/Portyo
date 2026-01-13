@@ -79,14 +79,14 @@ if [ ! -f .env ]; then
     read -p "Enter your domain name (e.g. portyo.com): " DOMAIN_NAME
     
     # Update .env
-    sed -i "s/yourdomain.com/$DOMAIN_NAME/g" .env
+    sed -i "s/portyo.me/$DOMAIN_NAME/g" .env
     
     # Update nginx.conf
     # We use a temp file to avoid issues with sed and specialized chars if any, but simple domain matching is safe
-    sed -i "s/yourdomain.com/$DOMAIN_NAME/g" nginx.conf
+    sed -i "s/portyo.me/$DOMAIN_NAME/g" nginx.conf
 
     # Update init-letsencrypt.sh
-    sed -i "s/yourdomain.com/$DOMAIN_NAME/g" init-letsencrypt.sh
+    sed -i "s/portyo.me/$DOMAIN_NAME/g" init-letsencrypt.sh
     sed -i "s/domains=(/domains=($DOMAIN_NAME *.$DOMAIN_NAME /g" init-letsencrypt.sh
     
     echo "Secrets generated vs Domain updated."

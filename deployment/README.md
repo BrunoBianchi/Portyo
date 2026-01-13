@@ -32,7 +32,7 @@ sudo apt install -y git
 
 # Clone your repository (Replace URL with your actual repo URL)
 # If your repo is private, you may need to use a Personal Access Token or generate an SSH key on the VPS first.
-git clone https://github.com/yourusername/portyo.git /var/www/portyo
+git clone https://github.com/BrunoBianchi/Portyo.git /var/www/portyo
 
 # Enter the directory
 cd /var/www/portyo/deployment
@@ -71,6 +71,31 @@ The setup script uses `init-letsencrypt.sh` to automatically obtain SSL certific
 *   Certificates are stored in `deployment/data/certbot`.
 *   The `certbot` container checks for renewal every 12 hours.
 
+
+## Manual Docker Installation (Optional)
+If the setup script fails to install Docker, you can install it manually using the following commands:
+
+1.  **Set up Docker's `apt` repository:**
+    ```bash
+    # Add Docker's official GPG key:
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add the repository to Apt sources:
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    ```
+
+2.  **Install the Docker packages:**
+    ```bash
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    ```
 
 ## Troubleshooting
 *   **View Logs**: `docker compose logs -f`
