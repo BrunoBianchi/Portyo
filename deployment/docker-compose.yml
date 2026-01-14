@@ -48,14 +48,24 @@ services:
       - /bin/sh
       - -c
       - |
-        mkdir -p /var/lib/postgresql/ssl
-        cp /tmp/certs/* /var/lib/postgresql/ssl/
-        chown -R postgres:postgres /var/lib/postgresql/ssl
-        chmod 600 /var/lib/postgresql/ssl/server.key
-        chmod 600 /var/lib/postgresql/ssl/root.key
-        chmod 644 /var/lib/postgresql/ssl/server.crt
-        chmod 644 /var/lib/postgresql/ssl/root.crt
-        exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/ssl/server.crt -c ssl_key_file=/var/lib/postgresql/ssl/server.key
+        echo "Check source permissions:"
+        ls -aln /tmp/certs
+        
+        mkdir -p /etc/postgresql/ssl
+        cp /tmp/certs/* /etc/postgresql/ssl/
+        
+        echo "Setting permissions..."
+        chown -R postgres:postgres /etc/postgresql/ssl
+        chmod 700 /etc/postgresql/ssl
+        chmod 600 /etc/postgresql/ssl/server.key
+        chmod 600 /etc/postgresql/ssl/root.key
+        chmod 644 /etc/postgresql/ssl/server.crt
+        chmod 644 /etc/postgresql/ssl/root.crt
+        
+        echo "Check final permissions:"
+        ls -aln /etc/postgresql/ssl
+        
+        exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/etc/postgresql/ssl/server.crt -c ssl_key_file=/etc/postgresql/ssl/server.key -c ssl_ca_file=/etc/postgresql/ssl/root.crt
     networks:
       - app-network
 
