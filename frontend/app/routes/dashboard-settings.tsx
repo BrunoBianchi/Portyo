@@ -17,15 +17,23 @@ export const meta: MetaFunction = () => {
 export default function DashboardSettings() {
   const { user } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'billing'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'billing' | 'admin'>('general');
   const [billingHistory, setBillingHistory] = useState<any[]>([]);
   const [emailUsage, setEmailUsage] = useState<EmailUsage | null>(null);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
 
+  // Admin State
+  const [adminAnnouncement, setAdminAnnouncement] = useState({ text: "", link: "", isNew: true, isVisible: true });
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
+
+  const isAdmin = user?.email === 'bruno2002.raiado@gmail.com';
+
   const resolvedPlan = ((user?.plan as PlanType) || "free") as PlanType;
   const planLabel = `${resolvedPlan.charAt(0).toUpperCase()}${resolvedPlan.slice(1)}`;
   const planLimits = PLAN_LIMITS[resolvedPlan] ?? PLAN_LIMITS.free;
+
+  // ... (keep existing feature items) ...
 
   const planFeatureItems = [
     {
@@ -146,8 +154,23 @@ export default function DashboardSettings() {
       }).catch(err => {
         console.error("Failed to load email usage", err);
       });
+    } else if (activeTab === 'admin' && isAdmin) {
+      // Fetch Admin Settings
+      const fetchAdminSettings = async () => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        try {
+          const res = await fetch(`${apiUrl}/public/settings/announcement`);
+          if (res.ok) {
+            const data = await res.json();
+            setAdminAnnouncement(data);
+          }
+        } catch (e) {
+          console.error("Failed to fetch admin settings", e);
+        }
+      }
+      fetchAdminSettings();
     }
-  }, [activeTab]);
+  }, [activeTab, isAdmin]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +178,26 @@ export default function DashboardSettings() {
     // Simulate API call
     setTimeout(() => setIsLoading(false), 1000);
   };
+
+  const handleAdminSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAdminLoading(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      import("~/services/api").then(({ api }) => {
+        api.post(`${apiUrl}/admin/announcement`, adminAnnouncement).then(() => {
+          alert("Announcement updated!");
+        }).catch(err => {
+          console.error("Failed to update announcement", err);
+          alert("Failed to update announcement");
+        }).finally(() => {
+          setIsAdminLoading(false);
+        });
+      });
+    } catch (e) {
+      setIsAdminLoading(false);
+    }
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -189,6 +232,20 @@ export default function DashboardSettings() {
             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-t-full"></div>
           )}
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab('admin')}
+            className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'admin'
+              ? 'text-black'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Admin
+            {activeTab === 'admin' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-t-full"></div>
+            )}
+          </button>
+        )}
       </div>
 
       {activeTab === 'general' ? (
@@ -335,7 +392,7 @@ export default function DashboardSettings() {
             </div>
           </section>
         </div>
-      ) : (
+      ) : activeTab === 'billing' ? (
         <div className="space-y-8">
           {/* Billing Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -534,7 +591,78 @@ export default function DashboardSettings() {
             </div>
           </div>
         </div>
-      )}
+      ) : activeTab === 'admin' ? (
+        <div className="space-y-8">
+          <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Global Announcement</h2>
+                <p className="text-sm text-gray-500">Manage the announcement bar on the homepage.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAdminSave} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Announcement Text</label>
+                  <input
+                    type="text"
+                    value={adminAnnouncement.text || ""}
+                    onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, text: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                  <input
+                    type="text"
+                    value={adminAnnouncement.link || ""}
+                    onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, link: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={adminAnnouncement.isNew}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, isNew: e.target.checked })}
+                      className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Show "New" Badge</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={adminAnnouncement.isVisible}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, isVisible: e.target.checked })}
+                      className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Visible</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={isAdminLoading}
+                  className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+                >
+                  {isAdminLoading ? "Saving..." : (
+                    <>
+                      <Save className="w-4 h-4" /> Save Announcement
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
 
 
       <UpgradePopup

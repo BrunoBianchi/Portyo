@@ -144,7 +144,6 @@ export default function BlogPostPage() {
                 className="max-w-3xl mx-auto px-6 py-12 md:py-20"
                 initial="hidden"
                 animate="visible"
-                variants={fadeIn}
             >
                 {/* Editorial Header */}
                 <header className="mb-12 text-center">

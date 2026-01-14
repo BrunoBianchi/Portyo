@@ -48,13 +48,29 @@ export function headers() {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  return {};
+  const url = new URL(request.url);
+  const hostname = url.hostname;
+
+  const isOnRenderDomain = hostname.endsWith('.onrender.com');
+  const isPortyoDomain = hostname.endsWith('portyo.me');
+  const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
+
+  return { isCustomDomain };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
+  const loaderData = useLoaderData<typeof loader>();
+  const isCustomDomain = loaderData?.isCustomDomain;
+
   const isLoginPage = pathname === "/login";
   const isDashboard = pathname.startsWith("/dashboard");
+  const isBioPage = pathname.startsWith("/p/");
+
+  // Hide layout if dashboard, bio page, OR custom domain
+  const shouldShowLayout = !isDashboard && !isBioPage && !isCustomDomain;
 
   return (
     <CookiesProvider>
@@ -77,13 +93,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </noscript>
           </head>
           <body>
-            {!isDashboard && (
+            {shouldShowLayout && (
               <Suspense fallback={null}>
                 <Navbar />
               </Suspense>
             )}
             {children}
-            {!isDashboard && (
+            {shouldShowLayout && (
               <Suspense fallback={null}>
                 <Footer />
               </Suspense>

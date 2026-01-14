@@ -103,7 +103,7 @@ export default function DashboardQrCode() {
     };
 
     // Default bio QR code if list is empty or to show as default option
-    const defaultBioUrl = bio ? `https://${bio.sufix}.portyo.me` : "";
+    const defaultBioUrl = bio ? `https://portyo.me/p/${bio.sufix}` : "";
 
     // Determine what to show - use frontend redirect URL for tracking
     const FRONTEND_BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://portyo.me';

@@ -110,6 +110,18 @@ export const findBioById= async (id: string,relations?:string[]): Promise<Bio | 
     } );
     return normalizeBio(bio);
 }
+
+export const getAllPublicBios = async (): Promise<{ sufix: string, updatedAt: Date }[]> => {
+    return await repository.find({
+        select: ['sufix', 'updatedAt'],
+        where: [
+            { noIndex: false },
+            { noIndex: undefined } // In case it's null/undefined in DB
+        ],
+        order: { updatedAt: 'DESC' }
+    });
+}
+
 export const updateBioById = async (id: string, options: UpdateBioOptions): Promise<Bio | null> => {
     const bio = await findBioById(id, ['integrations', 'user']) as BioEntity;
     if (!bio) return null;

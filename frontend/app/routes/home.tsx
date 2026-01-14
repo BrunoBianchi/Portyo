@@ -1,50 +1,70 @@
 import type { Route } from "./+types/home";
 import { lazy, Suspense } from "react";
+import LandingPage from "~/components/marketing/landing-page";
+import BioLayout from "~/components/bio/bio-layout";
+import { BioNotFound } from "~/components/public-bio/not-found";
+import type { ay } from "node_modules/react-router/dist/development/router-5iOvts3c.mjs";
 
-import HeroSection from "~/components/marketing/hero-section";
-const CarouselSection = lazy(() => import("~/components/bio/carousel-section"));
-const AnalyticsSection = lazy(() => import("~/components/dashboard/analytics-section"));
-const FeaturedSection = lazy(() => import("~/components/marketing/featured-section"));
-const FeaturesSection = lazy(() => import("~/components/marketing/features-section"));
-const PricingSection = lazy(() => import("~/components/marketing/pricing-section"));
-const BlogSection = lazy(() => import("~/components/bio/blog-section"));
-const ClaimUsernameBar = lazy(() => import("~/components/marketing/claim-username-bar"));
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const hostname = url.hostname;
 
-export function meta({ }: Route.MetaArgs) {
+  const isOnRenderDomain = hostname.endsWith('.onrender.com');
+  const isPortyoDomain = hostname.endsWith('portyo.me');
+  const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
+
+  if (isCustomDomain) {
+    const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'http://localhost:3000/api';
+    try {
+      const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
+      if (res.ok) {
+        const bio = await res.json();
+        return { type: 'bio', bio, hostname };
+      }
+    } catch (e) {
+      console.error("Failed to fetch bio for domain", hostname, e);
+    }
+    return { type: 'bio', bio: null, hostname }; // Bio not found
+  }
+
+  return { type: 'marketing' };
+}
+
+export function meta({ data }: Route.MetaArgs) {
+  if (data?.type === 'bio' && data?.bio) {
+    const bio = data.bio;
+    // ... Copy meta logic from p.$username.tsx or use a shared helper?
+    // For now, let's duplicate the critical parts or simpler: use defaults if missing
+    return [
+      { title: bio.seoTitle || bio.ogTitle || `${bio.subdomain} | Portyo` },
+      { name: "description", content: bio.seoDescription || bio.ogDescription || "" },
+      // ... add other critical meta
+    ];
+  }
   return [
     { title: "Portyo - Link in Bio" },
     { name: "description", content: "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform." },
   ];
 }
 
-export default function Home() {
-  return (
-    <main className="flex items-center justify-center pt-16 pb-16 bg-surface-alt min-h-screen">
-      <div className="flex-1 flex flex-col items-center gap-10 min-h-0 w-full">
-        <HeroSection />
-        <Suspense fallback={<div className="h-96" />}>
-          <CarouselSection />
-        </Suspense>
-        <Suspense fallback={<div className="h-96" />}>
-          <AnalyticsSection />
-        </Suspense>
-        <Suspense fallback={<div className="h-96" />}>
-          <FeaturedSection />
-        </Suspense>
-        <Suspense fallback={<div className="h-96" />}>
-          <FeaturesSection />
-        </Suspense>
-        <Suspense fallback={<div className="h-96" />}>
-          <PricingSection />
-        </Suspense>
-        <Suspense fallback={<div className="h-96" />}>
-          <BlogSection />
-        </Suspense>
-      </div>
-      <Suspense fallback={null}>
-        <ClaimUsernameBar />
-      </Suspense>
-    </main>
-  );
-}
+export default function Home({ loaderData }: Route.ComponentProps) {
+  if (loaderData.type === 'bio') {
+    const { bio, hostname } = loaderData;
+    if (!bio) return <BioNotFound username={hostname as any} />; // Or generic "Domain not claimed"
 
+    // We pass isNested={false} because on custom domain root, 
+    // the root layout is hidden, so BioLayout receives the main scroll container
+    // BUT `root.tsx` renders `html` and `body`. 
+    // If `BioLayout` is `isNested={false}`, it tries to render `html`/`body` tags?
+    // Wait, `BioLayout` `isNested={false}` renders `html`/`body`.
+    // `root.tsx` ALWAYS renders `html`/`body`.
+    // So even on custom domain root, we are inside `root.tsx`. 
+    // So we MUST pass `isNested={true}` to avoid hydration error!
+
+    return <BioLayout bio={bio} subdomain={bio.sufix || ''} isNested={true} />;
+  }
+
+  return <LandingPage />;
+}

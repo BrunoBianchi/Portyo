@@ -99,7 +99,7 @@ export default function DashboardHome() {
                         {bio && (
                             <>
                                 <a
-                                    href={`https://${bio.sufix}.portyo.me`}
+                                    href={`https://portyo.me/p/${bio.sufix}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="btn btn-secondary btn-sm"

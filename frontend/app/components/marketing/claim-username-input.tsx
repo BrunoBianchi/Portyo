@@ -26,18 +26,18 @@ export default function ClaimUsernameInput() {
       <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-0 group-hover:opacity-40 transition duration-700"></div>
 
       <div className="relative flex items-center bg-white rounded-full p-2.5 shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-gray-100 transition-shadow duration-300 hover:shadow-[0_12px_50px_rgb(0,0,0,0.12)]">
-        <div className="flex-1 flex items-center justify-end relative h-14">
+        <div className="flex items-center h-14 pl-4 md:pl-6">
+          <span className="text-2xl md:text-3xl font-bold text-gray-500 select-none tracking-tight">portyo.me/p/</span>
+        </div>
+        <div className="flex-1 flex items-center justify-start relative h-14">
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(normalizeUsername(e.target.value))}
             placeholder="yourname"
-            className="w-full bg-transparent border-none outline-none text-2xl md:text-3xl font-bold text-text-main placeholder:text-gray-300 h-full text-right pr-0.5 tracking-tight"
+            className="w-full bg-transparent border-none outline-none text-2xl md:text-3xl font-bold text-text-main placeholder:text-gray-300 h-full text-left pl-0.5 tracking-tight"
             spellCheck={false}
           />
-        </div>
-        <div className="flex items-center h-14 pr-4 md:pr-6">
-          <span className="text-2xl md:text-3xl font-bold text-gray-500 select-none tracking-tight">.portyo.me</span>
         </div>
         <button
           disabled={!isValid}

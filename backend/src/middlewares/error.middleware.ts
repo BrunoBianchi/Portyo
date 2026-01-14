@@ -9,6 +9,10 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  if (res.headersSent) {
+    logger.warn(`Error occurred after headers were sent: ${err.message}`);
+    return next(err);
+  }
   if (err instanceof ApiError) {
     if (err.code >= 500) {
       logger.error(`ApiError: ${err.message}`, err);

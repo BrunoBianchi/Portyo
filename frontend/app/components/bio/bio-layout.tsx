@@ -22,7 +22,9 @@ interface BioLayoutProps {
     bio: any;
     subdomain: string;
     isPreview?: boolean;
+    isNested?: boolean;
 }
+
 
 const decodeHtmlFromBase64 = (html?: string | null, htmlBase64?: string | null) => {
     if (html && typeof html === "string") return html;
@@ -43,7 +45,7 @@ const decodeHtmlFromBase64 = (html?: string | null, htmlBase64?: string | null) 
     return "";
 };
 
-export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false }) => {
+export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false, isNested = false }) => {
     useBioScripts(bio);
     useBioTracking(
         isPreview ? undefined : bio?.id
@@ -1209,9 +1211,9 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         };
     }, [bio.googleAnalyticsId]);
 
-    const Wrapper = isPreview ? React.Fragment : 'html';
-    const BodyWrapper = isPreview ? 'div' : 'body';
-    const wrapperProps = isPreview ? {} : { lang: 'en' };
+    const Wrapper = (isPreview || isNested) ? React.Fragment : 'html';
+    const BodyWrapper = (isPreview || isNested) ? 'div' : 'body';
+    const wrapperProps = (isPreview || isNested) ? {} : { lang: 'en' };
     const bodyProps = isPreview
         ? { className: "portyo-bio-preview-root w-full h-full overflow-y-auto relative" }
         : { style: { margin: 0, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' } };
@@ -1229,7 +1231,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
     return (
         <Wrapper {...wrapperProps}>
-            {!isPreview && (
+            {(!isPreview && !isNested) && (
                 <head>
                     <meta charSet="utf-8" />
                     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1328,8 +1330,74 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 </head>
             )}
 
-            {isPreview && (
-                <style dangerouslySetInnerHTML={{ __html: navStyles }} />
+            {(isPreview || isNested) && (
+                <>
+                    <style dangerouslySetInnerHTML={{ __html: navStyles }} />
+                    {isNested && (
+                        <>
+                            {/* JSON-LD */}
+                            <script
+                                type="application/ld+json"
+                                dangerouslySetInnerHTML={{
+                                    __html: JSON.stringify({
+                                        "@context": "https://schema.org",
+                                        "@type": "ProfilePage",
+                                        "mainEntity": {
+                                            "@type": "Person",
+                                            "name": bio.seoTitle || subdomain,
+                                            "description": bio.seoDescription,
+                                            "image": bio.ogImage,
+                                            "url": `https://${bio.sufix}.portyo.me`,
+                                            "sameAs": bio.socialLinks ? Object.values(bio.socialLinks).filter(Boolean) : []
+                                        }
+                                    }),
+                                }}
+                            />
+
+                            {/* Google Analytics */}
+                            {bio.googleAnalyticsId && (
+                                <>
+                                    <script dangerouslySetInnerHTML={{
+                                        __html: ``
+                                    }} />
+                                    <script async src={`https://www.googletagmanager.com/gtag/js?id=${bio.googleAnalyticsId}`}></script>
+                                    <script dangerouslySetInnerHTML={{
+                                        __html: `
+                                        window.dataLayer = window.dataLayer || [];
+                                        function gtag(){dataLayer.push(arguments);}
+                                        gtag('js', new Date());
+                                        gtag('config', '${bio.googleAnalyticsId}',{
+                                        'debug_mode': true});
+                                    `
+                                    }} />
+                                </>
+                            )}
+
+                            {/* Facebook Pixel */}
+                            {bio.facebookPixelId && (
+                                <>
+                                    <script dangerouslySetInnerHTML={{
+                                        __html: `
+                                        !function(f,b,e,v,n,t,s)
+                                        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                                        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                                        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                                        n.queue=[];t=b.createElement(e);t.async=!0;
+                                        t.src=v;s=b.getElementsByTagName(e)[0];
+                                        s.parentNode.insertBefore(t,s)}(window, document,'script',
+                                        'https://connect.facebook.net/en_US/fbevents.js');
+                                        fbq('init', '${bio.facebookPixelId}');
+                                        fbq('track', 'PageView');
+                                    `
+                                    }} />
+                                    <noscript><img height="1" width="1" style={{ display: 'none' }}
+                                        src={`https://www.facebook.com/tr?id=${bio.facebookPixelId}&ev=PageView&noscript=1`}
+                                    /></noscript>
+                                </>
+                            )}
+                        </>
+                    )}
+                </>
             )}
 
             <BodyWrapper {...bodyProps}>
@@ -1603,7 +1671,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         </button>
                     </div>
                 )}
-                <Scripts />
+                {!isNested && <Scripts />}
             </BodyWrapper>
         </Wrapper>
     );

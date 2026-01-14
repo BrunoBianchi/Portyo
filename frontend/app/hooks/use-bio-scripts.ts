@@ -43,26 +43,69 @@ export const useBioScripts = (bio: any) => {
                 if (feed) feed.style.display = 'block';
             };
 
+            // Determine base path (remove /shop or /blog if present)
+            let basePath = window.location.pathname;
+            if (basePath.endsWith('/shop')) basePath = basePath.replace('/shop', '');
+            if (basePath.endsWith('/blog')) basePath = basePath.replace('/blog', '');
+            if (basePath.endsWith('/')) basePath = basePath.slice(0, -1); // remove trailing slash
+
             if (tabName === 'shop') {
                 activate(shopTab, shopFeed);
                 if (!(window as any).shopLoaded) {
                     (window as any).loadProducts();
                 }
-                if (window.location.pathname !== '/shop') {
-                    window.history.pushState({ tab: 'shop' }, '', '/shop');
+                const newPath = `${basePath}/shop`;
+                if (window.location.pathname !== newPath) {
+                    window.history.pushState({ tab: 'shop' }, '', newPath);
+                    if ((window as any).gtag && bio.googleAnalyticsId) {
+                        (window as any).gtag('event', 'page_view', {
+                            page_title: 'Shop - ' + (bio.seoTitle || bio.sufix),
+                            page_location: window.location.href,
+                            page_path: newPath,
+                            send_to: bio.googleAnalyticsId
+                        });
+                    }
                 }
             } else if (tabName === 'blog') {
                 activate(blogTab, blogFeed);
                 if (!(window as any).blogLoaded) {
                     (window as any).loadBlogPosts();
                 }
-                if (window.location.pathname !== '/blog') {
-                    window.history.pushState({ tab: 'blog' }, '', '/blog');
+                const newPath = `${basePath}/blog`;
+                if (window.location.pathname !== newPath) {
+                    window.history.pushState({ tab: 'blog' }, '', newPath);
+                    if ((window as any).gtag && bio.googleAnalyticsId) {
+                        (window as any).gtag('event', 'page_view', {
+                            page_title: 'Blog - ' + (bio.seoTitle || bio.sufix),
+                            page_location: window.location.href,
+                            page_path: newPath,
+                            send_to: bio.googleAnalyticsId
+                        });
+                    }
                 }
             } else {
-                activate(linksTab, linksFeed);
-                if (window.location.pathname !== '/') {
-                    window.history.pushState({ tab: 'links' }, '', '/');
+                activate(linksTab, linksFeed); // This is 'links' tab
+                if (window.location.pathname !== basePath && basePath !== '') {
+                     window.history.pushState({ tab: 'links' }, '', basePath || '/');
+                     if ((window as any).gtag && bio.googleAnalyticsId) {
+                        (window as any).gtag('event', 'page_view', {
+                            page_title: bio.seoTitle || bio.sufix,
+                            page_location: window.location.href,
+                            page_path: basePath || '/',
+                            send_to: bio.googleAnalyticsId
+                        });
+                    }
+                } else if (window.location.pathname !== basePath && basePath === '') {
+                     // If base path is empty (root), push '/'
+                     window.history.pushState({ tab: 'links' }, '', '/');
+                     if ((window as any).gtag && bio.googleAnalyticsId) {
+                        (window as any).gtag('event', 'page_view', {
+                            page_title: bio.seoTitle || bio.sufix,
+                            page_location: window.location.href,
+                            page_path: '/',
+                            send_to: bio.googleAnalyticsId
+                        });
+                    }
                 }
             }
         };

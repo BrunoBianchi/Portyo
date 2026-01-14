@@ -41,7 +41,7 @@ export const deserializeUser = async (req: Request, res: Response, next: NextFun
                 
                 // Sync to session so subsequent requests (without header) might use it
                 // This OVERWRITES any existing session user with the one from the valid token
-                if (req.session) {
+                if (req.session && (!req.session.user || req.session.user.id !== payload.id)) {
                     req.session.user = payload;
                 }
                 

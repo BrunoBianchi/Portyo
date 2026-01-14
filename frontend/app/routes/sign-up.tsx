@@ -161,16 +161,16 @@ export default function Signup() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-center w-full px-4 py-6 rounded-xl border border-border bg-surface-alt/30 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all">
                                     <div className="flex items-center text-xl font-semibold tracking-tight whitespace-nowrap overflow-x-auto max-w-full scrollbar-hide">
+                                        <span className="text-text-muted/80">portyo.me/p/</span>
                                         <input
                                             defaultValue={sufix}
-                                            className="min-w-[2ch] bg-transparent p-0 text-text-main placeholder:text-text-muted/50 focus:outline-none text-center"
+                                            className="min-w-[2ch] bg-transparent p-0 text-text-main placeholder:text-text-muted/50 focus:outline-none text-left"
                                             placeholder="yourname"
                                             autoFocus
                                             onChange={(e) => setSufix(e.target.value)}
                                             spellCheck={false}
                                             style={{ width: Math.max(sufix.length, 8) + 'ch' }}
                                         />
-                                        <span className="text-text-muted/80">.portyo.me</span>
                                     </div>
                                 </div>
                                 <p className="text-xs text-center text-text-muted">

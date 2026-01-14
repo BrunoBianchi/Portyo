@@ -174,6 +174,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     <Globe className="w-6 h-6 text-gray-400 group-focus-within:text-primary transition-colors shrink-0 mr-4" />
 
                                     <div className="flex-1 flex items-center h-full relative">
+                                        <span className="text-xl md:text-2xl font-bold text-gray-400 select-none tracking-tight shrink-0 pl-1">portyo.me/p/</span>
                                         <input
                                             type="text"
                                             value={newUsername}
@@ -182,11 +183,10 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                                 setCreateError(null);
                                             }}
                                             placeholder="yourname"
-                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-right pr-0.5 tracking-tight w-full min-w-0"
+                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-left pl-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
                                         />
-                                        <span className="text-xl md:text-2xl font-bold text-gray-400 select-none tracking-tight shrink-0">.portyo.me</span>
                                     </div>
 
                                     <div className={`ml-4 transition-all duration-300 ${isUsernameValid || createError ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
@@ -379,7 +379,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     {bio && (
                         <div className="p-3 pb-0">
                             <a
-                                href={`https://${bio.sufix}.portyo.me`}
+                                href={`https://portyo.me/p/${bio.sufix}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
@@ -391,7 +391,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Page</span>
                                         <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
-                                            {bio.sufix}.portyo.me
+                                            portyo.me/p/{bio.sufix}
                                         </span>
                                     </div>
                                 </div>

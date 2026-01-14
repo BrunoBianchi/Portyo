@@ -1,6 +1,6 @@
-import { type LoaderFunctionArgs } from "react-router";
-import { useLoaderData, Meta, Links, Scripts } from "react-router";
-import { BioRenderer } from "~/components/public-bio/renderer";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useLoaderData } from "react-router";
+import { BioLayout } from "~/components/bio/bio-layout";
 import { BioNotFound } from "~/components/public-bio/not-found";
 import { BioLoading } from "~/components/public-bio/loading";
 
@@ -56,17 +56,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     if (!username) return { bio: null, username: null };
 
+    console.log("Fetching bio for:", username, "from base:", apiUrl);
     try {
-        const res = await fetch(`${apiUrl}/public/bio/${username}`);
+        const fetchUrl = `${apiUrl}/public/bio/${username}`;
+        console.log("Full Fetch URL:", fetchUrl);
+        const res = await fetch(fetchUrl);
+        console.log("Fetch response status:", res.status);
 
         if (res.ok) {
             const bio = await res.json();
+            console.log("Bio found:", bio?.id);
 
             // Track view if Pro (server-side tracking is problematic without session context from client)
             // The original code tracked "Page View" in useEffect. 
             // We can do that in a client component or useEffect here.
 
             return { bio, username };
+        } else {
+            console.log("Fetch not ok:", await res.text());
         }
     } catch (e) {
         console.error("Bio Fetch Error", e);
@@ -75,6 +82,57 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return { bio: null, username };
 }
 
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+    if (!data || !data.bio || !data.username) {
+        return [{ title: "Bio Not Found" }];
+    }
+    const { bio, username } = data;
+    const title = bio.seoTitle || username;
+    const description = bio.seoDescription;
+    const keywords = bio.seoKeywords;
+    const favicon = bio.favicon;
+    const url = bio.customDomain ? `https://${bio.customDomain}` : `https://portyo.me/p/${username}`;
+
+    const metaTags: any[] = [
+        { title: title },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { property: "og:url", content: url },
+        { property: "og:title", content: bio.ogTitle || title },
+        { property: "og:description", content: bio.ogDescription || description || "" },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: bio.ogTitle || title },
+        { name: "twitter:description", content: bio.ogDescription || description || "" },
+    ];
+
+    if (description) {
+        metaTags.push({ name: "description", content: description });
+    }
+    if (keywords) {
+        metaTags.push({ name: "keywords", content: keywords });
+    }
+    if (bio.ogImage) {
+        metaTags.push({ property: "og:image", content: bio.ogImage });
+        metaTags.push({ name: "twitter:image", content: bio.ogImage });
+    }
+    if (favicon) {
+        metaTags.push({ tagName: "link", rel: "icon", href: favicon });
+    }
+
+    // Canonical
+    metaTags.push({ tagName: "link", rel: "canonical", href: url });
+
+    if (bio.noIndex) {
+        metaTags.push({ name: "robots", content: "noindex, nofollow" });
+    }
+
+    if (bio.googleAnalyticsId) {
+        metaTags.push({ name: "google-site-verification", content: bio.googleAnalyticsId });
+    }
+
+    return metaTags;
+};
+
 export default function PublicBioRoute() {
     const { bio, username } = useLoaderData<typeof loader>();
 
@@ -82,33 +140,6 @@ export default function PublicBioRoute() {
     if (!bio) return <BioNotFound username={username} />;
 
     return (
-        <html lang="en">
-            <head>
-                <meta charSet="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <title>{bio.seoTitle || username}</title>
-                {bio.seoDescription && <meta name="description" content={bio.seoDescription} />}
-                {bio.seoKeywords && <meta name="keywords" content={bio.seoKeywords} />}
-                {bio.favicon && <link rel="icon" href={bio.favicon} />}
-
-                {/* Open Graph */}
-                <meta property="og:title" content={bio.ogTitle || bio.seoTitle || username} />
-                <meta property="og:description" content={bio.ogDescription || bio.seoDescription || ""} />
-                {bio.ogImage && <meta property="og:image" content={bio.ogImage} />}
-                <meta property="og:type" content="website" />
-
-                {/* Indexing */}
-                {bio.noIndex && <meta name="robots" content="noindex, nofollow" />}
-
-                <Meta />
-                <Links />
-            </head>
-            <body>
-                <BioRenderer html={bio.html} />
-
-                {/* Analytics Scripts usually on client */}
-                <Scripts />
-            </body>
-        </html>
+        <BioLayout bio={bio} subdomain={username} isNested={true} />
     );
 }

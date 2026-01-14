@@ -526,19 +526,40 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext)
+  const [announcement, setAnnouncement] = useState<{ text: string; link: string; isNew: boolean; isVisible: boolean } | null>(null);
+
+  useEffect(() => {
+    // Fetch announcement
+    const fetchAnnouncement = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const res = await fetch(`${apiUrl}/public/settings/announcement`);
+        if (res.ok) {
+          const data = await res.json();
+          setAnnouncement(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch announcement", e);
+      }
+    };
+    fetchAnnouncement();
+  }, []);
+
   return (
     <>
-      <div className="w-full bg-black text-white py-2.5 px-4 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs md:text-sm font-medium">
-          <div className="flex items-center gap-2">
-            <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">New</span>
-            <span>Launch your bio page in seconds!</span>
+      {announcement && announcement.isVisible && (
+        <div className="w-full bg-black text-white py-2.5 px-4 z-50 transition-all duration-300">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs md:text-sm font-medium">
+            <div className="flex items-center gap-2">
+              {announcement.isNew && <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">New</span>}
+              <span>{announcement.text}</span>
+            </div>
+            <Link to={announcement.link} className="flex items-center gap-1 hover:text-[#d0f224] transition-colors">
+              Get Started <span className="text-[#d0f224]">→</span>
+            </Link>
           </div>
-          <Link to="/sign-up" className="flex items-center gap-1 hover:text-[#d0f224] transition-colors">
-            Get Started <span className="text-[#d0f224]">→</span>
-          </Link>
         </div>
-      </div>
+      )}
       <header className="w-full p-6 flex justify-between items-start z-10 max-w-7xl mx-auto">
         <div className="flex flex-col items-start">
           <Link to='/' className="text-3xl font-extrabold tracking-tight mb-4">Portyo</Link>

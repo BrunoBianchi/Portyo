@@ -696,7 +696,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 };
 
 export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: string = "") => {
-  const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://${bio.sufix}.portyo.me`;
+  const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://portyo.me/p/${bio.sufix}`;
   const encodedShareUrl = encodeURIComponent(shareUrl);
 
   const animationsCss = `

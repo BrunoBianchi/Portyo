@@ -9,6 +9,9 @@ export default [
     {path:'/robot.txt',file:"routes/robots.ts", id: "robot-txt"},
     {path:'/sitemap.xml',file:"routes/sitemap.ts", id: "sitemap-xml"},
     {path:'/sitemap',file:"routes/sitemap.ts", id: "sitemap"},
+    // Per-bio robots & sitemap
+    {path:'/p/:username/robots.txt',file:"routes/robots.ts", id: "bio-robots"},
+    {path:'/p/:username/sitemap.xml',file:"routes/sitemap.ts", id: "bio-sitemap"},
     {
         path:'/dashboard',
         file:"routes/dashboard.tsx",
@@ -41,5 +44,6 @@ export default [
     { path: "blog/:postId", file: "routes/blog.$postId.tsx" },
     { path: "site-blog/:id", file: "routes/site-blog.$id.tsx" },
     { path: "shop", file: "routes/home.tsx", id: "home-shop" },
+    { path: "p/:username", file: "routes/p.$username.tsx" },
     { path: "*", file: "routes/catchall.tsx" }
 ] satisfies RouteConfig;

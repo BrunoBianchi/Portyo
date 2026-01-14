@@ -46,13 +46,24 @@ router.use('/user', userRoute); // Assuming userRoute doesn't have wildcards at 
 router.use('/blog', blogRoute);
 router.use('/site-blog', siteBlogRoute);
 
+import publicBiosRoute from "./public/bios.public.route"
+
+// ... existing imports ...
+
 router.use('/public/bio', publicBioRoute)
+router.use('/public/bios', publicBiosRoute)
 router.use('/public/instagram', instagramRoute)
 router.use('/public/youtube', youtubeRoute)
 router.use('/public/email', publicEmailRoute)
 router.use('/public/blog', publicBlogRoute)
+import publicSettingsRoute from "./public/settings.route"
+import adminRoute from "./admin/admin.route"
+
 router.use('/public/site-blog', publicSiteBlogRoute)
+router.use('/public/settings', publicSettingsRoute)
 router.use('/public/products', publicProductsRoute)
+
+router.use('/admin', adminRoute)
 router.use('/public/stripe', generateProductLinkRoute)
 router.use('/public/stripe', webhookRoute)
 router.use('/public/automation', automationTriggerRoute)
@@ -79,6 +90,6 @@ router.use('/templates', authMiddleware, templateRoute)
 router.use('/bookings', authMiddleware, bookingRoute)
 
 // Bio Route (likely contains wildcard /:id) should be last
-router.use('/bio', bioRoute);
+router.use('/bio', authMiddleware, bioRoute);
 
 export default router;
