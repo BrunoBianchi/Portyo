@@ -11,6 +11,11 @@ services:
     environment:
       - PORT=8000
       - DB_SSL=false
+      - MAILGUN_API_SECRET=${MAILGUN_API_SECRET}
+      - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
+      - MAILGUN_FROM_EMAIL=${MAILGUN_FROM_EMAIL}
+      - FRONTEND_URL=${FRONTEND_URL:-https://portyo.me}
+      - BACKEND_URL=${BACKEND_URL:-https://api.portyo.me}
     depends_on:
       - postgres
       - redis
