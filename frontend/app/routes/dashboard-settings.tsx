@@ -157,7 +157,7 @@ export default function DashboardSettings() {
     } else if (activeTab === 'admin' && isAdmin) {
       // Fetch Admin Settings
       const fetchAdminSettings = async () => {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me/api';
         try {
           const res = await fetch(`${apiUrl}/public/settings/announcement`);
           if (res.ok) {
@@ -183,7 +183,7 @@ export default function DashboardSettings() {
     e.preventDefault();
     setIsAdminLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me/api';
       import("~/services/api").then(({ api }) => {
         api.post(`${apiUrl}/admin/announcement`, adminAnnouncement).then(() => {
           alert("Announcement updated!");

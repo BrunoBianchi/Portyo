@@ -32,7 +32,7 @@ import {
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 
-import { UpgradePopup } from "./upgrade-popup";
+import { UpgradePopup } from "./shared/upgrade-popup";
 
 interface SidebarProps {
     isOpen?: boolean;

@@ -26,12 +26,16 @@ services:
     build:
       context: ../frontend
       dockerfile: ../deployment/frontend.Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.portyo.me}
     restart: always
     env_file:
       - .env
     environment:
       - PORT=3000
       - HOST=0.0.0.0
+      - API_URL=${API_URL:-https://api.portyo.me/api}
+      - VITE_API_URL=${VITE_API_URL:-https://api.portyo.me}
     networks:
       - app-network
 

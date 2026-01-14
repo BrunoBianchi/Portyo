@@ -12,6 +12,10 @@ RUN pnpm install
 # Copy source code
 COPY . .
 
+# Build arguments for Vite environment variables
+ARG VITE_API_URL=https://api.portyo.me
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build the application
 RUN pnpm run build
 

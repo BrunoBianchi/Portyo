@@ -12,7 +12,7 @@ const resolveBaseURL = () => {
     
     // In production, we should default to the designated API domain if no env is set
     const defaultApiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) 
-        ? "http://localhost:3000" // Default local backend port
+        ? "http://localhost:8000" // Default local backend port
         : "https://api.portyo.me";
 
     const rawBase = envApiUrl || nodeEnvApiUrl || defaultApiUrl;
