@@ -10,6 +10,7 @@ services:
       - .env
     environment:
       - PORT=8000
+      - DB_SSL=false
     depends_on:
       - postgres
       - redis
