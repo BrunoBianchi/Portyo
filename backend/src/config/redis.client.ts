@@ -2,16 +2,24 @@ import Redis from "ioredis";
 import { env } from "./env";
 import { logger } from "../shared/utils/logger";
 
-const redisClient = new Redis({
+const redisOptions: any = {
   host: env.REDIS_HOST || "localhost",
   port: env.REDIS_PORT || 6379,
-  username: env.REDIS_USERNAME,
-  password: env.REDIS_PASSWORD,
-  retryStrategy: (times) => {
+  retryStrategy: (times: number) => {
     const delay = Math.min(times * 50, 2000);
     return delay;
   },
-});
+};
+
+// Only add auth options if they are defined
+if (env.REDIS_PASSWORD) {
+  redisOptions.password = env.REDIS_PASSWORD;
+}
+if (env.REDIS_USERNAME) {
+  redisOptions.username = env.REDIS_USERNAME;
+}
+
+const redisClient = new Redis(redisOptions);
 
 redisClient.on("connect", () => {
   logger.info("Redis client connected");

@@ -11,6 +11,9 @@ services:
     environment:
       - PORT=8000
       - DB_SSL=false
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - MAILGUN_API_SECRET=${MAILGUN_API_SECRET}
       - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
       - MAILGUN_FROM_EMAIL=${MAILGUN_FROM_EMAIL}

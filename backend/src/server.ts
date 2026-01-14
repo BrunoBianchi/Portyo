@@ -12,7 +12,6 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { logger } from "./shared/utils/logger";
 import { RedisStore } from "connect-redis";
-import Redis from "ioredis";
 
 const app = express();
 app.set('trust proxy', 1); // Trust Nginx proxy
@@ -114,16 +113,8 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 // Cookie parser for refresh tokens
 app.use(cookieParser());
 
-
-
-// ... (existing imports)
-
-// Initialize Redis client using env vars
-const redisClient = new Redis({
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD || undefined,
-});
+// Import the shared Redis client
+import redisClient from "./config/redis.client";
 
 app.use(
   session.default({
