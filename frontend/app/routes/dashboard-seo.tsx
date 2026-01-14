@@ -159,7 +159,7 @@ export default function DashboardSeo() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Favicon</label>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Page Favicon</label>
                                 <p className="text-xs text-text-muted mb-3">Upload a square image (PNG, JPG) for your browser tab icon. Recommended 512x512px.</p>
                                 <ImageUpload
                                     value={favicon}

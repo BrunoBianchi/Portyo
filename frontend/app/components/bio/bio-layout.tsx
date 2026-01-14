@@ -1612,7 +1612,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             `
                         }} />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <img src="/favicon.svg" alt="Portyo Logo" style={{
+                            <img src="/favicons/192x192.png" alt="Portyo Logo" style={{
                                 width: '42px',
                                 height: '42px',
                                 borderRadius: '12px',
