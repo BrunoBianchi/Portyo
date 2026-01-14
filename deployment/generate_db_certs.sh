@@ -35,13 +35,10 @@ chmod 600 "$DATA_DIR/root.key"
 chmod 644 "$DATA_DIR/server.crt"
 chmod 644 "$DATA_DIR/root.crt"
 
-# Set ownership to postgres user (uid 70 for alpine, 999 for debian).
-# Since we use postgres:15-alpine, we use 70.
-# We try to use chown, ignoring errors if user doesn't exist (using numeric IDs is safer).
-echo "Setting ownership to 70:70 (postgres:postgres)..."
-chown 70:70 "$DATA_DIR/server.key" || echo "Warning: Could not chown server.key"
-chown 70:70 "$DATA_DIR/server.crt" || echo "Warning: Could not chown server.crt"
-chown 70:70 "$DATA_DIR/root.key" || echo "Warning: Could not chown root.key"
-chown 70:70 "$DATA_DIR/root.crt" || echo "Warning: Could not chown root.crt"
+# Set ownership to postgres user (uid 70 for alpine).
+# We use docker to set permissions to ensure it matches the container's UID logic correctly,
+# specifically for mapped volumes where host user might differ.
+echo "Setting ownership to UID 70 using Docker Alpine..."
+docker run --rm -v "$PWD/$DATA_DIR":/certs alpine sh -c "chown -R 70:70 /certs && chmod 600 /certs/*.key && chmod 644 /certs/*.crt"
 
 echo "Certificates generated in $DATA_DIR"
