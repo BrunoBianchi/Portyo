@@ -4,7 +4,8 @@ const router:Router = Router()
 
 router.get("/",async(req,res)=>{
  
-     return res.status(200).json(await getBiosFromUser(req.session!.user!.id as string, ['integrations']))
+      if(!req.user?.id) return res.status(401).json({error:"Unauthorized"})
+      return res.status(200).json(await getBiosFromUser(req.user.id as string, ['integrations']))
 })
 
 
