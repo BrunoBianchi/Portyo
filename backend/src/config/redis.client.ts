@@ -15,7 +15,8 @@ const redisOptions: any = {
 if (env.REDIS_PASSWORD) {
   redisOptions.password = env.REDIS_PASSWORD;
 }
-if (env.REDIS_USERNAME) {
+// Redis ACL username only makes sense with a password; avoid sending malformed AUTH.
+if (env.REDIS_USERNAME && env.REDIS_PASSWORD) {
   redisOptions.username = env.REDIS_USERNAME;
 }
 

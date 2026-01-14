@@ -353,7 +353,7 @@ async function invalidateBioCache(bio: BioEntity): Promise<void> {
         if (bio.customDomain) {
             keys.push(getBioCacheKey(bio.customDomain, 'domain'));
         }
-        await redisClient.del(keys);
+        await redisClient.del(...keys);
     } catch (err) {
         console.error("Redis Cache Error (Del):", err);
     }
