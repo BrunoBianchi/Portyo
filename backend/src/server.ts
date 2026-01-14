@@ -15,6 +15,7 @@ import { RedisStore } from "connect-redis";
 import Redis from "ioredis";
 
 const app = express();
+app.set('trust proxy', 1); // Trust Nginx proxy
 
 app.use(helmet());
 app.use(compression());
