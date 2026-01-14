@@ -13,24 +13,52 @@ router.get("/exchange_authorization_token", async (req: Request, res: Response, 
         
         const data = await parseGoogleAccessToken(token as string)
         
+        // Safely escape JSON for inline script to prevent XSS and parse errors
+        const jsonData = JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+        
         const html = `
         <html>
             <body>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
                     <h3>Authentication successful</h3>
-                    <p>You can close this window now.</p>
+                    <p>Redirecting...</p>
                 </div>
                 <script>
-                    try {
-                        if (window.opener) {
-                            window.opener.postMessage(${JSON.stringify(data)}, "*");
-                        } else {
-                            console.warn("No window.opener found. This popup might have been opened separately.");
+                    (function() {
+                        var data = ${jsonData};
+                        var messageSent = false;
+                        
+                        try {
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.postMessage(data, "*");
+                                messageSent = true;
+                                console.log("Message sent to opener");
+                            } else {
+                                console.warn("No window.opener found or it was closed.");
+                            }
+                        } catch (e) {
+                            console.error("Failed to post message to opener", e);
                         }
-                    } catch (e) {
-                         console.error("Failed to post message to opener", e);
-                    }
-                    setTimeout(() => window.close(), 1000);
+                        
+                        // Try to close the popup
+                        function tryClose() {
+                            try {
+                                window.close();
+                            } catch (e) {
+                                console.warn("Could not close window");
+                            }
+                        }
+                        
+                        if (messageSent) {
+                            // Give time for message to be processed then close
+                            setTimeout(tryClose, 500);
+                        } else {
+                            // If we couldn't send message, redirect to main site after a delay
+                            setTimeout(function() {
+                                window.location.href = "https://portyo.me/login?oauth=success&token=" + encodeURIComponent(data.token);
+                            }, 1500);
+                        }
+                    })();
                 </script>
             </body>
         </html>

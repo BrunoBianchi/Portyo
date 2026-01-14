@@ -1,6 +1,6 @@
 import type { Route } from "./+types/login";
-import { Link, useNavigate } from "react-router";
-import { useContext, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { useContext, useState, useEffect } from "react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import AuthContext from "~/contexts/auth.context";
 import { AlertCircle } from "lucide-react";
@@ -12,11 +12,31 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Login() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const authContext = useContext(AuthContext)
+
+    // Handle OAuth fallback via URL params (when postMessage fails)
+    useEffect(() => {
+        const oauthStatus = searchParams.get('oauth');
+        const token = searchParams.get('token');
+
+        if (oauthStatus === 'success' && token) {
+            // Clear the URL params
+            window.history.replaceState({}, document.title, '/login');
+
+            // Try to validate and login with the token
+            authContext.loginWithToken(token)
+                .then(() => navigate('/'))
+                .catch((err: any) => {
+                    console.error('Failed to login with OAuth token:', err);
+                    setError('OAuth login failed. Please try again.');
+                });
+        }
+    }, [searchParams]);
 
     async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -40,22 +60,45 @@ export default function Login() {
         const popup = window.open(
             "https://api.portyo.me/api/google/auth",
             "Google Login",
-            `width = ${width}, height = ${height}, left = ${left}, top = ${top} `
+            `width=${width},height=${height},left=${left},top=${top}`
         );
 
         const handleMessage = async (event: MessageEvent) => {
-            if (event.origin !== "https://api.portyo.me" && event.origin !== "http://localhost:3000") return;
+            console.log("Received message from origin:", event.origin, event.data);
+
+            // Allow messages from the API and localhost (any port)
+            const allowedOrigins = ["https://api.portyo.me", "http://localhost:3000", "http://localhost:5173", "http://localhost:5174"];
+            const isAllowed = allowedOrigins.includes(event.origin) || event.origin.includes("localhost");
+
+            if (!isAllowed) {
+                console.warn("Origin not allowed:", event.origin);
+                return;
+            }
 
             const data = event.data;
-            if (data.token && data.user) {
+            if (data && data.token && data.user) {
+                console.log("Login successful, navigating...");
                 authContext.socialLogin(data.user, data.token);
+                popup?.close();
+                window.removeEventListener("message", handleMessage);
                 navigate("/");
+            } else if (data && data.error) {
+                console.error("Login failed with error:", data.error);
+                setError(data.error);
+                popup?.close();
+                window.removeEventListener("message", handleMessage);
             }
-            popup?.close();
-            window.removeEventListener("message", handleMessage);
         };
 
         window.addEventListener("message", handleMessage);
+
+        // Cleanup listener if popup is closed manually
+        const checkPopupClosed = setInterval(() => {
+            if (popup?.closed) {
+                clearInterval(checkPopupClosed);
+                window.removeEventListener("message", handleMessage);
+            }
+        }, 1000);
     };
     return (
         <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">

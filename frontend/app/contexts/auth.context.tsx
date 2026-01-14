@@ -24,6 +24,7 @@ interface AuthContextData {
     loading: boolean;
     login(email: string, password: string): Promise<void>;
     socialLogin(user: User, token: string): void;
+    loginWithToken(token: string): Promise<void>;
     register(email: string, password: string, fullname: string, sufix: string): Promise<void>;
     logout(): void;
     // Plan checking helpers
@@ -90,6 +91,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCookie('@App:token', token, { path: '/' });
     }, [setCookie]);
 
+    // Login with just a token (e.g., OAuth fallback when postMessage fails)
+    const loginWithToken = useCallback(async (token: string) => {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setCookie('@App:token', token, { path: '/' });
+
+        const response = await api.get('/user/me');
+        setUser(response.data);
+        setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
+    }, [setCookie]);
+
     const register = useCallback(async (email: string, password: string, fullname: string, sufix: string) => {
         const response = await api.post("/user/", {
             sufix, fullname, email, password
@@ -144,12 +155,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         register,
         socialLogin,
+        loginWithToken,
         refreshUser,
         isPro,
         isStandard,
         isFree,
         canAccessFeature
-    }), [user, loading, login, logout, register, socialLogin, refreshUser, isPro, isStandard, isFree, canAccessFeature]);
+    }), [user, loading, login, logout, register, socialLogin, loginWithToken, refreshUser, isPro, isStandard, isFree, canAccessFeature]);
 
     return (
         <AuthContext.Provider value={value}>
