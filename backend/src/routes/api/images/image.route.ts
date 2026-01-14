@@ -101,6 +101,64 @@ router.get("/block/:userId/:imageId/:filename", async (req, res) => {
     }
 });
 
+router.get("/favicon/:userId/:imageId/:filename", async (req, res) => {
+    try {
+        const { userId, imageId, filename } = req.params;
+        
+        const size = filename.split('.')[0];
+        
+        if (!['full'].includes(size)) {
+            return res.status(400).json({ message: "Invalid image size" });
+        }
+
+        const key = `user:${userId}:favicon:${imageId}:${size}`;
+        
+        const imageBuffer = await redisClient.getBuffer(key);
+
+        if (!imageBuffer) {
+            return res.status(404).json({ message: "Image not found" });
+        }
+
+        res.set("Content-Type", "image/png");
+        res.set("Cache-Control", "public, max-age=31536000");
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+        return res.send(imageBuffer);
+
+    } catch (error) {
+        logger.error("Error serving favicon from Redis:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+router.get("/og/:userId/:imageId/:filename", async (req, res) => {
+    try {
+        const { userId, imageId, filename } = req.params;
+        
+        const size = filename.split('.')[0];
+        
+        if (!['full'].includes(size)) {
+            return res.status(400).json({ message: "Invalid image size" });
+        }
+
+        const key = `user:${userId}:og:${imageId}:${size}`;
+        
+        const imageBuffer = await redisClient.getBuffer(key);
+
+        if (!imageBuffer) {
+            return res.status(404).json({ message: "Image not found" });
+        }
+
+        res.set("Content-Type", "image/png");
+        res.set("Cache-Control", "public, max-age=31536000");
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+        return res.send(imageBuffer);
+
+    } catch (error) {
+        logger.error("Error serving OG image from Redis:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 router.get("/:userId/:filename", async (req, res) => {
     try {
         const { userId, filename } = req.params;

@@ -1589,18 +1589,19 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         bottom: '24px',
                         left: '24px',
                         width: 'auto',
-                        minWidth: '320px',
-                        maxWidth: '380px',
+                        minWidth: '300px',
                         zIndex: 995,
-                        backgroundColor: '#ffffff',
-                        borderRadius: '16px',
-                        padding: '12px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #000000 100%)',
+                        borderRadius: '20px',
+                        padding: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                        border: '1px solid rgba(0,0,0,0.05)',
-                        animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+                        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        backdropFilter: 'blur(10px)',
+                        color: 'white'
                     }}>
                         <style dangerouslySetInnerHTML={{
                             __html: `
@@ -1610,37 +1611,41 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 }
                             `
                         }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '10px',
-                                background: 'linear-gradient(135deg, #FF4D4D 0%, #F9CB28 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '20px',
-                                flexShrink: 0
-                            }}>P</div>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '14px', fontWeight: '700', color: '#111827', lineHeight: '1.2' }}>Portyo</span>
-                                <span style={{ fontSize: '12px', fontWeight: '500', color: '#6B7280', lineHeight: '1.2' }}>Create your bio link today!</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <img src="/favicon.svg" alt="Portyo Logo" style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.15)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                objectFit: 'cover',
+                                padding: '8px',
+                                flexShrink: 0,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', lineHeight: '1.2', letterSpacing: '-0.3px' }}>Portyo</span>
+                                <span style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.8)', lineHeight: '1.2' }}>Create yours today</span>
                             </div>
                         </div>
                         <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style={{
-                            background: '#111827',
-                            color: 'white',
+                            background: 'white',
+                            color: 'black',
                             border: 'none',
-                            borderRadius: '9999px',
-                            padding: '8px 16px',
-                            fontSize: '13px',
-                            fontWeight: '600',
+                            borderRadius: '99px',
+                            padding: '8px 18px',
+                            fontSize: '12px',
+                            fontWeight: '700',
                             cursor: 'pointer',
                             textDecoration: 'none',
-                            whiteSpace: 'nowrap'
-                        }}>
+                            whiteSpace: 'nowrap',
+                            marginLeft: '20px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            transition: 'transform 0.2s ease',
+                        }}
+                            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                        >
                             Get it
                         </a>
                         <button
@@ -1649,22 +1654,22 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             style={{
                                 position: 'absolute',
                                 top: '-10px',
-                                right: '-8px',
+                                right: '-10px',
                                 background: 'white',
-                                border: '1px solid rgba(0,0,0,0.08)',
+                                border: 'none',
                                 borderRadius: '50%',
-                                width: '24px',
-                                height: '24px',
+                                width: '22px',
+                                height: '22px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#6B7280',
+                                color: 'black',
                                 cursor: 'pointer',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                                 padding: 0
                             }}
                         >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>

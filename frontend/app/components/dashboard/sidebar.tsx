@@ -27,7 +27,8 @@ import {
     Bell,
     Calendar,
     LayoutTemplate,
-    Lock
+    Lock,
+    Megaphone
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -119,7 +120,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     ];
 
     if (user?.email === "bruno2002.raiado@gmail.com") {
-        navItems.push({ name: "Site Blog", path: "/dashboard/site-blog", icon: Globe });
+        navItems.push({ name: "Announcements", path: "/dashboard/site-blog", icon: Megaphone });
     }
 
     return (

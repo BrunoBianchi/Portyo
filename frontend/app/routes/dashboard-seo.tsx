@@ -9,8 +9,10 @@ import {
     Save,
     Image as ImageIcon,
     Globe,
-    Sparkles
+    Sparkles,
+    FileIcon
 } from "lucide-react";
+import { ImageUpload } from "~/components/dashboard/editor/image-upload";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -155,6 +157,17 @@ export default function DashboardSeo() {
                                     placeholder="portfolio, links, creator, design (comma separated)"
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Favicon</label>
+                                <p className="text-xs text-text-muted mb-3">Upload a square image (PNG, JPG) for your browser tab icon. Recommended 512x512px.</p>
+                                <ImageUpload
+                                    value={favicon}
+                                    onChange={setFavicon}
+                                    endpoint="/user/upload-favicon"
+                                    className="max-w-md"
+                                />
+                            </div>
                         </div>
                     </section>
 
@@ -196,25 +209,14 @@ export default function DashboardSeo() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Image URL</label>
-                                <div className="space-y-4">
-                                    <input
-                                        type="text"
+                                <div>
+                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Share Image</label>
+                                    <p className="text-xs text-text-muted mb-3">Image that appears when your link is shared on social media. Recommended 1200x630px.</p>
+                                    <ImageUpload
                                         value={ogImage}
-                                        onChange={(e) => setOgImage(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                                        placeholder="https://example.com/image.jpg"
+                                        onChange={setOgImage}
+                                        endpoint="/user/upload-og-image"
                                     />
-                                    <div className="aspect-video rounded-xl bg-surface-alt border border-border border-dashed flex items-center justify-center overflow-hidden relative group transition-all hover:border-primary/50">
-                                        {ogImage ? (
-                                            <img src={ogImage} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                        ) : (
-                                            <div className="text-center p-6">
-                                                <ImageIcon className="w-8 h-8 text-text-muted mx-auto mb-3 opacity-50" />
-                                                <p className="text-xs text-text-muted font-medium">Preview will appear here</p>
-                                            </div>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
                         </div>

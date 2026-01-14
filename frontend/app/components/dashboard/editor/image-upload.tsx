@@ -8,6 +8,7 @@ interface ImageUploadProps {
     label?: string;
     className?: string;
     placeholder?: string;
+    endpoint?: string;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -15,7 +16,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     onChange,
     label,
     className = "",
-    placeholder = "Upload or paste URL"
+    placeholder = "Upload or paste URL",
+    endpoint = "/user/upload-block-image"
 }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -65,7 +67,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         formData.append("image", file);
 
         try {
-            const res = await api.post("/user/upload-block-image", formData, {
+            const res = await api.post(endpoint, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },

@@ -131,3 +131,45 @@ export const processBlockImage = async (file: Express.Multer.File, userId: strin
     // Let's use /api/images/block/:userId/:imageId/full.png
     return `${baseUrl}/api/images/block/${userId}/${imageId}/full.png`;
 };
+
+export const processFavicon = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate Favicon - 512x512 square (handled nicely by browsers even if they need smaller)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    const fullBuffer = await sharp(file.buffer)
+        .resize(512, 512, { fit: 'cover' })
+        .png({ quality: 90 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:favicon:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:favicon:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const imageId = `${timestamp}-${uniqueId}`;
+    return `${baseUrl}/api/images/favicon/${userId}/${imageId}/full.png`;
+};
+
+export const processOgImage = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate OG Image - 1200x630 (Standard OG size)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    const fullBuffer = await sharp(file.buffer)
+        .resize(1200, 630, { fit: 'cover' })
+        .png({ quality: 85 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:og:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:og:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const imageId = `${timestamp}-${uniqueId}`;
+    return `${baseUrl}/api/images/og/${userId}/${imageId}/full.png`;
+};
