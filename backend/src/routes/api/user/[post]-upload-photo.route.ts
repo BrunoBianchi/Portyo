@@ -4,7 +4,12 @@ import { processProfileImage } from "../../../services/image.service";
 import { requireAuth } from "../../../middlewares/auth.middleware";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 15 * 1024 * 1024, // 15MB max
+    },
+});
 
 router.post("/upload-photo", requireAuth, upload.single("photo"), async (req, res) => {
     try {
