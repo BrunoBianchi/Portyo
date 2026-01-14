@@ -12,7 +12,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { logger } from "./shared/utils/logger";
 import { RedisStore } from "connect-redis";
-import redisClient from "./config/redis.client";
+import redisClient, { redisEnabled } from "./config/redis.client";
 
 const app = express();
 app.set('trust proxy', 1); // Trust Nginx proxy
@@ -116,7 +116,7 @@ app.use(cookieParser());
 
 app.use(
   session.default({
-    store: new RedisStore({ client: redisClient }),
+    store: redisEnabled ? new RedisStore({ client: redisClient }) : undefined,
     secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false, // Recommended for Redis store to save storage
