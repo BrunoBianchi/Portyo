@@ -11,6 +11,8 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { logger } from "./shared/utils/logger";
+import { RedisStore } from "connect-redis";
+import Redis from "ioredis";
 
 const app = express();
 
@@ -101,12 +103,28 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 // Cookie parser for refresh tokens
 app.use(cookieParser());
 
+
+
+// ... (existing imports)
+
+// Initialize Redis client using env vars
+const redisClient = new Redis({
+  host: env.REDIS_HOST,
+  port: env.REDIS_PORT,
+  password: env.REDIS_PASSWORD,
+});
+
 app.use(
   session.default({
+    store: new RedisStore({ client: redisClient }),
     secret: env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: env.NODE_ENV === "production" },
+    saveUninitialized: false, // Recommended for Redis store to save storage
+    cookie: { 
+      secure: env.NODE_ENV === "production",
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+    },
   })
 );
 

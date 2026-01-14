@@ -31,7 +31,7 @@ export const AppDataSource = new DataSource({
     logging: false,
     ssl: env.DB_SSL ? {
         rejectUnauthorized: false,
-        ca: env.DB_CA,
+        ca: env.DB_CA ? (env.DB_CA.includes("BEGIN CERTIFICATE") ? env.DB_CA : require("fs").readFileSync(env.DB_CA).toString()) : undefined,
     } : false,
 })
 
