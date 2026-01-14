@@ -2,6 +2,7 @@ import { Request, Response, Router, NextFunction } from "express"
 import z from "zod"
 import { parseGoogleAccessToken } from "../../../shared/services/google.service"
 import { logger } from "../../../shared/utils/logger"
+import { env } from "../../../config/env"
 
 const router: Router = Router()
 
@@ -13,85 +14,31 @@ router.get("/exchange_authorization_token", async (req: Request, res: Response, 
         
         const data = await parseGoogleAccessToken(token as string)
         
+        // Create session for the user
+        if (req.session) {
+            (req.session as any).userId = data.user.id;
+            (req.session as any).email = data.user.email;
+            (req.session as any).isAuthenticated = true;
+        }
+        
         // Build redirect URL with token - redirect to frontend
-        const frontendUrl = process.env.FRONTEND_URL || 'https://portyo.me';
-        const redirectUrl = `${frontendUrl}/login?oauth=success&token=${encodeURIComponent(data.token)}`;
+        const frontendUrl = env.FRONTEND_URL || 'https://portyo.me';
+        const redirectUrl = `${frontendUrl}/login?token=${encodeURIComponent(data.token)}`;
         
-        // Safely escape JSON for inline script
-        const jsonData = JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
-        
-        const html = `
-        <html>
-            <body>
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
-                    <h3>Authentication successful</h3>
-                    <p>Redirecting...</p>
-                </div>
-                <script>
-                    (function() {
-                        var data = ${jsonData};
-                        var redirectUrl = "${redirectUrl}";
-                        var messageSent = false;
-                        
-                        try {
-                            // Try postMessage first (if popup opened from same origin)
-                            if (window.opener && !window.opener.closed) {
-                                window.opener.postMessage(data, "*");
-                                messageSent = true;
-                                console.log("Message sent to opener");
-                                
-                                // Try to close
-                                setTimeout(function() {
-                                    try { window.close(); } catch(e) {}
-                                }, 300);
-                                
-                                // Fallback: if window doesn't close after 1s, redirect
-                                setTimeout(function() {
-                                    window.location.href = redirectUrl;
-                                }, 1000);
-                            } else {
-                                // No opener - redirect immediately
-                                window.location.href = redirectUrl;
-                            }
-                        } catch (e) {
-                            console.error("Error during OAuth callback:", e);
-                            window.location.href = redirectUrl;
-                        }
-                    })();
-                </script>
-            </body>
-        </html>
-        `;
-        res.send(html)
+        // Save session and redirect
+        req.session.save((err) => {
+            if (err) {
+                logger.error("Failed to save session", err);
+            }
+            res.redirect(redirectUrl);
+        });
     } catch (error: any) {
         logger.error("Google token exchange failed", error);
         
-        // Send error back to opener
-        const errorData = {
-            error: error.message || "Authentication failed"
-        };
-
-        const html = `
-        <html>
-            <body>
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: red;">
-                    <h3>Authentication Failed</h3>
-                    <p>${error.message || "Unknown error"}</p>
-                </div>
-                <script>
-                    try {
-                        if (window.opener) {
-                            window.opener.postMessage(${JSON.stringify(errorData)}, "*");
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    // Keep window open so user sees error
-                </script>
-            </body>
-        </html>
-        `;
-        res.send(html);
+        // Redirect to frontend with error
+        const frontendUrl = env.FRONTEND_URL || 'https://portyo.me';
+        const errorMessage = encodeURIComponent(error.message || "Authentication failed");
+        res.redirect(`${frontendUrl}/login?error=${errorMessage}`);
     }
 })
 

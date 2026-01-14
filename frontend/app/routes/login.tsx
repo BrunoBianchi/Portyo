@@ -19,12 +19,19 @@ export default function Login() {
     const [error, setError] = useState<string | null>(null);
     const authContext = useContext(AuthContext)
 
-    // Handle OAuth fallback via URL params (when postMessage fails)
+    // Handle OAuth callback via URL params (redirect flow)
     useEffect(() => {
-        const oauthStatus = searchParams.get('oauth');
         const token = searchParams.get('token');
+        const errorParam = searchParams.get('error');
 
-        if (oauthStatus === 'success' && token) {
+        if (errorParam) {
+            // Clear the URL params
+            window.history.replaceState({}, document.title, '/login');
+            setError(decodeURIComponent(errorParam));
+            return;
+        }
+
+        if (token) {
             // Clear the URL params
             window.history.replaceState({}, document.title, '/login');
 
@@ -52,53 +59,11 @@ export default function Login() {
     }
 
     const handleGoogleLogin = () => {
-        const width = 500;
-        const height = 600;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-
-        const popup = window.open(
-            "https://api.portyo.me/api/google/auth",
-            "Google Login",
-            `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        const handleMessage = async (event: MessageEvent) => {
-            console.log("Received message from origin:", event.origin, event.data);
-
-            // Allow messages from the API and localhost (any port)
-            const allowedOrigins = ["https://api.portyo.me", "http://localhost:3000", "http://localhost:5173", "http://localhost:5174"];
-            const isAllowed = allowedOrigins.includes(event.origin) || event.origin.includes("localhost");
-
-            if (!isAllowed) {
-                console.warn("Origin not allowed:", event.origin);
-                return;
-            }
-
-            const data = event.data;
-            if (data && data.token && data.user) {
-                console.log("Login successful, navigating...");
-                authContext.socialLogin(data.user, data.token);
-                popup?.close();
-                window.removeEventListener("message", handleMessage);
-                navigate("/");
-            } else if (data && data.error) {
-                console.error("Login failed with error:", data.error);
-                setError(data.error);
-                popup?.close();
-                window.removeEventListener("message", handleMessage);
-            }
-        };
-
-        window.addEventListener("message", handleMessage);
-
-        // Cleanup listener if popup is closed manually
-        const checkPopupClosed = setInterval(() => {
-            if (popup?.closed) {
-                clearInterval(checkPopupClosed);
-                window.removeEventListener("message", handleMessage);
-            }
-        }, 1000);
+        // Use page redirect instead of popup - use dynamic API URL
+        const apiUrl = typeof window !== 'undefined' && window.location.hostname.includes('localhost')
+            ? 'http://localhost:3000'
+            : 'https://api.portyo.me';
+        window.location.href = `${apiUrl}/api/google/auth`;
     };
     return (
         <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
