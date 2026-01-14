@@ -493,8 +493,36 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                                 <link rel="icon" href={bio.favicon} />
                                 <script dangerouslySetInnerHTML={{
                                     __html: `
-                                        // Remove default Portyo favicons when bio has custom favicon
-                                        document.querySelectorAll('link[rel="icon"][href^="/favicons/"]').forEach(el => el.remove());
+                                        (function() {
+                                            // Function to remove default Portyo favicons
+                                            function removeDefaultFavicons() {
+                                                document.querySelectorAll('link[rel="icon"][href^="/favicons/"]').forEach(function(el) {
+                                                    el.parentNode.removeChild(el);
+                                                });
+                                            }
+                                            
+                                            // Remove immediately
+                                            removeDefaultFavicons();
+                                            
+                                            // Also observe for any new favicon links and remove them
+                                            var observer = new MutationObserver(function(mutations) {
+                                                mutations.forEach(function(mutation) {
+                                                    mutation.addedNodes.forEach(function(node) {
+                                                        if (node.nodeName === 'LINK' && node.rel === 'icon' && node.href && node.href.includes('/favicons/')) {
+                                                            node.parentNode.removeChild(node);
+                                                        }
+                                                    });
+                                                });
+                                            });
+                                            
+                                            observer.observe(document.head, { childList: true, subtree: true });
+                                            
+                                            // Also run after hydration
+                                            if (document.readyState === 'loading') {
+                                                document.addEventListener('DOMContentLoaded', removeDefaultFavicons);
+                                            }
+                                            window.addEventListener('load', removeDefaultFavicons);
+                                        })();
                                     `
                                 }} />
                             </>

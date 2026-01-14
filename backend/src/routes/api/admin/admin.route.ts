@@ -12,14 +12,23 @@ router.post('/announcement', async (req, res) => {
             return res.status(403).json({ error: "Unauthorized" });
         }
 
-        const { text, link, isNew, isVisible } = req.body;
+        const { text, link, badge, isNew, isVisible, bgColor, textColor, fontSize, textAlign } = req.body;
         
         // Validation simple
         if (typeof text !== 'string' || typeof link !== 'string') {
              return res.status(400).json({ error: "Invalid payload" });
         }
 
-        const value = { text, link, isNew: !!isNew, isVisible: !!isVisible };
+        const value = { 
+            text, 
+            link, 
+            badge: badge || (isNew ? 'new' : 'none'), // Use badge field, fallback to isNew for legacy
+            isVisible: !!isVisible,
+            bgColor: bgColor || '#000000',
+            textColor: textColor || '#ffffff',
+            fontSize: fontSize || '14',
+            textAlign: textAlign || 'left'
+        };
         await updateSystemSetting('announcement_bar', value);
 
         res.json({ success: true, value });
@@ -30,3 +39,4 @@ router.post('/announcement', async (req, res) => {
 });
 
 export default router;
+

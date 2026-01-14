@@ -13,7 +13,11 @@ router.get("/exchange_authorization_token", async (req: Request, res: Response, 
         
         const data = await parseGoogleAccessToken(token as string)
         
-        // Safely escape JSON for inline script to prevent XSS and parse errors
+        // Build redirect URL with token - redirect to frontend
+        const frontendUrl = process.env.FRONTEND_URL || 'https://portyo.me';
+        const redirectUrl = `${frontendUrl}/login?oauth=success&token=${encodeURIComponent(data.token)}`;
+        
+        // Safely escape JSON for inline script
         const jsonData = JSON.stringify(data).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
         
         const html = `
@@ -26,37 +30,32 @@ router.get("/exchange_authorization_token", async (req: Request, res: Response, 
                 <script>
                     (function() {
                         var data = ${jsonData};
+                        var redirectUrl = "${redirectUrl}";
                         var messageSent = false;
                         
                         try {
+                            // Try postMessage first (if popup opened from same origin)
                             if (window.opener && !window.opener.closed) {
                                 window.opener.postMessage(data, "*");
                                 messageSent = true;
                                 console.log("Message sent to opener");
+                                
+                                // Try to close
+                                setTimeout(function() {
+                                    try { window.close(); } catch(e) {}
+                                }, 300);
+                                
+                                // Fallback: if window doesn't close after 1s, redirect
+                                setTimeout(function() {
+                                    window.location.href = redirectUrl;
+                                }, 1000);
                             } else {
-                                console.warn("No window.opener found or it was closed.");
+                                // No opener - redirect immediately
+                                window.location.href = redirectUrl;
                             }
                         } catch (e) {
-                            console.error("Failed to post message to opener", e);
-                        }
-                        
-                        // Try to close the popup
-                        function tryClose() {
-                            try {
-                                window.close();
-                            } catch (e) {
-                                console.warn("Could not close window");
-                            }
-                        }
-                        
-                        if (messageSent) {
-                            // Give time for message to be processed then close
-                            setTimeout(tryClose, 500);
-                        } else {
-                            // If we couldn't send message, redirect to main site after a delay
-                            setTimeout(function() {
-                                window.location.href = "https://portyo.me/login?oauth=success&token=" + encodeURIComponent(data.token);
-                            }, 1500);
+                            console.error("Error during OAuth callback:", e);
+                            window.location.href = redirectUrl;
                         }
                     })();
                 </script>
