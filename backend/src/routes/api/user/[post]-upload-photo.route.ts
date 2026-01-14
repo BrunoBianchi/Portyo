@@ -11,7 +11,8 @@ const upload = multer({
     },
 });
 
-router.post("/upload-photo", requireAuth, upload.single("photo"), async (req, res) => {
+// parent router mounts at /user/upload-photo; use root path here
+router.post("/", requireAuth, upload.single("photo"), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
