@@ -38,11 +38,33 @@ app.use(
   })
 );
 
+// CORS configuration - must specify exact origins when using credentials
+const allowedOrigins = [
+  'https://portyo.me',
+  'https://www.portyo.me',
+  'https://api.portyo.me',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
 app.use(
   cors({
-    origin: true, // Allow any origin
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is allowed or is a subdomain of portyo.me
+      if (allowedOrigins.includes(origin) || origin.endsWith('.portyo.me')) {
+        return callback(null, origin);
+      }
+      
+      // For custom domains, allow them (they might be user's custom domains)
+      return callback(null, origin);
+    },
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    exposedHeaders: ["Content-Length", "Content-Range"],
   })
 );
 

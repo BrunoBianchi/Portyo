@@ -23,7 +23,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (bioIdentifier) {
       // It's a bio!
       // Fetch public bio to check noIndex
-      const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me/api';
+      const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+      const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
       let bioData = null;
 
       try {

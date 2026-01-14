@@ -532,8 +532,9 @@ export default function Navbar() {
     // Fetch announcement
     const fetchAnnouncement = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me/api';
-        const res = await fetch(`${apiUrl}/public/settings/announcement`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me';
+        const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+        const res = await fetch(`${baseUrl}/public/settings/announcement`);
         if (res.ok) {
           const data = await res.json();
           setAnnouncement(data);

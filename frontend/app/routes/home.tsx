@@ -16,7 +16,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
 
   if (isCustomDomain) {
-    const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me/api';
+    const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+    const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
     try {
       const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
       if (res.ok) {

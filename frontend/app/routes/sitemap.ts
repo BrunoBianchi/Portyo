@@ -35,7 +35,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   if (bioIdentifier) {
       // User Specific Sitemap
-     const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me/api';
+     const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+     const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
      const baseUrl = username ? `https://portyo.me/p/${username}` : `https://${host}`;
 
      // Always add root
@@ -55,7 +56,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
       // Dynamic User Bios
       try {
-          const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me/api';
+          const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+          const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
           const res = await fetch(`${apiUrl}/public/bios`);
           if (res.ok) {
               const bios: { sufix: string, updatedAt: string }[] = await res.json();

@@ -48,7 +48,8 @@ const serializeBioHtml = (bio: any) => {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const username = params.username;
-    const apiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me/api';
+    const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+    const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
 
     // Ignore if username conflicts with known top-level routes handled by other files, 
     // but React Router usually prioritizes static files. 
