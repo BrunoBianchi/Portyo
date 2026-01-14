@@ -542,7 +542,17 @@ import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
-  const [announcement, setAnnouncement] = useState<{ text: string; link: string; isNew: boolean; isVisible: boolean } | null>(null);
+  const [announcement, setAnnouncement] = useState<{
+    text: string;
+    link: string;
+    badge?: "new" | "hot" | "sale" | "update" | "none";
+    isNew?: boolean; // Legacy support
+    isVisible: boolean;
+    bgColor?: string;
+    textColor?: string;
+    fontSize?: "12" | "14" | "16";
+    textAlign?: "left" | "center";
+  } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -575,18 +585,60 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
+  // Determine badge to show (support both legacy isNew and new badge field)
+  const badgeType = announcement?.badge ?? (announcement?.isNew ? 'new' : 'none');
+
+  const getBadgeStyle = (type: string) => {
+    switch (type) {
+      case 'hot': return 'bg-orange-500 text-white';
+      case 'sale': return 'bg-green-500 text-white';
+      case 'update': return 'bg-blue-500 text-white';
+      case 'new': return 'bg-red-500 text-white';
+      default: return '';
+    }
+  };
+
+  const getBadgeLabel = (type: string) => {
+    switch (type) {
+      case 'hot': return 'HOT';
+      case 'sale': return 'SALE';
+      case 'update': return 'UPDATE';
+      case 'new': return 'NEW';
+      default: return '';
+    }
+  };
+
   return (
     <>
       {announcement && announcement.isVisible && (
-        <div className="w-full bg-black text-white py-2.5 px-4 z-50 transition-all duration-300 relative">
-          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs md:text-sm font-medium">
-            <div className="flex items-center gap-2 truncate pr-4">
-              {announcement.isNew && <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider shrink-0">New</span>}
+        <div
+          className="w-full py-2.5 px-4 z-50 transition-all duration-300 relative"
+          style={{
+            backgroundColor: announcement.bgColor || '#000000',
+            color: announcement.textColor || '#ffffff',
+            fontSize: `${announcement.fontSize || '14'}px`
+          }}
+        >
+          <div
+            className="max-w-7xl mx-auto flex items-center justify-between font-medium"
+            style={{ justifyContent: announcement.textAlign === 'center' ? 'center' : 'space-between' }}
+          >
+            <div
+              className="flex items-center gap-2 truncate pr-4"
+              style={{ justifyContent: announcement.textAlign === 'center' ? 'center' : 'flex-start', flex: announcement.textAlign === 'center' ? 'none' : 1 }}
+            >
+              {badgeType !== 'none' && (
+                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(badgeType)}`}>
+                  {getBadgeLabel(badgeType)}
+                </span>
+              )}
               <span className="truncate">{announcement.text}</span>
             </div>
-            <Link to={announcement.link} className="flex items-center gap-1 hover:text-[#d0f224] transition-colors whitespace-nowrap shrink-0">
-              <span className="hidden sm:inline">Get Started</span> <span className="sm:hidden">View</span> <span className="text-[#d0f224]">→</span>
-            </Link>
+            {announcement.textAlign !== 'center' && (
+              <Link to={announcement.link} className="flex items-center gap-1 hover:opacity-80 transition-colors whitespace-nowrap shrink-0">
+                <span className="hidden sm:inline">Get Started</span> <span className="sm:hidden">View</span> <span style={{ color: announcement.textColor === '#ffffff' ? '#d0f224' : undefined }}>→</span>
+              </Link>
+            )}
           </div>
         </div>
       )}

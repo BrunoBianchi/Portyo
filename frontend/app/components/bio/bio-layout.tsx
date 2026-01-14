@@ -1238,7 +1238,19 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     <title>{bio.seoTitle || subdomain}</title>
                     {bio.seoDescription && <meta name="description" content={bio.seoDescription} />}
                     {bio.seoKeywords && <meta name="keywords" content={bio.seoKeywords} />}
-                    {bio.favicon && <link rel="icon" href={bio.favicon} />}
+
+                    {/* Custom Favicon - remove default favicons if bio has one */}
+                    {bio.favicon ? (
+                        <>
+                            <link rel="icon" href={bio.favicon} />
+                            <script dangerouslySetInnerHTML={{
+                                __html: `
+                                    // Remove default Portyo favicons when bio has custom favicon
+                                    document.querySelectorAll('link[rel="icon"][href^="/favicons/"]').forEach(el => el.remove());
+                                `
+                            }} />
+                        </>
+                    ) : null}
 
                     {/* Canonical */}
                     <link rel="canonical" href={`https://${bio.sufix}.portyo.me`} />
@@ -1586,90 +1598,87 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 {!isPreview && showPromo && !bio.removeBranding && (
                     <div style={{
                         position: 'fixed',
-                        bottom: '24px',
-                        left: '24px',
-                        width: 'auto',
-                        minWidth: '300px',
+                        bottom: '16px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
                         zIndex: 995,
-                        background: 'linear-gradient(135deg, #10b981 0%, #000000 100%)',
-                        borderRadius: '20px',
-                        padding: '16px',
+                        background: 'rgba(0, 0, 0, 0.85)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        borderRadius: '50px',
+                        padding: '6px 6px 6px 14px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        animation: 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                        backdropFilter: 'blur(10px)',
-                        color: 'white'
+                        gap: '10px',
+                        boxShadow: '0 8px 32px -8px rgba(0,0,0,0.35)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        color: 'white',
+                        maxWidth: 'calc(100vw - 32px)'
                     }}>
                         <style dangerouslySetInnerHTML={{
                             __html: `
                                 @keyframes slideUp {
-                                    from { transform: translateY(100%); opacity: 0; }
-                                    to { transform: translateY(0); opacity: 1; }
+                                    from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+                                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
                                 }
                             `
                         }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <img src="/favicons/192x192.png" alt="Portyo Logo" style={{
-                                width: '42px',
-                                height: '42px',
-                                borderRadius: '12px',
-                                background: 'rgba(255,255,255,0.15)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                objectFit: 'cover',
-                                padding: '8px',
-                                flexShrink: 0,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }} />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', lineHeight: '1.2', letterSpacing: '-0.3px' }}>Portyo</span>
-                                <span style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.8)', lineHeight: '1.2' }}>Create yours today</span>
-                            </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                color: 'rgba(255,255,255,0.7)',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                Made with
+                            </span>
+                            <span style={{
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                color: 'white',
+                                letterSpacing: '-0.2px'
+                            }}>
+                                Portyo
+                            </span>
                         </div>
                         <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style={{
                             background: 'white',
                             color: 'black',
-                            border: 'none',
-                            borderRadius: '99px',
-                            padding: '8px 18px',
+                            borderRadius: '50px',
+                            padding: '8px 14px',
                             fontSize: '12px',
                             fontWeight: '700',
-                            cursor: 'pointer',
                             textDecoration: 'none',
                             whiteSpace: 'nowrap',
-                            marginLeft: '20px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            transition: 'transform 0.2s ease',
+                            transition: 'all 0.2s ease',
                         }}
-                            onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                            onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                            onMouseOver={(e) => (e.currentTarget.style.background = '#f3f4f6')}
+                            onMouseOut={(e) => (e.currentTarget.style.background = 'white')}
                         >
-                            Get it
+                            Try free
                         </a>
                         <button
                             onClick={() => setShowPromo(false)}
                             aria-label="Close"
                             style={{
-                                position: 'absolute',
-                                top: '-10px',
-                                right: '-10px',
-                                background: 'white',
+                                background: 'transparent',
                                 border: 'none',
                                 borderRadius: '50%',
-                                width: '22px',
-                                height: '22px',
+                                width: '28px',
+                                height: '28px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: 'black',
+                                color: 'rgba(255,255,255,0.5)',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                padding: 0
+                                padding: 0,
+                                transition: 'color 0.2s'
                             }}
+                            onMouseOver={(e) => (e.currentTarget.style.color = 'white')}
+                            onMouseOut={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
                         >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>

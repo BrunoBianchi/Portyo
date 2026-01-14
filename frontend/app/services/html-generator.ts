@@ -34,7 +34,7 @@ const normalizeProfileImageSrc = (input: string | null | undefined, userId: stri
     return joinBaseUrl(baseUrl, `/api/images/${userId}/medium.png?v=${Date.now()}`);
   }
 
-  return joinBaseUrl(baseUrl, '/users-photos/julia-soares.jpeg');
+  return joinBaseUrl(baseUrl, '/Street Life - Head (1).svg');
 };
 
 const normalizeBackgroundImageSrc = (input: string | null | undefined, userId: string | null | undefined, baseUrl: string) => {

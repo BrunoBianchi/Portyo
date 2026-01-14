@@ -16,6 +16,7 @@ import { PageViewEntity } from "./entity/page-view-entity"
 import { FormEntity } from "./entity/form-entity"
 import { FormAnswerEntity } from "./entity/form-answer-entity"
 import { VerificationTokenEntity } from "./entity/verification-token-entity"
+import { PasswordResetEntity } from "./entity/password-reset-entity"
 
 import { env } from "../config/env"
 import { SystemSettings } from "../entities/system-settings.entity"
@@ -27,7 +28,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, SystemSettings],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? {

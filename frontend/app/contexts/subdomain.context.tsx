@@ -486,7 +486,19 @@ export const SubDomainProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                         <title>{bio.seoTitle || subdomain}</title>
                         {bio.seoDescription && <meta name="description" content={bio.seoDescription} />}
                         {bio.seoKeywords && <meta name="keywords" content={bio.seoKeywords} />}
-                        {bio.favicon && <link rel="icon" href={bio.favicon} />}
+
+                        {/* Custom Favicon - remove default favicons if bio has one */}
+                        {bio.favicon ? (
+                            <>
+                                <link rel="icon" href={bio.favicon} />
+                                <script dangerouslySetInnerHTML={{
+                                    __html: `
+                                        // Remove default Portyo favicons when bio has custom favicon
+                                        document.querySelectorAll('link[rel="icon"][href^="/favicons/"]').forEach(el => el.remove());
+                                    `
+                                }} />
+                            </>
+                        ) : null}
 
                         {/* Open Graph / Social Media */}
                         <meta property="og:title" content={bio.ogTitle || bio.seoTitle || subdomain} />

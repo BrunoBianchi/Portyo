@@ -24,7 +24,16 @@ export default function DashboardSettings() {
   const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
 
   // Admin State
-  const [adminAnnouncement, setAdminAnnouncement] = useState({ text: "", link: "", isNew: true, isVisible: true });
+  const [adminAnnouncement, setAdminAnnouncement] = useState({
+    text: "",
+    link: "",
+    badge: "new" as "new" | "hot" | "sale" | "update" | "none",
+    isVisible: true,
+    bgColor: "#000000",
+    textColor: "#ffffff",
+    fontSize: "14" as "12" | "14" | "16",
+    textAlign: "left" as "left" | "center"
+  });
   const [isAdminLoading, setIsAdminLoading] = useState(false);
 
   const isAdmin = user?.email === 'bruno2002.raiado@gmail.com';
@@ -316,36 +325,95 @@ export default function DashboardSettings() {
               </div>
             </div>
 
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                <input
-                  type="password"
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
-                />
+            {user?.provider && user.provider !== 'password' ? (
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Your account uses <span className="font-semibold capitalize">{user.provider}</span> login.
+                  Password change is not available for social login accounts.
+                </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ) : (
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const currentPassword = (form.elements.namedItem('currentPassword') as HTMLInputElement).value;
+                const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value;
+                const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+
+                if (newPassword !== confirmPassword) {
+                  alert('Passwords do not match');
+                  return;
+                }
+
+                if (newPassword.length < 8) {
+                  alert('Password must be at least 8 characters');
+                  return;
+                }
+
+                setIsLoading(true);
+                try {
+                  const { api } = await import('~/services/api');
+                  await api.post('/user/change-password', {
+                    currentPassword,
+                    newPassword,
+                    confirmPassword
+                  });
+                  alert('Password changed successfully!');
+                  form.reset();
+                } catch (err: any) {
+                  const message = err?.response?.data?.message || 'Failed to change password';
+                  alert(message);
+                } finally {
+                  setIsLoading(false);
+                }
+              }} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
                   <input
                     type="password"
+                    name="currentPassword"
+                    required
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                  <input
-                    type="password"
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                    <input
+                      type="password"
+                      name="newPassword"
+                      required
+                      minLength={8}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Min 8 characters, uppercase, lowercase, number</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      required
+                      minLength={8}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-end pt-2">
-                <button type="button" className="px-6 py-2 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                  Update Password
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+                  >
+                    {isLoading ? 'Updating...' : (
+                      <>
+                        <Lock className="w-4 h-4" /> Update Password
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </section>
 
           {/* Notifications Section */}
@@ -605,44 +673,163 @@ export default function DashboardSettings() {
               </div>
             </div>
 
-            <form onSubmit={handleAdminSave} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div>
+            <form onSubmit={handleAdminSave} className="space-y-6">
+              {/* Preview */}
+              <div className="rounded-xl overflow-hidden border border-gray-200">
+                <div
+                  style={{
+                    backgroundColor: adminAnnouncement.bgColor || '#000000',
+                    color: adminAnnouncement.textColor || '#ffffff',
+                    fontSize: `${adminAnnouncement.fontSize || '14'}px`,
+                    textAlign: adminAnnouncement.textAlign || 'left'
+                  }}
+                  className="px-4 py-2 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3 flex-1" style={{ justifyContent: adminAnnouncement.textAlign === 'center' ? 'center' : 'flex-start' }}>
+                    {adminAnnouncement.badge !== 'none' && (
+                      <span className={`px-2 py-0.5 text-xs font-bold rounded uppercase ${adminAnnouncement.badge === 'hot' ? 'bg-orange-500 text-white' :
+                        adminAnnouncement.badge === 'sale' ? 'bg-green-500 text-white' :
+                          adminAnnouncement.badge === 'update' ? 'bg-blue-500 text-white' :
+                            'bg-red-500 text-white'
+                        }`}>
+                        {adminAnnouncement.badge === 'new' ? 'NEW' :
+                          adminAnnouncement.badge === 'hot' ? 'HOT' :
+                            adminAnnouncement.badge === 'sale' ? 'SALE' : 'UPDATE'}
+                      </span>
+                    )}
+                    <span>{adminAnnouncement.text || 'Announcement text preview'}</span>
+                  </div>
+                  <span className="text-sm font-medium opacity-80 hover:opacity-100 cursor-pointer whitespace-nowrap">Get Started →</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Announcement Text</label>
                   <input
                     type="text"
                     value={adminAnnouncement.text || ""}
                     onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, text: e.target.value })}
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                    placeholder="Get 7 days standard plan for free"
                   />
                 </div>
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
                   <input
                     type="text"
                     value={adminAnnouncement.link || ""}
                     onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, link: e.target.value })}
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+                    placeholder="/sign-up"
                   />
                 </div>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
+
+                {/* Badge Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Badge Type</label>
+                  <select
+                    value={adminAnnouncement.badge || 'new'}
+                    onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, badge: e.target.value as any })}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all bg-white"
+                  >
+                    <option value="new">NEW (Red)</option>
+                    <option value="hot">HOT (Orange)</option>
+                    <option value="sale">SALE (Green)</option>
+                    <option value="update">UPDATE (Blue)</option>
+                    <option value="none">No Badge</option>
+                  </select>
+                </div>
+
+                {/* Font Size */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+                  <select
+                    value={adminAnnouncement.fontSize || '14'}
+                    onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, fontSize: e.target.value as any })}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all bg-white"
+                  >
+                    <option value="12">Small (12px)</option>
+                    <option value="14">Medium (14px)</option>
+                    <option value="16">Large (16px)</option>
+                  </select>
+                </div>
+
+                {/* Background Color */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                  <div className="flex items-center gap-2">
                     <input
-                      type="checkbox"
-                      checked={adminAnnouncement.isNew}
-                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, isNew: e.target.checked })}
-                      className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                      type="color"
+                      value={adminAnnouncement.bgColor || '#000000'}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, bgColor: e.target.value })}
+                      className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer"
                     />
-                    <span className="text-sm font-medium text-gray-700">Show "New" Badge</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="text"
+                      value={adminAnnouncement.bgColor || '#000000'}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, bgColor: e.target.value })}
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all font-mono text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Text Color */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={adminAnnouncement.textColor || '#ffffff'}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, textColor: e.target.value })}
+                      className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={adminAnnouncement.textColor || '#ffffff'}
+                      onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, textColor: e.target.value })}
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all font-mono text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Text Alignment */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAdminAnnouncement({ ...adminAnnouncement, textAlign: 'left' })}
+                      className={`flex-1 px-4 py-2 rounded-xl border font-medium transition-all ${adminAnnouncement.textAlign === 'left'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                        }`}
+                    >
+                      Left
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAdminAnnouncement({ ...adminAnnouncement, textAlign: 'center' })}
+                      className={`flex-1 px-4 py-2 rounded-xl border font-medium transition-all ${adminAnnouncement.textAlign === 'center'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                        }`}
+                    >
+                      Center
+                    </button>
+                  </div>
+                </div>
+
+                {/* Visibility Toggle */}
+                <div className="flex items-end">
+                  <label className="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-gray-50 transition-colors">
                     <input
                       type="checkbox"
                       checked={adminAnnouncement.isVisible}
                       onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, isVisible: e.target.checked })}
                       className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
                     />
-                    <span className="text-sm font-medium text-gray-700">Visible</span>
+                    <span className="text-sm font-medium text-gray-700">Announcement Visible</span>
                   </label>
                 </div>
               </div>

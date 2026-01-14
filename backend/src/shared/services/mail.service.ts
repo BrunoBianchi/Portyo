@@ -121,4 +121,98 @@ export class MailService {
             // For now just log it.
         }
     }
+
+    static async sendPasswordResetEmail(email: string, resetToken: string, fullname: string) {
+        const resetUrl = `${APP_URL}/reset-password?token=${resetToken}`;
+        
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset your password</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.5; color: #1f2937; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { margin-bottom: 32px; border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; letter-spacing: -0.5px; }
+        .h1 { font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 24px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #D7F000; color: #000000; text-decoration: none; font-weight: 700; border-radius: 12px; margin: 24px 0; }
+        .button:hover { background-color: #c5dd00; }
+        .subtext { font-size: 14px; color: #6b7280; margin-top: 32px; }
+        .link-text { font-size: 12px; color: #9ca3af; word-break: break-all; margin-top: 16px; }
+        .footer { margin-top: 48px; padding-top: 32px; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #9ca3af; }
+        .footer-links { margin-bottom: 12px; }
+        .footer-link { color: #6b7280; text-decoration: underline; margin: 0 8px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+        
+        <h1 class="h1">Reset your password</h1>
+        
+        <p class="text">Hi ${fullname.split(' ')[0]},</p>
+        
+        <p class="text">We received a request to reset your password. Click the button below to create a new password:</p>
+        
+        <a href="${resetUrl}" class="button">Reset Password</a>
+        
+        <p class="subtext">This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
+        
+        <p class="link-text">If the button doesn't work, copy and paste this link: ${resetUrl}</p>
+        
+        <p class="text" style="margin-top: 32px;">
+            Thanks,<br>
+            Portyo Team
+        </p>
+
+        <div class="footer">
+            <div class="footer-links">
+                <a href="${APP_URL}/help" class="footer-link">Help</a>
+                <a href="${APP_URL}/terms" class="footer-link">Terms</a>
+                <a href="${APP_URL}/privacy" class="footer-link">Privacy</a>
+            </div>
+            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                const msg = await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    to: [email],
+                    subject: "Reset your Portyo password",
+                    html: html
+                });
+                console.log("Password reset email sent via Mailgun:", msg);
+                return msg;
+            } catch (error) {
+                 console.error("Error sending password reset email via Mailgun:", error);
+            }
+        }
+
+        const mailOptions = {
+            from: '"Portyo" <no-reply@portyo.me>',
+            to: email,
+            subject: 'Reset your Portyo password',
+            html: html,
+        };
+
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Password reset email sent: %s", info.messageId);
+            return info;
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
 }

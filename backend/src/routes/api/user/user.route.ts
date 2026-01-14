@@ -16,6 +16,9 @@ import logoutRoute from "./[post]-logout.route"
 
 import verifyEmailRoute from "./[post]-verify-email.route";
 import resendVerificationRoute from "./[post]-resend-verification.route";
+import forgotPasswordRoute from "./[post]-forgot-password.route";
+import resetPasswordRoute from "./[post]-reset-password.route";
+import changePasswordRoute from "./[post]-change-password.route";
 
 const router: Router = Router();
 router.use(createNewUserRoute);
@@ -33,5 +36,8 @@ router.use(emailUsageRoute)
 router.use(refreshTokenRoute)
 router.use(verifyEmailRoute)
 router.use(resendVerificationRoute)
+router.use(forgotPasswordRoute)
+router.use(resetPasswordRoute)
+router.use(changePasswordRoute)
 
 export default router;
