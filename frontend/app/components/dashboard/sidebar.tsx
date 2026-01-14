@@ -121,7 +121,8 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     if (user?.email?.toLowerCase() === "bruno2002.raiado@gmail.com") {
         // Feature flag for admin
-        navItems.push({ name: "Announcements", path: "/dashboard/site-blog", icon: Megaphone });
+        navItems.push({ name: "Announcements", path: "/dashboard/announcements", icon: Megaphone });
+        navItems.push({ name: "Site Blog", path: "/dashboard/site-blog", icon: Globe });
     }
 
     return (

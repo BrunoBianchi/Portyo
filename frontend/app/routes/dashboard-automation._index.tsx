@@ -168,7 +168,7 @@ export default function DashboardAutomationList() {
 
                 <div className="max-w-6xl mx-auto space-y-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">Automations</h1>
                             <p className="text-gray-500 mt-1">Create and manage your automated workflows</p>
@@ -176,7 +176,7 @@ export default function DashboardAutomationList() {
                         <button
                             onClick={handleCreate}
                             disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                             Create Automation {emailUsage && `(${automations.length}/${getAutomationLimit(emailUsage.plan)})`}
@@ -186,7 +186,7 @@ export default function DashboardAutomationList() {
                     {/* Email Usage Card */}
                     {emailUsage && (
                         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                            <div className="flex items-start justify-between">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-0">
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
                                         <Mail className="w-6 h-6" />
@@ -196,7 +196,7 @@ export default function DashboardAutomationList() {
                                         <p className="text-sm text-gray-500 mt-0.5">Monthly limit for automations</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-left sm:text-right">
                                     <div className="text-2xl font-bold text-gray-900">
                                         {emailUsage.sent} <span className="text-base font-normal text-gray-400">/ {emailUsage.limit}</span>
                                     </div>
@@ -279,41 +279,44 @@ export default function DashboardAutomationList() {
                             {automations.map((automation) => (
                                 <div
                                     key={automation.id}
-                                    className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all flex items-center gap-6"
+                                    className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
                                 >
-                                    {/* Icon */}
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${automation.isActive ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'
-                                        }`}>
-                                        <Zap className="w-6 h-6" />
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0 pointer-events-none">
-                                        <div className="flex items-center gap-3">
-                                            <h3 className="font-bold text-gray-900 truncate text-lg group-hover:text-blue-600 transition-colors">
-                                                {automation.name}
-                                            </h3>
-                                            <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${automation.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                                                }`}>
-                                                {automation.isActive ? 'Active' : 'Inactive'}
-                                            </div>
+                                    {/* Icon & Info Wrapper */}
+                                    <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
+                                        {/* Icon */}
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${automation.isActive ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'
+                                            }`}>
+                                            <Zap className="w-6 h-6" />
                                         </div>
-                                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                                            <div className="flex items-center gap-1.5">
-                                                <Activity className="w-4 h-4" />
-                                                <span>{automation.executionCount || 0} runs</span>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0 pointer-events-none">
+                                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                                <h3 className="font-bold text-gray-900 truncate text-lg group-hover:text-blue-600 transition-colors">
+                                                    {automation.name}
+                                                </h3>
+                                                <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${automation.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                                    }`}>
+                                                    {automation.isActive ? 'Active' : 'Inactive'}
+                                                </div>
                                             </div>
-                                            <span>•</span>
-                                            <span>Updated {new Date(automation.updatedAt).toLocaleDateString()}</span>
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Activity className="w-4 h-4" />
+                                                    <span>{automation.executionCount || 0} runs</span>
+                                                </div>
+                                                <span className="hidden xs:inline">•</span>
+                                                <span>Updated {new Date(automation.updatedAt).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center justify-end gap-2 w-full sm:w-auto border-t border-gray-50 pt-4 sm:border-0 sm:pt-0">
                                         <button
                                             onClick={() => handleToggle(automation.id, automation.isActive)}
                                             disabled={togglingId === automation.id}
-                                            className={`h-10 px-4 rounded-xl font-medium text-sm flex items-center gap-2 transition-colors ${automation.isActive
+                                            className={`flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl font-medium text-sm flex items-center gap-2 transition-colors ${automation.isActive
                                                 ? 'bg-red-50 text-red-600 hover:bg-red-100'
                                                 : 'bg-green-50 text-green-600 hover:bg-green-100'
                                                 }`}
@@ -323,12 +326,12 @@ export default function DashboardAutomationList() {
                                             ) : automation.isActive ? (
                                                 <>
                                                     <Pause className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Pause</span>
+                                                    <span>Pause</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <Play className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">Activate</span>
+                                                    <span>Activate</span>
                                                 </>
                                             )}
                                         </button>
@@ -343,7 +346,7 @@ export default function DashboardAutomationList() {
 
                                         <button
                                             onClick={(e) => handleDeleteClick(automation.id, e)}
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors border border-gray-100 sm:border-0"
                                             title="Delete"
                                         >
                                             <Trash2 className="w-4 h-4" />

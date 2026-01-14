@@ -119,7 +119,7 @@ export default function DashboardBlog() {
                 </div>
 
                 {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-surface-muted border-b border-border text-xs font-bold text-text-muted uppercase tracking-wider">
+                <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-surface-muted border-b border-border text-xs font-bold text-text-muted uppercase tracking-wider">
                     <div className="col-span-6">Post</div>
                     <div className="col-span-2">Status</div>
                     <div className="col-span-2">Stats</div>
@@ -129,10 +129,10 @@ export default function DashboardBlog() {
                 {/* List */}
                 <div className="divide-y divide-border">
                     {posts.map((post: any) => (
-                        <div key={post.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-alt/50 transition-colors group">
+                        <div key={post.id} className="flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center hover:bg-surface-alt/50 transition-colors group relative">
                             {/* Post Info */}
-                            <div className="col-span-6 flex items-center gap-4">
-                                <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-border">
+                            <div className="w-full md:col-span-6 flex items-start md:items-center gap-4">
+                                <div className="w-20 h-16 md:w-16 md:h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-border">
                                     {post.thumbnail ? (
                                         <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
                                     ) : (
@@ -141,14 +141,34 @@ export default function DashboardBlog() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-text-main truncate group-hover:text-primary-foreground transition-colors">{post.title}</h3>
-                                    <p className="text-xs text-text-muted truncate">{post.excerpt}</p>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-sm font-bold text-text-main truncate group-hover:text-primary-foreground transition-colors line-clamp-2 md:line-clamp-1">{post.title}</h3>
+                                    <p className="text-xs text-text-muted truncate mt-0.5">{post.excerpt}</p>
+
+                                    {/* Mobile Stats & Status Inline */}
+                                    <div className="flex md:hidden items-center gap-3 mt-2 flex-wrap">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${post.status === 'published'
+                                            ? 'bg-green-50 text-green-700 border-green-200'
+                                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                                            }`}>
+                                            {post.status === 'published' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>}
+                                            <span className="capitalize">{post.status}</span>
+                                        </span>
+
+                                        <div className="flex items-center gap-1 text-[10px] text-text-muted">
+                                            <Calendar className="w-3 h-3" />
+                                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] text-text-muted">
+                                            <Eye className="w-3 h-3" />
+                                            <span>{post.views.toLocaleString()}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Status */}
-                            <div className="col-span-2">
+                            {/* Desktop Status */}
+                            <div className="hidden md:block col-span-2">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${post.status === 'published'
                                     ? 'bg-green-50 text-green-700 border-green-200'
                                     : 'bg-gray-50 text-gray-600 border-gray-200'
@@ -159,8 +179,8 @@ export default function DashboardBlog() {
                                 </span>
                             </div>
 
-                            {/* Stats */}
-                            <div className="col-span-2 space-y-1">
+                            {/* Desktop Stats */}
+                            <div className="hidden md:block col-span-2 space-y-1">
                                 <div className="flex items-center gap-1.5 text-xs text-text-muted">
                                     <Calendar className="w-3 h-3" />
                                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
@@ -172,23 +192,20 @@ export default function DashboardBlog() {
                             </div>
 
                             {/* Actions */}
-                            <div className="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-full md:w-auto md:col-span-2 flex justify-end md:justify-end gap-2 mt-2 md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 md:static">
                                 <button
                                     onClick={() => handleEdit(post)}
-                                    className="p-2 text-text-muted hover:text-primary-foreground hover:bg-primary/10 rounded-lg transition-colors"
+                                    className="p-2 text-text-muted hover:text-primary-foreground hover:bg-primary/10 rounded-lg transition-colors bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border md:border-none border-gray-100 shadow-sm md:shadow-none"
                                     title="Edit"
                                 >
                                     <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(post)}
-                                    className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border md:border-none border-gray-100 shadow-sm md:shadow-none"
                                     title="Delete"
                                 >
                                     <Trash2 className="w-4 h-4" />
-                                </button>
-                                <button className="p-2 text-text-muted hover:text-text-main hover:bg-gray-100 rounded-lg transition-colors" aria-label="More options">
-                                    <MoreHorizontal className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>

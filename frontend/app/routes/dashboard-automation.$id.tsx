@@ -600,25 +600,25 @@ export default function DashboardAutomation() {
         )}
 
         {/* Header Bar */}
-        <div className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-6 z-40 relative">
+        <div className="h-auto md:h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 py-4 md:py-0 z-40 relative gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/dashboard/automation")}
-              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="w-px h-6 bg-gray-200"></div>
+            <div className="w-px h-6 bg-gray-200 hidden md:block"></div>
             <input
               type="text"
               value={automationName}
               onChange={(e) => setAutomationName(e.target.value)}
-              className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-full md:w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
               placeholder="Automation Name"
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3 px-2 md:px-0">
             {/* Status Indicator */}
             {currentAutomation && (
               <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${currentAutomation.isActive
@@ -630,7 +630,7 @@ export default function DashboardAutomation() {
               </div>
             )}
 
-            <div className="w-px h-6 bg-gray-200 mx-2"></div>
+            <div className="w-px h-6 bg-gray-200 mx-2 hidden md:block"></div>
 
             <button
               onClick={handleSaveDraft}
@@ -638,7 +638,7 @@ export default function DashboardAutomation() {
               className="px-4 py-2 hover:bg-white hover:shadow-sm text-gray-600 rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-gray-200"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {isSaving ? 'Saving...' : 'Save Draft'}
+              <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save Draft'}</span>
             </button>
 
             <button
@@ -656,7 +656,7 @@ export default function DashboardAutomation() {
               ) : (
                 <Play className="w-4 h-4" />
               )}
-              {isActivating ? 'Processing...' : currentAutomation?.isActive ? 'Deactivate' : 'Activate'}
+              <span>{isActivating ? 'Processing...' : currentAutomation?.isActive ? 'Deactivate' : 'Activate'}</span>
             </button>
           </div>
         </div>
@@ -682,10 +682,10 @@ export default function DashboardAutomation() {
               className="bg-gray-50"
             >
               <Background color="#94a3b8" gap={20} size={1} />
-              <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4" />
+              <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4 !bottom-24 md:!bottom-4" />
 
-              <Panel position="top-left" className="!m-4 !top-4">
-                <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 p-2 flex flex-col gap-1 w-14 items-center">
+              <Panel position="top-left" className="!m-0 !top-auto !bottom-0 !left-0 !right-0 md:!top-4 md:!bottom-auto md:!left-0 md:!right-auto md:!m-4 w-full md:w-auto z-10">
+                <div className="bg-white/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-xl border-t md:border border-gray-200/50 p-4 md:p-2 flex flex-row md:flex-col gap-3 md:gap-1 w-full md:w-14 items-center overflow-x-auto md:overflow-visible md:rounded-2xl no-scrollbar">
                   {[
                     { type: 'trigger', label: 'Trigger', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
                     { type: 'action', label: 'Email', icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
@@ -700,7 +700,7 @@ export default function DashboardAutomation() {
                   ].map((item) => (
                     <div
                       key={item.type}
-                      className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing relative group`}
+                      className={`w-12 h-12 md:w-10 md:h-10 rounded-xl ${item.color} flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing relative group shrink-0`}
                       onDragStart={(event) => {
                         event.dataTransfer.setData('application/reactflow', item.type);
                         event.dataTransfer.setData('application/label', item.label);
@@ -708,9 +708,25 @@ export default function DashboardAutomation() {
                       }}
                       draggable
                       title={`Add ${item.label}`}
+                      onClick={() => {
+                        // For touch devices where drag might be tricky, add to center of view
+                        if (window.innerWidth < 768) {
+                          const center = reactFlowInstance.project({
+                            x: window.innerWidth / 2,
+                            y: window.innerHeight / 2
+                          });
+                          const newNode: Node = {
+                            id: Math.random().toString(36).substr(2, 9),
+                            type: item.type,
+                            position: center,
+                            data: { label: item.label },
+                          };
+                          setNodes((nds: any) => nds.concat(newNode));
+                        }
+                      }}
                     >
-                      <item.icon className="w-5 h-5" />
-                      <span className="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                      <item.icon className="w-6 h-6 md:w-5 md:h-5" />
+                      <span className="hidden md:block absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                         {item.label}
                       </span>
                     </div>
@@ -722,9 +738,9 @@ export default function DashboardAutomation() {
 
           {/* Properties Panel */}
           {selectedNode && (
-            <div className="absolute right-6 top-6 bottom-6 w-[340px] bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-2xl flex flex-col z-30 animate-in slide-in-from-right duration-300">
+            <div className="absolute inset-0 md:inset-auto md:right-6 md:top-6 md:bottom-6 w-full md:w-[340px] bg-white/95 backdrop-blur-xl border-l md:border border-gray-200/60 md:rounded-2xl shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom md:slide-in-from-right duration-300">
               {/* Header */}
-              <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 rounded-t-2xl">
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 md:rounded-t-2xl">
                 <h2 className="font-bold text-lg text-gray-900">Configuration</h2>
                 <button
                   onClick={() => setSelectedNodeId(null)}
@@ -735,7 +751,8 @@ export default function DashboardAutomation() {
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+              <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar pb-24 md:pb-6">
+
                 {/* Common: Label */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Step Name</label>

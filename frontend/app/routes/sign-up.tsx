@@ -43,17 +43,21 @@ export default function Signup() {
     );
 
 
-    const handleContinue = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleContinue = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (step === "1") {
             const nextSufix = searchParams.get("sufix") ? sufix : normalizeUsername(username);
             setSufix(nextSufix);
             setSearchParams({ step: "2", sufix: nextSufix });
         } else {
-            register(email, password, username, sufix).catch((e) => {
-
-            })
-            navigate("/verify-email")
+            try {
+                await register(email, password, username, sufix);
+                navigate("/verify-email");
+            } catch (e) {
+                console.error("Registration failed", e);
+                // Optionally set an error state here to display to the user
+                alert("Failed to create account. Please try again.");
+            }
         }
     };
 

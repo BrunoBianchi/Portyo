@@ -47,7 +47,7 @@ export default function FeaturesSection() {
             </div>
 
             {/* Floating Badge */}
-            <div className="absolute -right-4 top-20 bg-black text-white px-6 py-4 rounded-2xl shadow-2xl z-20 rotate-[5deg] animate-bounce-slow">
+            <div className="absolute right-0 md:-right-4 top-20 bg-black text-white px-6 py-4 rounded-2xl shadow-2xl z-20 rotate-[5deg] animate-bounce-slow">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-black text-xs">
                   <Bell className="w-4 h-4" />
@@ -72,7 +72,7 @@ export default function FeaturesSection() {
             <div className="w-full max-w-[360px] h-[480px] bg-white rounded-[2.5rem] shadow-2xl relative z-10 rotate-[-2deg] hover:rotate-0 transition-transform duration-700 ease-out border border-gray-100">
 
               {/* Badge: Running (Top Right) */}
-              <div className="absolute -right-4 -top-3 z-50">
+              <div className="absolute right-0 md:-right-4 -top-3 z-50">
                 <div className="bg-[#ccf32f] text-black px-5 py-2 rounded-full shadow-lg rotate-[5deg] flex items-center gap-2 border-[4px] border-neutral-900">
                   <Zap className="w-3.5 h-3.5 fill-black" />
                   <span className="font-bold text-xs tracking-wide uppercase">Running</span>
@@ -256,7 +256,7 @@ export default function FeaturesSection() {
               </div>
             </div>
             {/* Badge */}
-            <div className="absolute -left-4 top-1/2 bg-white text-text-main px-6 py-4 rounded-2xl shadow-xl z-20 rotate-[-5deg]">
+            <div className="absolute left-0 md:-left-4 top-1/2 bg-white text-text-main px-6 py-4 rounded-2xl shadow-xl z-20 rotate-[-5deg]">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                   <Check className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function FeaturesSection() {
             </div>
 
             {/* Floating Badge */}
-            <div className="absolute -right-8 top-1/2 bg-white text-text-main px-6 py-3 rounded-2xl shadow-xl z-20 rotate-[10deg]">
+            <div className="absolute right-0 md:-right-8 top-1/2 bg-white text-text-main px-6 py-3 rounded-2xl shadow-xl z-20 rotate-[10deg]">
               <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Budget</p>
               <p className="text-2xl font-bold text-green-600">$1,200</p>
             </div>
@@ -333,7 +333,7 @@ export default function FeaturesSection() {
             </div>
 
             {/* Floating Badge */}
-            <div className="absolute -left-4 top-20 bg-white text-text-main px-5 py-3 rounded-xl shadow-xl z-20 rotate-[-5deg]">
+            <div className="absolute left-0 md:-left-4 top-20 bg-white text-text-main px-5 py-3 rounded-xl shadow-xl z-20 rotate-[-5deg]">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span className="font-bold text-sm">Published</span>

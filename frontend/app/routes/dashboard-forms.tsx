@@ -98,23 +98,30 @@ export default function DashboardFormsList() {
 
     return (
         <div className="p-8 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Forms</h1>
-                    <p className="text-gray-500 text-sm mt-1">Create and manage your custom forms</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Forms</h1>
+                    <p className="text-gray-500 text-medium">Create and manage your custom forms to collect data.</p>
                 </div>
                 <button
                     onClick={createNewForm}
-                    className="btn btn-primary gap-2"
+                    className="group bg-gray-900 text-white pl-4 pr-5 py-3 rounded-full font-bold shadow-lg hover:bg-black hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-3 w-fit"
                     disabled={isLoading}
                 >
-                    <Plus className="w-4 h-4" />
-                    <span>Create Form ({forms.length}/{
-                        (() => {
-                            const plan = (user?.plan || 'free') as PlanType;
-                            return PLAN_LIMITS[plan]?.formsPerBio || 1;
-                        })()
-                    })</span>
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                        <Plus className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <div className="flex flex-col items-start leading-none gap-0.5">
+                        <span className="text-sm">Create Form</span>
+                        <span className="text-[10px] text-gray-400 font-mono">
+                            {forms.length} / {
+                                (() => {
+                                    const plan = (user?.plan || 'free') as PlanType;
+                                    return PLAN_LIMITS[plan]?.formsPerBio || 1;
+                                })()
+                            } used
+                        </span>
+                    </div>
                 </button>
             </div>
 

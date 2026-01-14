@@ -212,11 +212,17 @@ function ProductsDropdown() {
     <div
       ref={wrapperRef}
       className="relative"
-      onPointerEnter={() => {
-        clearCloseTimer();
-        setOpen(true);
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse") {
+          clearCloseTimer();
+          setOpen(true);
+        }
       }}
-      onPointerLeave={() => scheduleClose()}
+      onPointerLeave={(e) => {
+        if (e.pointerType === "mouse") {
+          scheduleClose();
+        }
+      }}
       onFocusCapture={() => setOpen(true)}
       onBlurCapture={(e) => closeIfFocusLeft(e.currentTarget)}
     >
@@ -451,11 +457,17 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
     <div
       ref={wrapperRef}
       className="relative"
-      onPointerEnter={() => {
-        clearCloseTimer();
-        setOpen(true);
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse") {
+          clearCloseTimer();
+          setOpen(true);
+        }
       }}
-      onPointerLeave={() => scheduleClose()}
+      onPointerLeave={(e) => {
+        if (e.pointerType === "mouse") {
+          scheduleClose();
+        }
+      }}
       onFocusCapture={() => setOpen(true)}
       onBlurCapture={(e) => closeIfFocusLeft(e.currentTarget)}
     >
@@ -524,9 +536,14 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
   );
 }
 
+import { Menu, X } from "lucide-react";
+
+// ... existing imports
+
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext)
+  const { user, logout } = useContext(AuthContext);
   const [announcement, setAnnouncement] = useState<{ text: string; link: string; isNew: boolean; isVisible: boolean } | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fetch announcement
@@ -546,47 +563,165 @@ export default function Navbar() {
     fetchAnnouncement();
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <>
       {announcement && announcement.isVisible && (
-        <div className="w-full bg-black text-white py-2.5 px-4 z-50 transition-all duration-300">
+        <div className="w-full bg-black text-white py-2.5 px-4 z-50 transition-all duration-300 relative">
           <div className="max-w-7xl mx-auto flex items-center justify-between text-xs md:text-sm font-medium">
-            <div className="flex items-center gap-2">
-              {announcement.isNew && <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">New</span>}
-              <span>{announcement.text}</span>
+            <div className="flex items-center gap-2 truncate pr-4">
+              {announcement.isNew && <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider shrink-0">New</span>}
+              <span className="truncate">{announcement.text}</span>
             </div>
-            <Link to={announcement.link} className="flex items-center gap-1 hover:text-[#d0f224] transition-colors">
-              Get Started <span className="text-[#d0f224]">→</span>
+            <Link to={announcement.link} className="flex items-center gap-1 hover:text-[#d0f224] transition-colors whitespace-nowrap shrink-0">
+              <span className="hidden sm:inline">Get Started</span> <span className="sm:hidden">View</span> <span className="text-[#d0f224]">→</span>
             </Link>
           </div>
         </div>
       )}
-      <header className="w-full p-6 flex justify-between items-start z-10 max-w-7xl mx-auto">
-        <div className="flex flex-col items-start">
-          <Link to='/' className="text-3xl font-extrabold tracking-tight mb-4">Portyo</Link>
-          <div className="w-32 h-px bg-text-main/20 mb-3"></div>
-          <Link to="/sign-up" className="text-sm font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2 group">
-            Launch your page
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </Link>
+
+      <header className="w-full p-4 md:p-6 z-40 max-w-7xl mx-auto relative">
+        <div className="flex justify-between items-start">
+          {/* Logo Section */}
+          <div className="flex flex-col items-start z-50 relative">
+            <Link to='/' className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 md:mb-4">Portyo</Link>
+            <div className="hidden md:block w-32 h-px bg-text-main/20 mb-3"></div>
+            <Link to="/sign-up" className="hidden md:flex text-sm font-medium text-text-main hover:text-primary transition-colors items-center gap-2 group">
+              Launch your page
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:block pt-2">
+            <ProductsDropdown />
+          </div>
+
+          {/* Desktop Auth */}
+          <div className="hidden md:flex items-center gap-6 pt-2">
+            {!user ? (
+              <>
+                <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
+                <Link to="/sign-up" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
+                  Start For Free
+                </Link>
+              </>
+            ) : (
+              <UserDropdown user={user} logout={logout} />
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden z-50 p-2 text-text-main hover:bg-surface-muted rounded-lg transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </button>
         </div>
 
-        <div className="pt-2">
-          <ProductsDropdown />
-        </div>
-
-        <div className="flex items-center gap-6 pt-2">
-          {!user ? (
-            <>
-              <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
-              <Link to="/sign-up" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
-                Start For Free
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 bg-surface z-40 md:hidden pt-24 px-6 pb-6 flex flex-col gap-6 overflow-y-auto animate-in fade-in slide-in-from-top-5 duration-200">
+            <div className="flex flex-col gap-4">
+              <div className="text-sm font-bold text-text-muted uppercase tracking-wider">Menu</div>
+              <Link
+                to="/site-blog"
+                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
               </Link>
-            </>
-          ) : (
-            <UserDropdown user={user} logout={logout} />
-          )}
-        </div>
+              <Link
+                to="/manifesto"
+                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Manifesto
+              </Link>
+              <Link
+                to="/pricing"
+                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+            </div>
+
+            <div className="h-px w-full bg-border"></div>
+
+            <div className="flex flex-col gap-4">
+              <Link
+                to="/sign-up"
+                className="text-lg font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Launch your page →
+              </Link>
+            </div>
+
+            <div className="mt-auto flex flex-col gap-3">
+              {!user ? (
+                <>
+                  <Link
+                    to="/login"
+                    className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/sign-up"
+                    className="w-full py-4 text-center font-bold text-primary-foreground bg-primary rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Start For Free
+                  </Link>
+                </>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3 p-4 bg-surface-muted rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark font-bold">
+                      {user.fullname?.charAt(0).toUpperCase() ?? "U"}
+                    </div>
+                    <div>
+                      <div className="font-bold text-text-main">{user.fullname}</div>
+                      <div className="text-xs text-text-muted">{user.email}</div>
+                    </div>
+                  </div>
+                  <Link
+                    to="/dashboard"
+                    className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full py-4 text-center font-bold text-red-600 border border-red-100 bg-red-50/50 rounded-xl hover:bg-red-50 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
     </>
   );

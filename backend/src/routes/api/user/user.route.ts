@@ -9,6 +9,8 @@ import refreshTokenRoute from "./[post]-refresh-token.route"
 import uploadBlogThumbnailRoute from "./[post]-upload-blog-thumbnail.route";
 import uploadProductImageRoute from "./[post]-upload-product-image.route";
 import uploadBlockImageRoute from "./[post]-upload-block-image.route";
+import uploadFaviconRoute from "./[post]-upload-favicon.route";
+import uploadOgImageRoute from "./[post]-upload-og-image.route";
 
 import logoutRoute from "./[post]-logout.route"
 
@@ -24,6 +26,8 @@ router.use("/upload-photo", uploadPhotoRoute);
 router.use("/upload-blog-thumbnail", uploadBlogThumbnailRoute);
 router.use("/upload-product-image", uploadProductImageRoute);
 router.use("/upload-block-image", uploadBlockImageRoute);
+router.use("/upload-favicon", uploadFaviconRoute);
+router.use("/upload-og-image", uploadOgImageRoute);
 router.use("/billing", billingHistoryRoute)
 router.use(emailUsageRoute)
 router.use(refreshTokenRoute)

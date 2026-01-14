@@ -5,7 +5,7 @@ import { DecorativeUnderlineIcon, TikTokIcon } from "~/components/shared/icons";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full max-w-7xl top-[-102px] mx-auto px-4 py-20 md:py-32 flex flex-col items-center justify-center min-h-[600px] overflow-hidden">
+    <section className="relative w-full max-w-7xl top-[-102px] mx-auto px-4 py-20 md:py-32 flex flex-col items-center justify-center min-h-[600px] overflow-hidden md:overflow-visible">
       <div className="absolute left-12 lg:left-24 top-1/4 hidden md:block animate-float" style={{ animationDelay: "0s" }}>
         <div className="relative group">
           <div className="transform -rotate-6 group-hover:rotate-0 transition-transform duration-300">
@@ -122,7 +122,7 @@ export default function HeroSection() {
 
       {/* Main Content */}
       <div className="relative z-10 text-center max-w-3xl mx-auto space-y-8">
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-text-main leading-[1.1]">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-text-main leading-[1.1]">
           Convert your followers into <span className="text-primary-hover relative inline-block">
             customers
             <DecorativeUnderlineIcon className="absolute w-full h-3 -bottom-1 left-0 text-secondary opacity-60 -z-10" />

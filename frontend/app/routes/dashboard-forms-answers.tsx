@@ -113,54 +113,57 @@ export default function DashboardFormsAnswers() {
     return (
         <div className="p-8 max-w-7xl mx-auto">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
                     <Link
                         to="/dashboard/forms"
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm shrink-0"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                            <span>Forms</span>
-                            <span>/</span>
-                            <span>{form.title}</span>
-                            <span>/</span>
-                            <span className="font-semibold text-gray-900">Submissions</span>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-1">
+                            <span className="hover:text-gray-900 transition-colors">Forms</span>
+                            <span className="text-gray-300">/</span>
+                            <span className="hover:text-gray-900 transition-colors max-w-[150px] truncate">{form.title}</span>
+                            <span className="text-gray-300">/</span>
+                            <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider">Submissions</span>
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            {answers.length} {answers.length === 1 ? 'Submission' : 'Submissions'}
+                        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                            {answers.length} <span className="text-lg md:text-xl font-medium text-gray-400 font-sans">{answers.length === 1 ? 'Submission' : 'Submissions'}</span>
                         </h1>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="relative">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                    <div className="relative flex-1 sm:flex-none">
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder="Search answers..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-full md:w-64 transition-all"
+                            className="pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-full sm:w-64 transition-all shadow-sm"
                         />
                     </div>
-                    <button
-                        onClick={downloadCSV}
-                        disabled={answers.length === 0}
-                        className="btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span>Export CSV</span>
-                    </button>
-                    <Link
-                        to={`/dashboard/forms/${id}`}
-                        className="btn btn-primary gap-2"
-                    >
-                        <FileText className="w-4 h-4" />
-                        <span>Edit Form</span>
-                    </Link>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={downloadCSV}
+                            disabled={answers.length === 0}
+                            className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 rounded-xl font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span className="whitespace-nowrap">Export CSV</span>
+                        </button>
+                        <Link
+                            to={`/dashboard/forms/${id}`}
+                            className="flex-1 sm:flex-none px-4 py-2.5 bg-gray-900 text-white hover:bg-black hover:shadow-lg hover:shadow-gray-900/20 rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
+                        >
+                            <FileText className="w-4 h-4" />
+                            <span className="whitespace-nowrap">Edit Form</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
