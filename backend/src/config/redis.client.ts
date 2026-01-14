@@ -2,11 +2,10 @@ import Redis from "ioredis";
 import { env } from "./env";
 import { logger } from "../shared/utils/logger";
 
-// Allow hard-disable of Redis to keep the API alive when Redis is misconfigured
-export const redisEnabled = !process.env.DISABLE_REDIS;
+// Redis enabled by default; can be turned off with DISABLE_REDIS=true if needed.
+const redisEnabled = process.env.DISABLE_REDIS !== "true";
 
 const createMockRedis = () => {
-  // Minimal mock implementing the methods we use
   const pipeline = () => ({
     get: async () => null,
     set: async () => undefined,
@@ -35,11 +34,9 @@ if (redisEnabled) {
     },
   };
 
-  // Only add auth options if they are defined
   if (env.REDIS_PASSWORD) {
     redisOptions.password = env.REDIS_PASSWORD;
   }
-  // Redis ACL username only makes sense with a password; avoid sending malformed AUTH.
   if (env.REDIS_USERNAME && env.REDIS_PASSWORD) {
     redisOptions.username = env.REDIS_USERNAME;
   }
