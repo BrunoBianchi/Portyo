@@ -61,6 +61,12 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     icon: <ImageIcon width="24" height="24" />
   },
   {
+    type: "marketing",
+    label: "Marketing Slot",
+    category: "Marketing",
+    icon: <TrendingUpIcon width="24" height="24" />
+  },
+  {
     type: "socials",
     label: "Socials",
     category: "Social",
@@ -158,10 +164,5 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
   },
-  {
-    type: "marketing",
-    label: "Marketing Slot",
-    category: "Marketing",
-    icon: <TrendingUpIcon width="24" height="24" />
-  },
+
 ];

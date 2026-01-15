@@ -724,7 +724,7 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
 
   return (
     <div key={block.id} className="py-4">
-      <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-gray-50/50 text-center">
+      <div className="border-[3px] border-dashed border-gray-900/60 rounded-2xl p-6 bg-white/40 text-center backdrop-blur-sm">
         {hasActiveSlot ? (
           // When there's an active proposal/ad
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
