@@ -13,24 +13,21 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
 });
 
 router.post("/webhook", async (req: Request, res: Response) => {
-    console.log("🔔 Stripe Webhook Received 🔔");
-    console.log("Signature:", req.headers["stripe-signature"]);
-    
     const sig = req.headers["stripe-signature"];
     const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
-    if (!webhookSecret) {
-        logger.error("STRIPE_WEBHOOK_SECRET is not defined in environment");
-        return res.status(500).send("Server Configuration Error");
+    // 1. Critical Check: If secret or signature is missing, abort immediately (do nothing)
+    if (!webhookSecret || !sig) {
+        // User requested "não faça nada" (do nothing).
+        // Returning 400 silently to avoid processing.
+        return res.status(400).send(); 
     }
 
     let event: Stripe.Event;
 
+    // 2. Verify Signature FIRST
     try {
-        // Verify signature using raw body
-        if (!req.rawBody) {
-             throw new Error("Raw body not available");
-        }
+        if (!req.rawBody) throw new Error("Raw body not available");
         
         event = stripe.webhooks.constructEvent(
             req.rawBody,
@@ -38,11 +35,24 @@ router.post("/webhook", async (req: Request, res: Response) => {
             webhookSecret
         );
     } catch (err: any) {
-        logger.error(`Webhook Signature Verification Failed: ${err.message}`, {
-            ip: req.ip,
-            signature: sig
-        });
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        // Signature verification failed.
+        // User requested "não faça nada".
+        // Returning 400 silently.
+        return res.status(400).send();
+    }
+
+    // 3. Only if verified, we proceed with logging and handling
+    console.log("🔔 Stripe Webhook Verified & Received 🔔");
+    
+    // Detailed logging of the verified event
+    try {
+        console.log("📦 Webhook Payload Overview:");
+        console.log(`   - Type: ${event.type}`);
+        console.log(`   - ID: ${event.id}`);
+        console.log(`   - Object: ${event.data.object.object || 'unknown'}`);
+        logger.info(`Stripe Webhook Verified: ${event.type} [${event.id}]`);
+    } catch (e) {
+        console.error("Error logging webhook details:", e);
     }
 
     // Handle the event
@@ -131,9 +141,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+    const paymentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.id;
 
-    await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId);
-    logger.info(`Processed checkout for user ${userId}: ${plan} plan activated for ${duration} days`);
+    await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId, paymentId);
+    logger.info(`Processed checkout for user ${userId}: ${plan} plan activated for ${duration} days. Payment ID: ${paymentId}`);
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {

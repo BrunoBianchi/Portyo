@@ -778,14 +778,14 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     square: 'border-radius:0;',
     star: 'clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);',
     hexagon: 'clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);',
-    amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba 3s ease-in-out infinite;'
+    amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba-pulse 6s ease-in-out infinite; will-change: border-radius;'
   };
   
   // Add Amoeba Keyframes if needed
   if (bio.imageStyle === 'amoeba') {
      fontLink += `
       <style>
-        @keyframes amoeba {
+        @keyframes amoeba-pulse {
           0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
           25% { border-radius: 45% 55% 45% 55% / 50% 55% 45% 50%; }
           50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
