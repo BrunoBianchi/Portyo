@@ -212,8 +212,21 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     // Payment ID for our records: Use PaymentIntent ID if available, otherwise Invoice ID
     const paymentId = paymentIntentId || invoice.id;
 
-    const subscriptionField = (invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }).subscription;
-    const subscriptionId = typeof subscriptionField === 'string' ? subscriptionField : subscriptionField?.id;
+    let subscriptionId = typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : (invoice as any).subscription?.id;
+
+    // Fallback: Check lines if subscription is missing at top level
+    if (!subscriptionId && invoice.lines?.data) {
+        for (const line of invoice.lines.data) {
+            if (line.subscription) {
+                subscriptionId = typeof line.subscription === 'string' ? line.subscription : line.subscription.id;
+                if (subscriptionId) break;
+            }
+        }
+    }
+
+    if (!subscriptionId) {
+        logger.warn(`Subscription ID missing for invoice ${invoice.id} (user ${user.id}). This might affect cancellation capabilities.`);
+    }
     
     await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId, paymentId, transactionId, subscriptionId);
     logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days. Payment/Intent ID: ${paymentId}, Transaction (PI/Charge) ID: ${transactionId}, Sub ID: ${subscriptionId}`);

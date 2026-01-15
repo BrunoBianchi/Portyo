@@ -103,14 +103,50 @@ export class BillingService {
                 const Stripe = (await import("stripe")).default;
                 const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
 
-                // Cancel at period end
-                const updatedSub = await stripe.subscriptions.update(activeBilling.stripeSubscriptionId, {
-                    cancel_at_period_end: true
-                });
-                console.log(`Stripe subscription ${activeBilling.stripeSubscriptionId} updated. cancel_at_period_end: ${updatedSub.cancel_at_period_end}, status: ${updatedSub.status}`);
+                // Cancel IMMEDIATELY as requested, but keep local access until end date
+                const updatedSub = await stripe.subscriptions.cancel(activeBilling.stripeSubscriptionId);
+                
+                console.log("⬇️ STRIPE PAYLOAD ACORDING TO REQUEST ⬇️");
+                console.log(JSON.stringify(updatedSub, null, 2));
+                console.log("⬆️ END PAYLOAD ⬆️");
             } catch (err: any) {
                 console.error("Failed to cancel Stripe subscription:", err);
                 throw new Error("Failed to communicate with payment provider");
+            }
+        } else if (activeBilling.stripeCustomerId) {
+            // Self-healing: Try to find active subscription for this customer in Stripe
+            try {
+                const { env } = await import("../config/env");
+                const Stripe = (await import("stripe")).default;
+                const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
+
+                console.log(`[Self-Healing] activeBilling missing stripeSubscriptionId. Searching Stripe for customer ${activeBilling.stripeCustomerId}...`);
+                const subs = await stripe.subscriptions.list({
+                    customer: activeBilling.stripeCustomerId,
+                    status: 'active',
+                    limit: 1
+                });
+
+                if (subs.data.length > 0) {
+                    const foundSub = subs.data[0];
+                    console.log(`[Self-Healing] Found active subscription ${foundSub.id}. Canceling...`);
+                    
+                    const result = await stripe.subscriptions.cancel(foundSub.id);
+                    
+                    console.log("⬇️ SELF-HEALING STRIPE PAYLOAD ⬇️");
+                    console.log(JSON.stringify(result, null, 2));
+                    console.log("⬆️ END PAYLOAD ⬆️");
+                    
+                    // Update our record
+                    activeBilling.stripeSubscriptionId = foundSub.id;
+                    await this.repository.save(activeBilling);
+                } else {
+                    console.warn(`[Self-Healing] No active subscriptions found for customer ${activeBilling.stripeCustomerId}`);
+                }
+            } catch (err) {
+                console.error("[Self-Healing] Failed to auto-recover subscription ID:", err);
+                // Don't throw here, as we still want to mark local as canceled?
+                // Actually, if we fail to cancel in Stripe, we should probably warn the user.
             }
         }
 

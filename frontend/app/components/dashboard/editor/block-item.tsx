@@ -1356,15 +1356,7 @@ const BlockItem = memo(({
                     placeholder="Book a Call"
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Booking URL</label>
-                  <input
-                    value={block.calendarUrl || ""}
-                    onChange={(event) => handleFieldChange("calendarUrl", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://calendly.com/..."
-                  />
-                </div>
+
                 <div className="grid grid-cols-3 gap-2">
                   <ColorPicker
                     label="Background"
@@ -2021,7 +2013,7 @@ const BlockItem = memo(({
               </div>
             )}
 
-            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing'].includes(block.type) && (
+            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar'].includes(block.type) && (
               <div className="pt-2 border-t border-gray-50 mt-3">
                 <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">

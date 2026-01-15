@@ -148,22 +148,25 @@ export default function DashboardSettings() {
   }, [billingHistory]);
 
   useEffect(() => {
-    if (activeTab === 'billing') {
-      import("~/services/api").then(({ BillingService }) => {
-        BillingService.getHistory().then(res => {
-          setBillingHistory(res.data);
-        }).catch(err => {
-          console.error("Failed to load billing history", err);
-        });
-      });
-
-      // Load email usage
-      EmailUsageService.getEmailUsage().then(usage => {
-        setEmailUsage(usage);
+    // Always load billing history to show status
+    import("~/services/api").then(({ BillingService }) => {
+      BillingService.getHistory().then(res => {
+        setBillingHistory(res.data);
       }).catch(err => {
-        console.error("Failed to load email usage", err);
+        console.error("Failed to load billing history", err);
       });
-    } else if (activeTab === 'admin' && isAdmin) {
+    });
+
+    // Load email usage
+    EmailUsageService.getEmailUsage().then(usage => {
+      setEmailUsage(usage);
+    }).catch(err => {
+      console.error("Failed to load email usage", err);
+    });
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    if (activeTab === 'admin' && isAdmin) {
       // Fetch Admin Settings
       const fetchAdminSettings = async () => {
         const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me';
@@ -458,9 +461,19 @@ export default function DashboardSettings() {
                       <h2 className="text-2xl font-bold text-gray-900 mb-2">Current Plan</h2>
                       <p className="text-gray-500">You are currently on the <span className="font-bold text-gray-900 capitalize">{planLabel} Plan</span></p>
                     </div>
-                    <span className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-900 text-xs font-bold uppercase tracking-wider border border-gray-200">
-                      {planLabel} Tier
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${billingHistory[0]?.status === 'canceled'
+                        ? 'bg-red-50 text-red-600 border-red-100'
+                        : 'bg-gray-100 text-gray-900 border-gray-200'
+                        }`}>
+                        {billingHistory[0]?.status === 'canceled' ? 'Canceled' : `${planLabel} Tier`}
+                      </span>
+                      {billingHistory[0]?.status === 'canceled' && planDuration?.endLabel && (
+                        <span className="text-[10px] font-medium text-red-500">
+                          Expires on {planDuration.endLabel}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 mb-8">
@@ -583,7 +596,9 @@ export default function DashboardSettings() {
                       <p className="text-2xl font-bold text-gray-900">{planDuration.durationText}</p>
                       <p className="text-sm text-gray-500 mt-1">Started on {planDuration.startLabel}</p>
                       {planDuration.endLabel && (
-                        <p className="text-sm text-gray-500">Ends in {planDuration.remainingDays ?? 0} days (until {planDuration.endLabel})</p>
+                        <p className="text-sm text-gray-500">
+                          {billingHistory[0]?.status === 'canceled' ? 'Ends' : 'Renews'} in {planDuration.remainingDays ?? 0} days (until {planDuration.endLabel})
+                        </p>
                       )}
                     </>
                   ) : (
