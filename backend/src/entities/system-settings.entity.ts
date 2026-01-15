@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('system_settings')
 export class SystemSettings {
-    @PrimaryColumn()
+    @PrimaryColumn({ type: 'varchar' })
     key!: string;
 
     @Column({ type: 'jsonb', nullable: true })

@@ -25,6 +25,6 @@ export class ActivityEntity extends BaseEntity {
     @JoinColumn()
     bio!: BioEntity;
 
-    @Column()
+    @Column({ type: "uuid" })
     bioId!: string;
 }

@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { BaseEntity } from "./base-entity";
 import { UserEntity } from "./user-entity";
 import { BioEntity } from "./bio-entity";
+import { MarketingProposalEntity } from "./marketing-proposal-entity";
 
 @Entity('marketing_slots')
 export class MarketingSlotEntity extends BaseEntity {
@@ -57,6 +58,10 @@ export class MarketingSlotEntity extends BaseEntity {
     // Proposta ativa (quando occupied)
     @Column({ type: "uuid", nullable: true })
     activeProposalId?: string | null;
+
+    @OneToOne(() => MarketingProposalEntity)
+    @JoinColumn({ name: "activeProposalId" })
+    activeProposal?: MarketingProposalEntity;
 
     @Column({ type: "timestamp", nullable: true })
     activeSince?: Date | null;
