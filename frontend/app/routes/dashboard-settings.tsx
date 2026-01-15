@@ -416,27 +416,7 @@ export default function DashboardSettings() {
             )}
           </section>
 
-          {/* Notifications Section */}
-          <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
-                <Bell className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
-                <p className="text-sm text-gray-500">Choose what updates you want to receive.</p>
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              {['Email me about new features', 'Email me about account activity', 'Email me weekly analytics reports'].map((item, i) => (
-                <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" defaultChecked className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black" />
-                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{item}</span>
-                </label>
-              ))}
-            </div>
-          </section>
 
           {/* Danger Zone */}
           <section className="bg-red-50 rounded-2xl border border-red-100 p-6">

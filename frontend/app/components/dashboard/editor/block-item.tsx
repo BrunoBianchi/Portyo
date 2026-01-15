@@ -19,7 +19,8 @@ import {
   XIcon,
   PlusIcon,
   QrCodeIcon,
-  FormIcon
+  FormIcon,
+  TrendingUpIcon
 } from "~/components/shared/icons";
 import { ColorPicker } from "./ColorPicker";
 import { FormInput, FormTextarea } from "./FormInput";
@@ -73,6 +74,7 @@ const getBlockTypeAccent = (type: string): { bg: string; text: string; border: s
     map: { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" },
     form: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
     portfolio: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
+    marketing: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
   };
   return accents[type] || { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" };
 };
@@ -97,6 +99,8 @@ const getBlockPreview = (block: BioBlock): string => {
       return block.formId ? 'Form selected' : 'No form selected';
     case 'portfolio':
       return block.portfolioTitle || 'Portfolio';
+    case 'marketing':
+      return block.marketingId ? 'Slot connected' : 'No slot selected';
     default:
       return '';
   }
@@ -159,6 +163,64 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
         />
       </div>
 
+    </div>
+  );
+};
+
+const MarketingBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string }) => {
+  const [slots, setSlots] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!bioId) return;
+    setLoading(true);
+    // Fetch user slots (API usually returns slots for the logged in user)
+    // We should ideally filter by bioId if the API returns all user slots, or just show all user slots.
+    // Given the endpoint is /marketing/slots/, it likely returns all slots for the user.
+    // Let's filter by bioId to be safe and avoiding showing slots from other bios.
+    api.get("/marketing/slots/")
+      .then(res => {
+        const userSlots = res.data;
+        // Filter to only show slots for this bio
+        const bioSlots = userSlots.filter((s: any) => s.bioId === bioId);
+        setSlots(bioSlots);
+      })
+      .catch(err => console.error("Failed to fetch slots", err))
+      .finally(() => setLoading(false));
+  }, [bioId]);
+
+  return (
+    <div className="space-y-3 pt-3">
+      <p className="text-xs text-gray-500">Connect this block to a marketing slot from your dashboard. Companies will be able to advertise here.</p>
+      <div>
+        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Select Marketing Slot</label>
+        {loading ? (
+          <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
+            Loading slots...
+          </div>
+        ) : slots.length === 0 ? (
+          <p className="text-xs text-gray-400 mt-1.5">
+            No slots found for this bio. <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">Create one →</a>
+          </p>
+        ) : (
+          <select
+            value={block.marketingId || ""}
+            onChange={(e) => onChange("marketingId", e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+          >
+            <option value="">No slot selected</option>
+            {slots.map(slot => (
+              <option key={slot.id} value={slot.id}>{slot.slotName} ({slot.duration} days)</option>
+            ))}
+          </select>
+        )}
+        {slots.length > 0 && (
+          <p className="text-xs text-gray-400 mt-1.5">
+            <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">Manage slots →</a>
+          </p>
+        )}
+      </div>
     </div>
   );
 };
@@ -315,8 +377,9 @@ const BlockItem = memo(({
                 {block.type === 'divider' && <DividerIcon />}
                 {block.type === 'qrcode' && <QrCodeIcon />}
                 {block.type === 'form' && <FormIcon />}
+                {block.type === 'marketing' && <TrendingUpIcon />}
                 {/* Add other icons as needed, defaulting to a generic one if missing */}
-                {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode', 'form'].includes(block.type) && (
+                {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode', 'form', 'marketing'].includes(block.type) && (
                   <DefaultIcon />
                 )}
               </div>
@@ -1938,6 +2001,10 @@ const BlockItem = memo(({
               <p className="text-xs text-text-muted pt-3">Simple dividing line.</p>
             )}
 
+            {block.type === "marketing" && (
+              <MarketingBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} />
+            )}
+
             {block.type === "portfolio" && (
               <div className="space-y-3 pt-3">
                 <p className="text-xs text-gray-500">Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.</p>
@@ -1954,7 +2021,7 @@ const BlockItem = memo(({
               </div>
             )}
 
-            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify'].includes(block.type) && (
+            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing'].includes(block.type) && (
               <div className="pt-2 border-t border-gray-50 mt-3">
                 <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">

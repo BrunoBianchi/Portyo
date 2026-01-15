@@ -19,7 +19,8 @@ import {
   YouTubeIcon,
   DividerIcon,
   QrCodeIcon,
-  FormIcon
+  FormIcon,
+  TrendingUpIcon
 } from "~/components/shared/icons";
 
 export const palette: Array<{ type: BioBlock["type"] | string; label: string; icon: React.ReactNode; category: string; isPro?: boolean }> = [
@@ -156,5 +157,11 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     label: "Portfolio",
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
+  },
+  {
+    type: "marketing",
+    label: "Marketing Slot",
+    category: "Marketing",
+    icon: <TrendingUpIcon width="24" height="24" />
   },
 ];

@@ -286,6 +286,20 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     return "";
   }
 
+  if (block.type === "marketing") {
+    const slotId = block.marketingId;
+    if (!slotId) return "";
+    
+    // We render a placeholder that React will hydrate via BioLayout -> MarketingWidget
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div class="custom-marketing-block" data-marketing-id="${escapeHtml(slotId)}" data-bio-id="${bio.id}">
+         <div style="padding:24px; text-align:center; background:rgba(255,255,255,0.5); border:2px dashed #9ca3af; border-radius:12px; color:#4b5563; font-family:inherit;">
+           <div style="font-weight:600;">Marketing Slot</div>
+         </div>
+      </div>
+    </section>`;
+  }
+
   if (block.type === "form") {
     const formId = block.formId;
     if (!formId) return "";
@@ -728,6 +742,17 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://portyo.me/p/${bio.sufix}`;
   const encodedShareUrl = encodeURIComponent(shareUrl);
 
+  // Get amoeba keyframes early to include in animations
+  const amoebaKeyframesContent = bio.imageStyle === 'amoeba' ? `
+    @keyframes amoeba-pulse {
+      0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+      25% { border-radius: 45% 55% 45% 55% / 50% 55% 45% 50%; }
+      50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+      75% { border-radius: 45% 55% 45% 55% / 55% 50% 50% 45%; }
+      100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    }
+  ` : '';
+
   const animationsCss = `
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -736,6 +761,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     @keyframes wobble { 0% { transform: translateX(0%); } 15% { transform: translateX(-25%) rotate(-5deg); } 30% { transform: translateX(20%) rotate(3deg); } 45% { transform: translateX(-15%) rotate(-3deg); } 60% { transform: translateX(10%) rotate(2deg); } 75% { transform: translateX(-5%) rotate(-1deg); } 100% { transform: translateX(0%); } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+    ${amoebaKeyframesContent}
   `;
 
   // Font Logic
@@ -778,24 +804,9 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     square: 'border-radius:0;',
     star: 'clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);',
     hexagon: 'clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);',
-    amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba-pulse 6s ease-in-out infinite; will-change: border-radius;'
+    amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba-pulse 6s ease-in-out infinite;'
   };
   
-  // Add Amoeba Keyframes if needed
-  if (bio.imageStyle === 'amoeba') {
-     fontLink += `
-      <style>
-        @keyframes amoeba-pulse {
-          0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-          25% { border-radius: 45% 55% 45% 55% / 50% 55% 45% 50%; }
-          50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-          75% { border-radius: 45% 55% 45% 55% / 55% 50% 50% 45%; }
-          100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-        }
-      </style>
-     `;
-  }
-
   const imgStyle = imageStyles[bio.imageStyle || 'circle'] || imageStyles.circle;
   const usernameColor = bio.usernameColor || '#111827';
 
@@ -904,7 +915,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
         <!-- Profile Image -->
         <div style="width:120px; height:120px; ${imgStyle} overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
-               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/users-photos/julia-soares.jpeg')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
+               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/Street Life - Head (1).svg')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
                
                ${bio.isPreview ? `
                <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">

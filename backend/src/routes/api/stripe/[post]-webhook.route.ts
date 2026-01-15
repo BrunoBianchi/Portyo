@@ -188,20 +188,35 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     }
     
     const stripeCustomerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
-    const paymentIntent = (invoice as any).payment_intent as string | Stripe.PaymentIntent | undefined;
-    const paymentId = typeof paymentIntent === 'string' ? paymentIntent : (paymentIntent?.id || invoice.id);
+    
+    // Extract Payment Intent ID directly. 
+    // In Stripe, the payment_intent field on an invoice is usually the ID (string).
+    const paymentIntentField = (invoice as any).payment_intent;
+    const paymentIntentId = typeof paymentIntentField === 'string' ? paymentIntentField : paymentIntentField?.id;
+    
+    // Determine Transaction ID (use PaymentIntent ID as the primary transaction reference)
+    let transactionId = paymentIntentId;
 
-    let transactionId: string | undefined;
-    if (paymentIntent && typeof paymentIntent !== 'string') {
-        const latestCharge = paymentIntent.latest_charge;
+    // If we really need the Charge ID and we have an expanded object (rare in default webhooks), we can try to get it.
+    if (paymentIntentField && typeof paymentIntentField !== 'string' && paymentIntentField.latest_charge) {
+        const latestCharge = paymentIntentField.latest_charge;
         transactionId = typeof latestCharge === 'string' ? latestCharge : latestCharge?.id;
     }
+
+    // Fallback: If no payment intent is present, use the Charge ID directly from the invoice if available (subscription invoices might use charge)
+    if (!transactionId && (invoice as any).charge) {
+        const chargeField = (invoice as any).charge;
+        transactionId = typeof chargeField === 'string' ? chargeField : chargeField?.id;
+    }
+
+    // Payment ID for our records: Use PaymentIntent ID if available, otherwise Invoice ID
+    const paymentId = paymentIntentId || invoice.id;
 
     const subscriptionField = (invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }).subscription;
     const subscriptionId = typeof subscriptionField === 'string' ? subscriptionField : subscriptionField?.id;
     
     await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId, paymentId, transactionId, subscriptionId);
-    logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days. Payment ID: ${paymentId}, Transaction ID: ${transactionId}, Sub ID: ${subscriptionId}`);
+    logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days. Payment/Intent ID: ${paymentId}, Transaction (PI/Charge) ID: ${transactionId}, Sub ID: ${subscriptionId}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {

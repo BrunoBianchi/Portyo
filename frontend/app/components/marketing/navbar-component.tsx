@@ -499,7 +499,7 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
             aria-labelledby={buttonId}
             onPointerEnter={() => clearCloseTimer()}
             onPointerLeave={() => scheduleClose()}
-            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-75"
+            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2"
           >
             <div className="px-5 py-4 border-b border-border/50">
               <p className="text-base font-bold text-text-main truncate">{user.fullname ?? "User"}</p>
@@ -514,7 +514,7 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
                 <IconLayoutDashboard className="w-4 h-4" />
                 Dashboard
               </Link>
-              <Link to="/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
+              <Link to="/dashboard/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
                 <IconSettings className="w-4 h-4" />
                 Settings
               </Link>

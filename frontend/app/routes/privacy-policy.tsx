@@ -1,4 +1,5 @@
 import type { MetaFunction } from "react-router";
+import { Link } from "react-router";
 
 export const meta: MetaFunction = () => {
     return [
@@ -9,49 +10,76 @@ export const meta: MetaFunction = () => {
 
 export default function PrivacyPolicy() {
     return (
-        <div className="min-h-screen bg-white py-20 px-4 font-sans">
-            <div className="max-w-3xl mx-auto">
-                {/* Header */}
-                <div className="mb-16 border-b border-gray-100 pb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">Privacy Policy</h1>
-                    <p className="text-gray-500">Last updated: January 2026</p>
+        <div className="min-h-screen bg-surface-alt flex flex-col font-sans text-text-main selection:bg-primary selection:text-black">
+
+            <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-24 md:py-32">
+                <header className="mb-16">
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Privacy Policy</h1>
+                    <p className="text-lg text-text-muted">Last updated: January 15, 2026</p>
+                </header>
+
+                <div className="prose prose-lg prose-neutral max-w-none text-text-secondary space-y-12">
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">1. Introduction</h2>
+                        <p>
+                            Welcome to Portyo ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy.
+                            This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website
+                            and use our services.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">2. Information We Collect</h2>
+                        <p className="mb-4">We collect information that you strictly provide to us when you register for an account, specifically:</p>
+                        <ul className="list-disc pl-6 space-y-2">
+                            <li><strong>Personal Data:</strong> Name, email address, and profile information you choose to display on your bio page.</li>
+                            <li><strong>Payment Data:</strong> Financial information is processed directly by our payment processor, Stripe. We do not store full credit card numbers on our servers.</li>
+                            <li><strong>Usage Data:</strong> Information about how you interact with our services, such as page views and button clicks, to improve our product.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">3. How We Use Your Information</h2>
+                        <p>We use the information we collect to:</p>
+                        <ul className="list-disc pl-6 space-y-2 mt-4">
+                            <li>Provide, operate, and maintain our website.</li>
+                            <li>Process your transactions and manage your subscription.</li>
+                            <li>Improve, personalize, and expand our website.</li>
+                            <li>Communicate with you regarding updates, security alerts, and support.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">4. Sharing Your Information</h2>
+                        <p>
+                            We do not sell your personal information. We may share information with third-party service providers (such as Stripe for payments or Google Analytics for usage tracking) strictly for the purpose of operating our business and providing our services to you.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">5. Data Security</h2>
+                        <p>
+                            We use administrative, technical, and physical security measures to help protect your personal information.
+                            However, please remember that no method of transmission over the internet is 100% secure.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">6. Your Rights</h2>
+                        <p>
+                            Depending on your location, you may have rights regarding your personal data, including the right to access, correct, or delete
+                            the personal information we hold about you. You can manage your account settings directly within the Portyo dashboard.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">7. Contact Us</h2>
+                        <p>
+                            If you have questions or comments about this policy, you may contact us at: <a href="mailto:support@portyo.me" className="text-primary hover:underline">support@portyo.me</a>
+                        </p>
+                    </section>
                 </div>
-
-                {/* Content */}
-                <div className="prose prose-lg prose-gray max-w-none">
-                    <p className="lead text-gray-600 mb-8">
-                        Your privacy is important to us. This policy outlines how we collect, use, and protect your personal information when you use Portyo.
-                    </p>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">1. Information We Collect</h2>
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                        We collect information you provide directly to us, such as when you create an account, update your profile, or contact us for support. This may include your name, email address, password, and any other information you choose to provide.
-                    </p>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">2. How We Use Your Information</h2>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-600 mb-6">
-                        <li>To provide, maintain, and improve our services.</li>
-                        <li>To process transactions and send related information.</li>
-                        <li>To send technical notices, updates, security alerts, and support messages.</li>
-                        <li>To respond to your comments, questions, and requests.</li>
-                    </ul>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">3. Information Sharing</h2>
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                        We do not share your personal information with third parties except as described in this policy. We may share information with vendors, consultants, and other service providers who need access to such information to carry out work on our behalf.
-                    </p>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">4. Data Security</h2>
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                        We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction.
-                    </p>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">5. Contact Us</h2>
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                        If you have any questions about this Privacy Policy, please contact us at privacy@portyo.me.
-                    </p>
-                </div>
-            </div>
+            </main>
         </div>
     );
 }

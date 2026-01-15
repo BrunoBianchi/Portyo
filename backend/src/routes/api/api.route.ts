@@ -59,10 +59,12 @@ router.use('/public/email', publicEmailRoute)
 router.use('/public/blog', publicBlogRoute)
 import publicSettingsRoute from "./public/settings.route"
 import adminRoute from "./admin/admin.route"
+import publicMarketingRoute from "./public/marketing.public.route"
 
 router.use('/public/site-blog', publicSiteBlogRoute)
 router.use('/public/settings', publicSettingsRoute)
 router.use('/public/products', publicProductsRoute)
+router.use('/public/marketing', publicMarketingRoute)
 
 router.use('/admin', adminRoute)
 router.use('/public/stripe', generateProductLinkRoute)
@@ -97,6 +99,9 @@ import portfolioRoute from "./portfolio/portfolio.route"
 import portfolioCategoryRoute from "./portfolio/portfolio-category.route"
 router.use('/portfolio', portfolioRoute)
 router.use('/portfolio/categories', portfolioCategoryRoute)
+
+import marketingRoute from "./marketing/marketing.route"
+router.use('/marketing', authMiddleware, marketingRoute)
 
 // Bio Route (likely contains wildcard /:id) should be last
 router.use('/bio', authMiddleware, bioRoute);

@@ -243,7 +243,7 @@ export default function PricingSection() {
                                 onClick={() => handleUpgrade('standard')}
                                 className="w-full bg-black text-white hover:bg-gray-900 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
                             >
-                                Start Trial
+                                {user ? 'Upgrade' : 'Start Trial'}
                             </button>
                         </div>
                     </div>

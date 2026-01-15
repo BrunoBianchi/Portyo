@@ -7,6 +7,7 @@ const BlogPostPopup = React.lazy(() => import("./blog-post-popup").then(module =
 const BookingWidget = React.lazy(() => import("./booking-widget").then(module => ({ default: module.BookingWidget })));
 const FormWidget = React.lazy(() => import("./form-widget").then(module => ({ default: module.FormWidget })));
 const PortfolioWidget = React.lazy(() => import("./portfolio-widget").then(module => ({ default: module.PortfolioWidget })));
+const MarketingWidget = React.lazy(() => import("./marketing-widget").then(module => ({ default: module.MarketingWidget })));
 import { BlogPostView } from "./blog-post-view";
 
 import { sanitizeHtml } from "~/utils/security";
@@ -678,6 +679,35 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             });
         };
 
+        const initMarketingWidgets = () => {
+            const root = containerRef.current;
+            if (!root) return;
+
+            const blocks = root.querySelectorAll('.custom-marketing-block');
+            blocks.forEach(block => {
+                if (block.hasAttribute('data-initialized')) return;
+                block.setAttribute('data-initialized', 'true');
+
+                const slotId = block.getAttribute('data-marketing-id');
+                const bioId = block.getAttribute('data-bio-id');
+
+                if (!slotId || !bioId) return;
+
+                // Clear placeholder
+                block.innerHTML = '';
+
+                const reactRoot = createRoot(block);
+                reactRoot.render(
+                    <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: '24px', color: '#4b5563', border: '2px dashed #9ca3af' }}>Loading...</div>}>
+                        <MarketingWidget
+                            slotId={slotId}
+                            bioId={bioId}
+                        />
+                    </React.Suspense>
+                );
+            });
+        };
+
         const initProductLinks = () => {
             const root = containerRef.current;
             if (!root) return;
@@ -1042,6 +1072,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             initBookingWidgets();
             initFormWidgets();
             initPortfolioWidgets();
+            initMarketingWidgets();
 
             if (!isPreview) {
                 initLinkClickTracking();

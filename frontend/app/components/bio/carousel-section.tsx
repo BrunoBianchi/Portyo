@@ -5,7 +5,7 @@ const USERS = [
   {
     name: "Julia Soares",
     role: "Architect",
-    image: "/users-photos/julia-soares.jpeg",
+    image: "/Street Life - Head (1).svg",
     username: "arquiteta-julia-soares",
     description: "Architect & Designer creating sustainable living spaces."
   },

@@ -717,6 +717,59 @@ const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
   );
 };
 
+const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
+  // TODO: Fetch slot data if marketingSlotId exists
+  // For now, show placeholder
+  const hasActiveSlot = false; // Will be true when connected to backend
+
+  return (
+    <div key={block.id} className="py-4">
+      <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-gray-50/50 text-center">
+        {hasActiveSlot ? (
+          // When there's an active proposal/ad
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
+            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-3">
+              <span className="text-white text-xl">📢</span>
+            </div>
+            <h3 className="font-bold text-lg text-gray-900 mb-2">Active Advertisement</h3>
+            <p className="text-sm text-gray-600 mb-4">Company ad will appear here</p>
+            <button className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
+              View Details
+            </button>
+          </div>
+        ) : (
+          // Empty state - no active proposal
+          <div>
+            <div className="flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
+            </div>
+            <h3 className="font-bold text-base text-gray-700 mb-1">Marketing Slot</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Configure this slot in the Marketing dashboard<br />
+              Companies can submit advertising proposals
+            </p>
+            <a
+              href="/dashboard/marketing"
+              target="_blank"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+              Create Slot
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardEditor() {
   const { bio, bios, selectBio, updateBio, getBios } = useContext(BioContext);
   const { user } = useContext(AuthContext);
@@ -726,7 +779,7 @@ export default function DashboardEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog"]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog", "Marketing"]);
   const [expandedSettings, setExpandedSettings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"blocks" | "settings">("blocks");
   const [bgType, setBgType] = useState<"color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat">("color");
@@ -1396,46 +1449,48 @@ export default function DashboardEditor() {
       `}</style>
 
       {/* Top Bar */}
-      <header className="shrink-0 px-6 py-4 flex items-center justify-between bg-[#f9f7f2] z-40">
-        <div>
+      <header className="shrink-0 px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#f9f7f2] z-40">
+        <div className="flex-shrink-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Editor</p>
           </div>
-          <h1 className="text-xl font-bold text-gray-900">{bio.sufix}</h1>
+          <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">{bio.sufix}</h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
           {/* AI Assistant */}
-          <PortyoAI
-            bioId={bio.id}
-            onBlocksGenerated={(newBlocks: BioBlock[], replace: boolean) => {
-              if (replace) {
-                // Replace all existing blocks with new ones
-                setBlocks(newBlocks);
-              } else {
-                // Add new blocks to existing ones
-                setBlocks(prev => [...prev, ...newBlocks]);
-              }
-            }}
-            onSettingsChange={(settings) => {
-              if (settings?.bgType) setBgType(settings.bgType as any);
-              if (settings?.bgColor) setBgColor(settings.bgColor);
-              if (settings?.bgSecondaryColor) setBgSecondaryColor(settings.bgSecondaryColor);
-              if (settings?.cardStyle) setCardStyle(settings.cardStyle as any);
-              if (settings?.cardBackgroundColor) setCardBackgroundColor(settings.cardBackgroundColor);
-              if (settings?.usernameColor) setUsernameColor(settings.usernameColor);
-              if (settings?.font) setFont(settings.font);
-              if (settings?.imageStyle) setImageStyle(settings.imageStyle);
-            }}
-            onGlobalStylesChange={(styles) => {
-              if (!styles) return;
-              setBlocks(prev => prev.map(block => ({
-                ...block,
-                ...styles
-              })));
-            }}
-          />
+          <div className="flex-shrink min-w-0">
+            <PortyoAI
+              bioId={bio.id}
+              onBlocksGenerated={(newBlocks: BioBlock[], replace: boolean) => {
+                if (replace) {
+                  // Replace all existing blocks with new ones
+                  setBlocks(newBlocks);
+                } else {
+                  // Add new blocks to existing ones
+                  setBlocks(prev => [...prev, ...newBlocks]);
+                }
+              }}
+              onSettingsChange={(settings) => {
+                if (settings?.bgType) setBgType(settings.bgType as any);
+                if (settings?.bgColor) setBgColor(settings.bgColor);
+                if (settings?.bgSecondaryColor) setBgSecondaryColor(settings.bgSecondaryColor);
+                if (settings?.cardStyle) setCardStyle(settings.cardStyle as any);
+                if (settings?.cardBackgroundColor) setCardBackgroundColor(settings.cardBackgroundColor);
+                if (settings?.usernameColor) setUsernameColor(settings.usernameColor);
+                if (settings?.font) setFont(settings.font);
+                if (settings?.imageStyle) setImageStyle(settings.imageStyle);
+              }}
+              onGlobalStylesChange={(styles) => {
+                if (!styles) return;
+                setBlocks(prev => prev.map(block => ({
+                  ...block,
+                  ...styles
+                })));
+              }}
+            />
+          </div>
 
           <div className="hidden md:flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1">
             <button
@@ -1473,16 +1528,19 @@ export default function DashboardEditor() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 transition-all text-white disabled:opacity-70 disabled:hover:translate-y-0"
+            className="flex items-center justify-center gap-2 bg-black text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
           >
             {isSaving ? (
               <>
                 <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                <span>Saving...</span>
+                <span className="hidden sm:inline">Saving...</span>
               </>
             ) : (
               <>
-                <span>Save bio</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="hidden sm:inline">Save bio</span>
               </>
             )}
           </button>

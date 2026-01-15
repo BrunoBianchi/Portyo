@@ -30,7 +30,8 @@ import {
     Lock,
     Megaphone,
     Shield,
-    Briefcase
+    Briefcase,
+    TrendingUp
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -112,13 +113,13 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Portfolio", path: "/dashboard/portfolio", icon: Briefcase },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
+        { name: "Marketing", path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
         { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
         { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
         { name: "Forms", path: "/dashboard/forms", icon: FileText },
         { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
-        { name: "Custom Domain", path: "/dashboard/domains", icon: Globe, isPro: true },
         { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
     ];
 

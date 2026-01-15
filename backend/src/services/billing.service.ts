@@ -104,9 +104,10 @@ export class BillingService {
                 const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
 
                 // Cancel at period end
-                await stripe.subscriptions.update(activeBilling.stripeSubscriptionId, {
+                const updatedSub = await stripe.subscriptions.update(activeBilling.stripeSubscriptionId, {
                     cancel_at_period_end: true
                 });
+                console.log(`Stripe subscription ${activeBilling.stripeSubscriptionId} updated. cancel_at_period_end: ${updatedSub.cancel_at_period_end}, status: ${updatedSub.status}`);
             } catch (err: any) {
                 console.error("Failed to cancel Stripe subscription:", err);
                 throw new Error("Failed to communicate with payment provider");

@@ -11,6 +11,7 @@ export enum APIErrors {
     requestTimeoutError = "Request timeout error",
     requestEntityTooLargeError = "Request entity too large error",
     dtoError = "DTO error",
+    validationError = "Validation error",
     EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS"
 }
 

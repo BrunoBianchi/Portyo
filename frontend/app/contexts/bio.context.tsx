@@ -3,7 +3,7 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing";
     title?: string;
     body?: string;
     // Form specific
@@ -146,6 +146,21 @@ export type BioBlock = {
     spotifyCompact?: boolean;
     // Portfolio specific
     portfolioTitle?: string;
+    // Marketing specific
+    marketingId?: string; // Reference to backend MarketingBlockEntity
+    marketingTitle?: string;
+    marketingDescription?: string;
+    marketingImageUrl?: string;
+    marketingLinkUrl?: string;
+    marketingButtonText?: string;
+    marketingBackgroundColor?: string;
+    marketingTextColor?: string;
+    marketingButtonColor?: string;
+    marketingButtonTextColor?: string;
+    marketingLayout?: "card" | "banner" | "compact" | "featured";
+    marketingShowImage?: boolean;
+    marketingShowButton?: boolean;
+    marketingSponsorLabel?: string;
 };
 
 export interface Integration {
