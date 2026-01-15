@@ -146,48 +146,17 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
         )}
       </div>
 
-      <div>
-        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Background Color</label>
-        <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300">
-          <input
-            type="color"
-            value={block.formBackgroundColor || "#ffffff"}
-            onChange={(event) => onChange("formBackgroundColor", event.target.value)}
-            className="h-full w-12 border-0 p-0 cursor-pointer hover:opacity-90 transition-opacity"
-            title="Click to pick a color"
-          />
-          <div className="w-[1px] h-full bg-gray-100"></div>
-          <input
-            type="text"
-            value={block.formBackgroundColor || "#ffffff"}
-            onChange={(event) => onChange("formBackgroundColor", event.target.value)}
-            onFocus={(e) => e.target.select()}
-            className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
-            placeholder="#FFFFFF"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Text Color</label>
-        <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300">
-          <input
-            type="color"
-            value={block.formTextColor || "#1f2937"}
-            onChange={(event) => onChange("formTextColor", event.target.value)}
-            className="h-full w-12 border-0 p-0 cursor-pointer hover:opacity-90 transition-opacity"
-            title="Click to pick a color"
-          />
-          <div className="w-[1px] h-full bg-gray-100"></div>
-          <input
-            type="text"
-            value={block.formTextColor || "#1f2937"}
-            onChange={(event) => onChange("formTextColor", event.target.value)}
-            onFocus={(e) => e.target.select()}
-            className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
-            placeholder="#1F2937"
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-3">
+        <ColorPicker
+          label="Background"
+          value={block.formBackgroundColor || "#ffffff"}
+          onChange={(val) => onChange("formBackgroundColor", val)}
+        />
+        <ColorPicker
+          label="Text Color"
+          value={block.formTextColor || "#1f2937"}
+          onChange={(val) => onChange("formTextColor", val)}
+        />
       </div>
 
     </div>
@@ -442,6 +411,68 @@ const BlockItem = memo(({
                     )}
                   </div>
                 </div>
+
+                <div className="pt-4 border-t border-gray-100 space-y-3">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Typography
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Alignment</label>
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                      {(['left', 'center', 'right', 'justify'] as const).map((align) => (
+                        <button
+                          key={align}
+                          onClick={() => handleFieldChange("align", align)}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${(block.align || 'left') === align
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        >
+                          {align === 'justify' ? (
+                            <div className="flex flex-col gap-[2px] items-center justify-center w-full h-full">
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                            </div>
+                          ) : (
+                            align.charAt(0).toUpperCase() + align.slice(1)
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormSelect
+                      label="Font Size"
+                      value={block.fontSize || "32px"}
+                      onChange={(value) => handleFieldChange("fontSize", value)}
+                      options={[
+                        { value: "24px", label: "Small" },
+                        { value: "32px", label: "Normal" },
+                        { value: "40px", label: "Medium" },
+                        { value: "48px", label: "Large" },
+                        { value: "64px", label: "XL" }
+                      ]}
+                    />
+                    <FormSelect
+                      label="Font Weight"
+                      value={block.fontWeight || "800"}
+                      onChange={(value) => handleFieldChange("fontWeight", value)}
+                      options={[
+                        { value: "400", label: "Normal" },
+                        { value: "500", label: "Medium" },
+                        { value: "600", label: "Semibold" },
+                        { value: "700", label: "Bold" },
+                        { value: "800", label: "Extra Bold" },
+                        { value: "900", label: "Black" }
+                      ]}
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -488,6 +519,68 @@ const BlockItem = memo(({
                         className="w-32"
                       />
                     )}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100 space-y-3">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Typography
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Alignment</label>
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                      {(['left', 'center', 'right', 'justify'] as const).map((align) => (
+                        <button
+                          key={align}
+                          onClick={() => handleFieldChange("align", align)}
+                          className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${(block.align || 'left') === align
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        >
+                          {align === 'justify' ? (
+                            <div className="flex flex-col gap-[2px] items-center justify-center w-full h-full">
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                              <div className="w-3 h-[1px] bg-current"></div>
+                            </div>
+                          ) : (
+                            align.charAt(0).toUpperCase() + align.slice(1)
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormSelect
+                      label="Font Size"
+                      value={block.fontSize || "16px"}
+                      onChange={(value) => handleFieldChange("fontSize", value)}
+                      options={[
+                        { value: "12px", label: "Small" },
+                        { value: "14px", label: "Normal" },
+                        { value: "16px", label: "Medium" },
+                        { value: "18px", label: "Large" },
+                        { value: "24px", label: "XL" }
+                      ]}
+                    />
+                    <FormSelect
+                      label="Font Weight"
+                      value={block.fontWeight || "500"}
+                      onChange={(value) => handleFieldChange("fontWeight", value)}
+                      options={[
+                        { value: "300", label: "Light" },
+                        { value: "400", label: "Normal" },
+                        { value: "500", label: "Medium" },
+                        { value: "600", label: "Semibold" },
+                        { value: "700", label: "Bold" },
+                        { value: "900", label: "Black" }
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -724,70 +817,24 @@ const BlockItem = memo(({
                 <div className="space-y-3">
                   <label className="text-xs font-semibold text-gray-700 block">Colors</label>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-2 block">Background</label>
-                      <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300">
-                        <input
-                          type="color"
-                          value={block.accent || "#111827"}
-                          onChange={(event) => handleFieldChange("accent", event.target.value)}
-                          className="h-full w-12 border-0 p-0 cursor-pointer hover:opacity-90 transition-opacity"
-                          title="Click to pick a color"
-                        />
-                        <div className="w-[1px] h-full bg-gray-100"></div>
-                        <input
-                          type="text"
-                          value={block.accent || "#111827"}
-                          onChange={(event) => handleFieldChange("accent", event.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
-                          placeholder="#000000"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-2 block">Text</label>
-                      <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300">
-                        <input
-                          type="color"
-                          value={block.textColor || "#ffffff"}
-                          onChange={(event) => handleFieldChange("textColor", event.target.value)}
-                          className="h-full w-12 border-0 p-0 cursor-pointer hover:opacity-90 transition-opacity"
-                          title="Click to pick a color"
-                        />
-                        <div className="w-[1px] h-full bg-gray-100"></div>
-                        <input
-                          type="text"
-                          value={block.textColor || "#ffffff"}
-                          onChange={(event) => handleFieldChange("textColor", event.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
-                          placeholder="#FFFFFF"
-                        />
-                      </div>
-                    </div>
+                    <ColorPicker
+                      label="Background"
+                      value={block.accent || "#111827"}
+                      onChange={(val) => handleFieldChange("accent", val)}
+                    />
+                    <ColorPicker
+                      label="Text"
+                      value={block.textColor || "#ffffff"}
+                      onChange={(val) => handleFieldChange("textColor", val)}
+                    />
                   </div>
                   {["hard-shadow", "soft-shadow", "3d", "gradient", "cyberpunk", "gradient-border", "neon", "pixel", "sketch", "neumorphism", "clay", "architect", "material", "brutalist", "outline-thick"].includes(block.buttonStyle || "") && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-2 block">Secondary / Shadow</label>
-                      <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300">
-                        <input
-                          type="color"
-                          value={block.buttonShadowColor || block.accent || "#111827"}
-                          onChange={(event) => handleFieldChange("buttonShadowColor", event.target.value)}
-                          className="h-full w-12 border-0 p-0 cursor-pointer hover:opacity-90 transition-opacity"
-                          title="Click to pick a color"
-                        />
-                        <div className="w-[1px] h-full bg-gray-100"></div>
-                        <input
-                          type="text"
-                          value={block.buttonShadowColor || block.accent || "#111827"}
-                          onChange={(event) => handleFieldChange("buttonShadowColor", event.target.value)}
-                          onFocus={(e) => e.target.select()}
-                          className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
-                          placeholder="#000000"
-                        />
-                      </div>
+                    <div className="pt-2">
+                      <ColorPicker
+                        label="Secondary / Shadow"
+                        value={block.buttonShadowColor || block.accent || "#111827"}
+                        onChange={(val) => handleFieldChange("buttonShadowColor", val)}
+                      />
                     </div>
                   )}
                 </div>
@@ -957,221 +1004,16 @@ const BlockItem = memo(({
             {block.type === "blog" && (
               <div className="pt-3 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
-                    <select
-                      value={block.blogLayout || "carousel"}
-                      onChange={(event) => handleFieldChange("blogLayout", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    >
-                      <option value="carousel">Carousel</option>
-                      <option value="list">List</option>
-                      <option value="grid">Grid</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Card Style</label>
-                    <select
-                      value={block.blogCardStyle || "featured"}
-                      onChange={(event) => handleFieldChange("blogCardStyle", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="minimal">Minimal</option>
-                      <option value="modern">Modern</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogBackgroundColor || "#ffffff"}
-                        onChange={(e) => handleFieldChange("blogBackgroundColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogBackgroundColor || "#ffffff"}
-                        onChange={(e) => handleFieldChange("blogBackgroundColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Title Color</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogTitleColor || "#1f2937"}
-                        onChange={(e) => handleFieldChange("blogTitleColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogTitleColor || "#1f2937"}
-                        onChange={(e) => handleFieldChange("blogTitleColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogTextColor || "#4b5563"}
-                        onChange={(e) => handleFieldChange("blogTextColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogTextColor || "#4b5563"}
-                        onChange={(e) => handleFieldChange("blogTextColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Date/Accent</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogDateColor || "#f59e0b"}
-                        onChange={(e) => handleFieldChange("blogDateColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogDateColor || "#f59e0b"}
-                        onChange={(e) => handleFieldChange("blogDateColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Tag Bg</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogTagBackgroundColor || "#f3f4f6"}
-                        onChange={(e) => handleFieldChange("blogTagBackgroundColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogTagBackgroundColor || "#f3f4f6"}
-                        onChange={(e) => handleFieldChange("blogTagBackgroundColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Tag Text</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.blogTagTextColor || "#4b5563"}
-                        onChange={(e) => handleFieldChange("blogTagTextColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.blogTagTextColor || "#4b5563"}
-                        onChange={(e) => handleFieldChange("blogTagTextColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-gray-100">
-                  <label className="text-xs font-medium text-gray-700 mb-2 block">Popup Configuration</label>
-                  <div className="mb-3">
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Popup Style</label>
-                    <select
-                      value={block.blogPopupStyle || "classic"}
-                      onChange={(event) => handleFieldChange("blogPopupStyle", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    >
-                      <option value="classic">Classic (Default)</option>
-                      <option value="modern">Modern (Split)</option>
-                      <option value="simple">Simple (Minimal)</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="color"
-                          value={block.blogPopupBackgroundColor || "#ffffff"}
-                          onChange={(e) => handleFieldChange("blogPopupBackgroundColor", e.target.value)}
-                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={block.blogPopupBackgroundColor || "#ffffff"}
-                          onChange={(e) => handleFieldChange("blogPopupBackgroundColor", e.target.value)}
-                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="color"
-                          value={block.blogPopupTextColor || "#1f2937"}
-                          onChange={(e) => handleFieldChange("blogPopupTextColor", e.target.value)}
-                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={block.blogPopupTextColor || "#1f2937"}
-                          onChange={(e) => handleFieldChange("blogPopupTextColor", e.target.value)}
-                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-700 mb-1 block">Overlay Color</label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="color"
-                          value={block.blogPopupOverlayColor || "#000000"}
-                          onChange={(e) => handleFieldChange("blogPopupOverlayColor", e.target.value)}
-                          className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                        />
-                        <input
-                          type="text"
-                          value={block.blogPopupOverlayColor || "#000000"}
-                          onChange={(e) => handleFieldChange("blogPopupOverlayColor", e.target.value)}
-                          className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Number of Posts: {block.blogPostCount || 3}</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    step="1"
-                    value={block.blogPostCount || 3}
-                    onChange={(event) => handleFieldChange("blogPostCount", event.target.value as any)}
-                    className="w-full accent-primary cursor-pointer"
+                  <ColorPicker
+                    label="Background"
+                    value={block.blogBackgroundColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("blogBackgroundColor", val)}
                   />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>1</span>
-                    <span>5</span>
-                  </div>
+                  <ColorPicker
+                    label="Text Color"
+                    value={block.blogTextColor || "#1f2937"}
+                    onChange={(val) => handleFieldChange("blogTextColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -1203,58 +1045,22 @@ const BlockItem = memo(({
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Background</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.productBackgroundColor || "#ffffff"}
-                        onChange={(e) => handleFieldChange("productBackgroundColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.productBackgroundColor || "#ffffff"}
-                        onChange={(e) => handleFieldChange("productBackgroundColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.productTextColor || "#1f2937"}
-                        onChange={(e) => handleFieldChange("productTextColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.productTextColor || "#1f2937"}
-                        onChange={(e) => handleFieldChange("productTextColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-700 mb-1 block">Accent Color</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={block.productAccentColor || "#000000"}
-                        onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <input
-                        type="text"
-                        value={block.productAccentColor || "#000000"}
-                        onChange={(e) => handleFieldChange("productAccentColor", e.target.value)}
-                        className="w-full min-w-0 rounded border border-gray-200 px-1.5 py-1 text-[10px] uppercase"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <ColorPicker
+                    label="Background"
+                    value={block.productBackgroundColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("productBackgroundColor", val)}
+                  />
+                  <ColorPicker
+                    label="Text Color"
+                    value={block.productTextColor || "#1f2937"}
+                    onChange={(val) => handleFieldChange("productTextColor", val)}
+                  />
+                  <ColorPicker
+                    label="Accent Color"
+                    value={block.productAccentColor || "#000000"}
+                    onChange={(val) => handleFieldChange("productAccentColor", val)}
+                  />
                 </div>
 
                 <div>
@@ -1497,33 +1303,21 @@ const BlockItem = memo(({
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
-                    <input
-                      type="color"
-                      value={block.calendarColor || "#ffffff"}
-                      onChange={(event) => handleFieldChange("calendarColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Text</label>
-                    <input
-                      type="color"
-                      value={block.calendarTextColor || "#1f2937"}
-                      onChange={(event) => handleFieldChange("calendarTextColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Accent</label>
-                    <input
-                      type="color"
-                      value={block.calendarAccentColor || "#2563eb"}
-                      onChange={(event) => handleFieldChange("calendarAccentColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
+                  <ColorPicker
+                    label="Background"
+                    value={block.calendarColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("calendarColor", val)}
+                  />
+                  <ColorPicker
+                    label="Text"
+                    value={block.calendarTextColor || "#1f2937"}
+                    onChange={(val) => handleFieldChange("calendarTextColor", val)}
+                  />
+                  <ColorPicker
+                    label="Accent"
+                    value={block.calendarAccentColor || "#2563eb"}
+                    onChange={(val) => handleFieldChange("calendarAccentColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -1590,24 +1384,16 @@ const BlockItem = memo(({
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
-                    <input
-                      type="color"
-                      value={block.featuredColor || "#1f4d36"}
-                      onChange={(event) => handleFieldChange("featuredColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <input
-                      type="color"
-                      value={block.featuredTextColor || "#ffffff"}
-                      onChange={(event) => handleFieldChange("featuredTextColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
+                  <ColorPicker
+                    label="Background"
+                    value={block.featuredColor || "#1f4d36"}
+                    onChange={(val) => handleFieldChange("featuredColor", val)}
+                  />
+                  <ColorPicker
+                    label="Text Color"
+                    value={block.featuredTextColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("featuredTextColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -1649,24 +1435,16 @@ const BlockItem = memo(({
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
-                    <input
-                      type="color"
-                      value={block.affiliateColor || "#ffffff"}
-                      onChange={(event) => handleFieldChange("affiliateColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <input
-                      type="color"
-                      value={block.affiliateTextColor || "#1f2937"}
-                      onChange={(event) => handleFieldChange("affiliateTextColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
+                  <ColorPicker
+                    label="Background"
+                    value={block.affiliateColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("affiliateColor", val)}
+                  />
+                  <ColorPicker
+                    label="Text Color"
+                    value={block.affiliateTextColor || "#1f2937"}
+                    onChange={(val) => handleFieldChange("affiliateTextColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -1712,24 +1490,16 @@ const BlockItem = memo(({
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background</label>
-                    <input
-                      type="color"
-                      value={block.eventColor || "#111827"}
-                      onChange={(event) => handleFieldChange("eventColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                    <input
-                      type="color"
-                      value={block.eventTextColor || "#ffffff"}
-                      onChange={(event) => handleFieldChange("eventTextColor", event.target.value)}
-                      className="h-9 w-full rounded cursor-pointer"
-                    />
-                  </div>
+                  <ColorPicker
+                    label="Background"
+                    value={block.eventColor || "#111827"}
+                    onChange={(val) => handleFieldChange("eventColor", val)}
+                  />
+                  <ColorPicker
+                    label="Text Color"
+                    value={block.eventTextColor || "#ffffff"}
+                    onChange={(val) => handleFieldChange("eventTextColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -1817,12 +1587,10 @@ const BlockItem = memo(({
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                      <input
-                        type="color"
+                      <ColorPicker
+                        label="Text Color"
                         value={block.instagramTextColor || "#000000"}
-                        onChange={(event) => handleFieldChange("instagramTextColor", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
+                        onChange={(val) => handleFieldChange("instagramTextColor", val)}
                       />
                     </div>
                   </>
@@ -1885,12 +1653,10 @@ const BlockItem = memo(({
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Color</label>
-                      <input
-                        type="color"
+                      <ColorPicker
+                        label="Text Color"
                         value={block.youtubeTextColor || "#ff0000"}
-                        onChange={(event) => handleFieldChange("youtubeTextColor", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
+                        onChange={(val) => handleFieldChange("youtubeTextColor", val)}
                       />
                     </div>
                   </>
@@ -2154,28 +1920,16 @@ const BlockItem = memo(({
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Foreground Color</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={block.qrCodeColor || "#000000"}
-                        onChange={(event) => handleFieldChange("qrCodeColor", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Background Color</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={block.qrCodeBgColor || "#FFFFFF"}
-                        onChange={(event) => handleFieldChange("qrCodeBgColor", event.target.value)}
-                        className="h-9 w-full rounded cursor-pointer"
-                      />
-                    </div>
-                  </div>
+                  <ColorPicker
+                    label="Foreground"
+                    value={block.qrCodeColor || "#000000"}
+                    onChange={(val) => handleFieldChange("qrCodeColor", val)}
+                  />
+                  <ColorPicker
+                    label="Background"
+                    value={block.qrCodeBgColor || "#FFFFFF"}
+                    onChange={(val) => handleFieldChange("qrCodeBgColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -2200,23 +1954,25 @@ const BlockItem = memo(({
               </div>
             )}
 
-            <div className="pt-2 border-t border-gray-50 mt-3">
-              <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
-              <div className="flex bg-gray-100 p-1 rounded-lg">
-                {(['left', 'center', 'right'] as const).map((align) => (
-                  <button
-                    key={align}
-                    onClick={() => handleFieldChange("align", align)}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.align || 'center') === align
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    {align.charAt(0).toUpperCase() + align.slice(1)}
-                  </button>
-                ))}
+            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify'].includes(block.type) && (
+              <div className="pt-2 border-t border-gray-50 mt-3">
+                <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  {(['left', 'center', 'right'] as const).map((align) => (
+                    <button
+                      key={align}
+                      onClick={() => handleFieldChange("align", align)}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.align || 'center') === align
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                      {align.charAt(0).toUpperCase() + align.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

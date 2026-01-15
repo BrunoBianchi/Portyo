@@ -60,6 +60,9 @@ export interface UpdateBioOptions {
     enableSubscribeButton?: boolean;
     removeBranding?: boolean;
     profileImage?: string;
+    font?: string;
+    customFontUrl?: string;
+    customFontName?: string;
 }
 
 import { env } from "../../config/env"
@@ -160,6 +163,9 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     if (enableSubscribeButton !== undefined) bio.enableSubscribeButton = enableSubscribeButton;
     if (removeBranding !== undefined) bio.removeBranding = removeBranding;
     if (profileImage !== undefined) bio.profileImage = profileImage;
+    if (options.font !== undefined) bio.font = options.font;
+    if (options.customFontUrl !== undefined) bio.customFontUrl = options.customFontUrl;
+    if (options.customFontName !== undefined) bio.customFontName = options.customFontName;
 
     // Background settings
     if (bgSettings) {

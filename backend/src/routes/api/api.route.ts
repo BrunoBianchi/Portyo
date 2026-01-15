@@ -101,4 +101,10 @@ router.use('/portfolio/categories', portfolioCategoryRoute)
 // Bio Route (likely contains wildcard /:id) should be last
 router.use('/bio', authMiddleware, bioRoute);
 
+import uploadFontRoute from "./user/[post]-upload-font.route"
+router.use('/user/upload-font', uploadFontRoute)
+
+import fontRoute from "./fonts/font.route"
+router.use('/fonts', fontRoute)
+
 export default router;

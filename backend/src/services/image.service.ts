@@ -196,3 +196,21 @@ export const processPortfolioImage = async (buffer: Buffer, userId: string) => {
     return `${baseUrl}/api/images/portfolio/${userId}/${imageId}/full.png`;
 };
 
+export const processCustomFont = async (file: Express.Multer.File, userId: string, baseUrl: string) => {
+    // Generate Font - just store it
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+    const extension = file.originalname.split('.').pop() || 'ttf';
+
+    // Store in Redis
+    // Key format: user:{userId}:font:{timestamp}-{uniqueId}
+    // We store the buffer directly
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:font:${timestamp}-${uniqueId}`, file.buffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const fontId = `${timestamp}-${uniqueId}`;
+    return `${baseUrl}/api/fonts/${userId}/${fontId}/${extension}`;
+};
+

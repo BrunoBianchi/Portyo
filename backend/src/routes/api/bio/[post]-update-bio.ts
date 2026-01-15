@@ -42,7 +42,10 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         enableSubscribeButton: z.boolean().optional(),
         removeBranding: z.boolean().optional(),
         description: z.string().optional(),
-        socials: z.any().optional()
+        socials: z.any().optional(),
+        font: z.string().optional(),
+        customFontUrl: z.string().nullable().optional(),
+        customFontName: z.string().nullable().optional()
     }).parse(req.body);
 
     const updateOptions: UpdateBioOptions = {
@@ -52,6 +55,9 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         enableSubscribeButton: schema.enableSubscribeButton,
         removeBranding: schema.removeBranding,
         profileImage: schema.profileImage ?? undefined,
+        font: schema.font,
+        customFontUrl: schema.customFontUrl ?? undefined,
+        customFontName: schema.customFontName ?? undefined,
         bgSettings: {
             bgType: schema.bgType,
             bgColor: schema.bgColor,

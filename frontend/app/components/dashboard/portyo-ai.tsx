@@ -15,6 +15,8 @@ interface AIGenerationResult {
         cardStyle?: string;
         cardBackgroundColor?: string;
         usernameColor?: string;
+        font?: string;
+        imageStyle?: string;
     };
     replaceBlocks: boolean;
     globalBlockStyles?: Partial<BioBlock>;
@@ -105,6 +107,9 @@ export function PortyoAI({ bioId, onBlocksGenerated, onSettingsChange, onGlobalS
                     </div>
                 </div>
                 <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">Ask AI</span>
+                <span className="absolute -top-1.5 -right-2 bg-yellow-400 text-[8px] font-black text-yellow-900 px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm transform rotate-12 z-10">
+                    BETA
+                </span>
             </button>
         );
     }

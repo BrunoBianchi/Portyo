@@ -11,7 +11,9 @@ export type BioBlock = {
     formBackgroundColor?: string;
     formTextColor?: string;
     href?: string;
-    align?: "left" | "center" | "right";
+    align?: "left" | "center" | "right" | "justify";
+    fontSize?: string;
+    fontWeight?: string;
     accent?: string;
     textColor?: string;
     mediaUrl?: string;
@@ -204,6 +206,9 @@ interface Bio {
     cardShadow?: string;
     cardPadding?: number;
     maxWidth?: number;
+    font?: string;
+    customFontUrl?: string;
+    customFontName?: string;
 }
 
 interface BioData {

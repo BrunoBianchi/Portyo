@@ -13,6 +13,9 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
 });
 
 router.post("/webhook", async (req: Request, res: Response) => {
+    console.log("🔔 Stripe Webhook Received 🔔");
+    console.log("Signature:", req.headers["stripe-signature"]);
+    
     const sig = req.headers["stripe-signature"];
     const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 

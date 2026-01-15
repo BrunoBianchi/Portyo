@@ -170,6 +170,8 @@ export interface AIGenerationResult {
         cardStyle?: string;
         cardBackgroundColor?: string;
         usernameColor?: string;
+        font?: string;
+        imageStyle?: string;
     };
     replaceBlocks: boolean;
     globalBlockStyles?: {
@@ -281,7 +283,10 @@ PRO BLOCKS (only for Pro users):
 - bgSecondaryColor: hex for patterns (e.g., "#16213e")
 - cardStyle: "none" | "solid" | "frosted"
 - cardBackgroundColor: hex color
+- cardBackgroundColor: hex color
 - usernameColor: hex color for name text
+- font: "Inter" | "Roboto" | "Open Sans" | "Merriweather" | "Oswald" | "Raleway" | "Poppins"
+- imageStyle: "circle" | "rounded" | "square" | "amoeba" | "star" | "hexagon"
 
 === RESPONSE FORMAT ===
 {

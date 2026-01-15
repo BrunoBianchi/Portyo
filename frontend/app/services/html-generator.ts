@@ -67,14 +67,20 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "heading") {
     const titleColor = block.textColor || "#0f172a";
     const bodyColor = block.textColor ? `${block.textColor}b3` : "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:32px; font-weight:800; color:${titleColor}; line-height:1.2; letter-spacing:-0.8px;">${escapeHtml(
+    const fontSize = block.fontSize || "32px";
+    const fontWeight = block.fontWeight || "800";
+    
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:${fontSize}; font-weight:${fontWeight}; color:${titleColor}; line-height:1.2; letter-spacing:-0.8px;">${escapeHtml(
       block.title || "Heading"
     )}</h2>\n  ${block.body ? `<p style="margin:12px 0 0; color:${bodyColor}; font-size:16px; line-height:1.6; font-weight:500;">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
   }
 
   if (block.type === "text") {
     const textColor = block.textColor || "#475569";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.7; font-size:16px; font-weight:500;">${escapeHtml(
+    const fontSize = block.fontSize || "16px";
+    const fontWeight = block.fontWeight || "500";
+    
+    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.7; font-size:${fontSize}; font-weight:${fontWeight};">${escapeHtml(
       block.body || ""
     )}</p>\n</section>`;
   }
@@ -213,7 +219,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       </button>
     `;
 
-    return `\n${extraHtml}<section style="text-align:${align}; padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
+    return `\n${extraHtml}<section style="padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
       block.title || "Open link"
     )}</span>${shareButtonHtml}</${tag}>\n</section>`;
   }
@@ -264,7 +270,16 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   }
 
   if (block.type === "blog") {
-    return "";
+    // Inject configuration for the client-side loader
+    // We use a script that sets a global variable or directly modifies the loader's default config
+    return `
+      <script>
+        window.blogConfig = {
+          backgroundColor: "${block.blogBackgroundColor || '#ffffff'}",
+          textColor: "${block.blogTextColor || '#1f2937'}" 
+        };
+      </script>
+    `;
   }
 
   if (block.type === "product") {
@@ -722,14 +737,65 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
   `;
+
+  // Font Logic
+  const font = bio.font || 'Inter';
+  const fonts: Record<string, string> = {
+    'Inter': 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+    'Roboto': 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap',
+    'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap',
+    'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap',
+    'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap',
+    'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap',
+    'Merriweather': 'https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap',
+    'Oswald': 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap',
+    'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&display=swap',
+    'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap',
+  };
+
+  
+  let fontLink = fonts[font] ? `<link href="${fonts[font]}" rel="stylesheet">` : '';
+  let fontFamily = font === 'Inter' ? "'Inter', sans-serif" : `'${font}', sans-serif`;
+
+  if (font === 'Custom' && bio.customFontUrl) {
+    fontLink = `
+      <style>
+        @font-face {
+          font-family: 'CustomFont';
+          src: url('${bio.customFontUrl}') format('truetype');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+      </style>
+    `;
+    fontFamily = "'CustomFont', sans-serif";
+  }
   
   const imageStyles: Record<string, string> = {
     circle: 'border-radius:50%;',
     rounded: 'border-radius:24px;',
     square: 'border-radius:0;',
     star: 'clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);',
-    hexagon: 'clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);'
+    hexagon: 'clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);',
+    amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba 3s ease-in-out infinite;'
   };
+  
+  // Add Amoeba Keyframes if needed
+  if (bio.imageStyle === 'amoeba') {
+     fontLink += `
+      <style>
+        @keyframes amoeba {
+          0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+          25% { border-radius: 45% 55% 45% 55% / 50% 55% 45% 50%; }
+          50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+          75% { border-radius: 45% 55% 45% 55% / 55% 50% 50% 45%; }
+          100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        }
+      </style>
+     `;
+  }
+
   const imgStyle = imageStyles[bio.imageStyle || 'circle'] || imageStyles.circle;
   const usernameColor = bio.usernameColor || '#111827';
 
@@ -837,7 +903,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         ` : ''}
 
         <!-- Profile Image -->
-        <div style="width:120px; height:120px; border-radius:50%; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
+        <div style="width:120px; height:120px; ${imgStyle} overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
                ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/users-photos/julia-soares.jpeg')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
                
                ${bio.isPreview ? `
@@ -1152,7 +1218,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     </div>
   ` : '';
 
-  return `<div style="${bgStyle} min-height:100vh; font-family: 'Inter', system-ui, -apple-system, sans-serif; position:relative;">
+  return `${fontLink}<div style="${bgStyle} min-height:100vh; font-family: ${fontFamily}; position:relative;">
     <style>
       html, body { min-height: 100%; }
       body {

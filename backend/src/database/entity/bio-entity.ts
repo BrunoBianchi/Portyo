@@ -135,6 +135,16 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "boolean", default: false })
     removeBranding: boolean = false;
 
+    @Column({ type: "varchar", default: "Inter" })
+    font: string = "Inter";
+
+    @Column({ type: "varchar", nullable: true })
+    customFontUrl: string | null = null;
+
+    @Column({ type: "varchar", nullable: true })
+    customFontName: string | null = null;
+
+
     @ManyToOne(() => UserEntity, (user) => user.bios, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user!: UserEntity;
