@@ -1,11 +1,15 @@
 import { AppDataSource } from "../../database/datasource";
 import { UserEntity } from "../../database/entity/user-entity";
 import { BioEntity } from "../../database/entity/bio-entity";
+import { BillingEntity } from "../../database/entity/billing-entity";
+import { BillingService } from "../../services/billing.service";
 import { logger } from "../utils/logger";
 import { ApiError, APIErrors } from "../errors/api-error";
+import { MoreThan, LessThanOrEqual } from "typeorm";
 
 const userRepository = AppDataSource.getRepository(UserEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
+const billingRepository = AppDataSource.getRepository(BillingEntity);
 
 export interface AdminUserDTO {
     id: string;
@@ -33,6 +37,23 @@ export interface AdminStats {
 }
 
 /**
+ * Get the active billing for a user (if any)
+ */
+const getActiveBilling = async (userId: string): Promise<BillingEntity | null> => {
+    const now = new Date();
+    return await billingRepository.findOne({
+        where: {
+            userId: userId,
+            startDate: LessThanOrEqual(now),
+            endDate: MoreThan(now)
+        },
+        order: {
+            endDate: "DESC"
+        }
+    });
+};
+
+/**
  * Get paginated list of all users for admin
  */
 export const getAllUsers = async (
@@ -49,8 +70,6 @@ export const getAllUsers = async (
             'user.id',
             'user.email',
             'user.fullName',
-            'user.plan',
-            'user.planExpiresAt',
             'user.isBanned',
             'user.verified',
             'user.provider',
@@ -75,7 +94,7 @@ export const getAllUsers = async (
     const total = await totalQuery.getCount();
 
     // Apply sorting and pagination
-    const validSortFields = ['createdAt', 'email', 'fullName', 'plan', 'isBanned'];
+    const validSortFields = ['createdAt', 'email', 'fullName', 'isBanned'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     
     query.orderBy(`user.${sortField}`, sortOrder);
@@ -84,17 +103,23 @@ export const getAllUsers = async (
 
     const rawResults = await query.getRawMany();
 
-    const users: AdminUserDTO[] = rawResults.map(raw => ({
-        id: raw.user_id,
-        email: raw.user_email,
-        fullName: raw.user_fullName,
-        plan: raw.user_plan,
-        planExpiresAt: raw.user_planExpiresAt,
-        isBanned: raw.user_isBanned,
-        verified: raw.user_verified,
-        provider: raw.user_provider,
-        createdAt: raw.user_createdAt,
-        biosCount: parseInt(raw.biosCount) || 0
+    // For each user, get their actual plan from BillingService
+    const users: AdminUserDTO[] = await Promise.all(rawResults.map(async (raw) => {
+        const activePlan = await BillingService.getActivePlan(raw.user_id);
+        const activeBilling = await getActiveBilling(raw.user_id);
+        
+        return {
+            id: raw.user_id,
+            email: raw.user_email,
+            fullName: raw.user_fullName,
+            plan: activePlan,
+            planExpiresAt: activeBilling?.endDate,
+            isBanned: raw.user_isBanned,
+            verified: raw.user_verified,
+            provider: raw.user_provider,
+            createdAt: raw.user_createdAt,
+            biosCount: parseInt(raw.biosCount) || 0
+        };
     }));
 
     return {
@@ -121,46 +146,61 @@ export const setUserBanStatus = async (userId: string, isBanned: boolean): Promi
 };
 
 /**
- * Set user plan with optional expiration
+ * Set user plan by creating a new billing record
  */
 export const setUserPlan = async (
     userId: string, 
     plan: 'free' | 'standard' | 'pro', 
     durationDays?: number
-): Promise<UserEntity> => {
+): Promise<{ plan: string; planExpiresAt?: Date }> => {
     const user = await userRepository.findOneBy({ id: userId });
     if (!user) {
         throw new ApiError(APIErrors.notFoundError, "User not found", 404);
     }
 
-    user.plan = plan;
-    
-    if (durationDays && durationDays > 0) {
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + durationDays);
-        user.planExpiresAt = expiresAt;
-    } else if (plan === 'free') {
-        user.planExpiresAt = undefined;
+    // If setting to free, we just don't create a billing record (or could delete active ones)
+    if (plan === 'free') {
+        // Mark any active billing as expired by setting endDate to now
+        const now = new Date();
+        await billingRepository
+            .createQueryBuilder()
+            .update(BillingEntity)
+            .set({ endDate: now })
+            .where("userId = :userId AND endDate > :now", { userId, now })
+            .execute();
+        
+        logger.info(`User ${userId} plan set to free (active billings expired)`);
+        return { plan: 'free', planExpiresAt: undefined };
     }
 
-    await userRepository.save(user);
+    // For standard or pro, create a new billing record
+    const days = durationDays && durationDays > 0 ? durationDays : 30; // Default 30 days
+    const billing = await BillingService.createBilling(userId, plan, days, 0); // Price 0 for admin grants
 
-    logger.info(`User ${userId} plan set to: ${plan} (expires: ${user.planExpiresAt || 'never'})`);
-    return user;
+    logger.info(`User ${userId} plan set to: ${plan} for ${days} days (expires: ${billing.endDate})`);
+    return { plan: billing.plan, planExpiresAt: billing.endDate };
 };
 
 /**
- * Get admin dashboard stats
+ * Get admin dashboard stats - uses billing for accurate plan counts
  */
 export const getAdminStats = async (): Promise<AdminStats> => {
     const totalUsers = await userRepository.count();
     const totalBios = await bioRepository.count();
     const bannedUsers = await userRepository.count({ where: { isBanned: true } });
 
-    // Plan distribution
-    const freeCount = await userRepository.count({ where: { plan: 'free' } });
-    const standardCount = await userRepository.count({ where: { plan: 'standard' } });
-    const proCount = await userRepository.count({ where: { plan: 'pro' } });
+    // Get all users and compute their active plans
+    const allUsers = await userRepository.find({ select: ['id'] });
+    let freeCount = 0;
+    let standardCount = 0;
+    let proCount = 0;
+
+    for (const user of allUsers) {
+        const plan = await BillingService.getActivePlan(user.id);
+        if (plan === 'pro') proCount++;
+        else if (plan === 'standard') standardCount++;
+        else freeCount++;
+    }
 
     // New users this month
     const startOfMonth = new Date();
@@ -196,12 +236,15 @@ export const getUserById = async (userId: string): Promise<AdminUserDTO | null> 
 
     if (!user) return null;
 
+    const activePlan = await BillingService.getActivePlan(userId);
+    const activeBilling = await getActiveBilling(userId);
+
     return {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        plan: user.plan,
-        planExpiresAt: user.planExpiresAt,
+        plan: activePlan,
+        planExpiresAt: activeBilling?.endDate,
         isBanned: user.isBanned,
         verified: user.verified,
         provider: user.provider,

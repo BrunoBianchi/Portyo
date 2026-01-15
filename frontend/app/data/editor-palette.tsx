@@ -151,4 +151,10 @@ export const palette: Array<{ type: BioBlock["type"] | string; label: string; ic
     category: "Content",
     icon: <FormIcon width="24" height="24" />
   },
+  {
+    type: "portfolio",
+    label: "Portfolio",
+    category: "Content",
+    icon: <ImageIcon width="24" height="24" />
+  },
 ];

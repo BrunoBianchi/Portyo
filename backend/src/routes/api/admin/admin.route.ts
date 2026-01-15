@@ -95,14 +95,13 @@ router.post('/users/:id/plan', async (req, res) => {
         });
         const { plan, durationDays } = schema.parse(req.body);
         
-        const user = await AdminService.setUserPlan(req.params.id, plan, durationDays);
+        const result = await AdminService.setUserPlan(req.params.id, plan, durationDays);
         res.json({ 
             success: true, 
             user: {
-                id: user.id,
-                email: user.email,
-                plan: user.plan,
-                planExpiresAt: user.planExpiresAt
+                id: req.params.id,
+                plan: result.plan,
+                planExpiresAt: result.planExpiresAt
             }
         });
     } catch (error: any) {

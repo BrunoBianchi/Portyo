@@ -286,6 +286,20 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     </section>`;
   }
 
+  if (block.type === "portfolio") {
+    const title = block.portfolioTitle || "Portfólio";
+    
+    // We render a placeholder that React will hydrate with PortfolioWidget
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div class="custom-portfolio-block" data-title="${escapeHtml(title)}" data-bio-id="${bio.id}">
+         <!-- Loading State for SSR/No-JS -->
+         <div style="padding:24px; text-align:center; background:#ffffff; border-radius:24px; color:#1f2937; border:1px solid rgba(0,0,0,0.1);">
+           Loading portfolio...
+         </div>
+      </div>
+    </section>`;
+  }
+
   if (block.type === "calendar") {
     const title = block.calendarTitle || "Book a Call";
     const url = block.calendarUrl || "#";

@@ -3,7 +3,7 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio";
     title?: string;
     body?: string;
     // Form specific
@@ -142,7 +142,8 @@ export type BioBlock = {
     // Spotify specific
     spotifyUrl?: string;
     spotifyCompact?: boolean;
-
+    // Portfolio specific
+    portfolioTitle?: string;
 };
 
 export interface Integration {

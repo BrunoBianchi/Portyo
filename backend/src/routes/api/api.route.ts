@@ -89,6 +89,9 @@ router.use('/google-calendar', googleCalendarRoute)
 router.use('/templates', authMiddleware, templateRoute)
 router.use('/bookings', authMiddleware, bookingRoute)
 
+import portfolioRoute from "./portfolio/portfolio.route"
+router.use('/portfolio', portfolioRoute)
+
 // Bio Route (likely contains wildcard /:id) should be last
 router.use('/bio', authMiddleware, bioRoute);
 

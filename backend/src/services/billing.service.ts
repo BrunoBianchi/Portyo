@@ -7,27 +7,36 @@ export class BillingService {
 
     /**
      * Checks the active plan for a user based on their billing history.
-     * Returns "pro", "standard", or "free".
+     * Returns the highest active plan: "pro" > "standard" > "free".
      */
     static async getActivePlan(userId: string): Promise<string> {
         const now = new Date();
 
-        const activeBilling = await this.repository.findOne({
+        // Get all active billings for this user
+        const activeBillings = await this.repository.find({
             where: {
                 userId: userId,
                 startDate: LessThanOrEqual(now),
                 endDate: MoreThan(now)
-            },
-            order: {
-                endDate: "DESC" // If multiple, take the one ending latest (or maybe we should prioritize 'pro' over 'standard'?)
             }
         });
 
-        if (!activeBilling) {
+        if (activeBillings.length === 0) {
             return "free";
         }
 
-        return activeBilling.plan;
+        // Return the highest plan (pro > standard)
+        const hasPro = activeBillings.some(b => b.plan === 'pro');
+        if (hasPro) {
+            return "pro";
+        }
+
+        const hasStandard = activeBillings.some(b => b.plan === 'standard');
+        if (hasStandard) {
+            return "standard";
+        }
+
+        return "free";
     }
 
     static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number, stripeCustomerId?: string) {

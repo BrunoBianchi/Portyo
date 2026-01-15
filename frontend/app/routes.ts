@@ -45,6 +45,7 @@ export default [
             { path: "templates/:id", file: "routes/dashboard-templates.editor.tsx" },
             { path: "admin", file: "routes/dashboard.admin.tsx" },
             { path: "announcements", file: "routes/dashboard.announcements.tsx" },
+            { path: "portfolio", file: "routes/dashboard-portfolio.tsx" },
         ]
     },
     { path: "redirect-qrcode/:id", file: "routes/redirect-qrcode.$id.tsx" },

@@ -6,6 +6,7 @@ import { api } from "~/services/api";
 const BlogPostPopup = React.lazy(() => import("./blog-post-popup").then(module => ({ default: module.BlogPostPopup })));
 const BookingWidget = React.lazy(() => import("./booking-widget").then(module => ({ default: module.BookingWidget })));
 const FormWidget = React.lazy(() => import("./form-widget").then(module => ({ default: module.FormWidget })));
+const PortfolioWidget = React.lazy(() => import("./portfolio-widget").then(module => ({ default: module.PortfolioWidget })));
 import { BlogPostView } from "./blog-post-view";
 
 import { sanitizeHtml } from "~/utils/security";
@@ -648,6 +649,35 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             });
         };
 
+        const initPortfolioWidgets = () => {
+            const root = containerRef.current;
+            if (!root) return;
+
+            const portfolioBlocks = root.querySelectorAll('.custom-portfolio-block');
+            portfolioBlocks.forEach(block => {
+                if (block.hasAttribute('data-initialized')) return;
+                block.setAttribute('data-initialized', 'true');
+
+                const title = block.getAttribute('data-title') || 'Portfólio';
+                const bioIdStr = block.getAttribute('data-bio-id');
+
+                if (!bioIdStr) return;
+
+                // Clear placeholder
+                block.innerHTML = '';
+
+                const reactRoot = createRoot(block);
+                reactRoot.render(
+                    <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', background: '#ffffff', borderRadius: '24px', color: '#1f2937', border: '1px solid rgba(0,0,0,0.1)' }}>Loading portfolio...</div>}>
+                        <PortfolioWidget
+                            bioId={bioIdStr}
+                            title={title}
+                        />
+                    </React.Suspense>
+                );
+            });
+        };
+
         const initProductLinks = () => {
             const root = containerRef.current;
             if (!root) return;
@@ -1011,6 +1041,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             initProductLinks();
             initBookingWidgets();
             initFormWidgets();
+            initPortfolioWidgets();
 
             if (!isPreview) {
                 initLinkClickTracking();

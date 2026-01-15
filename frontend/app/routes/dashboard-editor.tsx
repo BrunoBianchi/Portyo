@@ -1047,6 +1047,7 @@ export default function DashboardEditor() {
           affiliateCode: dragItem.type === "affiliate" ? "ILoveMatcha" : undefined,
           affiliateImage: dragItem.type === "affiliate" ? "https://placehold.co/300x300" : undefined,
           affiliateUrl: dragItem.type === "affiliate" ? "#" : undefined,
+          portfolioTitle: dragItem.type === "portfolio" ? "Portfólio" : undefined,
         };
         const targetIndex = typeof index === "number" ? index : next.length;
         next.splice(targetIndex, 0, newBlock);
@@ -1680,7 +1681,7 @@ export default function DashboardEditor() {
         </div>
       </div>
 
-            {/* Mobile Preview FAB */}
+      {/* Mobile Preview FAB */}
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setShowMobilePreview(true)}
@@ -1707,14 +1708,14 @@ export default function DashboardEditor() {
             </button>
           </div>
           <div className="flex-1 overflow-hidden p-4 bg-gray-100 flex items-center justify-center">
-             <div className="w-full h-full max-w-[375px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-gray-900 relative">
-                <iframe
-                  srcDoc={debouncedHtml || ""}
-                  className="w-full h-full scrollbar-hide border-none bg-white"
-                  title="Mobile Preview"
-                  sandbox="allow-same-origin allow-scripts"
-                />
-             </div>
+            <div className="w-full h-full max-w-[375px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-gray-900 relative">
+              <iframe
+                srcDoc={debouncedHtml || ""}
+                className="w-full h-full scrollbar-hide border-none bg-white"
+                title="Mobile Preview"
+                sandbox="allow-same-origin allow-scripts"
+              />
+            </div>
           </div>
         </div>
       )}

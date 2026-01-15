@@ -29,7 +29,8 @@ import {
     LayoutTemplate,
     Lock,
     Megaphone,
-    Shield
+    Shield,
+    Briefcase
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -108,6 +109,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Editor", path: "/dashboard/editor", icon: PenTool },
         { name: "Leads", path: "/dashboard/leads", icon: Users, isPro: true },
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
+        { name: "Portfolio", path: "/dashboard/portfolio", icon: Briefcase },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },
         { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
         { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },

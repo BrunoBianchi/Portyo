@@ -9,6 +9,7 @@ import { EmailTemplateEntity } from "./email-template-entity";
 import { BookingSettingsEntity } from "./booking-settings-entity";
 import { BookingEntity } from "./booking-entity";
 import { FormEntity } from "./form-entity";
+import { PortfolioItemEntity } from "./portfolio-item-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -165,4 +166,7 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => FormEntity, (form) => form.bio)
     forms!: FormEntity[];
+
+    @OneToMany(() => PortfolioItemEntity, (item) => item.bio)
+    portfolioItems!: PortfolioItemEntity[];
 }

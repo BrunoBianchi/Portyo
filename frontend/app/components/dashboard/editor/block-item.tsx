@@ -72,6 +72,7 @@ const getBlockTypeAccent = (type: string): { bg: string; text: string; border: s
     calendar: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
     map: { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" },
     form: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
+    portfolio: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
   };
   return accents[type] || { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" };
 };
@@ -94,6 +95,8 @@ const getBlockPreview = (block: BioBlock): string => {
       return block.qrCodeValue ? 'QR configured' : 'No QR value';
     case 'form':
       return block.formId ? 'Form selected' : 'No form selected';
+    case 'portfolio':
+      return block.portfolioTitle || 'Portfolio';
     default:
       return '';
   }
@@ -2179,6 +2182,22 @@ const BlockItem = memo(({
 
             {block.type === "divider" && (
               <p className="text-xs text-text-muted pt-3">Simple dividing line.</p>
+            )}
+
+            {block.type === "portfolio" && (
+              <div className="space-y-3 pt-3">
+                <p className="text-xs text-gray-500">Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.</p>
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">Section Title</label>
+                  <input
+                    type="text"
+                    value={block.portfolioTitle || "Portfólio"}
+                    onChange={(e) => handleFieldChange("portfolioTitle", e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+                    placeholder="Portfolio"
+                  />
+                </div>
+              </div>
             )}
 
             <div className="pt-2 border-t border-gray-50 mt-3">
