@@ -135,7 +135,7 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "boolean", default: false })
     removeBranding: boolean = false;
 
-    @ManyToOne(() => UserEntity, (user) => user.bios)
+    @ManyToOne(() => UserEntity, (user) => user.bios, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user!: UserEntity;
 

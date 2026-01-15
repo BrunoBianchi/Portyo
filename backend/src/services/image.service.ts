@@ -173,3 +173,26 @@ export const processOgImage = async (file: Express.Multer.File, userId: string, 
     const imageId = `${timestamp}-${uniqueId}`;
     return `${baseUrl}/api/images/og/${userId}/${imageId}/full.png`;
 };
+
+export const processPortfolioImage = async (buffer: Buffer, userId: string) => {
+    // Generate Portfolio Image - 1200x800 (photography/portfolio showcase size)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    const fullBuffer = await sharp(buffer)
+        .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+        .png({ quality: 90 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: user:{userId}:portfolio:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    pipeline.set(`user:${userId}:portfolio:${timestamp}-${uniqueId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    const imageId = `${timestamp}-${uniqueId}`;
+    const baseUrl = env.BACKEND_URL || 'http://localhost:3000';
+    return `${baseUrl}/api/images/portfolio/${userId}/${imageId}/full.png`;
+};
+

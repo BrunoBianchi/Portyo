@@ -1,13 +1,31 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
 import { AppDataSource } from '../../../database/datasource';
 import { PortfolioItemEntity } from '../../../database/entity/portfolio-item-entity';
 import { BioEntity } from '../../../database/entity/bio-entity';
 import { requireAuth } from '../../../middlewares/auth.middleware';
 import { z } from 'zod';
+import { processPortfolioImage } from '../../../services/image.service';
 
 const router = express.Router();
 const portfolioRepository = AppDataSource.getRepository(PortfolioItemEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
+
+// Multer config for image uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'));
+        }
+    }
+});
 
 // Helper to check bio ownership
 const checkBioOwnership = async (bioId: string, userId: string) => {
@@ -25,11 +43,39 @@ router.get('/:bioId', async (req, res) => {
     try {
         const items = await portfolioRepository.find({
             where: { bioId: req.params.bioId },
+            relations: ['category'],
             order: { order: 'ASC', createdAt: 'ASC' }
         });
         res.json(items);
     } catch (error) {
         console.error("Error fetching portfolio items:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+/**
+ * POST /portfolio/:bioId/upload - Upload portfolio image (auth required)
+ */
+router.post('/:bioId/upload', requireAuth, upload.single('image'), async (req, res) => {
+    try {
+        const userId = req.session?.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        await checkBioOwnership(req.params.bioId, userId);
+
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const imageUrl = await processPortfolioImage(req.file.buffer, userId);
+        res.json({ url: imageUrl });
+    } catch (error: any) {
+        console.error("Error uploading portfolio image:", error);
+        if (error.status) {
+            return res.status(error.status).json({ error: error.message });
+        }
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
@@ -48,8 +94,9 @@ router.post('/:bioId', requireAuth, async (req, res) => {
 
         const schema = z.object({
             title: z.string().min(1).max(200),
-            description: z.string().max(5000).optional(),
-            image: z.string().url().optional().nullable(),
+            description: z.string().max(5000).optional().nullable().or(z.literal('')),
+            images: z.array(z.string()).optional().default([]),
+            categoryId: z.string().uuid().optional().nullable(),
             order: z.number().optional()
         });
 
@@ -67,13 +114,21 @@ router.post('/:bioId', requireAuth, async (req, res) => {
         const item = portfolioRepository.create({
             title: data.title,
             description: data.description || null,
-            image: data.image || null,
+            images: data.images || [],
+            categoryId: data.categoryId || null,
             order: newOrder,
             bioId: req.params.bioId
         });
 
         await portfolioRepository.save(item);
-        res.status(201).json(item);
+        
+        // Reload with category relation
+        const savedItem = await portfolioRepository.findOne({
+            where: { id: item.id },
+            relations: ['category']
+        });
+        
+        res.status(201).json(savedItem);
     } catch (error: any) {
         console.error("Error creating portfolio item:", error);
         if (error.status) {
@@ -105,20 +160,29 @@ router.put('/:bioId/:id', requireAuth, async (req, res) => {
 
         const schema = z.object({
             title: z.string().min(1).max(200).optional(),
-            description: z.string().max(5000).optional().nullable(),
-            image: z.string().url().optional().nullable(),
+            description: z.string().max(5000).optional().nullable().or(z.literal('')),
+            images: z.array(z.string()).optional(),
+            categoryId: z.string().uuid().optional().nullable(),
             order: z.number().optional()
         });
 
         const data = schema.parse(req.body);
 
         if (data.title !== undefined) item.title = data.title;
-        if (data.description !== undefined) item.description = data.description;
-        if (data.image !== undefined) item.image = data.image;
+        if (data.description !== undefined) item.description = data.description || null;
+        if (data.images !== undefined) item.images = data.images;
+        if (data.categoryId !== undefined) item.categoryId = data.categoryId;
         if (data.order !== undefined) item.order = data.order;
 
         await portfolioRepository.save(item);
-        res.json(item);
+        
+        // Reload with category relation
+        const savedItem = await portfolioRepository.findOne({
+            where: { id: item.id },
+            relations: ['category']
+        });
+        
+        res.json(savedItem);
     } catch (error: any) {
         console.error("Error updating portfolio item:", error);
         if (error.status) {

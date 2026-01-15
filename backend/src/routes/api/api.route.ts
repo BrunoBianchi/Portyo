@@ -90,7 +90,9 @@ router.use('/templates', authMiddleware, templateRoute)
 router.use('/bookings', authMiddleware, bookingRoute)
 
 import portfolioRoute from "./portfolio/portfolio.route"
+import portfolioCategoryRoute from "./portfolio/portfolio-category.route"
 router.use('/portfolio', portfolioRoute)
+router.use('/portfolio/categories', portfolioCategoryRoute)
 
 // Bio Route (likely contains wildcard /:id) should be last
 router.use('/bio', authMiddleware, bioRoute);
