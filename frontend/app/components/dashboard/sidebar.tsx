@@ -28,7 +28,8 @@ import {
     Calendar,
     LayoutTemplate,
     Lock,
-    Megaphone
+    Megaphone,
+    Shield
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -121,6 +122,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     if (user?.email?.toLowerCase() === "bruno2002.raiado@gmail.com") {
         // Feature flag for admin
+        navItems.push({ name: "Admin Panel", path: "/dashboard/admin", icon: Shield });
         navItems.push({ name: "Announcements", path: "/dashboard/announcements", icon: Megaphone });
         navItems.push({ name: "Site Blog", path: "/dashboard/site-blog", icon: Globe });
     }

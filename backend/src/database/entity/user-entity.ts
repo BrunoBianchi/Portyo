@@ -43,6 +43,12 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "varchar", nullable: true })
     emailsLastResetMonth?: string; // Format: "YYYY-MM"
 
+    @Column({ type: "boolean", default: false })
+    isBanned: boolean = false;
+
+    @Column({ type: "timestamp", nullable: true })
+    planExpiresAt?: Date;
+
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
 
