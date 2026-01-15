@@ -140,11 +140,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         duration = 365;
     }
 
-    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
-    const paymentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.id;
+    // const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+    // const paymentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.id;
 
-    await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId, paymentId);
-    logger.info(`Processed checkout for user ${userId}: ${plan} plan activated for ${duration} days. Payment ID: ${paymentId}`);
+    // User requested to ONLY create plan on invoice.paid
+    // await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId, paymentId);
+    logger.info(`Checkout session completed for user ${userId}. Waiting for invoice.paid to activate plan.`);
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -187,9 +188,20 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     }
     
     const stripeCustomerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
+    const paymentIntent = (invoice as any).payment_intent as string | Stripe.PaymentIntent | undefined;
+    const paymentId = typeof paymentIntent === 'string' ? paymentIntent : (paymentIntent?.id || invoice.id);
+
+    let transactionId: string | undefined;
+    if (paymentIntent && typeof paymentIntent !== 'string') {
+        const latestCharge = paymentIntent.latest_charge;
+        transactionId = typeof latestCharge === 'string' ? latestCharge : latestCharge?.id;
+    }
+
+    const subscriptionField = (invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }).subscription;
+    const subscriptionId = typeof subscriptionField === 'string' ? subscriptionField : subscriptionField?.id;
     
-    await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId);
-    logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days`);
+    await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId, paymentId, transactionId, subscriptionId);
+    logger.info(`Processed invoice renewal for user ${user.id} (${email}): ${plan} for ${duration} days. Payment ID: ${paymentId}, Transaction ID: ${transactionId}, Sub ID: ${subscriptionId}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {

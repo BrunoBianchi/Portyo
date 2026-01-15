@@ -39,7 +39,7 @@ export class BillingService {
         return "free";
     }
 
-    static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number, stripeCustomerId?: string, stripePaymentId?: string) {
+    static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number, stripeCustomerId?: string, stripePaymentId?: string, stripeTransactionId?: string, stripeSubscriptionId?: string) {
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + days);
@@ -51,7 +51,10 @@ export class BillingService {
             startDate,
             endDate,
             stripeCustomerId,
-            stripePaymentId
+            stripePaymentId,
+            stripeTransactionId,
+            stripeSubscriptionId,
+            status: 'paid'
         });
 
         await this.repository.save(billing);
@@ -75,5 +78,45 @@ export class BillingService {
         }
 
         return billing;
+    }
+
+    static async cancelSubscription(userId: string) {
+        // Find the most recent active billing
+        const now = new Date();
+        const activeBilling = await this.repository.findOne({
+            where: {
+                userId: userId,
+                endDate: MoreThan(now),
+                status: 'paid'
+            },
+            order: { startDate: 'DESC' }
+        });
+
+        if (!activeBilling) {
+            throw new Error("No active subscription found to cancel");
+        }
+
+        if (activeBilling.stripeSubscriptionId) {
+            try {
+                // Initialize Stripe
+                const { env } = await import("../config/env");
+                const Stripe = (await import("stripe")).default;
+                const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
+
+                // Cancel at period end
+                await stripe.subscriptions.update(activeBilling.stripeSubscriptionId, {
+                    cancel_at_period_end: true
+                });
+            } catch (err: any) {
+                console.error("Failed to cancel Stripe subscription:", err);
+                throw new Error("Failed to communicate with payment provider");
+            }
+        }
+
+        // Update local status
+        activeBilling.status = 'canceled';
+        await this.repository.save(activeBilling);
+
+        return activeBilling;
     }
 }

@@ -8,6 +8,9 @@ export class BillingEntity extends BaseEntity {
     @Column({ type: "varchar" })
     plan!: 'standard' | 'pro';
 
+    @Column({ type: "varchar", default: 'paid' })
+    status!: 'paid' | 'canceled' | 'refunded';
+
     @Column({ type: "float" })
     price!: number;
 
@@ -25,6 +28,12 @@ export class BillingEntity extends BaseEntity {
 
     @Column({ type: "varchar", nullable: true })
     stripePaymentId?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    stripeTransactionId?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    stripeSubscriptionId?: string;
 
     @ManyToOne(() => UserEntity, user => user.billings)
     @JoinColumn({ name: "userId" })

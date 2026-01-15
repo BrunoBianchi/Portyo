@@ -629,7 +629,7 @@ export default function DashboardSettings() {
                       </div>
                     ) : (
                       billingHistory.map((bill) => (
-                        <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer border border-transparent hover:border-gray-100">
+                        <div key={bill.id} className="flex items-center justify-between gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer border border-transparent hover:border-gray-100">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 border border-green-100">
                               <Check className="w-4 h-4" />
@@ -638,7 +638,10 @@ export default function DashboardSettings() {
                               <p className="text-sm font-bold text-gray-900">
                                 {new Date(bill.startDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
                               </p>
-                              <p className="text-xs text-gray-500 capitalize">{bill.plan} Plan</p>
+                              <p className="text-xs text-gray-500 capitalize">
+                                {bill.plan} Plan
+                                {bill.status === 'canceled' && <span className="text-red-500 ml-1">(Canceled)</span>}
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
