@@ -59,6 +59,15 @@ const envSchema = z.object({
   REDIS_PORT: z.any().transform((val) => Number(val)).default(6379),
   REDIS_USERNAME: z.string().optional(),
   REDIS_PASSWORD: z.string().optional(),
+
+  // AI
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
+
+  // Instagram
+  INSTAGRAM_CLIENT_ID: z.string().optional(),
+  INSTAGRAM_CLIENT_SECRET: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
+console.log("Instagram Client ID loaded:", !!env.INSTAGRAM_CLIENT_ID);

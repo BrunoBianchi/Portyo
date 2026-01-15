@@ -76,10 +76,16 @@ export default function VerifyEmail() {
         if (!user?.email) return;
         try {
             await api.post("/user/verify-email", { email: user.email, code: verificationCode });
-            await refreshUser();
-            setSuccess("Email verified successfully! Redirecting...");
+            const response = await refreshUser();
+            setSuccess("Email verificado com sucesso! Redirecionando...");
             setTimeout(() => {
-                navigate("/dashboard");
+                // Redirect to onboarding if not completed, otherwise to dashboard
+                const updatedUser = response || user;
+                if (!updatedUser?.onboardingCompleted) {
+                    navigate("/onboarding");
+                } else {
+                    navigate("/dashboard");
+                }
             }, 2000);
         } catch (err: any) {
             console.error(err);

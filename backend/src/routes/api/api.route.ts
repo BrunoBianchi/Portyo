@@ -52,6 +52,7 @@ import publicBiosRoute from "./public/bios.public.route"
 
 router.use('/public/bio', publicBioRoute)
 router.use('/public/bios', publicBiosRoute)
+router.use('/instagram', instagramRoute)
 router.use('/public/instagram', instagramRoute)
 router.use('/public/youtube', youtubeRoute)
 router.use('/public/email', publicEmailRoute)
@@ -88,6 +89,9 @@ router.use('/google-analytics', googleAnalyticsRoute)
 router.use('/google-calendar', googleCalendarRoute)
 router.use('/templates', authMiddleware, templateRoute)
 router.use('/bookings', authMiddleware, bookingRoute)
+
+import onboardingRoute from "./onboarding/onboarding.route"
+router.use('/onboarding', onboardingRoute)
 
 import portfolioRoute from "./portfolio/portfolio.route"
 import portfolioCategoryRoute from "./portfolio/portfolio-category.route"

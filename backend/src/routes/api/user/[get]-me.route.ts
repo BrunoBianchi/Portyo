@@ -39,6 +39,7 @@ router.get("/",authMiddleware,async (req,res)=>{
           provider: user.provider,
           createdAt: user.createdAt,
           plan: activePlan,
+          onboardingCompleted: user.onboardingCompleted,
           usage: {
               bios: bios.length,
               automations: totalAutomations

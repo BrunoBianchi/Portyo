@@ -1,7 +1,86 @@
 import { logger } from "../shared/utils/logger";
 import { ApiError, APIErrors } from "../shared/errors/api-error";
+import { env } from "../config/env";
+import axios from "axios";
 
 export class InstagramService {
+  private readonly clientId = env.INSTAGRAM_CLIENT_ID;
+  private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
+  private readonly redirectUri = `${env.BACKEND_URL}/api/instagram/auth/callback`;
+
+  public getAuthUrl() {
+    if (!this.clientId) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
+    }
+    const scopes = ["instagram_basic", "instagram_manage_messages"];
+    const url = `https://api.instagram.com/oauth/authorize?client_id=${this.clientId}&redirect_uri=${this.redirectUri}&scope=${scopes.join(",")}&response_type=code`;
+    return url;
+  }
+
+  public async exchangeCodeForToken(code: string) {
+    if (!this.clientId || !this.clientSecret) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram credentials not configured", 500);
+    }
+
+    try {
+      // 1. Exchange short-lived code for short-lived access token
+      const params = new URLSearchParams();
+      params.append("client_id", this.clientId);
+      params.append("client_secret", this.clientSecret);
+      params.append("grant_type", "authorization_code");
+      params.append("redirect_uri", this.redirectUri);
+      params.append("code", code);
+
+      const response = await axios.post(
+        "https://api.instagram.com/oauth/access_token",
+        params,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      const { access_token, user_id } = response.data;
+
+      // 2. Exchange short-lived token for long-lived token
+      const longLivedResponse = await axios.get(
+        "https://graph.instagram.com/access_token",
+        {
+          params: {
+            grant_type: "ig_exchange_token",
+            client_secret: this.clientSecret,
+            access_token: access_token,
+          },
+        }
+      );
+
+      return {
+        accessToken: longLivedResponse.data.access_token,
+        userId: user_id, // Note: For Basic Display this is different from Graph API ID, but for our scopes it should be fine or mapped.
+        expiresIn: longLivedResponse.data.expires_in
+      };
+    } catch (error: any) {
+      logger.error("Instagram OAuth exchange failed", { error: error.response?.data || error.message });
+      throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
+    }
+  }
+
+  public async getUserProfile(accessToken: string) {
+    try {
+      const response = await axios.get("https://graph.instagram.com/me", {
+        params: {
+          fields: "id,username,account_type,media_count",
+          access_token: accessToken,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+       logger.error("Instagram profile fetch failed", { error: error.response?.data || error.message });
+       throw new ApiError(APIErrors.badRequestError, "Failed to fetch Instagram profile", 400);
+    }
+  }
+
   public async getLatestPosts(username: string, baseUrl: string) {
     try {
       // Try to fetch using the web_profile_info endpoint

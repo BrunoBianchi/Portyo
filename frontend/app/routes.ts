@@ -7,6 +7,7 @@ export default [
     {path:'/verify-email',file:"routes/verify-email.tsx"},
     {path:'/forgot-password',file:"routes/forgot-password.tsx"},
     {path:'/reset-password',file:"routes/reset-password.tsx"},
+    {path:'/onboarding',file:"routes/onboarding.tsx"},
     {path:'/about',file:"routes/about.tsx"},
     {path:'/careers',file:"routes/careers.tsx"},
     {path:'/legal',file:"routes/legal.tsx"},

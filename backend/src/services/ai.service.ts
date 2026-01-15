@@ -1,0 +1,362 @@
+import Groq from "groq-sdk";
+import { env } from "../config/env";
+
+// Initialize Groq client
+const groq = new Groq({
+    apiKey: env.GROQ_API_KEY,
+});
+
+export interface OnboardingAnswers {
+    aboutYou: string;
+    education: {
+        hasGraduation: boolean;
+        degree?: string;
+    };
+    profession: string;
+    skills: string[];
+    goals: string;
+}
+
+export interface BioBlock {
+    id: string;
+    type: string;
+    [key: string]: any;
+}
+
+const generateBlockId = (): string => {
+    return `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+const SYSTEM_PROMPT = `You are an expert at creating professional portfolio/bio pages. 
+Based on the user information provided, you must generate content blocks for a bio page.
+
+IMPORTANT: You MUST respond ONLY with valid JSON, no additional text before or after.
+
+Available block types:
+1. "heading" - Title with fields: title (string), body (optional string for subtitle)
+2. "text" - Text paragraph with field: body (string)
+3. "button" - Link/button with fields: title (string), href (string URL), buttonStyle (string: "solid", "outline", "gradient")
+4. "socials" - Social media links with field: socials (object with instagram, linkedin, github, twitter, email, website)
+
+Generation rules:
+- Start with a welcoming heading using the user's description/profession
+- Add a professional introduction text based on the provided information
+- If the user mentioned skills, highlight them in the content
+- If they have a degree, mention it in the introduction
+- Base the page tone on the user's stated goal
+- Limit to 5-7 blocks maximum
+- Keep texts concise and professional
+- Use English language
+
+Respond ONLY with a JSON array of blocks, example:
+[
+  {"type": "heading", "title": "John Smith", "body": "Full Stack Developer"},
+  {"type": "text", "body": "Passionate technology professional..."},
+  {"type": "button", "title": "Get in touch", "href": "mailto:email@example.com", "buttonStyle": "solid"}
+]`;
+
+const buildUserPrompt = (answers: OnboardingAnswers): string => {
+    let prompt = `Create bio/portfolio blocks for a person with the following characteristics:\n\n`;
+    
+    prompt += `**About the person:** ${answers.aboutYou}\n\n`;
+    
+    if (answers.education.hasGraduation && answers.education.degree) {
+        prompt += `**Education:** Graduated in ${answers.education.degree}\n\n`;
+    } else {
+        prompt += `**Education:** No degree yet\n\n`;
+    }
+    
+    prompt += `**Profession/Area:** ${answers.profession}\n\n`;
+    
+    if (answers.skills.length > 0) {
+        prompt += `**Main skills:** ${answers.skills.join(", ")}\n\n`;
+    }
+    
+    prompt += `**Goal with Portyo:** ${answers.goals}\n\n`;
+    
+    prompt += `Generate the appropriate content blocks for this person. Remember to respond ONLY with the JSON, no additional text.`;
+    
+    return prompt;
+};
+
+export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<BioBlock[]> => {
+    try {
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: SYSTEM_PROMPT,
+                },
+                {
+                    role: "user",
+                    content: buildUserPrompt(answers),
+                },
+            ],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+            max_tokens: 2048,
+            response_format: { type: "json_object" },
+        });
+
+        const responseContent = completion.choices[0]?.message?.content;
+        
+        if (!responseContent) {
+            throw new Error("No response from AI");
+        }
+
+        // Parse the JSON response
+        let parsedResponse: any;
+        try {
+            parsedResponse = JSON.parse(responseContent);
+        } catch (parseError) {
+            console.error("Failed to parse AI response:", responseContent);
+            throw new Error("Invalid JSON response from AI");
+        }
+
+        // Handle both array and object with blocks property
+        let blocks: any[];
+        if (Array.isArray(parsedResponse)) {
+            blocks = parsedResponse;
+        } else if (parsedResponse.blocks && Array.isArray(parsedResponse.blocks)) {
+            blocks = parsedResponse.blocks;
+        } else {
+            console.error("Unexpected response format:", parsedResponse);
+            throw new Error("Unexpected response format from AI");
+        }
+
+        // Add IDs to each block
+        const blocksWithIds: BioBlock[] = blocks.map((block: any) => ({
+            ...block,
+            id: generateBlockId(),
+        }));
+
+        return blocksWithIds;
+    } catch (error) {
+        console.error("Error generating bio from AI:", error);
+        throw error;
+    }
+};
+
+// Default blocks if AI generation fails
+export const getDefaultBlocks = (name: string): BioBlock[] => {
+    return [
+        {
+            id: generateBlockId(),
+            type: "heading",
+            title: name || "Welcome to my profile",
+            body: "Professional in development",
+        },
+        {
+            id: generateBlockId(),
+            type: "text",
+            body: "This is my portfolio page. I'll be adding more information about my professional journey soon.",
+        },
+        {
+            id: generateBlockId(),
+            type: "button",
+            title: "Get in touch",
+            href: "mailto:contact@example.com",
+            buttonStyle: "solid",
+        },
+    ];
+};
+
+export interface AIGenerationResult {
+    blocks: BioBlock[];
+    settings: {
+        bgType?: string;
+        bgColor?: string;
+        bgSecondaryColor?: string;
+        cardStyle?: string;
+        cardBackgroundColor?: string;
+        usernameColor?: string;
+    };
+    replaceBlocks: boolean;
+    globalBlockStyles?: {
+        textColor?: string;
+        accent?: string;
+        buttonStyle?: string;
+        formBackgroundColor?: string;
+        formTextColor?: string;
+        buttonShadowColor?: string;
+    };
+}
+
+const CONTENT_GENERATION_PROMPT = `You are PortyoAI, an advanced AI assistant that helps users customize their bio/portfolio page.
+Based on the user's request, you can generate content blocks, change page settings, OR update styles of all existing blocks.
+
+IMPORTANT: You MUST respond ONLY with valid JSON, no additional text.
+
+CRITICAL - DARK/LIGHT THEME & CONTRAST:
+- When user asks for "Dark Theme/Mode":
+  1. Set settings.bgColor to a dark color.
+  2. YOU MUST USE "globalBlockStyles" to update ALL text to light colors.
+     "globalBlockStyles": { "textColor": "#ffffff", "accent": "#YOUR_CHOICE", "formTextColor": "#ffffff" }
+- When user asks for "Light Theme/Mode":
+  1. Set settings.bgColor to a light color.
+  2. YOU MUST USE "globalBlockStyles" to update ALL text to dark colors.
+     "globalBlockStyles": { "textColor": "#000000", "accent": "#YOUR_CHOICE" }
+
+CRITICAL - DARK THEME LOGIC:
+- When user asks for "Dark Theme" or "Dark Mode":
+  1. Background: Dark (e.g., #0f172a, #000000, #18181b)
+  2. Text: Light (e.g., #f8fafc, #ffffff)
+  3. Buttons/Accents: MID-TONE colors (e.g., #6366f1, #22c55e, #a855f7) - they should be vibrant and visible against the dark background, but not pure white.
+
+=== ALL AVAILABLE BLOCK TYPES ===
+
+CONTENT BLOCKS:
+1. "heading" - Title block
+   Fields: title (string), body (optional subtitle string), align ("left"|"center"|"right"), textColor (hex color)
+
+2. "text" - Text paragraph
+   Fields: body (string with the text content), textColor (hex color)
+
+3. "button" - Link button
+   Fields: title (string), href (URL string), buttonStyle ("solid"|"outline"|"gradient"), accent (bg hex color), textColor (text hex color)
+
+4. "button_grid" - Grid of multiple buttons
+   Fields: buttons (array of {title, href})
+
+5. "image" - Image block
+   Fields: imageUrl (URL string), imageCaption (optional string)
+
+6. "video" - YouTube/Vimeo embed
+   Fields: videoUrl (URL string)
+
+7. "divider" - Visual separator
+   Fields: dividerStyle ("line"|"dots"|"space")
+
+8. "qrcode" - QR Code block
+   Fields: qrCodeValue (URL string), qrCodeLayout ("single"|"grid")
+
+9. "form" - Contact/Lead form
+   Fields: formTitle (string), formFields (array of field names), formBackgroundColor (hex), formTextColor (hex)
+
+10. "portfolio" - Portfolio gallery
+    Fields: portfolioTitle (string), portfolioItems (array of {title, imageUrl, description})
+
+11. "map" - Location map
+    Fields: mapAddress (string address), mapZoom (number 1-20)
+
+12. "event" - Event countdown
+    Fields: eventTitle (string), eventDate (ISO date string), eventButtonText (string), eventButtonUrl (URL)
+
+SOCIAL BLOCKS:
+13. "socials" - Social media links
+    Fields: socials (object with keys: instagram, linkedin, github, twitter, tiktok, facebook, youtube, spotify, email, website - all optional URL strings)
+
+14. "instagram" - Instagram feed embed
+    Fields: instagramUsername (string without @)
+
+15. "youtube" - YouTube channel feed
+    Fields: youtubeUrl (channel URL string)
+
+16. "spotify" - Spotify player embed
+    Fields: spotifyUrl (track/album/playlist URL)
+
+SHOP BLOCKS:
+17. "product" - Product listing
+    Fields: productTitle (string)
+
+18. "featured" - Featured product
+    Fields: featuredTitle (string), featuredDescription (string), featuredPrice (string), featuredButtonText (string)
+
+19. "affiliate" - Affiliate/Discount code
+    Fields: affiliateCode (string), affiliateDescription (string)
+
+PRO BLOCKS (only for Pro users):
+20. "calendar" - Booking calendar
+    Fields: calendarTitle (string)
+
+21. "tour" - Tour dates for artists
+    Fields: tourTitle (string), tours (array of {date, location, ticketUrl})
+
+22. "blog" - Blog section
+    Fields: blogLayout ("carousel"|"grid"|"list")
+
+=== PAGE SETTINGS ===
+- bgType: "color" | "gradient" | "dots" | "grid" | "waves" | "mesh" | "particles" | "noise" | "abstract"
+- bgColor: hex color (e.g., "#1a1a2e")
+- bgSecondaryColor: hex for patterns (e.g., "#16213e")
+- cardStyle: "none" | "solid" | "frosted"
+- cardBackgroundColor: hex color
+- usernameColor: hex color for name text
+
+=== RESPONSE FORMAT ===
+{
+  "blocks": [...],
+  "settings": {...},
+  "globalBlockStyles": { ... }, // Optional: Key-value pairs to apply to ALL existing blocks (e.g., textColor, accent)
+  "replaceBlocks": true/false
+}
+
+=== EXAMPLES ===
+- "Dark theme with white text": {"blocks": [], "settings": {"bgType": "color", "bgColor": "#000000", "usernameColor": "#FFFFFF"}, "replaceBlocks": false}
+- "Add a white headline": {"blocks": [{"type": "heading", "title": "Hello", "textColor": "#FFFFFF"}], "settings": {}, "replaceBlocks": false}
+- "Make a bio for a lawyer": {"blocks": [{"type": "heading", "title": "John Doe", "body": "Attorney at Law", "textColor": "#FFFFFF"}, {"type": "text", "body": "Specializing in corporate law.", "textColor": "#E0E0E0"}, {"type": "button", "title": "Consultation", "href": "https://", "buttonStyle": "solid", "accent": "#C0A062", "textColor": "#FFFFFF"}], "settings": {"bgType": "color", "bgColor": "#1a1a1a", "usernameColor": "#C0A062", "cardStyle": "solid", "cardBackgroundColor": "#2a2a2a"}, "replaceBlocks": true}
+- "Dark mode": {
+    "blocks": [],
+    "settings": {"bgType": "color", "bgColor": "#0f172a", "usernameColor": "#f8fafc"},
+    "globalBlockStyles": {"textColor": "#f8fafc", "accent": "#38bdf8", "buttonStyle": "solid"},
+    "replaceBlocks": false
+  }
+
+Be creative! Use the right blocks for each profession.`;
+
+
+export const generateContentFromPrompt = async (prompt: string): Promise<AIGenerationResult> => {
+    try {
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [
+                { role: "system", content: CONTENT_GENERATION_PROMPT },
+                { role: "user", content: prompt },
+            ],
+            model: env.GROQ_MODEL,
+            temperature: 0.7,
+            max_tokens: 2048,
+            response_format: { type: "json_object" },
+        });
+
+        const responseContent = chatCompletion.choices[0]?.message?.content?.trim() || "{}";
+        
+        let parsedResponse: any;
+        try {
+            parsedResponse = JSON.parse(responseContent);
+        } catch (parseError) {
+            console.error("Failed to parse AI response:", responseContent);
+            throw new Error("Invalid JSON response from AI");
+        }
+
+        // Extract blocks
+        let blocks: any[] = [];
+        if (Array.isArray(parsedResponse.blocks)) {
+            blocks = parsedResponse.blocks;
+        }
+
+        // Add IDs to blocks
+        const blocksWithIds: BioBlock[] = blocks.map((block: any) => ({
+            ...block,
+            id: generateBlockId(),
+        }));
+
+        // Extract settings
+        const settings = parsedResponse.settings || {};
+        
+        // Extract replaceBlocks flag (default to false if not specified)
+        const replaceBlocks = parsedResponse.replaceBlocks === true;
+
+        // Extract globalBlockStyles
+        const globalBlockStyles = parsedResponse.globalBlockStyles;
+
+        return {
+            blocks: blocksWithIds,
+            settings,
+            replaceBlocks,
+            globalBlockStyles
+        };
+    } catch (error) {
+        console.error("AI Generation failed:", error);
+        return { blocks: [], settings: {}, replaceBlocks: false };
+    }
+};

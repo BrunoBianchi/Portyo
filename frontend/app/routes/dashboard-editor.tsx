@@ -39,6 +39,7 @@ import {
   ArrowRightLongIcon
 } from "~/components/shared/icons";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
+import { PortyoAI } from "~/components/dashboard/portyo-ai";
 
 export const meta: MetaFunction = () => {
   return [
@@ -1240,7 +1241,7 @@ export default function DashboardEditor() {
       `}</style>
 
       {/* Top Bar */}
-      <header className="shrink-0 px-6 py-4 flex items-center justify-between bg-[#f9f7f2] z-10">
+      <header className="shrink-0 px-6 py-4 flex items-center justify-between bg-[#f9f7f2] z-40">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -1250,6 +1251,35 @@ export default function DashboardEditor() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* AI Assistant */}
+          <PortyoAI
+            bioId={bio.id}
+            onBlocksGenerated={(newBlocks: BioBlock[], replace: boolean) => {
+              if (replace) {
+                // Replace all existing blocks with new ones
+                setBlocks(newBlocks);
+              } else {
+                // Add new blocks to existing ones
+                setBlocks(prev => [...prev, ...newBlocks]);
+              }
+            }}
+            onSettingsChange={(settings) => {
+              if (settings?.bgType) setBgType(settings.bgType as any);
+              if (settings?.bgColor) setBgColor(settings.bgColor);
+              if (settings?.bgSecondaryColor) setBgSecondaryColor(settings.bgSecondaryColor);
+              if (settings?.cardStyle) setCardStyle(settings.cardStyle as any);
+              if (settings?.cardBackgroundColor) setCardBackgroundColor(settings.cardBackgroundColor);
+              if (settings?.usernameColor) setUsernameColor(settings.usernameColor);
+            }}
+            onGlobalStylesChange={(styles) => {
+              if (!styles) return;
+              setBlocks(prev => prev.map(block => ({
+                ...block,
+                ...styles
+              })));
+            }}
+          />
+
           <div className="hidden md:flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1">
             <button
               onClick={() => setShareData({ url: `https://${bio.sufix}.portyo.me`, title: `@${bio.sufix}` })}

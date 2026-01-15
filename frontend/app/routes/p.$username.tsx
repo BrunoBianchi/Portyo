@@ -112,10 +112,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     if (keywords) {
         metaTags.push({ name: "keywords", content: keywords });
     }
-    if (bio.ogImage) {
-        metaTags.push({ property: "og:image", content: bio.ogImage });
-        metaTags.push({ name: "twitter:image", content: bio.ogImage });
-    }
+    const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
+
+    metaTags.push({ property: "og:image", content: ogImage });
+    metaTags.push({ name: "twitter:image", content: ogImage });
     if (favicon) {
         metaTags.push({ tagName: "link", rel: "icon", href: favicon });
     }

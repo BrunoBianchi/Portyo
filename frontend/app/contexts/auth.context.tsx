@@ -12,6 +12,7 @@ interface User {
     verified: boolean;
     role: number;
     provider?: string;
+    onboardingCompleted?: boolean;
     usage?: {
         bios: number;
         automations: number;
@@ -32,7 +33,7 @@ interface AuthContextData {
     isStandard: boolean;
     isFree: boolean;
     canAccessFeature: (requiredPlan: 'free' | 'standard' | 'pro') => boolean;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<User | null>;
 }
 
 const PLAN_LEVELS: Record<'free' | 'standard' | 'pro', number> = {
@@ -137,13 +138,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return PLAN_LEVELS[userPlan] >= PLAN_LEVELS[requiredPlan];
     }, [user]);
 
-    const refreshUser = useCallback(async () => {
+    const refreshUser = useCallback(async (): Promise<User | null> => {
         try {
             const response = await api.get('/user/me');
             setUser(response.data);
             setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
+            return response.data;
         } catch (error) {
             console.error("Failed to refresh user profile", error);
+            return null;
         }
     }, [setCookie]);
 

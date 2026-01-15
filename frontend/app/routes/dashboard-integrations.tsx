@@ -163,6 +163,17 @@ export default function DashboardIntegrations() {
       if (stripeParam === "return" || stripeParam === "refresh") {
         checkStripeStatus();
       }
+
+      const successParam = searchParams.get("success");
+      if (successParam === "instagram_connected") {
+        // Re-fetch integration status
+        // We can just rely on the main useEffect that fetches integrations, 
+        // but we might want to show a toast or clean the URL.
+        // For now, let's just let the main useEffect update the state because it depends on bio.id
+        // We can force a refetch if needed, but the component remount or state update might trigger it.
+        // Actually, better to explicitly re-fetch or rely on the fact that we just redirected back.
+        // The main useEffect [bio?.id] runs on mount.
+      }
     }
   }, [searchParams, bio?.id]);
 
@@ -221,6 +232,18 @@ export default function DashboardIntegrations() {
     }
   };
 
+  const handleConnectInstagram = async () => {
+    if (!bio?.id) return;
+    try {
+      const res = await api.get(`/instagram/auth?bioId=${bio.id}`);
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (error) {
+      console.error("Failed to connect instagram", error);
+    }
+  };
+
   const handleConnect = (id: string) => {
     if (id === "stripe") {
       handleConnectStripe();
@@ -228,6 +251,10 @@ export default function DashboardIntegrations() {
     }
     if (id === "google-analytics") {
       handleConnectGoogleAnalytics();
+      return;
+    }
+    if (id === "instagram") {
+      handleConnectInstagram();
       return;
     }
     // Simulate connection

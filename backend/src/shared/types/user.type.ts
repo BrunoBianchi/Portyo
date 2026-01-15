@@ -7,4 +7,5 @@ export type UserType = BaseType & {
     provider:string;
     verified:boolean;
     plan:string;
+    onboardingCompleted:boolean;
 }
