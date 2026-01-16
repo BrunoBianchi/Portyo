@@ -224,6 +224,7 @@ interface Bio {
     font?: string;
     customFontUrl?: string;
     customFontName?: string;
+    verified?: boolean;
 }
 
 interface BioData {

@@ -111,6 +111,7 @@ export default function Signup() {
                                         type="text"
                                         value={username}
                                         placeholder="Full Name"
+                                        autoComplete="name"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
                                         onChange={(e) => setUsername(e.target.value)}
@@ -118,10 +119,11 @@ export default function Signup() {
                                 </div>
                                 <div>
                                     <input
-                                        type="text"
+                                        type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="Enter Email / Phone No"
+                                        autoComplete="email"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
                                     />
@@ -132,6 +134,7 @@ export default function Signup() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Passcode"
+                                        autoComplete="new-password"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
                                     />

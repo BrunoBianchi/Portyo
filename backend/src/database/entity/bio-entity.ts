@@ -144,6 +144,9 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "varchar", nullable: true })
     customFontName: string | null = null;
 
+    @Column({ type: "boolean", default: false })
+    verified: boolean = false;
+
 
     @ManyToOne(() => UserEntity, (user) => user.bios, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })

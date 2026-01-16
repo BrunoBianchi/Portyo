@@ -13,7 +13,12 @@ import {
     Loader2,
     Trash2,
     Calendar,
-    AlertTriangle
+    AlertTriangle,
+    FileText,
+    ExternalLink,
+    Edit2,
+    Save,
+    X
 } from "lucide-react";
 import { api } from "~/services/api";
 import AuthContext from "~/contexts/auth.context";
@@ -31,6 +36,17 @@ interface User {
     provider: string;
     createdAt: string;
     biosCount: number;
+}
+
+interface AdminBio {
+    id: string;
+    sufix: string;
+    verified: boolean;
+    seoTitle: string;
+    views: number;
+    createdAt: string;
+    profileImage?: string;
+    userId: string;
 }
 
 interface Stats {
@@ -64,6 +80,13 @@ export default function AdminDashboard() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [planForm, setPlanForm] = useState({ plan: 'free', durationDays: 30 });
     const [actionLoading, setActionLoading] = useState(false);
+
+    // Bios Modal states
+    const [showBiosModal, setShowBiosModal] = useState(false);
+    const [userBios, setUserBios] = useState<AdminBio[]>([]);
+    const [loadingBios, setLoadingBios] = useState(false);
+    const [editingBioId, setEditingBioId] = useState<string | null>(null);
+    const [editSuffix, setEditSuffix] = useState("");
 
     // Check if current user is admin
     useEffect(() => {
@@ -163,6 +186,63 @@ export default function AdminDashboard() {
             alert("Failed to delete user");
         } finally {
             setActionLoading(false);
+        }
+    };
+
+    const handleViewBios = async (user: User) => {
+        setSelectedUser(user);
+        setShowBiosModal(true);
+        setLoadingBios(true);
+        try {
+            const res = await api.get(`/admin/users/${user.id}/bios`);
+            setUserBios(res.data);
+        } catch (error) {
+            console.error("Failed to fetch user bios:", error);
+            alert("Failed to fetch user bios");
+        } finally {
+            setLoadingBios(false);
+        }
+    };
+
+    const handleVerifyBio = async (bio: AdminBio) => {
+        try {
+            const newVerified = !bio.verified;
+            // Optimistic update
+            setUserBios(prev => prev.map(b => b.id === bio.id ? { ...b, verified: newVerified } : b));
+
+            await api.put(`/admin/bios/${bio.id}`, { verified: newVerified });
+        } catch (error) {
+            console.error("Failed to update verify status:", error);
+            alert("Failed to update verify status");
+            // Revert
+            setUserBios(prev => prev.map(b => b.id === bio.id ? { ...b, verified: bio.verified } : b));
+        }
+    };
+
+    const handleDeleteBio = async (bioId: string) => {
+        if (!confirm("Are you sure you want to delete this bio?")) return;
+        try {
+            setUserBios(prev => prev.filter(b => b.id !== bioId)); // Optimistic
+            await api.delete(`/admin/bios/${bioId}`);
+            setUsers(prev => prev.map(u => u.id === selectedUser?.id ? { ...u, biosCount: u.biosCount - 1 } : u));
+        } catch (error) {
+            console.error("Failed to delete bio:", error);
+            alert("Failed to delete bio");
+            // Fetch again to revert
+            if (selectedUser) handleViewBios(selectedUser);
+        }
+    };
+
+    const handleUpdateBioSuffix = async (bioId: string) => {
+        if (!editSuffix.trim()) return;
+        try {
+            await api.put(`/admin/bios/${bioId}`, { sufix: editSuffix });
+            setUserBios(prev => prev.map(b => b.id === bioId ? { ...b, sufix: editSuffix } : b));
+            setEditingBioId(null);
+            setEditSuffix("");
+        } catch (error: any) {
+            console.error("Failed to update suffix:", error);
+            alert(error.response?.data?.error || "Failed to update suffix");
         }
     };
 
@@ -350,7 +430,13 @@ export default function AdminDashboard() {
                                             )}
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="text-gray-600">{user.biosCount}</span>
+                                            <button
+                                                onClick={() => handleViewBios(user)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors text-sm"
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                                {user.biosCount} Bios
+                                            </button>
                                         </td>
                                         <td className="px-4 py-4">
                                             <span className="text-gray-600 capitalize">{user.provider}</span>
@@ -518,6 +604,103 @@ export default function AdminDashboard() {
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Delete'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bios Modal */}
+            {showBiosModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 max-h-[85vh] flex flex-col">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <FileText className="w-6 h-6 text-primary" />
+                                Manage Bios for {selectedUser.fullName}
+                            </h3>
+                            <button
+                                onClick={() => { setShowBiosModal(false); setSelectedUser(null); }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        {loadingBios ? (
+                            <div className="flex-1 flex items-center justify-center py-20">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        ) : userBios.length === 0 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center py-10 text-gray-500">
+                                <FileText className="w-12 h-12 mb-3 opacity-20" />
+                                <p>No bios found for this user.</p>
+                            </div>
+                        ) : (
+                            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                                {userBios.map(bio => (
+                                    <div key={bio.id} className="border border-gray-100 rounded-xl p-4 flex items-center gap-4 hover:shadow-sm transition-shadow bg-gray-50/50">
+                                        <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0 bg-cover bg-center" style={bio.profileImage ? { backgroundImage: `url(${bio.profileImage})` } : {}}>
+                                            {!bio.profileImage && <span className="text-lg font-bold text-gray-400">{bio.sufix.charAt(0).toUpperCase()}</span>}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {editingBioId === bio.id ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-gray-400 font-medium">portyo.me/</span>
+                                                        <input
+                                                            autoFocus
+                                                            className="bg-white border border-blue-500 rounded px-2 py-0.5 text-sm font-bold w-32 focus:outline-none"
+                                                            value={editSuffix}
+                                                            onChange={e => setEditSuffix(e.target.value)}
+                                                            onKeyDown={e => e.key === 'Enter' && handleUpdateBioSuffix(bio.id)}
+                                                        />
+                                                        <button onClick={() => handleUpdateBioSuffix(bio.id)} className="p-1 text-green-600 hover:bg-green-50 rounded"><Check className="w-4 h-4" /></button>
+                                                        <button onClick={() => setEditingBioId(null)} className="p-1 text-red-600 hover:bg-red-50 rounded"><X className="w-4 h-4" /></button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 group">
+                                                        <a href={`https://portyo.me/p/${bio.sufix}`} target="_blank" rel="noreferrer" className="font-bold text-gray-900 hover:text-primary hover:underline flex items-center gap-1">
+                                                            {bio.sufix}
+                                                            <ExternalLink className="w-3 h-3 opacity-50" />
+                                                        </a>
+                                                        <button onClick={() => { setEditingBioId(bio.id); setEditSuffix(bio.sufix); }} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded text-gray-500 transition-opacity">
+                                                            <Edit2 className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500 truncate">{bio.seoTitle || "No title"}</p>
+                                            <div className="flex gap-3 mt-1 text-xs text-gray-400">
+                                                <span>{bio.views} views</span>
+                                                <span>•</span>
+                                                <span>Created {formatDate(bio.createdAt)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => handleVerifyBio(bio)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors ${bio.verified
+                                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                {bio.verified ? <Check className="w-3 h-3" /> : null}
+                                                {bio.verified ? 'Verified' : 'Verify'}
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleDeleteBio(bio.id)}
+                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Delete Bio"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

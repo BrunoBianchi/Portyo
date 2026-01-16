@@ -1,4 +1,4 @@
-﻿import { Eye, X } from 'lucide-react';
+﻿import { Eye, X, BadgeCheck } from 'lucide-react';
 import { useContext, useEffect, useMemo, useState, useRef, useCallback } from "react";
 import type { MetaFunction } from "react-router";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
@@ -1902,6 +1902,31 @@ export default function DashboardEditor() {
                             value={usernameColor}
                             onChange={(val) => setUsernameColor(val)}
                           />
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">Verification Status</label>
+                          <button
+                            onClick={() => {
+                              if (bio?.id) updateBio(bio.id, { verified: !bio.verified });
+                            }}
+                            className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${bio?.verified
+                              ? 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
+                              : 'bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/5 hover:-translate-y-0.5'
+                              }`}
+                          >
+                            {bio?.verified ? (
+                              <>
+                                <BadgeCheck size={16} fill="#3b82f6" className="text-white" />
+                                <span>Verified</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Get Verified</span>
+                                <BadgeCheck size={16} className="text-blue-400" />
+                              </>
+                            )}
+                          </button>
                         </div>
 
                       </div>

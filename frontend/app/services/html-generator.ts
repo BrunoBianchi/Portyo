@@ -1,5 +1,5 @@
 import { type BioBlock } from "~/contexts/bio.context";
-import { isValidUrl } from "~/utils/security";
+import { isValidUrl, normalizeExternalUrl } from "~/utils/security";
 
 const escapeHtml = (value = "") =>
   value
@@ -126,9 +126,11 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const textAlign = block.buttonTextAlign || "center";
     
     const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
-    const cleanHref = isValidUrl(block.href) ? block.href : '#';
+    const normalized = normalizeExternalUrl(block.href);
+    const cleanHref = isValidUrl(normalized) ? normalized : '#';
     const tag = block.href ? 'a' : 'div';
-    const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"` : ' role="button"';
+    const targetAttr = (cleanHref !== '#') ? ' target="_blank" rel="noopener noreferrer"' : '';
+    const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"${targetAttr}` : ' role="button"';
     const cursorStyle = block.href ? 'cursor:pointer;' : 'cursor:default;';
 
     let css = `display:flex; align-items:center; position:relative; min-height:48px; padding:14px 28px; text-decoration:none; font-weight:700; font-size:15px; letter-spacing:-0.3px; width:100%; transition:all 280ms cubic-bezier(0.34, 1.56, 0.64, 1); ${animationStyle}`;
@@ -188,8 +190,10 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
           : `<div style="height:34px;"></div>`;
 
       // Custom HTML for image grid as requested
-      const cleanHref = isValidUrl(block.href) ? block.href : '#';
-      const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"` : ' role="button"';
+      const normalized = normalizeExternalUrl(block.href);
+      const cleanHref = isValidUrl(normalized) ? normalized : '#';
+      const targetAttr = (cleanHref !== '#') ? ' target="_blank" rel="noopener noreferrer"' : '';
+      const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"${targetAttr}` : ' role="button"';
       return `\n${extraHtml}<section style="padding:6px; display:inline-block; width:50%; box-sizing:border-box; vertical-align:top;">
         <${tag}${hrefAttr} class="${animationClass}" style="position: relative; display: block; aspect-ratio: 261 / 151; width: 100%; border-radius: 20px; overflow: hidden; text-decoration: none; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1); ${cursorStyle}" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" ${nsfwAttr}>
           <div style="position:absolute; inset:0; background-color:#1f2937;">
@@ -594,7 +598,8 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       const bgImg = item.image || item.icon || "";
       const iconImg = item.icon || "";
       const title = item.title || "";
-      const url = isValidUrl(item.url) ? item.url : "#";
+      const normalized = normalizeExternalUrl(item.url);
+      const url = isValidUrl(normalized) ? normalized : "#";
 
       return `
         <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="position:relative; display:block; aspect-ratio:261/151; width:100%; border-radius:15px; overflow:hidden; text-decoration:none; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);" onmouseover="const i=this.querySelector('img');if(i)i.style.transform='scale(1.1)'" onmouseout="const i=this.querySelector('img');if(i)i.style.transform='scale(1)'">
@@ -834,8 +839,11 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     .filter(([key, value]) => value && socialIcons[key])
     .map(([key, value]) => {
       let url = value as string;
-      if (key === 'email' && !url.startsWith('mailto:')) url = `mailto:${url}`;
-      else if (!url.startsWith('http') && key !== 'email') url = `https://${url}`;
+      if (key === 'email') {
+          if (!url.startsWith('mailto:')) url = `mailto:${url}`;
+      } else {
+          url = normalizeExternalUrl(url);
+      }
       
       if (!isValidUrl(url)) url = '#';
       
@@ -927,7 +935,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         <!-- Name & Handle -->
         <h1 style="font-size:28px; font-weight:800; color:${usernameColor}; margin:0 0 4px 0; text-align:center; letter-spacing:-0.5px; line-height:1.2;">
             ${escapeHtml(displayName)}
-            ${bio.isVerified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="#3b82f6" style="display:inline-block; vertical-align:middle; margin-left:4px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : ''}
+            ${bio.verified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Verificado" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
         </h1>
         <div style="font-size:15px; font-weight:600; color:${usernameColor}; opacity:0.6; margin-bottom:16px;">@${escapeHtml(handle)}</div>
 

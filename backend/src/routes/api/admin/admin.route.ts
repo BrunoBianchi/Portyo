@@ -153,4 +153,44 @@ router.post('/announcement', async (req, res) => {
     }
 });
 
+
+/**
+ * GET /admin/users/:id/bios - Get bios for a user
+ */
+router.get('/users/:id/bios', async (req, res) => {
+    try {
+        const bios = await AdminService.getUserBios(req.params.id);
+        res.json(bios);
+    } catch (error) {
+        console.error("Error fetching user bios:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+/**
+ * PUT /admin/bios/:id - Update bio (admin)
+ */
+router.put('/bios/:id', async (req, res) => {
+    try {
+        const bio = await AdminService.updateBio(req.params.id, req.body);
+        res.json({ success: true, bio });
+    } catch (error: any) {
+        console.error("Error updating bio:", error);
+        res.status(error.statusCode || 500).json({ error: error.message || "Internal Server Error" });
+    }
+});
+
+/**
+ * DELETE /admin/bios/:id - Delete bio (admin)
+ */
+router.delete('/bios/:id', async (req, res) => {
+    try {
+        await AdminService.deleteBio(req.params.id);
+        res.json({ success: true });
+    } catch (error: any) {
+        console.error("Error deleting bio:", error);
+        res.status(error.statusCode || 500).json({ error: error.message || "Internal Server Error" });
+    }
+});
+
 export default router;

@@ -88,9 +88,10 @@ export default function Login() {
                     <form className="space-y-5" onSubmit={handleLogin}>
                         <div>
                             <input
-                                type="text"
+                                type="email"
                                 placeholder="Enter Email"
                                 value={email}
+                                autoComplete="email"
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                             />
@@ -100,6 +101,7 @@ export default function Login() {
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Passcode"
                                 value={password}
+                                autoComplete="current-password"
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                             />

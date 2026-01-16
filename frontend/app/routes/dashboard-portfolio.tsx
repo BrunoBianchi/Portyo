@@ -12,7 +12,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Tag,
-    FolderPlus
+    FolderPlus,
+    GripVertical
 } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
@@ -61,6 +62,10 @@ export default function PortfolioDashboard() {
 
     // Delete modal
     const [deleteConfirm, setDeleteConfirm] = useState<PortfolioItem | null>(null);
+
+    // Drag and drop state for images
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
     useEffect(() => {
         if (bio?.id) {
@@ -143,6 +148,40 @@ export default function PortfolioDashboard() {
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
         }));
+    };
+
+    // Drag and drop handlers for image reordering
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+        setDragOverIndex(index);
+    };
+
+    const handleDragEnd = () => {
+        if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+            const newImages = [...formData.images];
+            const [removed] = newImages.splice(draggedIndex, 1);
+            newImages.splice(dragOverIndex, 0, removed);
+            setFormData(prev => ({ ...prev, images: newImages }));
+        }
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    };
+
+    const handleDragLeave = () => {
+        setDragOverIndex(null);
+    };
+
+    const moveImageToPosition = (fromIndex: number, toIndex: number) => {
+        if (fromIndex === toIndex) return;
+        const newImages = [...formData.images];
+        const [removed] = newImages.splice(fromIndex, 1);
+        newImages.splice(toIndex, 0, removed);
+        setFormData(prev => ({ ...prev, images: newImages }));
     };
 
     const handleSave = async () => {
@@ -450,22 +489,57 @@ export default function PortfolioDashboard() {
                                     Images
                                 </label>
 
-                                {/* Image Preview Grid */}
+                                {/* Image Preview Grid with Drag & Drop */}
                                 {formData.images.length > 0 && (
                                     <div className="grid grid-cols-3 gap-2 mb-3">
                                         {formData.images.map((img, index) => (
-                                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden group/img">
+                                            <div
+                                                key={index}
+                                                draggable
+                                                onDragStart={() => handleDragStart(index)}
+                                                onDragOver={(e) => handleDragOver(e, index)}
+                                                onDragEnd={handleDragEnd}
+                                                onDragLeave={handleDragLeave}
+                                                className={`relative aspect-square rounded-lg overflow-hidden group/img cursor-move transition-all ${draggedIndex === index ? 'opacity-50 scale-95' : ''
+                                                    } ${dragOverIndex === index ? 'ring-2 ring-primary ring-offset-2' : ''
+                                                    }`}
+                                            >
                                                 <img src={img} alt="" className="w-full h-full object-cover" />
+
+                                                {/* Drag Handle */}
+                                                <div className="absolute top-1 left-1 p-1 bg-black/50 rounded text-white opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                                    <GripVertical className="w-3 h-3" />
+                                                </div>
+
+                                                {/* Remove Button */}
                                                 <button
-                                                    onClick={() => removeImage(index)}
-                                                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeImage(index);
+                                                    }}
+                                                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600"
                                                 >
                                                     ×
                                                 </button>
+
+                                                {/* Cover Badge */}
                                                 {index === 0 && (
-                                                    <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[10px] rounded font-medium">
+                                                    <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-[10px] rounded font-bold">
                                                         Cover
                                                     </span>
+                                                )}
+
+                                                {/* Set as Cover Button (for non-first images) */}
+                                                {index !== 0 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            moveImageToPosition(index, 0);
+                                                        }}
+                                                        className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[10px] rounded font-medium opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-black/80"
+                                                    >
+                                                        Set as Cover
+                                                    </button>
                                                 )}
                                             </div>
                                         ))}
@@ -498,7 +572,7 @@ export default function PortfolioDashboard() {
                                         </>
                                     )}
                                 </button>
-                                <p className="text-xs text-gray-400 mt-2">First image will be used as cover. You can upload multiple images.</p>
+                                <p className="text-xs text-gray-400 mt-2">Drag images to reorder. First image is the cover.</p>
                             </div>
 
                             {/* Description */}

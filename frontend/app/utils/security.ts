@@ -71,3 +71,32 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
         ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'onerror', 'onload', 'aria-label', 'loading'],
     });
 };
+
+/**
+ * Normalizes a URL ensuring it has a protocol and fixing double protocol issues.
+ * e.g. "google.com" -> "https://google.com"
+ * e.g. "https://https://google.com" -> "https://google.com"
+ */
+export const normalizeExternalUrl = (url: string | undefined | null): string => {
+    if (!url) return '#';
+    let clean = url.trim();
+    
+    // Pass through special schemes and relative paths
+    if (clean.startsWith('#') || clean.startsWith('/') ||
+        clean.startsWith('mailto:') || clean.startsWith('tel:') || clean.startsWith('sms:')) {
+        return clean;
+    }
+
+    // Fix common copy-paste errors (double protocol)
+    // Replace "https://https://" or "http://https://" etc with just the second one
+    if (clean.match(/^https?:\/\/https?:\/\//)) {
+        clean = clean.replace(/^https?:\/\//, '');
+    }
+
+    // Add protocol if missing
+    if (!clean.match(/^[a-zA-Z0-9]+:\/\//)) {
+         return 'https://' + clean;
+    }
+    
+    return clean;
+};

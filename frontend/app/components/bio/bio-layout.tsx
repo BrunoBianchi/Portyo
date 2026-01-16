@@ -47,6 +47,28 @@ const decodeHtmlFromBase64 = (html?: string | null, htmlBase64?: string | null) 
     return "";
 };
 
+const VERIFIED_BADGE_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Verificado" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const ensureVerifiedStatusInHtml = (html: string, verified: boolean): string => {
+    if (!html) return html;
+
+    // Replace logic inside h1
+    return html.replace(/(<h1[^>]*>)([\s\S]*?)(<\/h1>)/i, (match, openTag, content, closeTag) => {
+        // Remove known verified badges (data attribute, rosette path, or circle path)
+        let newContent = content.replace(/<svg[^>]*data-verified-badge="true"[^>]*>[\s\S]*?<\/svg>/gi, '');
+        // Remove rosette if not caught by data attribute
+        newContent = newContent.replace(/<svg[^>]*>[\s\S]*?M3\.85 8\.62[\s\S]*?<\/svg>/gi, '');
+        // Remove old circle
+        newContent = newContent.replace(/<svg[^>]*>[\s\S]*?M12 2C[\s\S]*?<\/svg>/gi, '');
+
+        if (verified) {
+            newContent = newContent + VERIFIED_BADGE_SVG;
+        }
+
+        return `${openTag}${newContent}${closeTag}`;
+    });
+};
+
 export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false, isNested = false }) => {
     useBioScripts(bio);
     useBioTracking(
@@ -67,7 +89,12 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     const blogPostMatch = location.pathname.match(/^\/blog\/post\/([a-f0-9-]+)$/i);
     const blogPostId = blogPostMatch ? blogPostMatch[1] : null;
 
-    const htmlContent = decodeHtmlFromBase64(bio?.html, (bio as any)?.htmlBase64);
+
+
+    let htmlContent = decodeHtmlFromBase64(bio?.html, (bio as any)?.htmlBase64);
+    if (htmlContent) {
+        htmlContent = ensureVerifiedStatusInHtml(htmlContent, bio?.verified);
+    }
     const browserOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     const profileImageOrigin = (() => {
 

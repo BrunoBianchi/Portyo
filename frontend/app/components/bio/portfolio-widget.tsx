@@ -27,31 +27,58 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
     const [items, setItems] = useState<PortfolioItem[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fetching, setFetching] = useState(false);
     const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [showLightbox, setShowLightbox] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const ITEMS_PER_PAGE = 4;
 
     useEffect(() => {
-        const fetchData = async () => {
+        if (!bioId) return;
+        const fetchCategories = async () => {
             try {
-                const [itemsRes, catsRes] = await Promise.all([
-                    api.get(`/portfolio/${bioId}`),
-                    api.get(`/portfolio/categories/${bioId}`)
-                ]);
-                setItems(itemsRes.data);
-                setCategories(catsRes.data);
+                const res = await api.get(`/portfolio/categories/${bioId}`);
+                setCategories(res.data);
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+            }
+        };
+        fetchCategories();
+    }, [bioId]);
+
+    useEffect(() => {
+        if (!bioId) return;
+        const fetchProjects = async () => {
+            setFetching(true);
+            try {
+                const params: any = {
+                    page,
+                    limit: ITEMS_PER_PAGE,
+                    categoryId: activeFilter || undefined
+                };
+
+                const res = await api.get(`/portfolio/${bioId}`, { params });
+
+                if (res.data.meta) {
+                    setItems(res.data.data);
+                    setTotalPages(res.data.meta.totalPages);
+                } else {
+                    setItems(res.data);
+                    setTotalPages(1);
+                }
             } catch (error) {
                 console.error("Failed to fetch portfolio:", error);
             } finally {
                 setLoading(false);
+                setFetching(false);
             }
         };
 
-        if (bioId) {
-            fetchData();
-        }
-    }, [bioId]);
+        fetchProjects();
+    }, [bioId, page, activeFilter]);
 
     // Reset carousel index when selecting new item
     useEffect(() => {
@@ -59,9 +86,21 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
         setShowLightbox(false);
     }, [selectedItem]);
 
-    const filteredItems = activeFilter
-        ? items.filter(item => item.categoryId === activeFilter)
-        : items;
+    // Reset page to 1 when filter changes
+    useEffect(() => {
+        setPage(1);
+    }, [activeFilter]);
+
+    const hasPrevPage = page > 1;
+    const hasNextPage = page < totalPages;
+
+    const goToPrevPage = () => {
+        setPage(prev => Math.max(1, prev - 1));
+    };
+
+    const goToNextPage = () => {
+        setPage(prev => Math.min(totalPages, prev + 1));
+    };
 
     const prevImage = (e?: React.MouseEvent) => {
         e?.stopPropagation();
@@ -79,8 +118,10 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
         );
     };
 
-    if (loading || items.length === 0) {
-        return null;
+    // If loading first time and no items, show nothing or skeleton structure (handled below)
+    if (loading && !fetching && items.length === 0) {
+        // We let it render so Skeleton can be shown
+        // return null; 
     }
 
     return (
@@ -118,52 +159,102 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                     </div>
                 )}
 
-                {/* Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                    {filteredItems.map((item) => (
+                {/* Grid with Carousel */}
+                <div className="relative">
+                    {/* Navigation Arrows */}
+                    {hasPrevPage && (
                         <button
-                            key={item.id}
-                            onClick={() => setSelectedItem(item)}
-                            className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 text-left"
+                            onClick={goToPrevPage}
+                            className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white shadow-lg rounded-full hover:bg-gray-50 transition-all border border-gray-200"
+                            aria-label="Previous projects"
                         >
-                            {/* Image */}
-                            <div className="aspect-square bg-gray-100 overflow-hidden">
-                                {item.images && item.images.length > 0 ? (
-                                    <img
-                                        src={item.images[0]}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                                        <span className="text-3xl font-bold text-gray-300">
-                                            {item.title[0]?.toUpperCase()}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Multiple images badge */}
-                            {item.images && item.images.length > 1 && (
-                                <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-white text-[10px] font-medium">
-                                    {item.images.length} photos
-                                </div>
-                            )}
-
-                            {/* Title Overlay */}
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
-                                <p className="text-white font-medium text-sm line-clamp-1 drop-shadow-sm">
-                                    {item.title}
-                                </p>
-                                {item.category && (
-                                    <span className="inline-flex items-center gap-1 mt-1 text-white/80 text-[10px]">
-                                        <Tag className="w-2.5 h-2.5" />
-                                        {item.category.name}
-                                    </span>
-                                )}
-                            </div>
+                            <ChevronLeft className="w-5 h-5 text-gray-700" />
                         </button>
-                    ))}
+                    )}
+                    {hasNextPage && (
+                        <button
+                            onClick={goToNextPage}
+                            className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white shadow-lg rounded-full hover:bg-gray-50 transition-all border border-gray-200"
+                            aria-label="Next projects"
+                        >
+                            <ChevronRight className="w-5 h-5 text-gray-700" />
+                        </button>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3 min-h-[200px]">
+                        {(loading || fetching) ? (
+                            // Skeleton Loading
+                            Array.from({ length: 4 }).map((_, idx) => (
+                                <div key={idx} className="aspect-square bg-gray-100 rounded-xl animate-pulse border border-gray-100" />
+                            ))
+                        ) : (
+                            items.map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setSelectedItem(item)}
+                                    className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 text-left"
+                                >
+                                    {/* Image */}
+                                    <div className="aspect-square bg-gray-100 overflow-hidden">
+                                        {item.images && item.images.length > 0 ? (
+                                            <img
+                                                src={item.images[0]}
+                                                alt={item.title}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                                                <span className="text-3xl font-bold text-gray-300">
+                                                    {item.title[0]?.toUpperCase()}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Multiple images badge */}
+                                    {item.images && item.images.length > 1 && (
+                                        <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-white text-[10px] font-medium">
+                                            {item.images.length} photos
+                                        </div>
+                                    )}
+
+                                    {/* Title Overlay */}
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                                        <p className="text-white font-medium text-sm line-clamp-1 drop-shadow-sm">
+                                            {item.title}
+                                        </p>
+                                        {item.category && (
+                                            <span className="inline-flex items-center gap-1 mt-1 text-white/80 text-[10px]">
+                                                <Tag className="w-2.5 h-2.5" />
+                                                {item.category.name}
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+                            )))}
+                    </div>
+
+                    {/* Pagination Dots */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap px-4">
+                            {Array.from({ length: totalPages }, (_, idx) => {
+                                const p = idx + 1;
+                                return (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setPage(p)}
+                                        className={`w-2 h-2 rounded-full transition-all flex-shrink-0 ${p === page
+                                            ? 'bg-gray-900 w-4'
+                                            : 'bg-gray-300 hover:bg-gray-400'
+                                            }`}
+                                        aria-label={`Go to page ${p}`}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 

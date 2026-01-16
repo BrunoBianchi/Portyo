@@ -183,7 +183,7 @@ export default function DashboardMarketing() {
         if (!confirm("Are you sure you want to reject this proposal?")) return;
         setProcessingProposalId(proposalId);
         try {
-            await api.put(`/marketing/proposals/${proposalId}/reject`);
+            await api.put(`/marketing/proposals/${proposalId}/reject`, {});
             setSelectedSlotProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'rejected' } : p));
         } catch (error) {
             console.error("Failed to reject proposal", error);

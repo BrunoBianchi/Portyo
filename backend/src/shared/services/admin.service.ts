@@ -2,6 +2,13 @@ import { AppDataSource } from "../../database/datasource";
 import { UserEntity } from "../../database/entity/user-entity";
 import { BioEntity } from "../../database/entity/bio-entity";
 import { BillingEntity } from "../../database/entity/billing-entity";
+import { PostEntity } from "../../database/entity/posts-entity";
+import { BookingEntity } from "../../database/entity/booking-entity";
+import { FormEntity } from "../../database/entity/form-entity";
+import { BookingSettingsEntity } from "../../database/entity/booking-settings-entity";
+import { IntegrationEntity } from "../../database/entity/integration-entity";
+import { EmailTemplateEntity } from "../../database/entity/email-template-entity";
+import { QRCodeEntity } from "../../database/entity/qrcode-entity";
 import { BillingService } from "../../services/billing.service";
 import { logger } from "../utils/logger";
 import { ApiError, APIErrors } from "../errors/api-error";
@@ -10,6 +17,13 @@ import { MoreThan, LessThanOrEqual } from "typeorm";
 const userRepository = AppDataSource.getRepository(UserEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
 const billingRepository = AppDataSource.getRepository(BillingEntity);
+const postRepository = AppDataSource.getRepository(PostEntity);
+const bookingRepository = AppDataSource.getRepository(BookingEntity);
+const formRepository = AppDataSource.getRepository(FormEntity);
+const bookingSettingsRepository = AppDataSource.getRepository(BookingSettingsEntity);
+const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
+const emailTemplateRepository = AppDataSource.getRepository(EmailTemplateEntity);
+const qrCodeRepository = AppDataSource.getRepository(QRCodeEntity);
 
 export interface AdminUserDTO {
     id: string;
@@ -253,6 +267,7 @@ export const getUserById = async (userId: string): Promise<AdminUserDTO | null> 
     };
 };
 
+
 /**
  * Delete a user (admin only)
  */
@@ -262,6 +277,74 @@ export const deleteUser = async (userId: string): Promise<void> => {
         throw new ApiError(APIErrors.notFoundError, "User not found", 404);
     }
 
+    // 1. Delete items related to User that don't cascade at DB level
+    await billingRepository.delete({ userId });
+    await postRepository.delete({ user: { id: userId } });
+
+    // 2. Delete Bios and their non-cascading children
+    // We must manually delete bio children because database cascade for Bio might fail 
+    // if those children (like Booking) don't have cascade on Bio delete.
+    const bios = await bioRepository.find({ where: { userId } });
+    for (const bio of bios) {
+        await deleteBio(bio.id);
+    }
+
+    // 3. Delete User (now safe from FK constraints)
     await userRepository.remove(user);
     logger.info(`User ${userId} deleted by admin`);
+};
+
+/**
+ * Get all bios for a specific user
+ */
+export const getUserBios = async (userId: string): Promise<BioEntity[]> => {
+    return await bioRepository.find({
+        where: { userId },
+        order: { createdAt: "DESC" }
+    });
+};
+
+/**
+ * Update a bio (admin override)
+ */
+export const updateBio = async (bioId: string, updates: Partial<BioEntity>): Promise<BioEntity> => {
+    const bio = await bioRepository.findOneBy({ id: bioId });
+    if (!bio) {
+        throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
+    }
+    
+    // Validate suffix uniqueness if changing suffix
+    if (updates.sufix && updates.sufix !== bio.sufix) {
+        const existing = await bioRepository.findOneBy({ sufix: updates.sufix });
+        if (existing) {
+            throw new ApiError(APIErrors.conflictError, "Bio with this suffix already exists", 409);
+        }
+    }
+
+    Object.assign(bio, updates);
+    return await bioRepository.save(bio);
+};
+
+/**
+ * Delete a bio (admin override)
+ */
+export const deleteBio = async (bioId: string): Promise<void> => {
+    const bio = await bioRepository.findOneBy({ id: bioId });
+    if (!bio) {
+        throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
+    }
+
+    // 1. Delete items related to Bio that don't cascade at DB level
+    await bookingRepository.delete({ bioId });
+    await postRepository.delete({ bio: { id: bioId } });
+    await formRepository.delete({ bioId });
+    await bookingSettingsRepository.delete({ bioId });
+    await emailTemplateRepository.delete({ bioId });
+    // Entities that lack explicit bioId column but have relation
+    await integrationRepository.delete({ bio: { id: bioId } });
+    await qrCodeRepository.delete({ bio: { id: bioId } });
+    
+    // Automation, PortfolioItem, MarketingSlot, PageView have cascade set in entity.
+    
+    await bioRepository.remove(bio);
 };

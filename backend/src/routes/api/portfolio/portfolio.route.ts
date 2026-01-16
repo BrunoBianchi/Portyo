@@ -41,6 +41,35 @@ const checkBioOwnership = async (bioId: string, userId: string) => {
  */
 router.get('/:bioId', async (req, res) => {
     try {
+        const page = parseInt(req.query.page as string);
+        const limit = parseInt(req.query.limit as string);
+        const categoryId = req.query.categoryId as string;
+
+        if (!isNaN(page) && !isNaN(limit) && page > 0 && limit > 0) {
+             const where: any = { bioId: req.params.bioId };
+             if (categoryId && categoryId !== 'null' && categoryId !== 'undefined') {
+                 where.categoryId = categoryId;
+             }
+
+             const [items, total] = await portfolioRepository.findAndCount({
+                where,
+                relations: ['category'],
+                order: { order: 'ASC', createdAt: 'ASC' },
+                skip: (page - 1) * limit,
+                take: limit
+            });
+
+            return res.json({
+                data: items,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            });
+        }
+
         const items = await portfolioRepository.find({
             where: { bioId: req.params.bioId },
             relations: ['category'],
