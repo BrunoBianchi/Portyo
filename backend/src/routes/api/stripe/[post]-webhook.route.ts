@@ -230,8 +230,18 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
              const retrievedInvoice = await stripe.invoices.retrieve(invoice.id, {
                  expand: ['subscription']
              });
-             console.log(`Invoice: ${retrievedInvoice}`)
+             console.log(`Invoice: ${JSON.stringify(retrievedInvoice, null, 2)}`);
              subscriptionId = typeof (retrievedInvoice as any).subscription === 'string' ? (retrievedInvoice as any).subscription : (retrievedInvoice as any).subscription?.id;
+             
+             // Double check lines in the retrieved invoice if still missing
+             if (!subscriptionId && retrievedInvoice.lines?.data) {
+                 for (const line of retrievedInvoice.lines.data) {
+                     if (line.subscription) {
+                         subscriptionId = typeof line.subscription === 'string' ? line.subscription : (line.subscription as any).id;
+                         if (subscriptionId) break;
+                     }
+                 }
+             }
              
              if (subscriptionId) {
                  logger.info(`Successfully retrieved Subscription ID ${subscriptionId} from Stripe for invoice ${invoice.id}`);
