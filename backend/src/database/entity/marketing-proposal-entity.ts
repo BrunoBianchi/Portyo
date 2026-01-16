@@ -72,4 +72,11 @@ export class MarketingProposalEntity extends BaseEntity {
 
     @Column({ type: "text", nullable: true })
     rejectionReason?: string | null;
+
+    // Payment link
+    @Column({ type: "text", nullable: true })
+    paymentLink?: string | null;
+
+    @Column({ type: "timestamp", nullable: true })
+    paymentLinkExpiry?: Date | null;
 }

@@ -799,6 +799,8 @@ export default function DashboardEditor() {
   const [enableSubscribeButton, setEnableSubscribeButton] = useState(false);
   const [removeBranding, setRemoveBranding] = useState(false);
   const [font, setFont] = useState(bio?.font || 'Inter');
+  const [customFontUrl, setCustomFontUrl] = useState(bio?.customFontUrl || null);
+  const [customFontName, setCustomFontName] = useState(bio?.customFontName || null);
   const [showUpgrade, setShowUpgrade] = useState<string | null>(null);
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
@@ -938,6 +940,8 @@ export default function DashboardEditor() {
       enableSubscribeButton,
       removeBranding,
       font,
+      customFontUrl,
+      customFontName,
       bioId: bio?.id // Verify we are undoing for same bio
     };
   }, [blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, bio?.id]);
@@ -998,6 +1002,9 @@ export default function DashboardEditor() {
         setImageStyle(previousState.imageStyle);
         setEnableSubscribeButton(previousState.enableSubscribeButton);
         setRemoveBranding(previousState.removeBranding);
+        setFont(previousState.font);
+        setCustomFontUrl(previousState.customFontUrl);
+        setCustomFontName(previousState.customFontName);
         setFont(previousState.font);
 
         // Should we save this restoration? Maybe not automatically, let the user decide or auto-save debounce handle it.
@@ -1277,8 +1284,8 @@ export default function DashboardEditor() {
     setIsSaving(true);
     setStatus("idle");
     try {
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font }, window.location.origin);
-      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font });
+      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined }, window.location.origin);
+      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
     } catch (error) {
@@ -1344,6 +1351,8 @@ export default function DashboardEditor() {
       imageStyle,
       enableSubscribeButton,
       font,
+      customFontUrl,
+      customFontName,
       isPreview: true,
     };
     const html = blocksToHtml(blocks, user, tempBio, window.location.origin);
@@ -1699,6 +1708,8 @@ export default function DashboardEditor() {
                                         customFontName: name,
                                         font: 'Custom'
                                       });
+                                      setCustomFontUrl(url);
+                                      setCustomFontName(name);
                                       setFont('Custom');
                                     }
                                   } catch (err) {

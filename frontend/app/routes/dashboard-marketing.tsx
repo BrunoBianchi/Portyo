@@ -1,7 +1,7 @@
 import type { MetaFunction } from "react-router";
 import { useState, useEffect, useContext } from "react";
 import { createPortal } from "react-dom";
-import { Plus, TrendingUp, X, Loader2, Trash2, Sparkles, DollarSign } from "lucide-react";
+import { Plus, TrendingUp, X, Loader2, Trash2, Sparkles, DollarSign, Image as ImageIcon } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
@@ -27,6 +27,28 @@ interface MarketingSlot {
     totalRevenue: number;
 }
 
+interface MarketingProposal {
+    id: string;
+    slotId: string;
+    companyId?: string;
+    company?: {
+        sufix: string;
+        profileImage?: string;
+    };
+    guestName?: string;
+    guestEmail?: string;
+    proposedPrice: number; // numeric in DB string in JSON? Helper usually converts, assuming number
+    status: 'pending' | 'accepted' | 'rejected' | 'active' | 'completed';
+    message?: string;
+    content: {
+        title: string;
+        description: string;
+        imageUrl?: string;
+        linkUrl: string;
+    };
+    createdAt: string;
+}
+
 export default function DashboardMarketing() {
     const { bio } = useContext(BioContext);
     const { user } = useContext(AuthContext);
@@ -41,6 +63,13 @@ export default function DashboardMarketing() {
     const [createError, setCreateError] = useState<string | null>(null);
     const [deletingSlot, setDeletingSlot] = useState<MarketingSlot | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Proposals State
+    const [viewingProposalsFor, setViewingProposalsFor] = useState<MarketingSlot | null>(null);
+    const [selectedSlotProposals, setSelectedSlotProposals] = useState<MarketingProposal[]>([]);
+    const [isLoadingProposals, setIsLoadingProposals] = useState(false);
+    const [processingProposalId, setProcessingProposalId] = useState<string | null>(null);
+    const [sendingPaymentLinkId, setSendingPaymentLinkId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         slotName: "",
@@ -110,6 +139,69 @@ export default function DashboardMarketing() {
             alert(error.response?.data?.message || "Failed to delete");
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleViewProposals = async (slot: MarketingSlot) => {
+        setViewingProposalsFor(slot);
+        setIsLoadingProposals(true);
+        setSelectedSlotProposals([]);
+        try {
+            const res = await api.get(`/marketing/proposals/received?slotId=${slot.id}`);
+            setSelectedSlotProposals(res.data);
+        } catch (error) {
+            console.error("Failed to fetch proposals", error);
+        } finally {
+            setIsLoadingProposals(false);
+        }
+    };
+
+    const handleAcceptProposal = async (proposalId: string) => {
+        if (!confirm("Are you sure you want to accept this proposal? This will reject all other pending proposals for this slot.")) return;
+        setProcessingProposalId(proposalId);
+        try {
+            await api.put(`/marketing/proposals/${proposalId}/accept`);
+            // Update local state
+            setSelectedSlotProposals(prev => prev.map(p => {
+                if (p.id === proposalId) return { ...p, status: 'accepted' }; // Or active? Backend sets active
+                if (p.status === 'pending') return { ...p, status: 'rejected' };
+                return p;
+            }));
+            // Update slot status in background or optimistic
+            if (viewingProposalsFor) {
+                setSlots(prev => prev.map(s => s.id === viewingProposalsFor.id ? { ...s, status: 'occupied' } : s));
+            }
+        } catch (error) {
+            console.error("Failed to accept proposal", error);
+            alert("Failed to accept proposal");
+        } finally {
+            setProcessingProposalId(null);
+        }
+    };
+
+    const handleRejectProposal = async (proposalId: string) => {
+        if (!confirm("Are you sure you want to reject this proposal?")) return;
+        setProcessingProposalId(proposalId);
+        try {
+            await api.put(`/marketing/proposals/${proposalId}/reject`);
+            setSelectedSlotProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'rejected' } : p));
+        } catch (error) {
+            console.error("Failed to reject proposal", error);
+        } finally {
+            setProcessingProposalId(null);
+        }
+    };
+
+    const handleSendPaymentLink = async (proposalId: string) => {
+        setSendingPaymentLinkId(proposalId);
+        try {
+            await api.post(`/marketing/proposals/${proposalId}/generate-payment-link`);
+            alert("Payment link sent successfully!");
+        } catch (error: any) {
+            console.error("Failed to send payment link", error);
+            alert(error.response?.data?.error || "Failed to send payment link");
+        } finally {
+            setSendingPaymentLinkId(null);
         }
     };
 
@@ -214,7 +306,10 @@ export default function DashboardMarketing() {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <button className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition text-sm">
+                                    <button
+                                        onClick={() => handleViewProposals(slot)}
+                                        className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition text-sm"
+                                    >
                                         View Proposals
                                     </button>
                                 </div>
@@ -336,6 +431,110 @@ export default function DashboardMarketing() {
                                 >
                                     {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
                                 </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+
+                {/* Proposals Modal */}
+                {viewingProposalsFor && typeof document !== "undefined" && createPortal(
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+                            <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Proposals for "{viewingProposalsFor.slotName}"</h3>
+                                    <p className="text-sm text-gray-500">
+                                        ${viewingProposalsFor.priceMin} - ${viewingProposalsFor.priceMax} • {viewingProposalsFor.duration} days
+                                    </p>
+                                </div>
+                                <button onClick={() => setViewingProposalsFor(null)} className="text-gray-400 hover:text-gray-600">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                                {isLoadingProposals ? (
+                                    <div className="flex justify-center py-12">
+                                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                                    </div>
+                                ) : selectedSlotProposals.length === 0 ? (
+                                    <div className="text-center py-12 text-gray-500">
+                                        <p>No proposals received yet.</p>
+                                    </div>
+                                ) : (
+                                    selectedSlotProposals.map(proposal => (
+                                        <div key={proposal.id} className="border border-gray-100 rounded-xl p-5 hover:border-gray-200 transition bg-gray-50/50">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                        {proposal.company?.sufix?.[0]?.toUpperCase() || proposal.guestName?.[0]?.toUpperCase() || 'G'}
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-900 leading-tight">
+                                                            {proposal.company?.sufix ? `@${proposal.company.sufix}` : proposal.guestName || "Guest"}
+                                                        </h4>
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(proposal.createdAt).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-lg font-bold text-green-600">${proposal.proposedPrice}</span>
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${proposal.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                        proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                            'bg-red-100 text-red-700'
+                                                        }`}>
+                                                        {proposal.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Proposal Content Preview */}
+                                            <div className="bg-white border border-gray-100 rounded-lg p-3 mb-4 flex gap-3">
+                                                {proposal.content.imageUrl ? (
+                                                    <img src={proposal.content.imageUrl} alt="" className="w-16 h-16 rounded-md object-cover bg-gray-100" />
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center text-gray-300">
+                                                        <ImageIcon width={20} height={20} />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <h5 className="font-bold text-sm text-gray-900 truncate">{proposal.content.title}</h5>
+                                                    <p className="text-xs text-gray-500 line-clamp-2">{proposal.content.description}</p>
+                                                    <a href={proposal.content.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block truncate max-w-full">
+                                                        {proposal.content.linkUrl}
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            {proposal.message && (
+                                                <div className="text-sm text-gray-600 bg-gray-100 p-3 rounded-lg mb-4 italic">
+                                                    "{proposal.message}"
+                                                </div>
+                                            )}
+
+                                            {proposal.status === 'pending' && (
+                                                <div className="flex gap-2 pt-2">
+                                                    <button
+                                                        onClick={() => handleRejectProposal(proposal.id)}
+                                                        disabled={processingProposalId === proposal.id}
+                                                        className="flex-1 py-2 border border-gray-200 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 hover:text-red-600 transition disabled:opacity-50 text-sm"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSendPaymentLink(proposal.id)}
+                                                        disabled={sendingPaymentLinkId === proposal.id}
+                                                        className="flex-1 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+                                                    >
+                                                        {sendingPaymentLinkId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send Payment Link"}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>,

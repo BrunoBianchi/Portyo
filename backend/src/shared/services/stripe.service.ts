@@ -256,3 +256,35 @@ export const archiveStripeProduct = async (bioId: string, productId: string) => 
 
     return product;
 };
+
+export const createProposalPaymentLink = async (proposalId: string, amount: number, slotName: string, duration: number) => {
+    // Create a direct payment link without needing a connected account
+    const paymentLink = await stripe.paymentLinks.create({
+        line_items: [
+            {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: `Advertising Slot: ${slotName}`,
+                        description: `${duration} days of advertising on ${slotName}`,
+                    },
+                    unit_amount: Math.round(amount * 100), // Convert to cents
+                },
+                quantity: 1,
+            },
+        ],
+        metadata: {
+            proposalId,
+            type: 'marketing_proposal',
+        },
+        after_completion: {
+            type: 'redirect',
+            redirect: {
+                url: `${env.FRONTEND_URL}/payment-success?proposalId=${proposalId}`,
+            },
+        },
+    });
+
+    return paymentLink;
+};
+
