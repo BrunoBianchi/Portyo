@@ -172,9 +172,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     if (invoice.lines?.data) {
         for (const line of invoice.lines.data) {
             const price = (line as any).price;
-            if (price?.product === 'prod_TmL2bxw13AR6SV') {
+            if (price?.product === 'prod_TmL9tzn3rbw9RT') {
                 plan = 'standard';
-            } else if (price?.product === 'prod_TmL0xo0zPO4aAg') {
+            } else if (price?.product === 'prod_TmL8KujlcWIkE5') {
                 plan = 'pro';
             }
             

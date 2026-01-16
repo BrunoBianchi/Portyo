@@ -29,8 +29,8 @@ router.post("/create-checkout-session", async (req: Request, res: Response) => {
         }
 
         const productIds = {
-            standard: "prod_TmL2bxw13AR6SV",
-            pro: "prod_TmL0xo0zPO4aAg"
+            standard: "prod_TmL9tzn3rbw9RT",
+            pro: "prod_TmL8KujlcWIkE5"
         };
 
         const productId = productIds[plan as 'standard' | 'pro'];
