@@ -11,12 +11,23 @@ router.get("/history", authMiddleware, async (req, res) => {
     if (!userId) return res.status(401).send("Unauthorized");
 
     try {
-        const history = await AppDataSource.getRepository(BillingEntity).find({
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        const [history, total] = await AppDataSource.getRepository(BillingEntity).findAndCount({
             where: { userId },
-            order: { startDate: "DESC" }
+            order: { startDate: "DESC" },
+            take: limit,
+            skip: skip
         });
 
-        res.status(200).json(history);
+        res.status(200).json({
+            data: history,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (error) {
         console.error("Failed to fetch billing history", error);
         res.status(500).json({ error: "Failed to fetch billing history" });

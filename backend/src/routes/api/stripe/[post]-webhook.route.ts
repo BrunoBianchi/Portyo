@@ -225,7 +225,26 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     }
 
     if (!subscriptionId) {
-        logger.warn(`Subscription ID missing for invoice ${invoice.id} (user ${user.id}). This might affect cancellation capabilities.`);
+        logger.warn(`Subscription ID missing in webhook payload for invoice ${invoice.id}. Attempting to retrieve from Stripe...`);
+        try {
+             const retrievedInvoice = await stripe.invoices.retrieve(invoice.id, {
+                 expand: ['subscription']
+             });
+             console.log(`Invoice: ${retrievedInvoice}`)
+             subscriptionId = typeof (retrievedInvoice as any).subscription === 'string' ? (retrievedInvoice as any).subscription : (retrievedInvoice as any).subscription?.id;
+             
+             if (subscriptionId) {
+                 logger.info(`Successfully retrieved Subscription ID ${subscriptionId} from Stripe for invoice ${invoice.id}`);
+             } else {
+                 logger.error(`Failed to retrieve Subscription ID even after fetching invoice ${invoice.id} from Stripe.`);
+             }
+        } catch (err) {
+            logger.error(`Error retrieving invoice ${invoice.id} from Stripe:`, err);
+        }
+    }
+
+    if (!subscriptionId) {
+        logger.warn(`Subscription ID strictly missing for invoice ${invoice.id} (user ${user.id}). This might affect cancellation capabilities.`);
     }
     
     await BillingService.createBilling(user.id, plan, duration, invoice.amount_paid / 100, stripeCustomerId, paymentId, transactionId, subscriptionId);
