@@ -89,7 +89,7 @@ api.interceptors.response.use(
 );
 
 export const BillingService = {
-    async getHistory() {
-        return api.get("/user/billing/history");
+    async getHistory(page = 1, limit = 10) {
+        return api.get(`/user/billing/history?page=${page}&limit=${limit}`);
     }
 }

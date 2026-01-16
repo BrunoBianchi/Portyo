@@ -6,6 +6,7 @@ import AuthContext from "~/contexts/auth.context";
 import { EmailUsageService, type EmailUsage } from "~/services/email-usage.service";
 import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
+import { BillingHistoryModal } from "~/components/settings/billing-history-modal";
 
 export const meta: MetaFunction = () => {
   return [
@@ -22,6 +23,7 @@ export default function DashboardSettings() {
   const [emailUsage, setEmailUsage] = useState<EmailUsage | null>(null);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Admin State
   const [adminAnnouncement, setAdminAnnouncement] = useState({
@@ -150,10 +152,18 @@ export default function DashboardSettings() {
   useEffect(() => {
     // Always load billing history to show status
     import("~/services/api").then(({ BillingService }) => {
-      BillingService.getHistory().then(res => {
-        setBillingHistory(res.data);
+      // Just fetch the first page (limit 5) for the preview
+      BillingService.getHistory(1, 5).then(res => {
+        // Handle both new paginated response { data: [], ... } and old array response []
+        const historyData = res.data && Array.isArray(res.data.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+            ? res.data
+            : [];
+        setBillingHistory(historyData);
       }).catch(err => {
         console.error("Failed to load billing history", err);
+        setBillingHistory([]);
       });
     });
 
@@ -375,6 +385,7 @@ export default function DashboardSettings() {
                   <input
                     type="password"
                     name="currentPassword"
+                    autoComplete="current-password"
                     required
                     className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
                   />
@@ -385,6 +396,7 @@ export default function DashboardSettings() {
                     <input
                       type="password"
                       name="newPassword"
+                      autoComplete="new-password"
                       required
                       minLength={8}
                       className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
@@ -396,6 +408,7 @@ export default function DashboardSettings() {
                     <input
                       type="password"
                       name="confirmPassword"
+                      autoComplete="new-password"
                       required
                       minLength={8}
                       className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
@@ -614,7 +627,7 @@ export default function DashboardSettings() {
                     <h2 className="text-xl font-bold text-gray-900">Billing History</h2>
                   </div>
 
-                  <div className="space-y-1 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+                  <div className="space-y-1 flex-1 pr-2">
                     {billingHistory.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-3">
@@ -650,13 +663,21 @@ export default function DashboardSettings() {
                     )}
                   </div>
 
-                  <button className="w-full mt-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                  <button
+                    onClick={() => setShowHistoryModal(true)}
+                    className="w-full mt-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                  >
                     View All Invoices
                   </button>
                 </section>
               </div>
             </div>
           </div>
+
+          <BillingHistoryModal
+            isOpen={showHistoryModal}
+            onClose={() => setShowHistoryModal(false)}
+          />
         </div>
       ) : activeTab === 'admin' ? (
         <div className="space-y-8">
