@@ -599,7 +599,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       return `
         <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="position:relative; display:block; aspect-ratio:261/151; width:100%; border-radius:15px; overflow:hidden; text-decoration:none; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);" onmouseover="const i=this.querySelector('img');if(i)i.style.transform='scale(1.1)'" onmouseout="const i=this.querySelector('img');if(i)i.style.transform='scale(1)'">
           <div style="position:absolute; inset:0; background-color:#1f2937;">
-            ${bgImg ? `<img src="${escapeHtml(bgImg)}" alt="${escapeHtml(title)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom right, #374151, #111827);"></div>`}
+            ${bgImg ? `<img src="${escapeHtml(bgImg)}" data-src-debug="${escapeHtml(bgImg)}" alt="${escapeHtml(title)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" />` : `<div style="width:100%; height:100%; background:linear-gradient(to bottom right, #374151, #111827);"></div>`}
             <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);"></div>
           </div>
           

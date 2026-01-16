@@ -43,6 +43,29 @@ export const getProxyImage = async (req: Request, res: Response, next: NextFunct
     }
 }
 
+export const getImage = async (req: Request, res: Response, next: NextFunction) => {
+    const { shortcode } = req.params;
+    if (!shortcode) {
+        next(new ApiError(APIErrors.badRequestError, "Shortcode required", 400));
+        return;
+    }
+
+    try {
+        const { buffer, contentType } = await instagramService.getCachedImage(shortcode);
+        
+        if (contentType) {
+            res.setHeader("Content-Type", contentType);
+        }
+        
+        // Cache control for the image itself (browser cache)
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // 1 year
+        
+        res.send(buffer);
+    } catch (error) {
+        next(error);
+    }
+}
+
 
 export const initiateAuth = (req: Request, res: Response, next: NextFunction) => {
     try {
