@@ -96,7 +96,7 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                     if (proposalId) api.post('/public/marketing/clicks', { proposalId }).catch(console.error);
                 }}
             >
-                <img src={slot.activeProposal.imageUrl || "https://placehold.co/600x200"} alt="Advertisement" className="w-full h-full object-cover" />
+                <img src={slot.activeProposal.imageUrl || "/base-img/card_base_image.png"} alt="Advertisement" className="w-full h-full object-cover" />
                 <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
                     Sponsored
                 </div>

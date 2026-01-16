@@ -215,4 +215,172 @@ export class MailService {
             throw error;
         }
     }
+
+    static async sendProposalSentEmail(email: string, proposal: any, slotName: string) {
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Sent</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.5; color: #1f2937; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { margin-bottom: 32px; border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; letter-spacing: -0.5px; }
+        .h1 { font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 24px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
+        .footer { margin-top: 48px; padding-top: 32px; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #9ca3af; }
+        .proposal-details { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 24px 0; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .detail-label { font-weight: 600; color: #4b5563; }
+        .detail-value { color: #1f2937; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+        
+        <h1 class="h1">Proposal Sent Successfully</h1>
+        
+        <p class="text">Your proposal for <strong>${slotName}</strong> has been sent successfully.</p>
+        
+        <div class="proposal-details">
+            <div class="detail-row">
+                <span class="detail-label">Price Offered:</span>
+                <span class="detail-value">$${proposal.proposedPrice}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Title:</span>
+                <span class="detail-value">${proposal.content.title}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Link:</span>
+                <span class="detail-value">${proposal.content.linkUrl}</span>
+            </div>
+        </div>
+
+        <p class="text">We'll notify you once the owner reviews your proposal.</p>
+        
+        <p class="text" style="margin-top: 32px;">
+            Thanks,<br>
+            Portyo Team
+        </p>
+
+        <div class="footer">
+            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const subject = `Proposal Sent for ${slotName}`;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                return await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    to: [email],
+                    subject,
+                    html
+                });
+            } catch (error) {
+                console.error("Error sending proposal email via Mailgun:", error);
+            }
+        }
+
+        try {
+            return await transporter.sendMail({
+                from: '"Portyo" <no-reply@portyo.me>',
+                to: email,
+                subject,
+                html
+            });
+        } catch (error) {
+            console.error("Error sending proposal email:", error);
+        }
+    }
+
+    static async sendProposalAcceptedEmail(email: string, proposal: any, slotName: string, paymentLink: string, editLink: string) {
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Accepted</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.5; color: #1f2937; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { margin-bottom: 32px; border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; letter-spacing: -0.5px; }
+        .h1 { font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 24px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #D7F000; color: #000000; text-decoration: none; font-weight: 700; border-radius: 12px; margin: 12px 0; width: 100%; box-sizing: border-box; text-align: center; }
+        .button.secondary { background-color: #f3f4f6; color: #1f2937; }
+        .button:hover { opacity: 0.9; }
+        .footer { margin-top: 48px; padding-top: 32px; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+        
+        <h1 class="h1">Proposal Accepted!</h1>
+        
+        <p class="text">Great news! Your proposal for <strong>${slotName}</strong> has been accepted.</p>
+        
+        <p class="text">To activate your ad, please complete the payment:</p>
+        
+        <a href="${paymentLink}" class="button">Pay Now ($${proposal.proposedPrice})</a>
+        
+        <p class="text" style="margin-top: 24px;">You can also edit your ad content here:</p>
+        
+        <a href="${editLink}" class="button secondary">Edit Proposal Content</a>
+        
+        <p class="text" style="margin-top: 32px;">
+            Thanks,<br>
+            Portyo Team
+        </p>
+
+        <div class="footer">
+            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const subject = `Proposal Accepted: ${slotName}`;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                return await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    to: [email],
+                    subject,
+                    html
+                });
+            } catch (error) {
+                console.error("Error sending proposal accepted email via Mailgun:", error);
+            }
+        }
+
+        try {
+            return await transporter.sendMail({
+                from: '"Portyo" <no-reply@portyo.me>',
+                to: email,
+                subject,
+                html
+            });
+        } catch (error) {
+            console.error("Error sending proposal accepted email:", error);
+        }
+    }
 }

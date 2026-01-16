@@ -3,6 +3,10 @@ import { MarketingProposalEntity } from "../../database/entity/marketing-proposa
 import { MarketingSlotEntity } from "../../database/entity/marketing-slot-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
 import { In } from "typeorm";
+import { MailService } from "./mail.service";
+import { UserEntity } from "../../database/entity/user-entity";
+import * as StripeService from "./stripe.service";
+import { env } from "../../config/env";
 
 const ProposalRepository = AppDataSource.getRepository(MarketingProposalEntity);
 const SlotRepository = AppDataSource.getRepository(MarketingSlotEntity);
@@ -84,8 +88,21 @@ export async function createProposal(companyId: string | null, data: CreatePropo
 
     const saved = await ProposalRepository.save(proposal);
 
-    // Increment total proposals on slot
-    await SlotRepository.increment({ id: slot.id }, 'totalProposals', 1);
+    // Send email to proposer
+    let email: string | undefined;
+
+    if (companyId) {
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOne({ where: { id: companyId } });
+        email = user?.email;
+    } else {
+        email = data.guestEmail;
+    }
+
+    if (email) {
+        // Send email in background
+        MailService.sendProposalSentEmail(email, saved, slot.slotName).catch(console.error);
+    }
 
     return saved;
 }
@@ -148,6 +165,19 @@ export async function acceptProposal(proposalId: string, userId: string): Promis
     // Update proposal
     proposal.status = 'active';
     proposal.respondedAt = new Date();
+    
+    // Generate Payment Link
+    const paymentLink = await StripeService.createProposalPaymentLink(
+        proposal.id, 
+        proposal.proposedPrice, 
+        proposal.slot.slotName, 
+        proposal.slot.duration
+    );
+    
+    proposal.paymentLink = paymentLink.url;
+    // Payment link doesn't really expire in Stripe unless configured, but we can set a logical one if needed.
+    // tailored to the proposal logic:
+    // proposal.paymentLinkExpiry = ... 
 
     // Update slot
     proposal.slot.status = 'occupied';
@@ -157,7 +187,7 @@ export async function acceptProposal(proposalId: string, userId: string): Promis
     proposal.slot.totalRevenue = Number(proposal.slot.totalRevenue) + Number(proposal.proposedPrice);
 
     await SlotRepository.save(proposal.slot);
-    await ProposalRepository.save(proposal);
+    const savedProposal = await ProposalRepository.save(proposal);
 
     // Reject all other pending proposals for this slot
     await ProposalRepository.update(
@@ -173,7 +203,28 @@ export async function acceptProposal(proposalId: string, userId: string): Promis
         }
     );
 
-    return proposal;
+    // Send Acceptance Email
+    let email: string | undefined;
+    if (proposal.companyId) {
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOne({ where: { id: proposal.companyId } });
+        email = user?.email;
+    } else {
+        email = proposal.guestEmail;
+    }
+
+    if (email && proposal.paymentLink) {
+        const editLink = `${env.FRONTEND_URL}/dashboard/marketing/proposals/${proposal.id}`;
+        MailService.sendProposalAcceptedEmail(
+            email, 
+            proposal, 
+            proposal.slot.slotName, 
+            proposal.paymentLink, 
+            editLink
+        ).catch(console.error);
+    }
+
+    return savedProposal;
 }
 
 // Reject proposal

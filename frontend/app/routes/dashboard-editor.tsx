@@ -189,7 +189,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
     tags: ["FullStack Dev", "Soft Skills", "Hard Skills"],
     category: "Lifestyle",
     readTime: "5 min read",
-    image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+    image: "/base-img/card_base_image.png",
     author: "By You"
   }));
 
@@ -200,7 +200,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
           post={{
             ...selectedPost,
             date: new Date(selectedPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            image: "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+            image: "/base-img/card_base_image.png",
             author: "By You"
           }}
           onClose={() => setSelectedPost(null)}
@@ -240,7 +240,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
             {displayPosts.map((post, i) => {
               const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
               const description = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...' : '';
-              const image = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post";
+              const image = "/base-img/card_base_image.png";
               const category = "Blog";
               const readTime = "5 min read";
               const author = "By You";
@@ -816,44 +816,46 @@ export default function DashboardEditor() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
+    if (!bio?.id) return;
 
     const file = e.target.files[0];
     const formData = new FormData();
     formData.append('photo', file);
+    formData.append('bioId', bio.id);
 
     setIsUploading(true);
     try {
-      const res = await api.post('/user/upload-photo', formData);
+      // Use the new dedicated bio logo upload route
+      const res = await api.post('/user/upload-bio-logo', formData);
       // Append timestamp to prevent caching
-      const newImageUrl = `${res.data.medium}?v=${Date.now()}`;
+      const newImageUrl = `${res.data.url}?v=${Date.now()}`;
 
-      if (bio?.id) {
-        // Regenerate HTML to ensure public page updates immediately
-        const tempBio = {
-          ...bio,
-          blocks,
-          bgType,
-          bgColor,
-          bgSecondaryColor,
-          bgImage,
-          bgVideo,
-          cardStyle,
-          cardBackgroundColor,
-          cardOpacity,
-          cardBlur,
-          usernameColor,
-          imageStyle,
-          enableSubscribeButton,
-          profileImage: newImageUrl // Use the new image
-        };
+      // Regenerate HTML to ensure public page updates immediately
+      const tempBio = {
+        ...bio,
+        blocks,
+        bgType,
+        bgColor,
+        bgSecondaryColor,
+        bgImage,
+        bgVideo,
+        cardStyle,
+        cardBackgroundColor,
+        cardOpacity,
+        cardBlur,
+        usernameColor,
+        imageStyle,
+        enableSubscribeButton,
+        profileImage: newImageUrl // Use the new image
+      };
 
-        const newHtml = blocksToHtml(blocks, user, tempBio, window.location.origin);
+      const newHtml = blocksToHtml(blocks, user, tempBio, window.location.origin);
 
-        await updateBio(bio.id, {
-          profileImage: newImageUrl,
-          html: newHtml
-        });
-      }
+      await updateBio(bio.id, {
+        profileImage: newImageUrl,
+        html: newHtml
+      });
+
     } catch (error) {
       console.error("Failed to upload image", error);
     } finally {

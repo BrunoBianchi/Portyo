@@ -11,6 +11,7 @@ import uploadProductImageRoute from "./[post]-upload-product-image.route";
 import uploadBlockImageRoute from "./[post]-upload-block-image.route";
 import uploadFaviconRoute from "./[post]-upload-favicon.route";
 import uploadOgImageRoute from "./[post]-upload-og-image.route";
+import uploadBioLogoRoute from "./[post]-upload-bio-logo.route";
 
 import logoutRoute from "./[post]-logout.route"
 
@@ -26,6 +27,7 @@ router.use("/me", meRoute);
 router.use(loginRoute)
 router.use(logoutRoute)
 router.use("/upload-photo", uploadPhotoRoute);
+router.use("/upload-bio-logo", uploadBioLogoRoute);
 router.use("/upload-blog-thumbnail", uploadBlogThumbnailRoute);
 router.use("/upload-product-image", uploadProductImageRoute);
 router.use("/upload-block-image", uploadBlockImageRoute);

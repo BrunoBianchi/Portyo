@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
         }
 
         // Check if user is on free plan
-        if (!req.user || req.user.plan === 'free') {
+        if (!req.user || (req.user.plan || 'free').toLowerCase() === 'free') {
             res.status(403).json({ error: "Google Analytics integration is only available for Standard and Pro plans." });
             return;
         }

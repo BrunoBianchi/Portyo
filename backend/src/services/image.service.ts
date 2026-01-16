@@ -214,3 +214,24 @@ export const processCustomFont = async (file: Express.Multer.File, userId: strin
     return `${baseUrl}/api/fonts/${userId}/${fontId}/${extension}`;
 };
 
+
+export const processBioLogoImage = async (file: Express.Multer.File, userId: string, bioId: string, baseUrl: string) => {
+    // Generate Bio Logo - 512x512 square (same as profile image for consistency)
+    const timestamp = Date.now();
+    const uniqueId = Math.random().toString(36).substring(7);
+
+    const fullBuffer = await sharp(file.buffer)
+        .resize(512, 512, { fit: 'cover' })
+        .png({ quality: 90 })
+        .toBuffer();
+
+    // Store in Redis
+    // Key format: bio:{bioId}:logo:{timestamp}-{uniqueId}:full
+    const pipeline = redisClient.pipeline();
+    const imageId = `${timestamp}-${uniqueId}`;
+    pipeline.set(`bio:${bioId}:logo:${imageId}:full`, fullBuffer, 'EX', 31536000); // 1 year
+    
+    await pipeline.exec();
+        
+    return `${baseUrl}/api/images/bio-logo/${bioId}/${imageId}/full.png`;
+};

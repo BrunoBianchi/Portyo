@@ -513,7 +513,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         const cardsHtml = posts.map((post: any) => {
                             const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                             const description = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...' : '';
-                            const image = "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post";
+                            const image = "/base-img/card_base_image.png";
                             const category = "Blog";
                             const readTime = "5 min read";
                             const author = "By You";
@@ -574,7 +574,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 setSelectedPost({
                                     ...post,
                                     date: new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                                    image: post.thumbnail || "https://placehold.co/600x400/e2e8f0/94a3b8?text=Post",
+                                    image: post.thumbnail || "/base-img/card_base_image.png",
                                     author: "By You"
                                 });
                             });

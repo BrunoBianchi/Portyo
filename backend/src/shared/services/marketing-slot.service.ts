@@ -40,7 +40,7 @@ export async function canCreateSlot(userId: string): Promise<boolean> {
     const user = await UserRepository.findOne({ where: { id: userId } });
     if (!user) return false;
     
-    const plan = user.plan || 'free';
+    const plan = (user.plan || 'free').toLowerCase();
     return plan === 'standard' || plan === 'pro';
 }
 
@@ -49,7 +49,7 @@ export async function getSlotLimit(userId: string): Promise<number> {
     const user = await UserRepository.findOne({ where: { id: userId } });
     if (!user) return 0;
     
-    const plan = (user.plan || 'free') as keyof typeof SLOT_LIMITS;
+    const plan = (user.plan || 'free').toLowerCase() as keyof typeof SLOT_LIMITS;
     return SLOT_LIMITS[plan] || 0;
 }
 

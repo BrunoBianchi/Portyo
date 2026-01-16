@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { z } from "zod";
-import { ownerMiddleware } from "../../../middlewares/owner.middleware";
+import { authMiddleware } from "../../../middlewares/auth.middleware";
 import * as ProposalService from "../../../shared/services/marketing-proposal.service";
 
 const router: Router = Router();
 
 // Get proposals for my slots
-router.get("/received", ownerMiddleware, async (req, res) => {
+router.get("/received", authMiddleware, async (req, res) => {
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -18,7 +18,7 @@ router.get("/received", ownerMiddleware, async (req, res) => {
 });
 
 // Get proposals I created (as company)
-router.get("/sent", ownerMiddleware, async (req, res) => {
+router.get("/sent", authMiddleware, async (req, res) => {
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -48,7 +48,7 @@ const createSchema = z.object({
     })
 });
 
-router.post("/", ownerMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -60,7 +60,7 @@ router.post("/", ownerMiddleware, async (req, res) => {
 });
 
 // Accept proposal
-router.put("/:id/accept", ownerMiddleware, async (req, res) => {
+router.put("/:id/accept", authMiddleware, async (req, res) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -72,7 +72,7 @@ router.put("/:id/accept", ownerMiddleware, async (req, res) => {
 });
 
 // Reject proposal
-router.put("/:id/reject", ownerMiddleware, async (req, res) => {
+router.put("/:id/reject", authMiddleware, async (req, res) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -85,7 +85,7 @@ router.put("/:id/reject", ownerMiddleware, async (req, res) => {
 });
 
 // Get analytics
-router.get("/:id/analytics", ownerMiddleware, async (req, res) => {
+router.get("/:id/analytics", authMiddleware, async (req, res) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });

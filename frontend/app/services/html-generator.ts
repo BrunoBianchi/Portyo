@@ -429,7 +429,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "featured") {
     const title = block.featuredTitle || "Glow lipstick";
     const price = block.featuredPrice || "$19.99";
-    const image = block.featuredImage || "https://placehold.co/300x300";
+    const image = block.featuredImage || "/base-img/card_base_image.png";
     const url = isValidUrl(block.featuredUrl) ? block.featuredUrl : "#";
     const bgColor = block.featuredColor || "#1f4d36";
     const textColor = block.featuredTextColor || "#ffffff";
@@ -471,7 +471,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "affiliate") {
     const title = block.affiliateTitle || "Copy my coupon code";
     const code = block.affiliateCode || "CODE123";
-    const image = block.affiliateImage || "https://placehold.co/300x300";
+    const image = block.affiliateImage || "/base-img/card_base_image.png";
     const url = isValidUrl(block.affiliateUrl) ? block.affiliateUrl : "#";
     const bgColor = block.affiliateColor || "#ffffff";
     const textColor = block.affiliateTextColor || "#374151";

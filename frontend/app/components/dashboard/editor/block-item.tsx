@@ -293,7 +293,7 @@ const BlockItem = memo(({
         id: makeId(),
         title: newProduct.title,
         price: new Intl.NumberFormat('en-US', { style: 'currency', currency: newProduct.currency }).format(newProduct.price),
-        image: newProduct.image || "https://placehold.co/300x300",
+        image: newProduct.image || "/base-img/card_base_image.png",
         url: "#",
         stripeProductId: newProduct.id
       };

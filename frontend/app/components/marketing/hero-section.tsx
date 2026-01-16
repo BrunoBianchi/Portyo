@@ -137,6 +137,23 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full">
           <ClaimUsernameInput />
         </div>
+
+        <div className="pt-10 w-full flex justify-center animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
+          <a
+            href="https://www.producthunt.com/products/portyo-me?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-portyo-me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform duration-300 drop-shadow-lg hover:drop-shadow-xl"
+          >
+            <img
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1063790&theme=light&t=1768572068376"
+              alt="Portyo.me - Create and manage a link-in-bio page for your content | Product Hunt"
+              style={{ width: '250px', height: '54px' }}
+              width="250"
+              height="54"
+            />
+          </a>
+        </div>
       </div>
     </section>
   );
