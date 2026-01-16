@@ -225,6 +225,48 @@ const MarketingBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
   );
 };
 
+const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string }) => {
+  const [itemCount, setItemCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!bioId) return;
+    setLoading(true);
+    api.get(`/portfolio/${bioId}`)
+      .then(res => setItemCount(res.data.length))
+      .catch(err => console.error("Failed to fetch portfolio items", err))
+      .finally(() => setLoading(false));
+  }, [bioId]);
+
+  return (
+    <div className="space-y-3 pt-3">
+      <p className="text-xs text-gray-500">Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.</p>
+
+
+      {!loading && (itemCount === 0 || itemCount === null) && (
+        <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 flex flex-col gap-1.5">
+          <span className="font-semibold">Nenhum projeto encontrado</span>
+          <span>Você ainda não criou nenhum projeto no portfólio. Eles aparecerão aqui após serem criados.</span>
+          <a href="/dashboard/portfolio" target="_blank" className="font-bold underline cursor-pointer hover:text-amber-800 transition-colors">
+            Criar meu primeiro projeto &rarr;
+          </a>
+        </div>
+      )}
+
+      <div>
+        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Section Title</label>
+        <input
+          type="text"
+          value={block.portfolioTitle || "Portfólio"}
+          onChange={(e) => onChange("portfolioTitle", e.target.value)}
+          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+          placeholder="Portfolio"
+        />
+      </div>
+    </div>
+  );
+};
+
 const BlockItem = memo(({
   block,
   index,
@@ -1998,19 +2040,7 @@ const BlockItem = memo(({
             )}
 
             {block.type === "portfolio" && (
-              <div className="space-y-3 pt-3">
-                <p className="text-xs text-gray-500">Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.</p>
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">Section Title</label>
-                  <input
-                    type="text"
-                    value={block.portfolioTitle || "Portfólio"}
-                    onChange={(e) => handleFieldChange("portfolioTitle", e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
-                    placeholder="Portfolio"
-                  />
-                </div>
-              </div>
+              <PortfolioBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} />
             )}
 
             {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar'].includes(block.type) && (

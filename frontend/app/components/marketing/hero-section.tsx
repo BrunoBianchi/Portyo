@@ -140,13 +140,13 @@ export default function HeroSection() {
 
         <div className="pt-10 w-full flex justify-center animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
           <a
-            href="https://www.producthunt.com/products/portyo-me?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-portyo-me"
+            href="https://www.producthunt.com/products/portyo-me-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-portyo-me-2"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:scale-105 transition-transform duration-300 drop-shadow-lg hover:drop-shadow-xl"
           >
             <img
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1063790&theme=light&t=1768572068376"
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1063792&theme=neutral&t=1768577104057"
               alt="Portyo.me - Create and manage a link-in-bio page for your content | Product Hunt"
               style={{ width: '250px', height: '54px' }}
               width="250"
