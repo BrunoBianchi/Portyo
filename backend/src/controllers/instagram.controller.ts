@@ -36,6 +36,7 @@ export const getProxyImage = async (req: Request, res: Response, next: NextFunct
         if (contentType) {
             res.setHeader("Content-Type", contentType);
         }
+        res.setHeader("Access-Control-Allow-Origin", "*");
         
         res.send(buffer);
     } catch (error) {
@@ -57,6 +58,10 @@ export const getImage = async (req: Request, res: Response, next: NextFunction) 
             res.setHeader("Content-Type", contentType);
         }
         
+        // CORB/CORS fix
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+
         // Cache control for the image itself (browser cache)
         res.setHeader("Cache-Control", "public, max-age=31536000"); // 1 year
         

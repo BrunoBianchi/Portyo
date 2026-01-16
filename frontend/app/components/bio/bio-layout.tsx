@@ -1658,12 +1658,17 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     </React.Suspense>
                 )}
                 <BioContent ref={containerRef} bio={bio} html={(htmlContent || "")
-                    // Always prefer the explicit profileImage if present
-                    .replace(/src=\"((?:https?:\/\/[^\"]+)?\/api\/images\/[^"]+)\"/gi, (_m: string) => {
-                        return bio?.profileImage ? `src=\"${bio.profileImage}\"` : _m;
+                    // Only replace profile images (format: /api/images/{userId}/medium|thumbnail|original.png)
+                    // Do NOT replace block, blog, product, favicon, og, portfolio or bio-logo images
+                    .replace(/src=\"((?:https?:\/\/[^\"]+)?\/api\/images\/([a-f0-9-]+)\/(thumbnail|medium|original)\.png(\?[^\"]*)?)\"(?=[^>]*>)/gi, (_m: string, fullUrl: string, userId: string, _size: string) => {
+                        // Only replace if it's actually the profile image of this bio's user
+                        if (bio?.profileImage && bio?.userId === userId) {
+                            return `src=\"${bio.profileImage}\"`;
+                        }
+                        return _m;
                     })
                     // Migrate legacy /users-photos entries
-                    .replace(/src="(\/users-photos\/[a-f0-9-]{36}\.(?:png|jpe?g|webp))(\?[^\"]*)?"/gi, (_m: string, _legacyPath: string, legacyQuery?: string) => {
+                    .replace(/src="(\/users-photos\/[a-f0-9-]{36}\.(?:png|jpe?g|webp))(\?[^\"]*)?\"/gi, (_m: string, _legacyPath: string, legacyQuery?: string) => {
                         if (bio?.profileImage) {
                             return `src=\"${bio.profileImage}\"`;
                         }
@@ -1673,7 +1678,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         const finalUrl = origin ? url : `/api/images/${bio.userId}/medium.png?v=${v}`;
                         return `src="${url}"`;
                     })
-                    .replace(/(<img\s+)(src="\/(?:users-photos|api\/images)\/[^\"]+")/i, '$1fetchpriority="high" $2')
+                    .replace(/(<img\s+)(src="\/(?:users-photos|api\/images)\/[^\"]+\")/i, '$1fetchpriority="high" $2')
                     .replace(/(<img\s+)(?!.*fetchpriority)(?!.*loading)([^>]+>)/gi, '$1loading="lazy" decoding="async" $2')
                     .replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
                 <div style="display:flex;justify-content:center;padding:24px 0 32px 0;width:100%;position:relative;z-index:10">
@@ -1683,6 +1688,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     </a>
                 </div>
                 </div>`)} />
+
 
                 {/* Sticky Promo Banner */}
                 {!isPreview && showPromo && !bio.removeBranding && (

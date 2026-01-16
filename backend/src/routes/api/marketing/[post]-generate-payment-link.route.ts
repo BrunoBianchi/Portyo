@@ -10,8 +10,9 @@ import { MarketingProposalEntity } from "../../../database/entity/marketing-prop
 const router: Router = Router();
 
 // Generate payment link for a proposal
+// :id here is the bioId for ownerMiddleware, proposalId comes from body
 router.post("/:id/generate-payment-link", ownerMiddleware, async (req, res) => {
-    const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+    const { proposalId } = z.object({ proposalId: z.string().uuid() }).parse(req.body);
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -20,7 +21,7 @@ router.post("/:id/generate-payment-link", ownerMiddleware, async (req, res) => {
     try {
         const proposalRepo = AppDataSource.getRepository(MarketingProposalEntity);
         const proposal = await proposalRepo.findOne({
-            where: { id },
+            where: { id: proposalId },
             relations: ['slot', 'company'],
         });
 
@@ -28,7 +29,7 @@ router.post("/:id/generate-payment-link", ownerMiddleware, async (req, res) => {
             return res.status(404).json({ error: "Proposal not found" });
         }
 
-        // Verify slot ownership
+        // Verify slot ownership (double check after ownerMiddleware)
         if (proposal.slot.userId !== userId) {
             return res.status(403).json({ error: "Not authorized" });
         }

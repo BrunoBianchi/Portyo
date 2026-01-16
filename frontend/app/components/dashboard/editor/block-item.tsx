@@ -853,6 +853,15 @@ const BlockItem = memo(({
                       )}
 
                     </div>
+                    {block.buttonStyle as any === 'image-grid' && (
+                      <div>
+                        <ImageUpload
+                          label="Background Image"
+                          value={block.mediaUrl || ""}
+                          onChange={(url) => handleFieldChange("mediaUrl", url)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 

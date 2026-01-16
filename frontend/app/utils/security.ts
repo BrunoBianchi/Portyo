@@ -57,11 +57,17 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
             'd', 'x', 'y', 'r', 'rx', 'ry', 'cx', 'cy', 'points', // SVG attributes
             'x1', 'y1', 'x2', 'y2', // SVG line attributes
-            'onclick', 'onmouseover', 'onmouseout', 'onsubmit',
-            'method', 'action', 'enctype', 'autocomplete', 'required', 'minlength', 'maxlength', 'rows', 'cols'
+            'onclick', 'onmouseover', 'onmouseout', 'onsubmit', 'onerror', 'onload',
+            'method', 'action', 'enctype', 'autocomplete', 'required', 'minlength', 'maxlength', 'rows', 'cols',
+            'data-src-debug', 'data-retried', 'data-initialized', 'data-date', 'data-username', 'data-display-type',
+            'data-url', 'data-layout', 'data-card-style', 'data-popup-style', 'data-bg-color', 'data-title-color',
+            'data-text-color', 'data-date-color', 'data-tag-bg', 'data-tag-text', 'data-popup-bg-color',
+            'data-popup-text-color', 'data-popup-overlay-color', 'data-title', 'data-description', 'data-bio-id',
+            'data-form-id', 'data-marketing-id', 'data-product-id', 'data-open-subscribe', 'data-action',
+            'data-subscribe-wired', 'data-wired', 'loading'
         ],
         ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|sms|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
         ADD_TAGS: ['iframe', 'style', 'script', 'form', 'textarea', 'select', 'option', 'input', 'button'], // allow form controls in rendered HTML
-        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'aria-label'],
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'onerror', 'onload', 'aria-label', 'loading'],
     });
 };

@@ -193,9 +193,15 @@ export default function DashboardMarketing() {
     };
 
     const handleSendPaymentLink = async (proposalId: string) => {
+        if (!viewingProposalsFor?.bioId) {
+            alert("Error: Bio ID not found");
+            return;
+        }
         setSendingPaymentLinkId(proposalId);
         try {
-            await api.post(`/marketing/proposals/${proposalId}/generate-payment-link`);
+            await api.post(`/marketing/proposals/${viewingProposalsFor.bioId}/generate-payment-link`, {
+                proposalId
+            });
             alert("Payment link sent successfully!");
         } catch (error: any) {
             console.error("Failed to send payment link", error);

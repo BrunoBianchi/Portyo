@@ -16,8 +16,13 @@ import { logger } from "./shared/utils/logger";
 const app = express();
 app.set('trust proxy', 1); // Trust Nginx proxy
 
-app.use(helmet());
+// Helmet configuration - allow cross-origin resources for images
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false, // Allow embedding resources from other origins
+}));
 app.use(compression());
+
 
 const morganFormat = ":method :url :status :response-time ms";
 
