@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '~/services/api';
 
+// Add Google Fonts support
+const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&family=Montserrat:wght@700;900&family=Outfit:wght@600;800&display=swap";
+
+
 // Icons
 const TrendingUpIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
@@ -50,6 +54,17 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
 
     // Track impression when an ad is displayed
     useEffect(() => {
+        // Log font performance/load if needed, but mainly just ensure it exists
+        if (!document.getElementById('marketing-fonts')) {
+            const link = document.createElement('link');
+            link.id = 'marketing-fonts';
+            link.rel = 'stylesheet';
+            link.href = GOOGLE_FONTS_URL;
+            document.head.appendChild(link);
+        }
+    }, []);
+
+    useEffect(() => {
         if (slot && slot.activeProposal) {
             const proposalId = slot.activeProposal.id || slot.activeProposalId;
             if (proposalId) {
@@ -83,24 +98,136 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
     if (loading) return null; // Or skeleton
     if (!slot) return null; // Slot not found or disabled
 
-    // If slot has an ACTIVE proposal, show the AD
-    if (slot.activeProposal) {
+    const shouldRenderProposal = !!slot?.activeProposal && ['active', 'in_progress'].includes(slot.activeProposal.status);
+
+    // If slot has an ACTIVE or IN-PROGRESS proposal, show the AD
+    if (shouldRenderProposal) {
+        const content = slot.activeProposal.content || {};
+        const items = content.items || [];
+        const bgColor = content.backgroundColor || '#ffffff';
+        const txtColor = content.textColor || '#000000';
+
+        // Fallback for legacy content structure
+        if (items.length === 0) {
+            if (content.imageUrl) items.push({ id: 'img', type: 'image', content: content.imageUrl });
+            if (content.title) items.push({ id: 'head', type: 'headline', content: content.title });
+            if (content.description) items.push({ id: 'txt', type: 'text', content: content.description });
+            if (content.buttonText) items.push({ id: 'btn', type: 'button', content: content.buttonText });
+        }
+
         return (
             <a
-                href={slot.activeProposal.link}
+                href={slot.activeProposal.link || content.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full overflow-hidden rounded-3xl relative aspect-[3/1] group transition-transform hover:scale-[1.02]"
+                className={`block w-full overflow-hidden relative flex flex-col transition-all duration-500 shadow-sm group ${content.animation === 'pulse' ? 'hover:animate-pulse' : content.animation === 'bounce' ? 'hover:-translate-y-2' : 'hover:scale-[1.02]'}`}
+                style={{
+                    backgroundColor: bgColor === 'transparent' ? 'transparent' : bgColor,
+                    color: txtColor,
+                    borderColor: content.borderColor || (bgColor === 'transparent' ? 'rgba(0,0,0,0.1)' : 'transparent'),
+                    borderWidth: `${content.borderWidth || (bgColor === 'transparent' ? 1 : 0)}px`,
+                    borderStyle: (content.borderWidth || bgColor === 'transparent') ? 'solid' : 'none',
+                    borderRadius: `${content.borderRadius || 24}px`,
+                    textAlign: content.alignment || 'center',
+                    boxShadow: content.boxShadow || 'none',
+                    padding: `${content.padding || 24}px`,
+                    fontFamily: content.fontFamily || 'Inter, sans-serif',
+                    maxWidth: '516px',
+                    maxHeight: '350px'
+                }}
                 onClick={() => {
                     const proposalId = slot.activeProposal.id || slot.activeProposalId;
                     if (proposalId) api.post('/public/marketing/clicks', { proposalId }).catch(console.error);
                 }}
             >
-                <img src={slot.activeProposal.imageUrl || "/base-img/card_base_image.png"} alt="Advertisement" className="w-full h-full object-cover" />
-                <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Sponsored
-                </div>
-            </a>
+                {
+                    items.map((item: any, idx: number) => {
+                        const itemAlign = item.style?.alignment || content.alignment || 'center';
+                        const itemColor = item.style?.color || txtColor;
+
+                        return (
+                            <div
+                                key={item.id || idx}
+                                className={`last:mb-0 w-full flex flex-col ${itemAlign === 'left' ? 'items-start' : itemAlign === 'right' ? 'items-end' : 'items-center'}`}
+                                style={{
+                                    marginBottom: `${content.gap || 16}px`,
+                                    textAlign: itemAlign as any
+                                }}
+                            >
+                                {item.type === 'image' && item.content && (
+                                    <img
+                                        src={item.content}
+                                        alt="Advertisement"
+                                        className="w-full h-48 object-cover shadow-sm"
+                                        style={{ borderRadius: `${Math.max(0, (content.borderRadius || 24) - 8)}px` }}
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                )}
+                                {item.type === 'headline' && (
+                                    <h3 className="text-xl font-bold leading-tight" style={{ color: itemColor }}>{item.content}</h3>
+                                )}
+                                {item.type === 'price' && (
+                                    <div
+                                        className="text-4xl font-black tracking-tighter my-2 py-2 px-4 rounded-xl inline-block"
+                                        style={{
+                                            backgroundColor: itemColor + '0a',
+                                            color: itemColor,
+                                        }}
+                                    >
+                                        {item.content}
+                                    </div>
+                                )}
+                                {item.type === 'text' && (
+                                    <p className="text-sm opacity-90 leading-relaxed whitespace-pre-wrap" style={{ color: itemColor }}>{item.content}</p>
+                                )}
+                                {item.type === 'button' && (
+                                    <span
+                                        className="inline-flex items-center justify-center px-6 py-2.5 rounded-full font-bold text-sm min-w-[120px] transition-transform group-hover:bg-black/10"
+                                        style={{
+                                            backgroundColor: item.props?.buttonColor || content.buttonColor || txtColor,
+                                            color: item.props?.buttonTextColor || content.buttonTextColor || (bgColor === 'transparent' ? '#ffffff' : bgColor)
+                                        }}
+                                    >
+                                        {item.content}
+                                    </span>
+                                )}
+                                {item.type === 'spacer' && <div className="h-4"></div>}
+                                {item.type === 'divider' && <hr className="w-full my-4 border-current opacity-20" style={{ borderColor: itemColor }} />}
+                                {item.type === 'badge' && (
+                                    <span
+                                        className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2"
+                                        style={{
+                                            backgroundColor: itemColor,
+                                            color: bgColor === 'transparent' ? '#ffffff' : bgColor,
+                                            opacity: 0.8
+                                        }}
+                                    >
+                                        {item.content}
+                                    </span>
+                                )}
+                                {item.type === 'social' && (
+                                    <div className={`flex gap-3 mt-2 ${itemAlign === 'left' ? 'justify-start' : itemAlign === 'right' ? 'justify-end' : 'justify-center'}`} style={{ color: itemColor }}>
+                                        {item.props?.twitter && (
+                                            <a href={item.props.twitter} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                            </a>
+                                        )}
+                                        {item.props?.instagram && (
+                                            <a href={item.props.instagram} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                }
+
+                < div className="absolute top-4 right-4 bg-white/20 backdrop-blur px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-current opacity-60" >
+                    Ad
+                </div >
+            </a >
         );
     }
 
@@ -215,6 +342,7 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                                                     required
                                                     type="number"
                                                     min={slot.priceMin}
+                                                    max="999999.99"
                                                     disabled={!slot.acceptOtherPrices}
                                                     className={`w-full rounded-xl border-gray-200 text-sm px-4 py-2.5 transition-all font-bold ${!slot.acceptOtherPrices
                                                         ? "bg-gray-100 text-gray-500 cursor-not-allowed border-transparent"

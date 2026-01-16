@@ -57,7 +57,7 @@ export class MarketingProposalEntity extends BaseEntity {
         length: 20,
         default: 'pending'
     })
-    status!: 'pending' | 'accepted' | 'rejected' | 'expired' | 'active';
+    status!: 'pending' | 'accepted' | 'rejected' | 'expired' | 'active' | 'in_progress';
 
     // Métricas (quando ativo)
     @Column({ type: "numeric", default: 0 })
@@ -79,4 +79,11 @@ export class MarketingProposalEntity extends BaseEntity {
 
     @Column({ type: "timestamp", nullable: true })
     paymentLinkExpiry?: Date | null;
+
+    // Security Verification Code
+    @Column({ type: "varchar", nullable: true })
+    accessCode?: string | null;
+
+    @Column({ type: "timestamp", nullable: true })
+    accessCodeExpiresAt?: Date | null;
 }

@@ -31,7 +31,7 @@ router.get("/sent", authMiddleware, async (req, res) => {
 // Create proposal (company submits)
 const createSchema = z.object({
     slotId: z.string().uuid(),
-    proposedPrice: z.number().min(0),
+    proposedPrice: z.number().min(0).max(999999.99),
     message: z.string().optional(),
     content: z.object({
         title: z.string().min(1),

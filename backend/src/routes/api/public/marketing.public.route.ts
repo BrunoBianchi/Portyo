@@ -93,4 +93,7 @@ router.post("/clicks", async (req, res) => {
     }
 });
 
+import publicProposalsRouter from '../marketing/public-proposals.route';
+router.use("/proposals", publicProposalsRouter);
+
 export default router;

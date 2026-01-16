@@ -1,6 +1,7 @@
 import { AppDataSource } from "../../database/datasource";
 import { MarketingProposalEntity } from "../../database/entity/marketing-proposal-entity";
 import { MarketingSlotEntity } from "../../database/entity/marketing-slot-entity";
+import { BioEntity } from "../../database/entity/bio-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
 import { In } from "typeorm";
 import { MailService } from "./mail.service";
@@ -88,6 +89,10 @@ export async function createProposal(companyId: string | null, data: CreatePropo
 
     const saved = await ProposalRepository.save(proposal);
 
+    // Update slot stats
+    slot.totalProposals = Number(slot.totalProposals || 0) + 1;
+    await SlotRepository.save(slot);
+
     // Send email to proposer
     let email: string | undefined;
 
@@ -148,9 +153,29 @@ export async function acceptProposal(proposalId: string, userId: string): Promis
         throw new ApiError(APIErrors.forbiddenError, "Not authorized", 403);
     }
 
+    // Check Stripe Connection
+    const BioRepository = AppDataSource.getRepository(BioEntity);
+    const bio = await BioRepository.findOne({
+        where: { id: proposal.slot.bioId },
+        relations: ['integrations']
+    });
+
+    const stripeIntegration = bio?.integrations?.find(i => i.name === 'stripe' && i.account_id);
+    if (!stripeIntegration) {
+        throw new ApiError(
+            APIErrors.forbiddenError,
+            "You must connect your Stripe account to accept proposals",
+            403
+        );
+    }
+
     // Check if still pending
     if (proposal.status !== 'pending') {
         throw new ApiError(APIErrors.forbiddenError, "Proposal is not pending", 403);
+    }
+
+    if (proposal.slot.status !== 'available' || proposal.slot.activeProposal?.status === 'in_progress' || proposal.slot.activeProposal?.status === 'active') {
+        throw new ApiError(APIErrors.forbiddenError, "Cannot update proposals while a campaign is in progress", 403);
     }
 
     // Check if slot is still available
@@ -171,7 +196,8 @@ export async function acceptProposal(proposalId: string, userId: string): Promis
         proposal.id, 
         proposal.proposedPrice, 
         proposal.slot.slotName, 
-        proposal.slot.duration
+        proposal.slot.duration,
+        stripeIntegration.account_id!
     );
     
     proposal.paymentLink = paymentLink.url;

@@ -383,4 +383,76 @@ export class MailService {
             console.error("Error sending proposal accepted email:", error);
         }
     }
+    static async sendAccessCodeEmail(email: string, code: string, slotName: string) {
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Access Code</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.5; color: #1f2937; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { margin-bottom: 32px; border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; text-decoration: none; letter-spacing: -0.5px; }
+        .h1 { font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 24px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
+        .code { font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #000000; margin: 32px 0; text-align: center; background: #f9fafb; padding: 24px; border-radius: 12px; }
+        .footer { margin-top: 48px; padding-top: 32px; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+        
+        <h1 class="h1">Verify your identity</h1>
+        
+        <p class="text">Use the code below to access your ad settings for <strong>${slotName}</strong>:</p>
+        
+        <div class="code">${code}</div>
+        
+        <p class="text">This code will expire in 15 minutes.</p>
+        
+        <p class="text" style="margin-top: 32px;">
+            Thanks,<br>
+            Portyo Team
+        </p>
+
+        <div class="footer">
+            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const subject = `Your Access Code for ${slotName}`;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                return await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    to: [email],
+                    subject,
+                    html
+                });
+            } catch (error) {
+                console.error("Error sending access code email via Mailgun:", error);
+            }
+        }
+
+        try {
+            return await transporter.sendMail({
+                from: '"Portyo" <no-reply@portyo.me>',
+                to: email,
+                subject,
+                html
+            });
+        } catch (error) {
+            console.error("Error sending access code email:", error);
+        }
+    }
 }

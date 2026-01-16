@@ -38,7 +38,7 @@ interface MarketingProposal {
     guestName?: string;
     guestEmail?: string;
     proposedPrice: number; // numeric in DB string in JSON? Helper usually converts, assuming number
-    status: 'pending' | 'accepted' | 'rejected' | 'active' | 'completed';
+    status: 'pending' | 'accepted' | 'rejected' | 'active' | 'completed' | 'in_progress';
     message?: string;
     content: {
         title: string;
@@ -71,6 +71,10 @@ export default function DashboardMarketing() {
     const [processingProposalId, setProcessingProposalId] = useState<string | null>(null);
     const [sendingPaymentLinkId, setSendingPaymentLinkId] = useState<string | null>(null);
 
+    // Stripe Status
+    const [isStripeConnected, setIsStripeConnected] = useState(false);
+    const [isLoadingStripe, setIsLoadingStripe] = useState(true);
+
     const [formData, setFormData] = useState({
         slotName: "",
         priceMin: "",
@@ -95,12 +99,31 @@ export default function DashboardMarketing() {
             }
         };
 
+        const fetchStripeStatus = async () => {
+            if (!bio?.id) return;
+            setIsLoadingStripe(true);
+            try {
+                const res = await api.get(`/stripe/status?bioId=${bio.id}`);
+                setIsStripeConnected(res.data.connected);
+            } catch (err) {
+                console.error("Failed to fetch stripe status", err);
+            } finally {
+                setIsLoadingStripe(false);
+            }
+        };
+
         fetchSlots();
+        fetchStripeStatus();
     }, [bio?.id, isStandard]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!bio?.id) return;
+
+        if (!isStripeConnected) {
+            setCreateError("Please connect your Stripe account in the Integrations page first.");
+            return;
+        }
 
         setCreateError(null);
         setIsCreating(true);
@@ -128,6 +151,11 @@ export default function DashboardMarketing() {
 
     const handleDelete = async () => {
         if (!deletingSlot) return;
+        if (deletingSlot.status !== 'available') {
+            alert("This slot can't be deleted while a campaign is in progress.");
+            setDeletingSlot(null);
+            return;
+        }
 
         setIsDeleting(true);
         try {
@@ -158,6 +186,11 @@ export default function DashboardMarketing() {
 
     const handleAcceptProposal = async (proposalId: string) => {
         if (!confirm("Are you sure you want to accept this proposal? This will reject all other pending proposals for this slot.")) return;
+
+        if (!isStripeConnected) {
+            alert("Please connect your Stripe account in the Integrations page first.");
+            return;
+        }
         setProcessingProposalId(proposalId);
         try {
             await api.put(`/marketing/proposals/${proposalId}/accept`);
@@ -238,14 +271,35 @@ export default function DashboardMarketing() {
     return (
         <AuthorizationGuard>
             <div className="p-6 max-w-7xl mx-auto">
+                {!isLoadingStripe && !isStripeConnected && (
+                    <div className="mb-8 p-6 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-between gap-4">
+                        <div className="flex gap-4">
+                            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 text-amber-600">
+                                <DollarSign className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">Connect Payouts</h3>
+                                <p className="text-amber-800">You need to connect your Stripe account to receive payments from advertisers.</p>
+                            </div>
+                        </div>
+                        <a
+                            href="/dashboard/integrations"
+                            className="px-6 py-3 bg-gray-900 text-white rounded-full font-bold hover:bg-black transition whitespace-nowrap"
+                        >
+                            Connect Stripe
+                        </a>
+                    </div>
+                )}
+
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Marketing Slots</h1>
                         <p className="text-gray-500 mt-1">Create slots and receive proposals ({slots.length}/{maxSlots})</p>
+                        <p className="text-xs text-gray-400 mt-1">A 5% platform fee applies to all accepted proposals.</p>
                     </div>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        disabled={slots.length >= maxSlots}
+                        disabled={slots.length >= maxSlots || !isStripeConnected}
                         className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Plus className="w-5 h-5" /> New Slot
@@ -283,9 +337,13 @@ export default function DashboardMarketing() {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => setDeletingSlot(slot)}
-                                        disabled={slot.status === 'occupied'}
+                                        onClick={() => {
+                                            if (slot.status !== 'available') return;
+                                            setDeletingSlot(slot);
+                                        }}
+                                        disabled={slot.status !== 'available'}
                                         className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                                        title={slot.status !== 'available' ? "Campaign in progress" : "Delete slot"}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -355,6 +413,7 @@ export default function DashboardMarketing() {
                                             required
                                             type="number"
                                             min="0"
+                                            max="999999.99"
                                             step="0.01"
                                             value={formData.priceMin}
                                             onChange={(e) => setFormData({ ...formData, priceMin: e.target.value })}
@@ -367,6 +426,7 @@ export default function DashboardMarketing() {
                                             required
                                             type="number"
                                             min="0"
+                                            max="999999.99"
                                             step="0.01"
                                             value={formData.priceMax}
                                             onChange={(e) => setFormData({ ...formData, priceMax: e.target.value })}
@@ -488,8 +548,9 @@ export default function DashboardMarketing() {
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-lg font-bold text-green-600">${proposal.proposedPrice}</span>
                                                     <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${proposal.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                        proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                                                            'bg-red-100 text-red-700'
+                                                        proposal.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                            proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                                'bg-red-100 text-red-700'
                                                         }`}>
                                                         {proposal.status}
                                                     </span>
@@ -520,24 +581,24 @@ export default function DashboardMarketing() {
                                                 </div>
                                             )}
 
-                                            {proposal.status === 'pending' && (
-                                                <div className="flex gap-2 pt-2">
-                                                    <button
-                                                        onClick={() => handleRejectProposal(proposal.id)}
-                                                        disabled={processingProposalId === proposal.id}
-                                                        className="flex-1 py-2 border border-gray-200 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 hover:text-red-600 transition disabled:opacity-50 text-sm"
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleSendPaymentLink(proposal.id)}
-                                                        disabled={sendingPaymentLinkId === proposal.id}
-                                                        className="flex-1 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
-                                                    >
-                                                        {sendingPaymentLinkId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send Payment Link"}
-                                                    </button>
-                                                </div>
-                                            )}
+                                            <div className="flex gap-2 pt-2">
+                                                <button
+                                                    onClick={() => handleAcceptProposal(proposal.id)}
+                                                    disabled={processingProposalId === proposal.id || proposal.status !== 'pending' || viewingProposalsFor?.status !== 'available'}
+                                                    className="flex-1 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+                                                    title={proposal.status !== 'pending' ? "Proposal not pending" : viewingProposalsFor?.status !== 'available' ? "Campaign in progress" : "Accept"}
+                                                >
+                                                    {processingProposalId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Accept"}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRejectProposal(proposal.id)}
+                                                    disabled={processingProposalId === proposal.id || proposal.status !== 'pending' || viewingProposalsFor?.status !== 'available'}
+                                                    className="flex-1 py-2 border border-gray-200 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 hover:text-red-600 transition disabled:opacity-50 text-sm"
+                                                    title={proposal.status !== 'pending' ? "Proposal not pending" : viewingProposalsFor?.status !== 'available' ? "Campaign in progress" : "Reject"}
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
                                         </div>
                                     ))
                                 )}

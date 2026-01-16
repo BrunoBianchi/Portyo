@@ -35,6 +35,7 @@ interface BlockItemProps {
   isDragging: boolean;
   isDragOver: boolean;
   dragItem: { source: "palette" | "canvas"; type?: BioBlock["type"]; id?: string } | null;
+  isLocked?: boolean;
   onToggleExpand: (id: string) => void;
   onRemove: (id: string) => void;
   onChange: (id: string, key: keyof BioBlock, value: any) => void;
@@ -167,7 +168,7 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
   );
 };
 
-const MarketingBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string }) => {
+const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string; isLocked?: boolean }) => {
   const [slots, setSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -192,6 +193,11 @@ const MarketingBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
   return (
     <div className="space-y-3 pt-3">
       <p className="text-xs text-gray-500">Connect this block to a marketing slot from your dashboard. Companies will be able to advertise here.</p>
+      {isLocked && (
+        <div className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
+          Campaign in progress. This block is locked and can't be edited or moved.
+        </div>
+      )}
       <div>
         <label className="text-xs font-medium text-gray-700 mb-1.5 block">Select Marketing Slot</label>
         {loading ? (
@@ -207,7 +213,8 @@ const MarketingBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
           <select
             value={block.marketingId || ""}
             onChange={(e) => onChange("marketingId", e.target.value)}
-            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
+            disabled={isLocked}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <option value="">No slot selected</option>
             {slots.map(slot => (
@@ -274,6 +281,7 @@ const BlockItem = memo(({
   isDragging,
   isDragOver,
   dragItem,
+  isLocked,
   onToggleExpand,
   onRemove,
   onChange,
@@ -373,6 +381,8 @@ const BlockItem = memo(({
     onChange(block.id, key, value);
   };
 
+  const isMarketingLocked = block.type === 'marketing' && !!isLocked;
+
   return (
     <div className="group">
       <div
@@ -380,8 +390,14 @@ const BlockItem = memo(({
           ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100"
           : "border-2 border-transparent hover:border-primary/40 bg-transparent"
           }`}
-        draggable
-        onDragStart={(e) => onDragStart(e, block.id)}
+        draggable={!isMarketingLocked}
+        onDragStart={(e) => {
+          if (isMarketingLocked) {
+            e.preventDefault();
+            return;
+          }
+          onDragStart(e, block.id);
+        }}
         onDragEnd={onDragEnd}
         onDrop={(e) => onDrop(e, index)}
         onDragOver={(e) => e.preventDefault()}
@@ -405,7 +421,7 @@ const BlockItem = memo(({
             }}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 p-1 shrink-0">
+              <div className={`p-1 shrink-0 ${isMarketingLocked ? 'text-gray-200 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500'}`}>
                 <DragHandleIcon />
               </div>
               <div className={`p-2.5 rounded-xl ${getBlockTypeAccent(block.type).bg} ${getBlockTypeAccent(block.type).text} shrink-0`}>
@@ -446,13 +462,15 @@ const BlockItem = memo(({
             </div>
             <div className="flex items-center gap-2">
               <button
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (isMarketingLocked) return;
                   onRemove(block.id);
                 }}
                 type="button"
-                title="Remove block"
+                title={isMarketingLocked ? "Campaign in progress" : "Remove block"}
+                disabled={isMarketingLocked}
               >
                 <TrashIcon />
               </button>
@@ -2045,7 +2063,7 @@ const BlockItem = memo(({
             )}
 
             {block.type === "marketing" && (
-              <MarketingBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} />
+              <MarketingBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} isLocked={isMarketingLocked} />
             )}
 
             {block.type === "portfolio" && (

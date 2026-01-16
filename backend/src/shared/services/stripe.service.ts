@@ -257,8 +257,12 @@ export const archiveStripeProduct = async (bioId: string, productId: string) => 
     return product;
 };
 
-export const createProposalPaymentLink = async (proposalId: string, amount: number, slotName: string, duration: number) => {
-    // Create a direct payment link without needing a connected account
+export const createProposalPaymentLink = async (proposalId: string, amount: number, slotName: string, duration: number, connectedAccountId: string) => {
+    // Calculate application fee (5%)
+    const unitAmount = Math.round(amount * 100); // Convert to cents
+    const applicationFeeAmount = Math.round(unitAmount * 0.05);
+
+    // Create a direct payment link on the connected account
     const paymentLink = await stripe.paymentLinks.create({
         line_items: [
             {
@@ -268,11 +272,12 @@ export const createProposalPaymentLink = async (proposalId: string, amount: numb
                         name: `Advertising Slot: ${slotName}`,
                         description: `${duration} days of advertising on ${slotName}`,
                     },
-                    unit_amount: Math.round(amount * 100), // Convert to cents
+                    unit_amount: unitAmount,
                 },
                 quantity: 1,
             },
         ],
+        application_fee_amount: applicationFeeAmount,
         metadata: {
             proposalId,
             type: 'marketing_proposal',
@@ -283,6 +288,8 @@ export const createProposalPaymentLink = async (proposalId: string, amount: numb
                 url: `${env.FRONTEND_URL}/payment-success?proposalId=${proposalId}`,
             },
         },
+    }, {
+        stripeAccount: connectedAccountId,
     });
 
     return paymentLink;

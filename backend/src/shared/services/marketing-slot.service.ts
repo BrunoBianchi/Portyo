@@ -77,12 +77,25 @@ export async function createSlot(userId: string, data: CreateSlotData): Promise<
     }
 
     // Validate bio ownership
-    const bio = await BioRepository.findOne({ where: { id: data.bioId, userId } });
+    const bio = await BioRepository.findOne({ 
+        where: { id: data.bioId, userId },
+        relations: ['integrations']
+    });
     if (!bio) {
         throw new ApiError(
             APIErrors.notFoundError,
             "Bio not found or you don't have permission",
             404
+        );
+    }
+
+    // Check Stripe Connection
+    const stripeIntegration = bio.integrations?.find(i => i.name === 'stripe' && i.account_id);
+    if (!stripeIntegration) {
+        throw new ApiError(
+            APIErrors.forbiddenError,
+            "You must connect your Stripe account to create marketing slots",
+            403
         );
     }
 
@@ -223,11 +236,15 @@ export async function updateSlot(slotId: string, userId: string, data: UpdateSlo
 export async function deleteSlot(slotId: string, userId: string): Promise<void> {
     const slot = await getSlotById(slotId, userId);
 
-    // Can't delete occupied slots
-    if (slot.status === 'occupied') {
+    const isCampaignInProgress = slot.status !== 'available'
+        || slot.activeProposal?.status === 'in_progress'
+        || slot.activeProposal?.status === 'active';
+
+    // Can't delete slots once a campaign has started
+    if (isCampaignInProgress) {
         throw new ApiError(
             APIErrors.forbiddenError,
-            "Cannot delete occupied slot. Wait for it to expire.",
+            "Cannot delete this slot while a campaign is in progress.",
             403
         );
     }

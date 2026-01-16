@@ -774,6 +774,7 @@ export default function DashboardEditor() {
   const { bio, bios, selectBio, updateBio, getBios } = useContext(BioContext);
   const { user } = useContext(AuthContext);
   const [blocks, setBlocks] = useState<BioBlock[]>([]);
+  const [marketingSlotStatusById, setMarketingSlotStatusById] = useState<Record<string, string>>({});
   const [dragItem, setDragItem] = useState<{ source: "palette" | "canvas"; type?: BioBlock["type"]; id?: string } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -813,6 +814,26 @@ export default function DashboardEditor() {
   const [newQrValue, setNewQrValue] = useState("");
   const [isCreatingQr, setIsCreatingQr] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!bio?.id) return;
+    api.get("/marketing/slots/")
+      .then(res => {
+        const bioSlots = (res.data || []).filter((s: any) => s.bioId === bio.id);
+        const map: Record<string, string> = {};
+        bioSlots.forEach((slot: any) => {
+          map[slot.id] = slot.status;
+        });
+        setMarketingSlotStatusById(map);
+      })
+      .catch(err => console.error("Failed to fetch marketing slots", err));
+  }, [bio?.id]);
+
+  const isMarketingLockedBlock = useCallback((block: BioBlock) => {
+    if (block.type !== 'marketing' || !block.marketingId) return false;
+    const status = marketingSlotStatusById[block.marketingId];
+    return !!status && status !== 'available';
+  }, [marketingSlotStatusById]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -1264,7 +1285,16 @@ export default function DashboardEditor() {
           affiliateUrl: dragItem.type === "affiliate" ? "#" : undefined,
           portfolioTitle: dragItem.type === "portfolio" ? "Portfólio" : undefined,
         };
-        const targetIndex = typeof index === "number" ? index : next.length;
+        let targetIndex = typeof index === "number" ? index : next.length;
+        const lockedIndices = next
+          .map((block, idx) => (isMarketingLockedBlock(block) ? idx : -1))
+          .filter((idx) => idx >= 0);
+        if (lockedIndices.length > 0) {
+          const lastLockedIndex = Math.max(...lockedIndices);
+          if (targetIndex <= lastLockedIndex) {
+            targetIndex = lastLockedIndex + 1;
+          }
+        }
         next.splice(targetIndex, 0, newBlock);
         setExpandedId(newBlock.id);
         return next;
@@ -1279,7 +1309,7 @@ export default function DashboardEditor() {
       return next;
     });
     setDragItem(null);
-  }, [dragItem]);
+  }, [dragItem, isMarketingLockedBlock]);
 
   const handleSave = useCallback(async () => {
     if (!bio) return;
@@ -1303,13 +1333,22 @@ export default function DashboardEditor() {
 
   const handleRemove = useCallback((id: string) => {
     takeSnapshot();
-    setBlocks((prev) => prev.filter((block) => block.id !== id));
-  }, [takeSnapshot]);
+    setBlocks((prev) => {
+      const block = prev.find((b) => b.id === id);
+      if (block && isMarketingLockedBlock(block)) return prev;
+      return prev.filter((b) => b.id !== id);
+    });
+  }, [takeSnapshot, isMarketingLockedBlock]);
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
+    const block = blocks.find((b) => b.id === id);
+    if (block && isMarketingLockedBlock(block)) {
+      e.preventDefault();
+      return;
+    }
     takeSnapshot(); // Snapshot before potentially reordering
     setDragItem({ source: "canvas", id });
-  }, [takeSnapshot]);
+  }, [blocks, isMarketingLockedBlock, takeSnapshot]);
 
   const handleDragEnd = useCallback(() => {
     setDragItem(null);
@@ -1318,6 +1357,11 @@ export default function DashboardEditor() {
   const handleDragEnter = useCallback((e: React.DragEvent, id: string) => {
     e.preventDefault();
     if (dragItem?.source === "canvas" && dragItem.id !== id) {
+      const draggedBlock = blocks.find((b) => b.id === dragItem.id);
+      const hoverBlock = blocks.find((b) => b.id === id);
+      if ((draggedBlock && isMarketingLockedBlock(draggedBlock)) || (hoverBlock && isMarketingLockedBlock(hoverBlock))) {
+        return;
+      }
       setBlocks((prev) => {
         const dragIndex = prev.findIndex((b) => b.id === dragItem.id);
         const hoverIndex = prev.findIndex((b) => b.id === id);
@@ -1329,7 +1373,7 @@ export default function DashboardEditor() {
         return next;
       });
     }
-  }, [dragItem]);
+  }, [blocks, dragItem, isMarketingLockedBlock]);
 
   const handleToggleExpand = useCallback((id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -1475,13 +1519,11 @@ export default function DashboardEditor() {
             <PortyoAI
               bioId={bio.id}
               onBlocksGenerated={(newBlocks: BioBlock[], replace: boolean) => {
-                if (replace) {
-                  // Replace all existing blocks with new ones
-                  setBlocks(newBlocks);
-                } else {
-                  // Add new blocks to existing ones
-                  setBlocks(prev => [...prev, ...newBlocks]);
-                }
+                // AI is not allowed to remove existing blocks
+                setBlocks(prev => {
+                  if (!newBlocks || newBlocks.length === 0) return prev;
+                  return [...prev, ...newBlocks];
+                });
               }}
               onSettingsChange={(settings) => {
                 if (settings?.bgType) setBgType(settings.bgType as any);
@@ -1703,16 +1745,48 @@ export default function DashboardEditor() {
                                     const res = await api.post('/user/upload-font', formData);
                                     const { url, name } = res.data;
 
+                                    if (!url) throw new Error("No URL returned from upload");
+
+                                    // Set state immediately
+                                    setCustomFontUrl(url);
+                                    setCustomFontName(name);
+                                    setFont('Custom');
+
                                     // Update bio immediately to select the new font
                                     if (bio) {
-                                      await updateBio(bio.id, {
+                                      // Regenerate HTML with new font settings explicity
+                                      // Use 'Custom' directly as font
+                                      const tempBio = {
+                                        ...bio,
+                                        blocks,
+                                        bgType: bgType || bio.bgType,
+                                        bgColor: bgColor || bio.bgColor,
+                                        bgSecondaryColor: bgSecondaryColor || bio.bgSecondaryColor,
+                                        bgImage: bgImage || bio.bgImage,
+                                        bgVideo: bgVideo || bio.bgVideo,
+                                        cardStyle: cardStyle || bio.cardStyle,
+                                        cardBackgroundColor: cardBackgroundColor || bio.cardBackgroundColor,
+                                        cardOpacity: cardOpacity ?? bio.cardOpacity,
+                                        cardBlur: cardBlur ?? bio.cardBlur,
+                                        usernameColor: usernameColor || bio.usernameColor,
+                                        imageStyle: imageStyle || bio.imageStyle,
+                                        enableSubscribeButton: enableSubscribeButton ?? bio.enableSubscribeButton,
+                                        removeBranding: removeBranding ?? bio.removeBranding,
                                         customFontUrl: url,
                                         customFontName: name,
                                         font: 'Custom'
+                                      };
+
+                                      // Pass strict tempBio to generator
+                                      const newHtml = blocksToHtml(blocks, user, tempBio, window.location.origin);
+
+                                      // Then save to backend
+                                      await updateBio(bio.id, {
+                                        customFontUrl: url,
+                                        customFontName: name,
+                                        font: 'Custom',
+                                        html: newHtml
                                       });
-                                      setCustomFontUrl(url);
-                                      setCustomFontName(name);
-                                      setFont('Custom');
                                     }
                                   } catch (err) {
                                     console.error("Font upload failed", err);
@@ -2045,6 +2119,7 @@ export default function DashboardEditor() {
                     isDragging={dragItem?.id === block.id}
                     isDragOver={false} /* Simplified, usually managed by BlockItem internal ref or complex state */
                     dragItem={dragItem}
+                    isLocked={block.type === 'marketing' && !!block.marketingId && !!marketingSlotStatusById[block.marketingId] && marketingSlotStatusById[block.marketingId] !== 'available'}
                     onToggleExpand={handleToggleExpand}
                     onRemove={handleRemove}
                     onChange={handleFieldChange}

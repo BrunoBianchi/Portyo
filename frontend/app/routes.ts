@@ -57,6 +57,7 @@ export default [
     { path: "blog/:postId", file: "routes/blog.$postId.tsx" },
     { path: "site-blog/:id", file: "routes/site-blog.$id.tsx" },
     { path: "shop", file: "routes/home.tsx", id: "home-shop" },
+    { path: "payment-success", file: "routes/payment-success.tsx" },
     { path: "p/:username", file: "routes/p.$username.tsx" },
     { path: "*", file: "routes/catchall.tsx" }
 ] satisfies RouteConfig;

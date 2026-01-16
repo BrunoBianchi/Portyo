@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { z } from "zod";
-import { ownerMiddleware } from "../../../middlewares/owner.middleware";
 import * as SlotService from "../../../shared/services/marketing-slot.service";
 
 const router: Router = Router();
@@ -20,8 +19,8 @@ router.get("/", async (req, res) => {
 const createSchema = z.object({
     bioId: z.string().uuid(),
     slotName: z.string().min(1).max(100),
-    priceMin: z.number().min(0),
-    priceMax: z.number().min(0),
+    priceMin: z.number().min(0).max(999999.99),
+    priceMax: z.number().min(0).max(999999.99),
     duration: z.number().int().min(1).max(365),
     acceptOtherPrices: z.boolean(),
     position: z.number().int().optional()
@@ -49,14 +48,14 @@ router.post("/", async (req, res) => {
 // Update slot
 const updateSchema = z.object({
     slotName: z.string().min(1).max(100).optional(),
-    priceMin: z.number().min(0).optional(),
-    priceMax: z.number().min(0).optional(),
+    priceMin: z.number().min(0).max(999999.99).optional(),
+    priceMax: z.number().min(0).max(999999.99).optional(),
     duration: z.number().int().min(1).max(365).optional(),
     acceptOtherPrices: z.boolean().optional(),
     position: z.number().int().optional()
 });
 
-router.put("/:id", ownerMiddleware, async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
         const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
         if (!req.user?.id) {
@@ -77,7 +76,7 @@ router.put("/:id", ownerMiddleware, async (req, res) => {
 });
 
 // Delete slot
-router.delete("/:id", ownerMiddleware, async (req, res) => {
+router.delete("/:id", async (req, res) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     if (!req.user?.id) {
         return res.status(401).json({ error: "Unauthorized" });

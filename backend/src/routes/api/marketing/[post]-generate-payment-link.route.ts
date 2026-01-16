@@ -6,6 +6,7 @@ import { createProposalPaymentLink } from "../../../shared/services/stripe.servi
 import { sendPaymentLinkEmail } from "../../../services/email.service";
 import { AppDataSource } from "../../../database/datasource";
 import { MarketingProposalEntity } from "../../../database/entity/marketing-proposal-entity";
+import { BioEntity } from "../../../database/entity/bio-entity";
 
 const router: Router = Router();
 
@@ -39,32 +40,43 @@ router.post("/:id/generate-payment-link", ownerMiddleware, async (req, res) => {
             return res.status(400).json({ error: "Proposal is not pending" });
         }
 
-        // Check if payment link already exists and is not expired
-        if (proposal.paymentLink && proposal.paymentLinkExpiry) {
-            if (new Date() < proposal.paymentLinkExpiry) {
-                return res.status(200).json({ 
-                    message: "Payment link already sent",
-                    paymentLink: proposal.paymentLink 
-                });
+        let paymentLinkUrl = proposal.paymentLink;
+        let expiresAt = proposal.paymentLinkExpiry;
+
+        // Check if we need to generate a new link (if none exists or expired)
+        if (!paymentLinkUrl || !expiresAt || new Date() > expiresAt) {
+            // Get bio and stripe integration
+            const bioRepo = AppDataSource.getRepository(BioEntity);
+            const bio = await bioRepo.findOne({
+                where: { id: proposal.slot.bioId },
+                relations: ['integrations']
+            });
+
+            const stripeIntegration = bio?.integrations?.find(i => i.name === 'stripe' && i.account_id);
+            if (!stripeIntegration?.account_id) {
+                return res.status(403).json({ error: "Stripe account not connected" });
             }
+
+            // Create Stripe payment link
+            const paymentLink = await createProposalPaymentLink(
+                proposal.id,
+                Number(proposal.proposedPrice),
+                proposal.slot.slotName,
+                proposal.slot.duration,
+                stripeIntegration.account_id
+            );
+
+            paymentLinkUrl = paymentLink.url;
+            
+            // Set expiry to 7 days from now
+            expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 7);
+
+            // Update proposal with payment link
+            proposal.paymentLink = paymentLinkUrl;
+            proposal.paymentLinkExpiry = expiresAt;
+            await proposalRepo.save(proposal);
         }
-
-        // Create Stripe payment link
-        const paymentLink = await createProposalPaymentLink(
-            proposal.id,
-            Number(proposal.proposedPrice),
-            proposal.slot.slotName,
-            proposal.slot.duration
-        );
-
-        // Set expiry to 7 days from now
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
-
-        // Update proposal with payment link
-        proposal.paymentLink = paymentLink.url;
-        proposal.paymentLinkExpiry = expiresAt;
-        await proposalRepo.save(proposal);
 
         // Send email
         const recipientEmail = proposal.guestEmail || proposal.company?.email;
@@ -80,13 +92,13 @@ router.post("/:id/generate-payment-link", ownerMiddleware, async (req, res) => {
             slotName: proposal.slot.slotName,
             price: Number(proposal.proposedPrice),
             duration: proposal.slot.duration,
-            paymentLink: paymentLink.url,
-            expiresAt,
+            paymentLink: paymentLinkUrl!,
+            expiresAt: expiresAt!,
         });
 
         return res.status(200).json({ 
             message: "Payment link sent successfully",
-            paymentLink: paymentLink.url,
+            paymentLink: paymentLinkUrl,
             expiresAt 
         });
     } catch (error: any) {
