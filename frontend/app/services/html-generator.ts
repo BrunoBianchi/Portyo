@@ -125,9 +125,11 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const shadowColor = block.buttonShadowColor || bg;
     const textAlign = block.buttonTextAlign || "center";
     
-    const nsfwAttr = block.isNsfw ? ` onclick="return confirm('This content is marked as 18+. Are you sure you want to continue?');"` : "";
     const normalized = normalizeExternalUrl(block.href);
     const cleanHref = isValidUrl(normalized) ? normalized : '#';
+    const nsfwAttr = (block.isNsfw && cleanHref !== '#')
+      ? ` data-nsfw="true" data-nsfw-url="${escapeHtml(cleanHref)}" data-nsfw-target="_blank"`
+      : "";
     const tag = block.href ? 'a' : 'div';
     const targetAttr = (cleanHref !== '#') ? ' target="_blank" rel="noopener noreferrer"' : '';
     const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"${targetAttr}` : ' role="button"';
@@ -218,7 +220,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const textStyle = `flex:1; text-align:${textAlign}; ${textPadding}`;
 
     const shareButtonHtml = `
-      <button aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(isValidUrl(block.href) ? block.href : "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
+      <button data-nsfw-ignore="true" aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(isValidUrl(block.href) ? block.href : "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
       </button>
     `;
@@ -1218,7 +1220,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   }
 
 
-  const containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:16px; position:relative; z-index:1;`;
+  const containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:16px; position:relative; z-index:1; font-family:${fontFamily};`;
 
 
 
@@ -1345,6 +1347,26 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
 
     </main>
+    <div id="nsfw-modal" style="display:none; position:fixed; inset:0; z-index:60; align-items:center; justify-content:center; background:rgba(15, 23, 42, 0.55); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+      <div style="width:100%; max-width:420px; margin:16px; background:#ffffff; border-radius:20px; border:1px solid rgba(15,23,42,0.08); box-shadow:0 24px 60px -30px rgba(15,23,42,0.45); overflow:hidden;">
+        <div style="padding:22px 22px 10px 22px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:9999px; display:flex; align-items:center; justify-content:center; background:rgba(15, 23, 42, 0.08); color:#111827; font-weight:800; font-size:12px;">18+</div>
+            <div style="font-weight:700; font-size:16px; color:#0f172a;">Conteúdo sensível</div>
+          </div>
+          <button onclick="window.closeNsfw()" aria-label="Fechar" style="border:none; background:rgba(15,23,42,0.06); color:#111827; width:32px; height:32px; border-radius:9999px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div style="padding:0 22px 18px 22px; color:#475569; font-size:14px; line-height:1.55;">
+          Este link pode conter conteúdo para maiores de 18 anos. Deseja continuar?
+        </div>
+        <div style="display:flex; gap:10px; padding:0 22px 22px 22px;">
+          <button onclick="window.closeNsfw()" style="flex:1; height:44px; border-radius:12px; border:1px solid rgba(15,23,42,0.12); background:#ffffff; color:#111827; font-weight:600; cursor:pointer; transition:all 0.2s;">Voltar</button>
+          <button onclick="window.confirmNsfw()" style="flex:1; height:44px; border-radius:12px; border:none; background:linear-gradient(135deg, #111827, #1f2937); color:#ffffff; font-weight:700; cursor:pointer; box-shadow:0 12px 22px -12px rgba(15,23,42,0.5); transition:all 0.2s;">Continuar</button>
+        </div>
+      </div>
+    </div>
     <div id="share-modal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
       <div style="background:white; border-radius:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); width:100%; max-width:448px; overflow:hidden; margin:16px; animation:zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
          <div style="display:flex; align-items:center; justify-content:space-between; padding:20px; border-bottom:1px solid rgba(0,0,0,0.08);">
@@ -1459,6 +1481,32 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         const successMsg = document.getElementById('subscribe-success');
         if (successMsg) successMsg.style.display = 'none';
       };
+
+      window._nsfwUrl = '';
+      window._nsfwTarget = '_blank';
+      window.openNsfw = function(url, target) {
+        window._nsfwUrl = url || '';
+        window._nsfwTarget = target || '_blank';
+        const modal = document.getElementById('nsfw-modal');
+        if (modal) modal.style.display = 'flex';
+      };
+      window.closeNsfw = function() {
+        const modal = document.getElementById('nsfw-modal');
+        if (modal) modal.style.display = 'none';
+        window._nsfwUrl = '';
+        window._nsfwTarget = '_blank';
+      };
+      window.confirmNsfw = function() {
+        const url = window._nsfwUrl;
+        const target = window._nsfwTarget || '_blank';
+        window.closeNsfw();
+        if (!url) return;
+        if (target === '_self') {
+          window.location.href = url;
+        } else {
+          window.open(url, '_blank');
+        }
+      };
       window.submitSubscribe = async function(e) {
         e.preventDefault();
         const emailInput = e.target.querySelector('input[type="email"]');
@@ -1553,6 +1601,21 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       // Blog & Tabs Logic
       window.blogLoaded = false;
       window.shopLoaded = false;
+
+      // NSFW link interception
+      document.addEventListener('click', function(e) {
+        const target = e.target;
+        if (!target || !(target.closest)) return;
+        const el = target.closest('[data-nsfw="true"]');
+        if (!el) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const url = el.getAttribute('data-nsfw-url');
+        const t = el.getAttribute('data-nsfw-target') || '_blank';
+        if (url) {
+          window.openNsfw(url, t);
+        }
+      }, true);
       
       function escapeHtml(text) {
         if (!text) return "";

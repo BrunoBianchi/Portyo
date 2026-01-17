@@ -5,6 +5,7 @@ import { MailService } from "./mail.service";
 import { ApiError, APIErrors } from "../errors/api-error";
 import * as jwt from "jsonwebtoken";
 import { env } from "../../config/env";
+import * as StripeService from "./stripe.service";
 
 const ProposalRepository = AppDataSource.getRepository(MarketingProposalEntity);
 const SlotRepository = AppDataSource.getRepository(MarketingSlotEntity);
@@ -76,6 +77,40 @@ export async function getProposal(proposalId: string) {
     }
     
     return proposal;
+}
+
+export async function validateProposalPayment(proposalId: string) {
+    const proposal = await ProposalRepository.findOne({
+        where: { id: proposalId },
+        relations: ['slot', 'slot.bio', 'slot.bio.integrations']
+    });
+
+    if (!proposal) {
+        throw new ApiError(APIErrors.notFoundError, "Proposal not found", 404);
+    }
+
+    const stripeIntegration = proposal.slot?.bio?.integrations?.find(
+        i => i.name === 'stripe' && i.account_id
+    );
+
+    if (!stripeIntegration?.account_id) {
+        throw new ApiError(APIErrors.validationError, "Stripe account not connected for this proposal", 400);
+    }
+
+    const stripeCheck = await StripeService.verifyMarketingProposalPayment(
+        proposalId,
+        stripeIntegration.account_id
+    );
+
+    if (!stripeCheck.found) {
+        throw new ApiError(APIErrors.notFoundError, "Proposal not found in Stripe", 404);
+    }
+
+    if (!stripeCheck.paid) {
+        throw new ApiError(APIErrors.validationError, "Payment not completed", 400);
+    }
+
+    return { valid: true, paid: true, stripe: stripeCheck };
 }
 
 export async function updateProposalCreative(proposalId: string, content: any) {

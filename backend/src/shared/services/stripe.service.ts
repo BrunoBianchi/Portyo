@@ -295,3 +295,37 @@ export const createProposalPaymentLink = async (proposalId: string, amount: numb
     return paymentLink;
 };
 
+export const verifyMarketingProposalPayment = async (proposalId: string, connectedAccountId: string) => {
+    const listResult = await stripe.paymentLinks.list({
+        limit: 100,
+    }, {
+        stripeAccount: connectedAccountId,
+    });
+    const paymentLinks = (listResult.data || []).filter(link => link.metadata?.proposalId === proposalId);
+
+    if (!paymentLinks.length) {
+        return { found: false, paid: false };
+    }
+
+    for (const link of paymentLinks) {
+        const sessions = await stripe.checkout.sessions.list({
+            payment_link: link.id,
+            limit: 10,
+        }, {
+            stripeAccount: connectedAccountId,
+        });
+
+        const paidSession = sessions.data.find(session => session.payment_status === 'paid' || session.status === 'complete');
+        if (paidSession) {
+            return {
+                found: true,
+                paid: true,
+                paymentLinkId: link.id,
+                sessionId: paidSession.id,
+            };
+        }
+    }
+
+    return { found: true, paid: false };
+};
+

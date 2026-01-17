@@ -79,12 +79,19 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
         setError('');
 
         try {
+            const resolvedBidAmount = slot?.acceptOtherPrices
+                ? Number(proposal.bidAmount)
+                : Number(slot?.priceMin ?? proposal.bidAmount);
+            const resolvedDuration = slot?.acceptOtherPrices
+                ? Number(proposal.duration)
+                : Number(slot?.duration ?? proposal.duration);
+
             await api.post(`/public/marketing/proposals`, {
                 slotId,
                 bioId,
                 ...proposal,
-                bidAmount: Number(proposal.bidAmount),
-                duration: Number(proposal.duration)
+                bidAmount: resolvedBidAmount,
+                duration: resolvedDuration
             });
             setSubmitSuccess(true);
         } catch (err: any) {
@@ -356,7 +363,9 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                                             <div className="space-y-1.5">
                                                 <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">Duration (Days)</label>
                                                 <input required type="number" min="1" max="365" className="w-full rounded-xl border-gray-200 bg-white text-sm focus:ring-2 focus:ring-gray-200 focus:border-gray-900 px-4 py-2.5 transition-all font-medium"
-                                                    value={proposal.duration} onChange={e => setProposal({ ...proposal, duration: e.target.value })}
+                                                    disabled={!slot.acceptOtherPrices && !!slot.duration}
+                                                    value={!slot.acceptOtherPrices && slot.duration ? slot.duration : proposal.duration}
+                                                    onChange={e => setProposal({ ...proposal, duration: e.target.value })}
                                                     placeholder={slot.duration ? `${slot.duration}` : "e.g. 30"}
                                                 />
                                             </div>

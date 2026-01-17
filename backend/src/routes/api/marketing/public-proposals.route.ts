@@ -10,18 +10,13 @@ const router: Router = Router();
 router.get("/:id/validate", async (req, res) => {
     try {
         const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
-        const proposal = await PublicService.getProposal(id);
-
-        if (proposal.status !== 'accepted') {
-            return res.status(400).json({ error: "Invalid proposal" });
-        }
-
-        return res.status(200).json({ valid: true });
+        const result = await PublicService.validateProposalPayment(id);
+        return res.status(200).json(result);
     } catch (error: any) {
         if (error instanceof z.ZodError) {
             return res.status(400).json({ error: "Invalid proposal" });
         }
-        return res.status(error.statusCode || 500).json({ error: "Invalid proposal" });
+        return res.status(error.statusCode || 500).json({ error: error.message || "Invalid proposal" });
     }
 });
 

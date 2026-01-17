@@ -184,11 +184,12 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
         const userSlots = res.data;
         // Filter to only show slots for this bio
         const bioSlots = userSlots.filter((s: any) => s.bioId === bioId);
-        setSlots(bioSlots);
+        const filteredSlots = bioSlots.filter((s: any) => s.status === 'available' || s.id === block.marketingId);
+        setSlots(filteredSlots);
       })
       .catch(err => console.error("Failed to fetch slots", err))
       .finally(() => setLoading(false));
-  }, [bioId]);
+  }, [bioId, block.marketingId]);
 
   return (
     <div className="space-y-3 pt-3">

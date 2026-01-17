@@ -83,6 +83,60 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     const [subscribeEmail, setSubscribeEmail] = useState('');
     const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [subscribeMessage, setSubscribeMessage] = useState<string>('');
+    const [nsfwOpen, setNsfwOpen] = useState(false);
+    const [nsfwUrl, setNsfwUrl] = useState<string>('');
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+
+        const font = bio?.font || 'Inter';
+        const fonts: Record<string, string> = {
+            'Inter': 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
+            'Roboto': 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap',
+            'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap',
+            'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap',
+            'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap',
+            'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap',
+            'Merriweather': 'https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap',
+            'Oswald': 'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap',
+            'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&display=swap',
+            'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap',
+        };
+
+        const linkId = 'bio-font-link';
+        const styleId = 'bio-font-style';
+
+        const existingLink = document.getElementById(linkId);
+        if (existingLink) existingLink.remove();
+        const existingStyle = document.getElementById(styleId);
+        if (existingStyle) existingStyle.remove();
+
+        let fontFamily = font === 'Inter' ? "'Inter', sans-serif" : `'${font}', sans-serif`;
+
+        if (font === 'Custom' && bio?.customFontUrl) {
+            const extension = bio.customFontUrl.split('.').pop()?.toLowerCase() || 'ttf';
+            let format = 'truetype';
+            if (extension === 'woff') format = 'woff';
+            if (extension === 'woff2') format = 'woff2';
+            if (extension === 'otf') format = 'opentype';
+
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `@font-face { font-family: 'CustomFont'; src: url('${bio.customFontUrl}') format('${format}'); font-weight: normal; font-style: normal; font-display: swap; }`;
+            document.head.appendChild(style);
+            fontFamily = "'CustomFont', sans-serif";
+        } else if (fonts[font]) {
+            const link = document.createElement('link');
+            link.id = linkId;
+            link.rel = 'stylesheet';
+            link.href = fonts[font];
+            document.head.appendChild(link);
+        }
+
+        if (containerRef.current) {
+            containerRef.current.style.fontFamily = fontFamily;
+        }
+    }, [bio?.font, bio?.customFontUrl]);
 
     // Check if we're on a blog post page
     const location = useLocation();
@@ -246,6 +300,41 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         });
     }, [htmlContent]);
 
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        if (nsfwOpen) {
+            const prev = document.body.style.overflow;
+            document.body.setAttribute('data-nsfw-prev-overflow', prev || '');
+            document.body.style.overflow = 'hidden';
+        } else {
+            const prev = document.body.getAttribute('data-nsfw-prev-overflow') || '';
+            document.body.style.overflow = prev;
+            document.body.removeAttribute('data-nsfw-prev-overflow');
+        }
+    }, [nsfwOpen]);
+
+    useEffect(() => {
+        const root = containerRef.current;
+        if (!root) return;
+
+        const handler = (event: Event) => {
+            const target = event.target as HTMLElement | null;
+            if (!target) return;
+            if (target.closest('[data-nsfw-ignore="true"]')) return;
+            const el = target.closest('[data-nsfw="true"]') as HTMLElement | null;
+            if (!el) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const url = el.getAttribute('data-nsfw-url') || '';
+            if (!url) return;
+            setNsfwUrl(url);
+            setNsfwOpen(true);
+        };
+
+        root.addEventListener('click', handler, true);
+        return () => root.removeEventListener('click', handler, true);
+    }, [htmlContent]);
+
 
 
 
@@ -268,6 +357,13 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             }
         }).catch(err => {/* bio_visit tracking failed */ });
     }, [bio?.id, isPreview]);
+
+    const handleNsfwContinue = () => {
+        const url = nsfwUrl;
+        setNsfwOpen(false);
+        setNsfwUrl('');
+        if (url) window.open(url, '_blank');
+    };
 
     // Path-based tab sync is handled inside initTabs/onpopstate; avoid extra listeners to prevent repeated calls.
 
@@ -547,16 +643,16 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                             if (cardStyle === "featured") {
                                 return `
-                                  <article style="flex:0 0 200px; scroll-snap-align:start; background:${bgColor}; border-radius:20px; padding:12px; display:flex; flex-direction:column; gap:10px; min-width:200px;">
-                                    <div style="background:#e2e8f0; border-radius:12px; aspect-ratio:16/10; width:100%; overflow:hidden;">
-                                       <img src="${image}" alt="${esc(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
+                                  <article style="flex:0 0 260px; scroll-snap-align:start; display:flex; flex-direction:column; gap:10px; background:${bgColor}; border:1px solid #e5e7eb; border-radius:18px; padding:16px; min-width:260px;">
+                                    <div style="width:100%; height:140px; border-radius:12px; overflow:hidden; background:#e5e7eb;">
+                                      <img src="${image}" alt="${esc(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
                                     </div>
                                     <div style="display:flex; gap:6px;">
                                       <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${category}</span>
                                       <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${readTime}</span>
                                     </div>
                                     <h3 style="font-size:16px; font-weight:800; line-height:1.3; color:${titleColor}; margin:0;">${esc(post.title)}</h3>
-                                    <div style="display:flex; items-center; gap:6px; margin-top:auto;">
+                                    <div style="display:flex; align-items:center; gap:6px; margin-top:auto;">
                                       <div style="width:20px; height:20px; background:#d1d5db; border-radius:50%;"></div>
                                       <span style="font-size:12px; color:${textColor};">${author}</span>
                                     </div>
@@ -1715,6 +1811,62 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     </a>
                 </div>
                 </div>`)} />
+
+                {nsfwOpen && (
+                    <div style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 60,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(15, 23, 42, 0.55)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)'
+                    }}>
+                        <div style={{
+                            width: '100%',
+                            maxWidth: 420,
+                            margin: 16,
+                            background: '#ffffff',
+                            borderRadius: 20,
+                            border: '1px solid rgba(15,23,42,0.08)',
+                            boxShadow: '0 24px 60px -30px rgba(15,23,42,0.45)',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{ padding: '22px 22px 10px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15, 23, 42, 0.08)', color: '#111827', fontWeight: 800, fontSize: 12 }}>18+</div>
+                                    <div style={{ fontWeight: 700, fontSize: 16, color: '#0f172a' }}>Sensitive content</div>
+                                </div>
+                                <button
+                                    onClick={() => { setNsfwOpen(false); setNsfwUrl(''); }}
+                                    aria-label="Fechar"
+                                    style={{ border: 'none', background: 'rgba(15,23,42,0.06)', color: '#111827', width: 32, height: 32, borderRadius: 9999, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                </button>
+                            </div>
+                            <div style={{ padding: '0 22px 18px 22px', color: '#475569', fontSize: 14, lineHeight: 1.55 }}>
+                                This link may contain content intended for adults (18+). Do you want to continue?
+                            </div>
+                            <div style={{ display: 'flex', gap: 10, padding: '0 22px 22px 22px' }}>
+                                <button
+                                    onClick={() => { setNsfwOpen(false); setNsfwUrl(''); }}
+                                    style={{ flex: 1, height: 44, borderRadius: 12, border: '1px solid rgba(15,23,42,0.12)', background: '#ffffff', color: '#111827', fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                    Go back
+                                </button>
+                                <button
+                                    onClick={handleNsfwContinue}
+                                    style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #111827, #1f2937)', color: '#ffffff', fontWeight: 700, cursor: 'pointer', boxShadow: '0 12px 22px -12px rgba(15,23,42,0.5)' }}
+                                >
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
 
                 {/* Sticky Promo Banner */}

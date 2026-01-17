@@ -47,6 +47,7 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'img', 'iframe', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon',
             'video', 'source', 'style', 'button', 'input', 'label', 'form', 'textarea', 'select', 'option',
             'section', 'article', 'aside', 'main', 'header', 'footer',
+            'link',
             'g', 'defs', 'linearGradient', 'stop', 'mask', 'pattern'
         ],
         ALLOWED_ATTR: [
@@ -54,6 +55,7 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'src', 'alt', 'title', 'width', 'height', 
             'style', 'class', 'id', 'name', 'type', 'value', 'placeholder', 'checked',
             'frameborder', 'allow', 'allowfullscreen', 'scrolling',
+            'media', 'as', 'crossorigin', 'referrerpolicy',
             'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
             'd', 'x', 'y', 'r', 'rx', 'ry', 'cx', 'cy', 'points', // SVG attributes
             'x1', 'y1', 'x2', 'y2', // SVG line attributes
@@ -64,11 +66,11 @@ export const sanitizeHtml = (html: string | undefined | null): string => {
             'data-text-color', 'data-date-color', 'data-tag-bg', 'data-tag-text', 'data-popup-bg-color',
             'data-popup-text-color', 'data-popup-overlay-color', 'data-title', 'data-description', 'data-bio-id',
             'data-form-id', 'data-marketing-id', 'data-product-id', 'data-open-subscribe', 'data-action',
-            'data-subscribe-wired', 'data-wired', 'loading'
+            'data-subscribe-wired', 'data-wired', 'data-nsfw', 'data-nsfw-url', 'data-nsfw-target', 'data-nsfw-ignore', 'loading'
         ],
         ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|sms|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-        ADD_TAGS: ['iframe', 'style', 'script', 'form', 'textarea', 'select', 'option', 'input', 'button'], // allow form controls in rendered HTML
-        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'onerror', 'onload', 'aria-label', 'loading'],
+        ADD_TAGS: ['iframe', 'style', 'script', 'form', 'textarea', 'select', 'option', 'input', 'button', 'link'], // allow form controls in rendered HTML
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'onclick', 'onmouseover', 'onmouseout', 'onerror', 'onload', 'aria-label', 'loading', 'rel', 'href', 'media', 'as', 'crossorigin', 'referrerpolicy', 'data-nsfw', 'data-nsfw-url', 'data-nsfw-target', 'data-nsfw-ignore'],
     });
 };
 
