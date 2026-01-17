@@ -13,6 +13,7 @@ import {
     FileIcon
 } from "lucide-react";
 import { ImageUpload } from "~/components/dashboard/editor/image-upload";
+import { useTranslation } from "react-i18next";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -23,6 +24,7 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function DashboardSeo() {
     const { bio, updateBio } = useContext(BioContext);
+    const { t } = useTranslation();
     const [seoTitle, setSeoTitle] = useState("");
     const [seoDescription, setSeoDescription] = useState("");
     const [favicon, setFavicon] = useState("");
@@ -73,18 +75,18 @@ export default function DashboardSeo() {
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight">Upgrade to Pro</h1>
-                <p className="text-text-muted mb-8 max-w-md mx-auto text-base">SEO settings are available for Standard and Pro plans. Upgrade now to customize your page title, description, and favicon.</p>
+                <h1 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight">{t("dashboard.seo.upgradeTitle")}</h1>
+                <p className="text-text-muted mb-8 max-w-md mx-auto text-base">{t("dashboard.seo.upgradeSubtitle")}</p>
                 <button className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-base hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-1">
-                    Upgrade Plan
+                    {t("dashboard.seo.upgradeCta")}
                 </button>
             </div>
         }>
             <div className="p-4 md:p-6 max-w-5xl mx-auto pb-12">
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">SEO Settings</h1>
-                        <p className="text-text-muted text-sm">Customize how your page appears in search results and social media.</p>
+                        <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">{t("dashboard.seo.title")}</h1>
+                        <p className="text-text-muted text-sm">{t("dashboard.seo.subtitle")}</p>
                     </div>
                     <button
                         onClick={handleSave}
@@ -94,12 +96,12 @@ export default function DashboardSeo() {
                         {isSaving ? (
                             <>
                                 <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                                <span>Saving...</span>
+                                <span>{t("dashboard.seo.saving")}</span>
                             </>
                         ) : (
                             <>
                                 <Save className="w-4 h-4" />
-                                <span>Save Changes</span>
+                                <span>{t("dashboard.seo.saveChanges")}</span>
                             </>
                         )}
                     </button>
@@ -113,54 +115,54 @@ export default function DashboardSeo() {
                                 <Search className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">Search Engine Optimization</h2>
-                                <p className="text-text-muted text-sm">Control how your page looks on Google and other search engines.</p>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.seo.section.search.title")}</h2>
+                                <p className="text-text-muted text-sm">{t("dashboard.seo.section.search.subtitle")}</p>
                             </div>
                         </div>
 
                         <div className="grid gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Page Title</label>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.pageTitle")}</label>
                                 <input
                                     type="text"
                                     value={seoTitle}
                                     onChange={(e) => setSeoTitle(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                                    placeholder="e.g. John Doe - Digital Creator"
+                                    placeholder={t("dashboard.seo.placeholders.pageTitle")}
                                 />
                                 <p className="mt-2 text-xs text-text-muted font-medium flex items-center gap-1">
-                                    <span className={seoTitle.length > 60 ? "text-red-500" : "text-green-500"}>{seoTitle.length}</span> / 60 characters
+                                    <span className={seoTitle.length > 60 ? "text-red-500" : "text-green-500"}>{seoTitle.length}</span> {t("dashboard.seo.characters", { count: 60 })}
                                 </p>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Meta Description</label>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.metaDescription")}</label>
                                 <textarea
                                     value={seoDescription}
                                     onChange={(e) => setSeoDescription(e.target.value)}
                                     rows={3}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none text-sm"
-                                    placeholder="A brief description of your page..."
+                                    placeholder={t("dashboard.seo.placeholders.metaDescription")}
                                 />
                                 <p className="mt-2 text-xs text-text-muted font-medium flex items-center gap-1">
-                                    <span className={seoDescription.length > 160 ? "text-red-500" : "text-green-500"}>{seoDescription.length}</span> / 160 characters
+                                    <span className={seoDescription.length > 160 ? "text-red-500" : "text-green-500"}>{seoDescription.length}</span> {t("dashboard.seo.characters", { count: 160 })}
                                 </p>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Keywords</label>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.keywords")}</label>
                                 <input
                                     type="text"
                                     value={seoKeywords}
                                     onChange={(e) => setSeoKeywords(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                                    placeholder="portfolio, links, creator, design (comma separated)"
+                                    placeholder={t("dashboard.seo.placeholders.keywords")}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Page Favicon</label>
-                                <p className="text-xs text-text-muted mb-3">Upload a square image (PNG, JPG) for your browser tab icon. Recommended 512x512px.</p>
+                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.favicon")}</label>
+                                <p className="text-xs text-text-muted mb-3">{t("dashboard.seo.help.favicon")}</p>
                                 <ImageUpload
                                     value={favicon}
                                     onChange={setFavicon}
@@ -178,40 +180,40 @@ export default function DashboardSeo() {
                                 <Share2 className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">Social Media Sharing</h2>
-                                <p className="text-text-muted text-sm">Customize how your link looks when shared on social media.</p>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.seo.section.social.title")}</h2>
+                                <p className="text-text-muted text-sm">{t("dashboard.seo.section.social.subtitle")}</p>
                             </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Title</label>
+                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.socialTitle")}</label>
                                     <input
                                         type="text"
                                         value={ogTitle}
                                         onChange={(e) => setOgTitle(e.target.value)}
                                         className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                                        placeholder="Same as page title"
+                                        placeholder={t("dashboard.seo.placeholders.socialTitle")}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Description</label>
+                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.socialDescription")}</label>
                                     <textarea
                                         value={ogDescription}
                                         onChange={(e) => setOgDescription(e.target.value)}
                                         rows={3}
                                         className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none text-sm"
-                                        placeholder="Same as meta description"
+                                        placeholder={t("dashboard.seo.placeholders.socialDescription")}
                                     />
                                 </div>
                             </div>
 
                             <div>
                                 <div>
-                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Social Share Image</label>
-                                    <p className="text-xs text-text-muted mb-3">Image that appears when your link is shared on social media. Recommended 1200x630px.</p>
+                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.socialImage")}</label>
+                                    <p className="text-xs text-text-muted mb-3">{t("dashboard.seo.help.socialImage")}</p>
                                     <ImageUpload
                                         value={ogImage}
                                         onChange={setOgImage}

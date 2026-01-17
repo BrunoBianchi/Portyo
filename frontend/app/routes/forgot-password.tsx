@@ -1,14 +1,17 @@
 import { useState } from "react";
 import type { MetaFunction } from "react-router";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { Mail, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import { api } from "~/services/api";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Forgot Password | Portyo" },
-        { name: "description", content: "Reset your Portyo password" },
+        { title: i18n.t("meta.forgotPassword.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.forgotPassword.description", { lng: lang }) },
     ];
 };
 
@@ -18,6 +21,10 @@ export default function ForgotPassword() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSocialProvider, setIsSocialProvider] = useState(false);
+    const { t } = useTranslation();
+    const location = useLocation();
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,7 +41,7 @@ export default function ForgotPassword() {
                 setIsSocialProvider(true);
                 setError(errorData.message);
             } else {
-                setError(errorData?.message || "Something went wrong. Please try again.");
+                setError(errorData?.message || t("auth.forgot.genericError"));
             }
         } finally {
             setLoading(false);
@@ -48,11 +55,11 @@ export default function ForgotPassword() {
                 <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-white/50">
 
                     <Link
-                        to="/login"
+                        to={withLang("/login")}
                         className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-text-main transition-colors mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to login
+                        {t("auth.forgot.backToLogin")}
                     </Link>
 
                     {success ? (
@@ -60,17 +67,17 @@ export default function ForgotPassword() {
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="w-8 h-8 text-green-600" />
                             </div>
-                            <h1 className="text-2xl font-bold mb-3">Check your email</h1>
+                            <h1 className="text-2xl font-bold mb-3">{t("auth.forgot.successTitle")}</h1>
                             <p className="text-text-muted mb-6">
-                                If an account exists for <strong>{email}</strong>, we've sent a password reset link.
+                                {t("auth.forgot.successBody", { email })}
                             </p>
                             <p className="text-sm text-text-muted">
-                                Didn't receive the email? Check your spam folder or{" "}
+                                {t("auth.forgot.successHint")}{" "}
                                 <button
                                     onClick={() => { setSuccess(false); setEmail(""); }}
                                     className="text-primary font-semibold hover:underline"
                                 >
-                                    try again
+                                    {t("auth.forgot.tryAgain")}
                                 </button>
                             </p>
                         </div>
@@ -80,9 +87,9 @@ export default function ForgotPassword() {
                                 <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Mail className="w-7 h-7 text-primary" />
                                 </div>
-                                <h1 className="text-2xl font-bold mb-3">Forgot password?</h1>
+                                <h1 className="text-2xl font-bold mb-3">{t("auth.forgot.title")}</h1>
                                 <p className="text-text-muted text-sm">
-                                    No worries! Enter your email and we'll send you a reset link.
+                                    {t("auth.forgot.subtitle")}
                                 </p>
                             </div>
 
@@ -100,10 +107,10 @@ export default function ForgotPassword() {
                                         </p>
                                         {isSocialProvider && (
                                             <Link
-                                                to="/login"
+                                                to={withLang("/login")}
                                                 className="text-sm text-amber-600 hover:underline mt-1 inline-block"
                                             >
-                                                Go to login page →
+                                                {t("auth.forgot.goToLogin")}
                                             </Link>
                                         )}
                                     </div>
@@ -113,14 +120,14 @@ export default function ForgotPassword() {
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 <div>
                                     <label className="block text-sm font-semibold text-text-main mb-2">
-                                        Email address
+                                        {t("auth.forgot.emailLabel")}
                                     </label>
                                     <input
                                         type="email"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Enter your email"
+                                        placeholder={t("auth.forgot.emailPlaceholder")}
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                     />
                                 </div>
@@ -130,7 +137,7 @@ export default function ForgotPassword() {
                                     disabled={loading}
                                     className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {loading ? "Sending..." : "Send reset link"}
+                                    {loading ? t("auth.forgot.sending") : t("auth.forgot.sendReset")}
                                 </button>
                             </form>
                         </>

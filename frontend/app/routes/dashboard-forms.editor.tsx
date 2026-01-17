@@ -10,8 +10,21 @@ import {
     useDroppable,
     type DragEndEvent,
     type DragStartEvent,
+    PointerSensor,
+    KeyboardSensor,
+    useSensor,
+    useSensors,
+    closestCenter,
 } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
     Type,
     Mail,
@@ -93,6 +106,8 @@ function FormCanvas({ fields, onRemove, selectedFieldId, onSelect }: {
         id: "form-canvas",
     });
 
+    const fieldIds = fields.map((field) => field.id);
+
     return (
         <div
             ref={setNodeRef}
@@ -105,54 +120,96 @@ function FormCanvas({ fields, onRemove, selectedFieldId, onSelect }: {
                     <p className="text-sm">Start building your custom form</p>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {fields.map((field) => (
-                        <div
-                            key={field.id}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onSelect(field.id);
-                            }}
-                            className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${selectedFieldId === field.id
-                                ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
-                                : "border-gray-200 hover:border-primary/50 hover:shadow-sm"
-                                }`}
-                        >
-                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-gray-100">
-                                <button
-                                    onClick={(e) => onRemove(field.id, e)}
-                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                                <div className="p-1.5 text-gray-400 cursor-grab active:cursor-grabbing">
-                                    <GripVertical className="w-4 h-4" />
-                                </div>
-                            </div>
-
-                            <div className="mb-2 pointer-events-none">
-                                <label className="block text-sm font-bold text-gray-900 mb-1">
-                                    {field.label} {field.required && <span className="text-red-500">*</span>}
-                                </label>
-                                {field.placeholder && <p className="text-xs text-gray-500 mb-2">{field.placeholder}</p>}
-                            </div>
-
-                            <div className="pointer-events-none opacity-60">
-                                {field.type === "textarea" ? (
-                                    <div className="w-full h-24 bg-gray-50 rounded-lg border border-gray-200" />
-                                ) : field.type === "checkbox" ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 rounded border border-gray-300 bg-gray-50" />
-                                        <span className="text-sm text-gray-500">Matches label</span>
-                                    </div>
-                                ) : (
-                                    <div className="w-full h-10 bg-gray-50 rounded-lg border border-gray-200" />
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <SortableContext items={fieldIds} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-4">
+                        {fields.map((field) => (
+                            <SortableField
+                                key={field.id}
+                                field={field}
+                                onRemove={onRemove}
+                                selectedFieldId={selectedFieldId}
+                                onSelect={onSelect}
+                            />
+                        ))}
+                    </div>
+                </SortableContext>
             )}
+        </div>
+    );
+}
+
+function SortableField({ field, onRemove, selectedFieldId, onSelect }: {
+    field: FormField;
+    onRemove: (id: string, e?: React.MouseEvent) => void;
+    selectedFieldId: string | null;
+    onSelect: (id: string) => void;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        setActivatorNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: field.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.6 : 1
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            onClick={(e) => {
+                e.stopPropagation();
+                onSelect(field.id);
+            }}
+            className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${selectedFieldId === field.id
+                ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
+                : "border-gray-200 hover:border-primary/50 hover:shadow-sm"
+                }`}
+        >
+            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-gray-100">
+                <button
+                    onClick={(e) => onRemove(field.id, e)}
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+                <div
+                    ref={setActivatorNodeRef}
+                    {...listeners}
+                    className="p-1.5 text-gray-400 cursor-grab active:cursor-grabbing"
+                    title="Reorder"
+                >
+                    <GripVertical className="w-4 h-4" />
+                </div>
+            </div>
+
+            <div className="mb-2 pointer-events-none">
+                <label className="block text-sm font-bold text-gray-900 mb-1">
+                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                </label>
+                {field.placeholder && <p className="text-xs text-gray-500 mb-2">{field.placeholder}</p>}
+            </div>
+
+            <div className="pointer-events-none opacity-60">
+                {field.type === "textarea" ? (
+                    <div className="w-full h-24 bg-gray-50 rounded-lg border border-gray-200" />
+                ) : field.type === "checkbox" ? (
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border border-gray-300 bg-gray-50" />
+                        <span className="text-sm text-gray-500">Matches label</span>
+                    </div>
+                ) : (
+                    <div className="w-full h-10 bg-gray-50 rounded-lg border border-gray-200" />
+                )}
+            </div>
         </div>
     );
 }
@@ -169,6 +226,10 @@ export default function DashboardFormsEditor() {
     const [isSaving, setIsSaving] = useState(false);
     const [isToolboxOpen, setIsToolboxOpen] = useState(true); // Open by default on desktop
     const [isMobileToolboxOpen, setIsMobileToolboxOpen] = useState(false);
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
 
     // Load form data
     useEffect(() => {
@@ -233,6 +294,16 @@ export default function DashboardFormsEditor() {
             setFields((prev) => [...prev, newField]);
             setSelectedFieldId(newField.id);
         }
+
+        if (!active.data.current?.isToolboxItem) {
+            setFields((prev) => {
+                const oldIndex = prev.findIndex((field) => field.id === active.id);
+                const newIndex = prev.findIndex((field) => field.id === over.id);
+
+                if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev;
+                return arrayMove(prev, oldIndex, newIndex);
+            });
+        }
     };
 
     const removeField = (id: string, e?: React.MouseEvent) => {
@@ -256,7 +327,12 @@ export default function DashboardFormsEditor() {
     }
 
     return (
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
             <div className="flex flex-col h-screen bg-white overflow-hidden relative">
                 {/* Header Bar - Mobile & Desktop */}
                 <header className="h-16 border-b border-gray-100 bg-white flex items-center justify-between px-4 md:px-6 shrink-0 z-30">

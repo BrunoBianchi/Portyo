@@ -8,19 +8,24 @@ import {
   useLocation,
   useLoaderData,
 } from "react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import { CookiesProvider } from 'react-cookie';
+import { useTranslation } from "react-i18next";
+import i18n, { SUPPORTED_LANGUAGES } from "./i18n";
 
 const Navbar = lazy(() => import("~/components/marketing/navbar-component"));
 const Footer = lazy(() => import("~/components/marketing/footer-section"));
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Portyo - Link in Bio" },
-  { name: "description", content: "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform." },
-];
+export const meta: Route.MetaFunction = ({ params }) => {
+  const lang = params?.lang === "pt" ? "pt" : "en";
+  return [
+    { title: i18n.t("meta.root.title", { lng: lang }) },
+    { name: "description", content: i18n.t("meta.root.description", { lng: lang }) },
+  ];
+};
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -60,17 +65,36 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
 
-  return { isCustomDomain };
+  return { isCustomDomain, origin: url.origin };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const loaderData = useLoaderData<typeof loader>();
   const isCustomDomain = loaderData?.isCustomDomain;
+  const origin = loaderData?.origin || (typeof window !== "undefined" ? window.location.origin : "");
+  const { i18n } = useTranslation();
 
-  const isLoginPage = pathname === "/login";
-  const isDashboard = pathname.startsWith("/dashboard");
-  const isBioPage = pathname.startsWith("/p/");
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = i18n.resolvedLanguage || i18n.language || "en";
+  }, [i18n.language, i18n.resolvedLanguage]);
+
+  const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
+  const activeLang = (langMatch?.[1] || i18n.resolvedLanguage || i18n.language || "en") as (typeof SUPPORTED_LANGUAGES)[number];
+  const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
+  const isLoginPage = pathnameNoLang === "/login";
+  const isDashboard = pathnameNoLang.startsWith("/dashboard");
+  const isBioPage = pathnameNoLang.startsWith("/p/");
+
+  const normalizedBase = pathnameNoLang === "" ? "/" : pathnameNoLang;
+  const canonicalPath = normalizedBase === "/" ? `/${activeLang}` : `/${activeLang}${normalizedBase}`;
+  const canRenderSeoLinks = !!langMatch && !isCustomDomain && !!origin;
+
+  const ogLocaleMap: Record<(typeof SUPPORTED_LANGUAGES)[number], string> = {
+    en: "en_US",
+    pt: "pt_BR",
+  };
 
   // Hide layout if dashboard, bio page, OR custom domain
   const shouldShowLayout = !isDashboard && !isBioPage && !isCustomDomain;
@@ -78,11 +102,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <CookiesProvider>
       <AuthProvider>
-        <html lang="en">
+        <html lang={activeLang}>
           <head>
             <meta charSet="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="preload" as="image" href="/Street%20Life%20-%20Head.svg" media="(min-width: 768px)" />
+            {canRenderSeoLinks && (
+              <>
+                <link rel="canonical" href={`${origin}${canonicalPath}`} />
+                {SUPPORTED_LANGUAGES.map((lang) => {
+                  const href = normalizedBase === "/" ? `/${lang}` : `/${lang}${normalizedBase}`;
+                  return (
+                    <link
+                      key={`alt-${lang}`}
+                      rel="alternate"
+                      hrefLang={lang}
+                      href={`${origin}${href}`}
+                    />
+                  );
+                })}
+                <link
+                  rel="alternate"
+                  hrefLang="x-default"
+                  href={`${origin}${normalizedBase === "/" ? "/en" : `/en${normalizedBase}`}`}
+                />
+                <meta property="og:locale" content={ogLocaleMap[activeLang] || "en_US"} />
+                {SUPPORTED_LANGUAGES.filter((lang) => lang !== activeLang).map((lang) => (
+                  <meta
+                    key={`og-locale-${lang}`}
+                    property="og:locale:alternate"
+                    content={ogLocaleMap[lang] || "en_US"}
+                  />
+                ))}
+              </>
+            )}
             <Meta />
             <Links />
             <link
@@ -117,7 +170,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <Suspense fallback={<HydrateFallback />}>
+      <Outlet />
+    </Suspense>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

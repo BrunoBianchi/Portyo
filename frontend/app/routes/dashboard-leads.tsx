@@ -6,6 +6,7 @@ import BioContext from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
+import { useTranslation } from "react-i18next";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -23,6 +24,7 @@ interface Lead {
 export default function DashboardLeads() {
   const { user } = useContext(AuthContext);
   const { bio, updateBio } = useContext(BioContext);
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,7 +103,7 @@ export default function DashboardLeads() {
       setDeleteModal(prev => ({ ...prev, isOpen: false }));
     } catch (error) {
       console.error("Failed to delete lead(s):", error);
-      alert("Failed to delete lead(s)");
+      alert(t("dashboard.leads.deleteError"));
     } finally {
       setIsDeleting(false);
     }
@@ -182,11 +184,13 @@ export default function DashboardLeads() {
             isOpen={deleteModal.isOpen}
             onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
             onConfirm={handleConfirmDelete}
-            title={deleteModal.mode === 'single' ? "Remove Subscriber" : "Remove Multiple Subscribers"}
+            title={deleteModal.mode === 'single'
+              ? t("dashboard.leads.removeSubscriber")
+              : t("dashboard.leads.removeSubscribers")}
             description={
               deleteModal.mode === 'single'
-                ? `Are you sure you want to remove ${deleteModal.email} from your list? This subscriber will no longer receive your updates.`
-                : `Are you sure you want to remove ${deleteModal.count} subscribers? This action cannot be undone.`
+                ? t("dashboard.leads.removeSingleDesc", { email: deleteModal.email })
+                : t("dashboard.leads.removeBulkDesc", { count: deleteModal.count ?? 0 })
             }
             isDeleting={isDeleting}
           />
@@ -194,8 +198,8 @@ export default function DashboardLeads() {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Audience</h1>
-              <p className="text-gray-500 mt-2 text-lg">Manage your subscribers and grow your community.</p>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">{t("dashboard.leads.title")}</h1>
+              <p className="text-gray-500 mt-2 text-lg">{t("dashboard.leads.subtitle")}</p>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -210,7 +214,7 @@ export default function DashboardLeads() {
                   }`}
               >
                 <div className={`w-2 h-2 rounded-full ${bio?.enableSubscribeButton ? 'bg-primary' : 'bg-gray-400'}`} />
-                {bio?.enableSubscribeButton ? 'Accepting Leads' : 'Leads Disabled'}
+                {bio?.enableSubscribeButton ? t("dashboard.leads.acceptingLeads") : t("dashboard.leads.leadsDisabled")}
               </button>
               <button
                 onClick={handleExport}
@@ -218,7 +222,7 @@ export default function DashboardLeads() {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
-                Export CSV
+                {t("dashboard.leads.exportCsv")}
               </button>
             </div>
           </div>
@@ -231,10 +235,10 @@ export default function DashboardLeads() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-medium px-2 py-1 bg-green-50 text-green-700 rounded-full flex items-center gap-1">
-                  Active
+                  {t("dashboard.leads.active")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">Total Subscribers</h3>
+              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.totalSubscribers")}</h3>
               <p className="text-3xl font-bold text-gray-900 mt-2">{totalLeads}</p>
             </div>
 
@@ -244,10 +248,10 @@ export default function DashboardLeads() {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 rounded-full">
-                  Today
+                  {t("dashboard.leads.today")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">New Subscribers</h3>
+              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.newSubscribers")}</h3>
               <p className="text-3xl font-bold text-gray-900 mt-2">+{newLeadsToday}</p>
             </div>
 
@@ -258,10 +262,10 @@ export default function DashboardLeads() {
                 </div>
                 {/* Placeholder for future growth stat */}
                 <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                  Avg.
+                  {t("dashboard.leads.avg")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">Conversion Rate</h3>
+              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.conversionRate")}</h3>
               <p className="text-3xl font-bold text-gray-900 mt-2">{conversionRate}</p>
             </div>
           </div>
@@ -271,13 +275,13 @@ export default function DashboardLeads() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search subscribers by email..."
+              placeholder={t("dashboard.leads.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">
-              {filteredLeads.length} results
+              {t("dashboard.leads.results", { count: filteredLeads.length })}
             </div>
           </div>
 
@@ -299,10 +303,10 @@ export default function DashboardLeads() {
                         )}
                       </button>
                     </th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Subscriber</th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
-                    <th className="px-6 py-5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.subscriber")}</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.status")}</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.joined")}</th>
+                    <th className="px-6 py-5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -311,7 +315,7 @@ export default function DashboardLeads() {
                       <td colSpan={5} className="px-6 py-16 text-center text-gray-500">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                          <p className="font-medium animate-pulse">Syncing audience...</p>
+                          <p className="font-medium animate-pulse">{t("dashboard.leads.syncing")}</p>
                         </div>
                       </td>
                     </tr>
@@ -323,9 +327,9 @@ export default function DashboardLeads() {
                             <Mail className="w-8 h-8 text-gray-300" />
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 text-lg">No subscribers found</p>
+                            <p className="font-semibold text-gray-900 text-lg">{t("dashboard.leads.noSubscribers")}</p>
                             <p className="text-sm mt-1">
-                              {searchTerm ? "Try adjusting your search terms" : "Share your bio link to start growing your list"}
+                              {searchTerm ? t("dashboard.leads.tryAdjustSearch") : t("dashboard.leads.shareBio")}
                             </p>
                           </div>
                         </div>
@@ -353,14 +357,14 @@ export default function DashboardLeads() {
                             </div>
                             <div>
                               <span className="block text-sm font-semibold text-gray-900">{lead.email}</span>
-                              <span className="block text-xs text-gray-500">Subscriber</span>
+                              <span className="block text-xs text-gray-500">{t("dashboard.leads.subscriberLabel")}</span>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                            Active
+                            {t("dashboard.leads.active")}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -377,14 +381,14 @@ export default function DashboardLeads() {
                             <button
                               onClick={() => handleSendMessage(lead.email)}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Send email"
+                              title={t("dashboard.leads.sendEmail")}
                             >
                               <Mail className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(lead)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Remove subscriber"
+                              title={t("dashboard.leads.removeSubscriber")}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -406,16 +410,16 @@ export default function DashboardLeads() {
               <span className="flex items-center justify-center bg-white text-gray-900 w-5 h-5 rounded-full text-xs font-bold">
                 {selectedLeads.length}
               </span>
-              <span className="text-sm font-medium">selected</span>
+              <span className="text-sm font-medium">{t("dashboard.leads.selected")}</span>
             </div>
 
             <button
               onClick={handleBulkSendMessage}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
-              title="Send email to selected"
+              title={t("dashboard.leads.sendSelected")}
             >
               <Mail className="w-4 h-4" />
-              <span className="hidden sm:inline">Message</span>
+              <span className="hidden sm:inline">{t("dashboard.leads.message")}</span>
             </button>
 
             <button
@@ -423,7 +427,7 @@ export default function DashboardLeads() {
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">{t("dashboard.leads.export")}</span>
             </button>
 
             <button
@@ -431,7 +435,7 @@ export default function DashboardLeads() {
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-900/30 transition-all"
             >
               <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Delete</span>
+              <span className="hidden sm:inline">{t("dashboard.leads.delete")}</span>
             </button>
 
             <button

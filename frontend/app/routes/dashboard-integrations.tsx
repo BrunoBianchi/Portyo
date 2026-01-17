@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import type { MetaFunction } from "react-router";
 import { api } from "~/services/api";
@@ -18,6 +18,7 @@ import {
   ProductHuntIcon
 } from "~/components/shared/icons";
 import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
   return [
@@ -35,99 +36,112 @@ interface Integration {
   category: "social" | "marketing" | "analytics" | "content";
 }
 
+const buildIntegrations = (t: (key: string) => string): Integration[] => [
+  {
+    id: "stripe",
+    name: "Stripe",
+    description: t("dashboard.integrations.items.stripe"),
+    icon: <div className="w-8 h-8 bg-[#635BFF] rounded-lg flex items-center justify-center text-white"><CreditCard className="w-5 h-5" /></div>,
+    status: "disconnected",
+    category: "marketing"
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    description: t("dashboard.integrations.items.instagram"),
+    icon: <InstagramIcon className="w-8 h-8 text-[#E1306C]" />,
+    status: "disconnected",
+    category: "social"
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    description: t("dashboard.integrations.items.youtube"),
+    icon: <YouTubeIcon className="w-8 h-8 text-[#FF0000]" />,
+    status: "connected",
+    category: "content"
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    description: t("dashboard.integrations.items.tiktok"),
+    icon: <TikTokIcon className="w-8 h-8 text-[#000000]" />,
+    status: "disconnected",
+    category: "social"
+  },
+  {
+    id: "spotify",
+    name: "Spotify",
+    description: t("dashboard.integrations.items.spotify"),
+    icon: <SpotifyIcon className="w-8 h-8 text-[#1DB954]" />,
+    status: "disconnected",
+    category: "content"
+  },
+  {
+    id: "twitter",
+    name: "X (Twitter)",
+    description: t("dashboard.integrations.items.twitter"),
+    icon: <TwitterIcon className="w-8 h-8 text-[#1DA1F2]" />,
+    status: "disconnected",
+    category: "social"
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    description: t("dashboard.integrations.items.linkedin"),
+    icon: <LinkedInIcon className="w-8 h-8 text-[#0A66C2]" />,
+    status: "coming_soon",
+    category: "social"
+  },
+  {
+    id: "mailchimp",
+    name: "Mailchimp",
+    description: t("dashboard.integrations.items.mailchimp"),
+    icon: <div className="w-8 h-8 bg-[#FFE01B] rounded-full flex items-center justify-center text-black font-bold text-xs">MC</div>,
+    status: "coming_soon",
+    category: "marketing"
+  },
+  {
+    id: "google-analytics",
+    name: "Google Analytics",
+    description: t("dashboard.integrations.items.googleAnalytics"),
+    icon: <div className="w-8 h-8 bg-[#E37400] rounded-full flex items-center justify-center text-white font-bold text-xs">GA</div>,
+    status: "disconnected",
+    category: "analytics"
+  },
+  {
+    id: "producthunt",
+    name: "Product Hunt",
+    description: t("dashboard.integrations.items.productHunt"),
+    icon: <ProductHuntIcon className="w-8 h-8 text-[#DA552F]" />,
+    status: "disconnected",
+    category: "marketing"
+  }
+];
+
 export default function DashboardIntegrations() {
+  const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const { bio } = useContext(BioContext);
   const [searchParams] = useSearchParams();
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
-  const [integrations, setIntegrations] = useState<Integration[]>([
-    {
-      id: "stripe",
-      name: "Stripe",
-      description: "Accept payments and donations directly on your page.",
-      icon: <div className="w-8 h-8 bg-[#635BFF] rounded-lg flex items-center justify-center text-white"><CreditCard className="w-5 h-5" /></div>,
-      status: "disconnected",
-      category: "marketing"
-    },
-    {
-      id: "instagram",
-      name: "Instagram",
-      description: "Display your latest posts and stories directly on your bio page.",
-      icon: <InstagramIcon className="w-8 h-8 text-[#E1306C]" />,
-      status: "disconnected",
-      category: "social"
-    },
-    {
-      id: "youtube",
-      name: "YouTube",
-      description: "Embed your latest videos or playlists automatically.",
-      icon: <YouTubeIcon className="w-8 h-8 text-[#FF0000]" />,
-      status: "connected",
-      category: "content"
-    },
-    {
-      id: "tiktok",
-      name: "TikTok",
-      description: "Showcase your viral TikTok videos to your audience.",
-      icon: <TikTokIcon className="w-8 h-8 text-[#000000]" />,
-      status: "disconnected",
-      category: "social"
-    },
-    {
-      id: "spotify",
-      name: "Spotify",
-      description: "Share your favorite tracks, albums, or playlists.",
-      icon: <SpotifyIcon className="w-8 h-8 text-[#1DB954]" />,
-      status: "disconnected",
-      category: "content"
-    },
-    {
-      id: "twitter",
-      name: "X (Twitter)",
-      description: "Display your latest tweets and engage with your followers.",
-      icon: <TwitterIcon className="w-8 h-8 text-[#1DA1F2]" />,
-      status: "disconnected",
-      category: "social"
-    },
-    {
-      id: "linkedin",
-      name: "LinkedIn",
-      description: "Connect your professional profile and show your latest updates.",
-      icon: <LinkedInIcon className="w-8 h-8 text-[#0A66C2]" />,
-      status: "coming_soon",
-      category: "social"
-    },
-    {
-      id: "mailchimp",
-      name: "Mailchimp",
-      description: "Collect emails and grow your newsletter audience.",
-      icon: <div className="w-8 h-8 bg-[#FFE01B] rounded-full flex items-center justify-center text-black font-bold text-xs">MC</div>,
-      status: "coming_soon",
-      category: "marketing"
-    },
-    {
-      id: "google-analytics",
-      name: "Google Analytics",
-      description: "Track visitors and gain deeper insights into your traffic.",
-      icon: <div className="w-8 h-8 bg-[#E37400] rounded-full flex items-center justify-center text-white font-bold text-xs">GA</div>,
-      status: "disconnected",
-      category: "analytics"
-    },
-    {
-      id: "producthunt",
-      name: "Product Hunt",
-      description: "Showcase your latest launched products.",
-      icon: <ProductHuntIcon className="w-8 h-8 text-[#DA552F]" />,
-      status: "disconnected",
-      category: "marketing"
-    }
-  ]);
+  const baseIntegrations = useMemo(() => buildIntegrations(t), [t]);
+  const [integrations, setIntegrations] = useState<Integration[]>(baseIntegrations);
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
 
   const filteredIntegrations = integrations.filter(
     (item) => filter === "all" || item.category === filter
   );
+
+  useEffect(() => {
+    setIntegrations((prev) =>
+      prev.map((item) => {
+        const base = baseIntegrations.find((b) => b.id === item.id);
+        return base ? { ...base, status: item.status } : item;
+      })
+    );
+  }, [baseIntegrations]);
 
   useEffect(() => {
     const fetchIntegrations = async () => {
@@ -270,8 +284,8 @@ export default function DashboardIntegrations() {
     <AuthorizationGuard>
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Integrations</h1>
-          <p className="text-gray-500 mt-1">Connect your favorite tools to supercharge your bio page.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.integrations.title")}</h1>
+          <p className="text-gray-500 mt-1">{t("dashboard.integrations.subtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -285,7 +299,7 @@ export default function DashboardIntegrations() {
                 : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
                 }`}
             >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+              {t(`dashboard.integrations.filters.${category}`)}
             </button>
           ))}
         </div>
@@ -304,12 +318,12 @@ export default function DashboardIntegrations() {
                 {integration.status === "connected" && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
                     <Check className="w-3 h-3" />
-                    Connected
+                    {t("dashboard.integrations.status.connected")}
                   </span>
                 )}
                 {integration.status === "coming_soon" && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200">
-                    Coming Soon
+                    {t("dashboard.integrations.status.comingSoon")}
                   </span>
                 )}
               </div>
@@ -326,7 +340,7 @@ export default function DashboardIntegrations() {
                     className="w-full py-2.5 px-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <AlertCircle className="w-4 h-4" />
-                    Not Available Yet
+                    {t("dashboard.integrations.actions.notAvailable")}
                   </button>
                 ) : (
                   <button
@@ -353,23 +367,23 @@ export default function DashboardIntegrations() {
                         {integration.id === "stripe" ? (
                           <>
                             <ExternalLink className="w-4 h-4" />
-                            Dashboard
+                            {t("dashboard.integrations.actions.dashboard")}
                           </>
                         ) : (
-                          "Disconnect"
+                          t("dashboard.integrations.actions.disconnect")
                         )}
                       </>
                     ) : integration.id === "google-analytics" && (user?.plan === 'free' || !user?.plan) ? (
                       <>
                         <div className="flex items-center gap-2 text-yellow-500">
                           <AlertCircle className="w-4 h-4" />
-                          <span>Upgrade to Connect</span>
+                          <span>{t("dashboard.integrations.actions.upgradeToConnect")}</span>
                         </div>
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        Connect
+                        {t("dashboard.integrations.actions.connect")}
                       </>
                     )}
                   </button>

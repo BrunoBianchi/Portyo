@@ -125,6 +125,34 @@ export const getAllPublicBios = async (): Promise<{ sufix: string, updatedAt: Da
     });
 }
 
+export const getRandomPublicBios = async (limit: number): Promise<Array<{ sufix: string; fullName: string; description: string | null; profileImage: string | null }>> => {
+    const safeLimit = Math.max(1, Math.min(limit, 20));
+
+    const bios = await repository.createQueryBuilder("bio")
+        .leftJoin("bio.user", "user")
+        .select([
+            "bio.sufix",
+            "bio.description",
+            "bio.profileImage",
+            "bio.userId",
+            "user.fullName"
+        ])
+        .where("bio.noIndex = false OR bio.noIndex IS NULL")
+        .orderBy("RANDOM()")
+        .take(safeLimit)
+        .getRawMany();
+
+    return bios.map((row) => {
+        const profileImage = row.bio_profileImage || (row.bio_userId ? `${env.BACKEND_URL}/api/images/${row.bio_userId}/medium.png` : null);
+        return {
+            sufix: row.bio_sufix,
+            fullName: row.user_fullName,
+            description: row.bio_description || null,
+            profileImage
+        };
+    });
+};
+
 export const updateBioById = async (id: string, options: UpdateBioOptions): Promise<Bio | null> => {
     const bio = await findBioById(id, ['integrations', 'user']) as BioEntity;
     if (!bio) return null;

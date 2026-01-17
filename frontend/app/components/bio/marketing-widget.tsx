@@ -19,6 +19,23 @@ const ImageIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
 );
 
+const getReadableTextColor = (background: string, fallback: string) => {
+    const hex = background.replace('#', '').trim();
+    if (![3, 6].includes(hex.length)) return fallback;
+
+    const normalized = hex.length === 3
+        ? hex.split('').map((c) => c + c).join('')
+        : hex;
+
+    const r = parseInt(normalized.slice(0, 2), 16);
+    const g = parseInt(normalized.slice(2, 4), 16);
+    const b = parseInt(normalized.slice(4, 6), 16);
+    if ([r, g, b].some((v) => Number.isNaN(v))) return fallback;
+
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#111827' : '#ffffff';
+};
+
 interface MarketingWidgetProps {
     slotId: string;
     bioId: string;
@@ -151,6 +168,7 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                     items.map((item: any, idx: number) => {
                         const itemAlign = item.style?.alignment || content.alignment || 'center';
                         const itemColor = item.style?.color || txtColor;
+                        const badgeTextColor = getReadableTextColor(itemColor, bgColor === 'transparent' ? '#ffffff' : '#111827');
 
                         return (
                             <div
@@ -205,8 +223,8 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                                         className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2"
                                         style={{
                                             backgroundColor: itemColor,
-                                            color: bgColor === 'transparent' ? '#ffffff' : bgColor,
-                                            opacity: 0.8
+                                            color: badgeTextColor,
+                                            opacity: 1
                                         }}
                                     >
                                         {item.content}

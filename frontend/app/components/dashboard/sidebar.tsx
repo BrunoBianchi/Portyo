@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
+import { useTranslation } from "react-i18next";
 
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 
@@ -48,6 +49,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const location = useLocation();
     const { user, logout } = useContext(AuthContext);
     const { bio, bios, createBio, selectBio } = useContext(BioContext);
+    const { i18n, t } = useTranslation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
@@ -57,7 +59,15 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const [forcedPlan, setForcedPlan] = useState<'standard' | 'pro' | undefined>(undefined);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const isActive = (path: string) => location.pathname === path;
+    const pathnameNoLang = location.pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
+    const isActive = (path: string) => pathnameNoLang === path;
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1] || i18n.resolvedLanguage || i18n.language || "en";
+
+    const withLang = (to: string) => {
+        if (to.startsWith("http")) return to;
+        if (/^\/(en|pt)(\/|$)/.test(to)) return to;
+        return to === "/" ? `/${currentLang}` : `/${currentLang}${to}`;
+    };
 
     function normalizeUsername(value: string) {
         return value
@@ -91,7 +101,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             setNewUsername("");
         } catch (error: any) {
             console.error("Failed to create bio", error);
-            setCreateError(error.response?.data?.message || "Failed to create page. Username might be taken.");
+            setCreateError(error.response?.data?.message || t("dashboard.sidebar.createError"));
         }
     };
 
@@ -106,28 +116,28 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     }, []);
 
     const navItems = [
-        { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
-        { name: "Editor", path: "/dashboard/editor", icon: PenTool },
-        { name: "Leads", path: "/dashboard/leads", icon: Users, isPro: true },
-        { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
-        { name: "Portfolio", path: "/dashboard/portfolio", icon: Briefcase },
-        { name: "Blog", path: "/dashboard/blog", icon: FileText },
-        { name: "QR Code", path: "/dashboard/qrcode", icon: QrCode },
-        { name: "Marketing", path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
-        { name: "Scheduler", path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
-        { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
-        { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
-        { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
-        { name: "Forms", path: "/dashboard/forms", icon: FileText },
-        { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
-        { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
+        { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard },
+        { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool },
+        { name: t("dashboard.nav.leads"), path: "/dashboard/leads", icon: Users, isPro: true },
+        { name: t("dashboard.nav.products"), path: "/dashboard/products", icon: ShoppingBag },
+        { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
+        { name: t("dashboard.nav.blog"), path: "/dashboard/blog", icon: FileText },
+        { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
+        { name: t("dashboard.nav.marketing"), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
+        { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
+        { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
+        { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle },
+        { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
+        { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: FileText },
+        { name: t("dashboard.nav.seoSettings"), path: "/dashboard/seo", icon: Settings, isPro: true },
+        { name: t("dashboard.nav.analytics"), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
     ];
 
     if (user?.email?.toLowerCase() === "bruno2002.raiado@gmail.com") {
         // Feature flag for admin
-        navItems.push({ name: "Admin Panel", path: "/dashboard/admin", icon: Shield });
-        navItems.push({ name: "Announcements", path: "/dashboard/announcements", icon: Megaphone });
-        navItems.push({ name: "Site Blog", path: "/dashboard/site-blog", icon: Globe });
+        navItems.push({ name: t("dashboard.nav.adminPanel"), path: "/dashboard/admin", icon: Shield });
+        navItems.push({ name: t("dashboard.nav.announcements"), path: "/dashboard/announcements", icon: Megaphone });
+        navItems.push({ name: t("dashboard.nav.siteBlog"), path: "/dashboard/site-blog", icon: Globe });
     }
 
     return (
@@ -160,12 +170,12 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                             <div>
                                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
                                     <Sparkles className="w-3 h-3" />
-                                    New Page
+                                    {t("dashboard.sidebar.newPage")}
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Claim your link</h2>
-                                <p className="text-gray-500 mt-1 text-sm">Choose a unique username for your new page.</p>
+                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{t("dashboard.sidebar.claimTitle")}</h2>
+                                <p className="text-gray-500 mt-1 text-sm">{t("dashboard.sidebar.claimSubtitle")}</p>
                             </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-black" aria-label="Close modal">
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-black" aria-label={t("dashboard.sidebar.closeModal")}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -190,7 +200,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                                 setNewUsername(normalizeUsername(e.target.value));
                                                 setCreateError(null);
                                             }}
-                                            placeholder="yourname"
+                                            placeholder={t("dashboard.sidebar.usernamePlaceholder")}
                                             className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-left pl-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
@@ -216,7 +226,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 onClick={handleCreateBio}
                                 className="btn btn-primary w-full justify-center gap-2"
                             >
-                                <span>Create Page</span>
+                                <span>{t("dashboard.sidebar.createPage")}</span>
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
@@ -232,13 +242,13 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             `}>
                 {/* Logo Area */}
                 <div className="p-4 pb-2 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-3 group">
+                    <Link to={withLang("/")} className="flex items-center gap-3 group">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
                             P
                         </div>
                         <span className="font-bold text-xl tracking-tight text-gray-900">Portyo</span>
                     </Link>
-                    <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close sidebar">
+                    <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -249,7 +259,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-900 p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
-                            aria-label="Switch workspace"
+                            aria-label={t("dashboard.sidebar.switchWorkspace")}
                             aria-expanded={isDropdownOpen}
                         >
                             <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
@@ -257,9 +267,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     <Globe className="w-5 h-5" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden min-w-0 flex-1">
-                                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Current Page</span>
+                                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">{t("dashboard.sidebar.currentPage")}</span>
                                     <span className="text-sm font-bold truncate w-full text-left text-gray-900">
-                                        {bio?.sufix || "Select Page"}
+                                        {bio?.sufix || t("dashboard.sidebar.selectPage")}
                                     </span>
                                 </div>
                             </div>
@@ -272,7 +282,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         {isDropdownOpen && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20 ring-1 ring-black/5 p-2">
                                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                    Your Pages
+                                    {t("dashboard.sidebar.yourPages")}
                                 </div>
                                 <div className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar">
                                     {bios.length > 0 && bios.map((b) => (
@@ -305,14 +315,14 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                         setIsCreateModalOpen(true);
                                     }}
                                     className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 text-left transition-colors group text-gray-500 hover:text-gray-900"
-                                    aria-label="Create new page"
+                                    aria-label={t("dashboard.sidebar.createNewPage")}
                                 >
                                     <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-500 group-hover:text-gray-700">
                                         {canCreateBio ? <Plus className="w-4 h-4" /> : <Lock className="w-3 h-3" />}
                                     </div>
                                     <div className="flex flex-col items-start">
-                                        <span className="font-bold text-sm">Create new page</span>
-                                        {!canCreateBio && <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Limit Reached</span>}
+                                        <span className="font-bold text-sm">{t("dashboard.sidebar.createNewPage")}</span>
+                                        {!canCreateBio && <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">{t("dashboard.sidebar.limitReached")}</span>}
                                     </div>
                                 </button>
                             </div>
@@ -323,19 +333,19 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 {/* Navigation */}
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Menu
+                        {t("dashboard.sidebar.menu")}
                     </div>
                     {bio ? (
                         navItems.map((item) => {
                             // @ts-ignore
                             const isLocked = item.isProOnly ? userPlan !== 'pro' : (item.isPro && userPlan === 'free');
                             // @ts-ignore  
-                            const badgeText = item.isProOnly ? 'PRO' : 'Standard';
+                            const badgeText = item.isProOnly ? t("dashboard.sidebar.proBadge") : t("dashboard.sidebar.standardBadge");
 
                             return (
                                 <Link
                                     key={item.path}
-                                    to={item.path}
+                                    to={withLang(item.path)}
                                     onClick={(e) => {
                                         if (isLocked) {
                                             e.preventDefault();
@@ -364,7 +374,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         })
                     ) : (
                         <div className="px-3 py-4 text-center">
-                            <p className="text-sm text-gray-500 mb-3">Select or create a page to access the menu.</p>
+                            <p className="text-sm text-gray-500 mb-3">{t("dashboard.sidebar.selectOrCreate")}</p>
                             <button
                                 onClick={() => {
                                     if (canCreateBio) {
@@ -376,7 +386,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 className="btn btn-primary w-full justify-center text-xs"
                             >
                                 {canCreateBio ? <Plus className="w-3 h-3 mr-1" /> : <Lock className="w-3 h-3 mr-1" />}
-                                {canCreateBio ? "Create Page" : "Unlock More Pages"}
+                                {canCreateBio ? t("dashboard.sidebar.createPage") : t("dashboard.sidebar.unlockMorePages")}
                             </button>
                         </div>
                     )}
@@ -397,7 +407,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                         <ExternalLink className="w-4 h-4" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Page</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t("dashboard.sidebar.livePage")}</span>
                                         <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
                                             portyo.me/p/{bio.sufix}
                                         </span>
@@ -408,7 +418,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     )}
 
                     <Link
-                        to="/dashboard/settings"
+                        to={withLang("/dashboard/settings")}
                         className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group cursor-pointer"
                     >
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">
@@ -416,7 +426,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold truncate text-gray-900">{user?.fullname || "User"}</p>
+                                <p className="text-sm font-bold truncate text-gray-900">{user?.fullname || t("dashboard.sidebar.userFallback")}</p>
                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${userPlan === 'free'
                                     ? 'bg-gray-100 text-gray-600 border-gray-200'
                                     : 'bg-gradient-to-br from-emerald-500 to-black text-white border-transparent shadow-sm'
@@ -433,8 +443,8 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 logout();
                             }}
                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                            title="Log out"
-                            aria-label="Log out"
+                            title={t("dashboard.sidebar.logout")}
+                            aria-label={t("dashboard.sidebar.logout")}
                         >
                             <LogOut className="w-4 h-4" />
                         </button>

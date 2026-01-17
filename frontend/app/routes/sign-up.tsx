@@ -1,16 +1,23 @@
 import type { Route } from "./+types/sign-up";
-import { Link, useSearchParams, useNavigate } from "react-router";
+import { Link, useLocation, useSearchParams, useNavigate } from "react-router";
 import { use, useContext, useEffect, useState } from "react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import AuthContext from "~/contexts/auth.context";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 
-export function meta({ }: Route.MetaArgs) {
-    return [{ title: "Sign Up - Portyo" }];
+export function meta({ params }: Route.MetaArgs) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    return [{ title: i18n.t("meta.signUp.title", { lng: lang }) }];
 }
 
 export default function Signup() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
+    const { t } = useTranslation();
+    const location = useLocation();
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
 
     const step = searchParams.get("step") || "1";
     const [username, setUsername] = useState("");
@@ -52,11 +59,11 @@ export default function Signup() {
         } else {
             try {
                 await register(email, password, username, sufix);
-                navigate("/verify-email");
+                navigate(withLang("/verify-email"));
             } catch (e) {
                 console.error("Registration failed", e);
                 // Optionally set an error state here to display to the user
-                alert("Failed to create account. Please try again.");
+                alert(t("auth.signup.createError"));
             }
         }
     };
@@ -79,7 +86,7 @@ export default function Signup() {
             const data = event.data;
             if (data.token && data.user) {
                 socialLogin(data.user, data.token);
-                navigate("/");
+                navigate(withLang("/"));
             }
             popup?.close();
             window.removeEventListener("message", handleMessage);
@@ -96,10 +103,10 @@ export default function Signup() {
 
                     <div className="text-center mb-8">
                         <h1 className="text-2xl font-bold mb-3">
-                            {step === "1" ? "Create Account" : "Choose Username"}
+                            {step === "1" ? t("auth.signup.titleStep1") : t("auth.signup.titleStep2")}
                         </h1>
                         <p className="text-text-muted text-sm px-4">
-                            {step === "1" ? "Join us! Enter your details to create your account" : "Claim your unique spot on Portyo"}
+                            {step === "1" ? t("auth.signup.subtitleStep1") : t("auth.signup.subtitleStep2")}
                         </p>
                     </div>
 
@@ -110,7 +117,7 @@ export default function Signup() {
                                     <input
                                         type="text"
                                         value={username}
-                                        placeholder="Full Name"
+                                        placeholder={t("auth.signup.fullNamePlaceholder")}
                                         autoComplete="name"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
@@ -122,7 +129,7 @@ export default function Signup() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Enter Email / Phone No"
+                                        placeholder={t("auth.signup.emailPlaceholder")}
                                         autoComplete="email"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
@@ -133,7 +140,7 @@ export default function Signup() {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Passcode"
+                                        placeholder={t("auth.signup.passwordPlaceholder")}
                                         autoComplete="new-password"
                                         className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
                                         required
@@ -143,23 +150,23 @@ export default function Signup() {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-text-main hover:text-primary transition-colors"
                                     >
-                                        {showPassword ? "Hide" : "Show"}
+                                        {showPassword ? t("auth.signup.hide") : t("auth.signup.show")}
                                     </button>
                                 </div>
                                 <div className="mt-2 text-xs">
-                                    <p className="text-text-muted mb-2 font-medium">Requirements:</p>
+                                    <p className="text-text-muted mb-2 font-medium">{t("auth.signup.requirementsTitle")}</p>
                                     <ul className="space-y-1.5 pl-1">
                                         <li className={`flex items-center gap-2 ${hasFullName ? 'text-green-600' : 'text-text-muted'}`}>
                                             {hasFullName ? <CheckIcon /> : <CircleIcon />}
-                                            <span>Full name is required</span>
+                                            <span>{t("auth.signup.requirements.fullName")}</span>
                                         </li>
                                         <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-600' : 'text-text-muted'}`}>
                                             {hasUppercase ? <CheckIcon /> : <CircleIcon />}
-                                            <span>At least one uppercase letter</span>
+                                            <span>{t("auth.signup.requirements.uppercase")}</span>
                                         </li>
                                         <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-600' : 'text-text-muted'}`}>
                                             {hasMinLength ? <CheckIcon /> : <CircleIcon />}
-                                            <span>At least 8 characters</span>
+                                            <span>{t("auth.signup.requirements.length")}</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -172,7 +179,7 @@ export default function Signup() {
                                         <input
                                             defaultValue={sufix}
                                             className="min-w-[2ch] bg-transparent p-0 text-text-main placeholder:text-text-muted/50 focus:outline-none text-left"
-                                            placeholder="yourname"
+                                            placeholder={t("auth.signup.usernamePlaceholder")}
                                             autoFocus
                                             onChange={(e) => setSufix(e.target.value)}
                                             spellCheck={false}
@@ -181,7 +188,7 @@ export default function Signup() {
                                     </div>
                                 </div>
                                 <p className="text-xs text-center text-text-muted">
-                                    This will be your public profile URL. You can't change it later !
+                                    {t("auth.signup.usernameHint")}
                                 </p>
                             </div>
                         )}
@@ -193,7 +200,7 @@ export default function Signup() {
                                     onClick={() => setSearchParams({ step: "1", username })}
                                     className="w-1/3 bg-surface border border-border text-text-main font-bold py-3.5 rounded-xl hover:bg-surface-muted transition-colors shadow-sm mt-2"
                                 >
-                                    Back
+                                    {t("auth.signup.back")}
                                 </button>
                             )}
                             <button
@@ -201,7 +208,7 @@ export default function Signup() {
                                 disabled={step === "1" && !isFormValid}
                                 className="flex-1 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {step === "1" ? "Continue" : "Create Account"}
+                                {step === "1" ? t("auth.signup.continue") : t("auth.signup.submit")}
                             </button>
                         </div>
                     </form>
@@ -212,7 +219,7 @@ export default function Signup() {
                                 <div className="absolute inset-0 flex items-center">
                                     <div className="w-full border-t border-border"></div>
                                 </div>
-                                <span className="relative bg-surface px-3 text-xs text-text-main font-semibold uppercase tracking-wider">Or Sign up with</span>
+                                <span className="relative bg-surface px-3 text-xs text-text-main font-semibold uppercase tracking-wider">{t("auth.signup.or")}</span>
                             </div>
 
                             <div className="grid grid-cols-3 gap-3">
@@ -220,13 +227,13 @@ export default function Signup() {
                                     onClick={handleGoogleLogin}
                                     className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group"
                                 >
-                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">Google</span>
+                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.google")}</span>
                                 </button>
                                 <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform"></span> <span className="ml-2 text-xs font-bold hidden sm:inline">Apple ID</span>
+                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform"></span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.apple")}</span>
                                 </button>
                                 <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform">f</span> <span className="ml-2 text-xs font-bold hidden sm:inline">Facebook</span>
+                                    <span className="font-bold text-lg group-hover:scale-110 transition-transform">f</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.facebook")}</span>
                                 </button>
                             </div>
                         </div>
@@ -235,7 +242,7 @@ export default function Signup() {
                     <div className="mt-8 text-center">
                         <p className="text-xs text-text-muted font-medium">
                             {step === "1" ? (
-                                <>Already have an account? <Link to="/login" className="font-bold text-text-main hover:underline ml-1">Sign in</Link></>
+                                <>{t("auth.signup.haveAccount")} <Link to={withLang("/login")} className="font-bold text-text-main hover:underline ml-1">{t("auth.signup.signIn")}</Link></>
                             ) : (
                                 <span className="opacity-0">Spacer</span>
                             )}

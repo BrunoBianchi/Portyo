@@ -1,0 +1,243 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "manifesto": "Manifesto",
+    "pricing": "Preços",
+    "launch": "Lance sua página",
+    "signIn": "Entrar",
+    "startFree": "Começar grátis",
+    "getStarted": "Começar",
+    "view": "Ver",
+    "menu": "Menu",
+    "goToDashboard": "Ir para o painel",
+    "signOut": "Sair",
+    "language": "Idioma"
+  },
+  "home": {
+    "hero": {
+      "title": {
+        "pre": "Converta seus seguidores em",
+        "highlight": "clientes",
+        "post": "com um único link"
+      },
+      "subtitle": "Gere bios poderosas que geram receita com nossa plataforma tudo-em-um. Cresça sua audiência e ganhe enquanto dorme!",
+      "ctaPlaceholder": "seunome",
+      "ctaButton": "Resgatar agora",
+      "floating": {
+        "roleLabel": "Função",
+        "roleValue": "Artista Digital",
+        "newArt": "Nova arte 3D",
+        "viral": "Viral!",
+        "founderLabel": "Fundador",
+        "founderValue": "Vida de Startup",
+        "revenue": "Receita +120%",
+        "newVideo": "Novo vídeo"
+      }
+    },
+    "featured": {
+      "title": "Em destaque em"
+    },
+    "analytics": {
+      "title": "Transforme cada interação em oportunidade",
+      "subtitle": "Obtenha insights profundos sobre o comportamento do seu público. De leituras de QR a conversão em vendas, acompanhe o que importa e otimize sua presença digital para crescer de verdade.",
+      "cards": {
+        "subscribers": "Inscritos",
+        "qrScans": "Leituras de QR",
+        "sales": "Vendas",
+        "conversionRate": "Taxa de conversão",
+        "conversionBadge": "+24%"
+      }
+    },
+    "features": {
+      "newsletter": {
+        "title": "Newsletter",
+        "body": "Construa uma audiência fiel coletando e-mails diretamente da sua bio. Envie newsletters bonitas e automatizadas sem sair da plataforma.",
+        "cta": "Saiba mais",
+        "joinList": "Entre na lista",
+        "emailPlaceholder": "seu@email.com",
+        "notificationLabel": "Notificação",
+        "notificationValue": "Novo inscrito!"
+      },
+      "automation": {
+        "title": "Automação poderosa",
+        "body": "Crie fluxos que trabalham enquanto você dorme. Dispare e-mails, mensagens e muito mais com base nas ações do visitante.",
+        "cta": "Criar fluxos",
+        "running": "Em execução",
+        "node1Title": "Novo inscrito",
+        "node1Trigger": "Gatilho",
+        "node1TriggerValue": "entrar",
+        "node2Title": "Enviar e-mail",
+        "node2Subtitle": "Kit de boas-vindas",
+        "node3Title": "Adicionar tag",
+        "node3Tag": "#pro-lead"
+      },
+      "scheduler": {
+        "title": "Agenda inteligente",
+        "body": "Deixe clientes agendarem com facilidade. Sincroniza com o Google Calendar para evitar conflitos. Defina sua disponibilidade e receba reservas.",
+        "cta": "Começar a agendar",
+        "month": "Setembro 2025",
+        "days": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        "eventTitle": "Chamada de descoberta",
+        "eventTime": "10:00 - 10:30",
+        "statusLabel": "Status",
+        "statusValue": "Confirmado"
+      },
+      "partnerships": {
+        "title": "Parcerias",
+        "body": "Pare de perder oportunidades. Permita que marcas entrem em contato diretamente com um fluxo dedicado de parcerias.",
+        "cta": "Seja patrocinado",
+        "cardTitle": "Pedido de colaboração",
+        "cardBody": "A Nike quer colaborar com você na nova campanha.",
+        "accept": "Aceitar",
+        "decline": "Recusar",
+        "budgetLabel": "Orçamento"
+      },
+      "blog": {
+        "title": "Blog integrado",
+        "body": "Sua voz importa. Compartilhe ideias, histórias e expertise com uma plataforma de blog totalmente integrada. Otimizada para SEO.",
+        "cta": "Começar a escrever",
+        "tagLifestyle": "Estilo de vida",
+        "tagReadTime": "5 min de leitura",
+        "cardTitle": "10 dicas para crescer sua audiência em 2025",
+        "byYou": "Por você",
+        "published": "Publicado"
+      }
+    },
+    "pricing": {
+      "billing": {
+        "monthly": "Mensal",
+        "annually": "Anual (economize 25%)"
+      },
+      "showMore": "Mostrar mais",
+      "showLess": "Mostrar menos",
+      "alerts": {
+        "checkoutMissing": "Algo deu errado. Tente novamente.",
+        "checkoutFailed": "Falha ao iniciar o checkout. Tente novamente."
+      },
+      "cards": {
+        "free": {
+          "title": "Grátis",
+          "subtitle": "Para começar",
+          "cta": "Começar",
+          "features": [
+            "Criar apenas uma página",
+            "Criar 1 formulário",
+            "Sem remoção de marca",
+            "Sem domínio personalizado",
+            "Analytics básico",
+            "Taxa de loja de 3%"
+          ],
+          "more": ["Integrações limitadas"]
+        },
+        "standard": {
+          "badge": "Mais popular",
+          "title": "Standard",
+          "subtitle": "Para criadores em crescimento",
+          "billedYearly": "Cobrado $49,50 por ano",
+          "ctaUpgrade": "Fazer upgrade",
+          "ctaTrial": "Iniciar teste",
+          "features": [
+            "Criar até 2 bios",
+            "Criar 3 formulários",
+            "Remoção de marca",
+            "Domínio personalizado",
+            "Coleta de e-mails",
+            "Taxa de loja de 1%",
+            "150 e-mails/mês"
+          ],
+          "more": [
+            "Automação (2 por bio)",
+            "Template de e-mail (2 por bio)",
+            "Configurações de SEO",
+            "Analytics do Google e Facebook",
+            "Mais personalizações"
+          ]
+        },
+        "pro": {
+          "title": "Pro",
+          "subtitle": "Para negócios sérios",
+          "billedYearly": "Cobrado $135 por ano",
+          "cta": "Virar Pro",
+          "features": [
+            "Tudo do Standard",
+            "Criar até 5 bios",
+            "Criar 4 formulários",
+            "Agenda",
+            "Automação (4 por bio)",
+            "Template de e-mail (4 por bio)",
+            "Taxa de loja 0%",
+            "500 e-mails/mês",
+            "Mais personalizações"
+          ]
+        }
+      }
+    },
+    "blogSection": {
+      "title": "BLOG",
+      "cta": "Leia nosso blog",
+      "categoryLabel": "Categoria",
+      "more": "Mais",
+      "readTime": "5 min",
+      "hot": "Em alta",
+      "viewAllCategories": "Ver todas as categorias",
+      "additionalLinks": {
+        "link1": "COMO CRIAR UMA BIO INCRÍVEL",
+        "link2": "CONVERTA SEGUIDORES EM CLIENTES PAGANTES"
+      },
+      "defaultPosts": {
+        "p1": {
+          "title": "COMO CRIAR O LINK NA BIO PERFEITO",
+          "category": "Dicas",
+          "date": "08 Jan"
+        },
+        "p2": {
+          "title": "TURBINE SUA PRESENÇA NAS REDES COM UM ÚNICO LINK",
+          "excerpt": "Transforme seguidores em clientes com um link poderoso na bio. Aprenda a otimizar seu perfil e aumentar conversões com estratégias simples...",
+          "category": "Crescimento"
+        },
+        "p3": {
+          "title": "PRINCIPAIS ESTRATÉGIAS DE MONETIZAÇÃO PARA CRIADORES",
+          "category": "Receita",
+          "date": "05 Jan"
+        },
+        "p4": {
+          "title": "MASTERCLASS DE ANALYTICS | ENTENDA SUA AUDIÊNCIA",
+          "category": "Insights",
+          "date": "03 Jan"
+        }
+      },
+      "categories": {
+        "social": "Redes sociais",
+        "monetization": "Monetização",
+        "analytics": "Analytics",
+        "design": "Dicas de design",
+        "growth": "Hacks de crescimento",
+        "branding": "Branding",
+        "ecommerce": "E-commerce",
+        "creators": "Criadores"
+      }
+    },
+    "carousel": {
+      "defaultRole": "Criador",
+      "defaultDescription": "Explore a página deste criador.",
+      "fallback": [
+        {
+          "role": "Arquiteta",
+          "description": "Arquiteta e designer criando espaços sustentáveis."
+        },
+        {
+          "role": "Desenvolvedor",
+          "description": "Desenvolvedor full stack - Criador do @Portyo.me"
+        },
+        {
+          "role": "Dentista",
+          "description": "Especialista em harmonização orofacial e lentes de resina."
+        },
+        {
+          "role": "SaaS",
+          "description": "Conectando estudantes a oportunidades de estágio no Brasil."
+        }
+      ]
+    }
+  }
+}

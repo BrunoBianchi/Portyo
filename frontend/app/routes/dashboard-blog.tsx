@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Plus, Search, FileText, MoreHorizontal, Calendar, Eye, Filter, Edit2, Trash2 } from "lucide-react";
 import { NewPostModal } from "~/components/dashboard/new-post-modal";
 import { useBlog } from "~/contexts/blog.context";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
     return [
@@ -12,6 +13,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function DashboardBlog() {
+    const { t } = useTranslation();
     const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
     const { posts, loading, deletePost } = useBlog();
     const [editingPost, setEditingPost] = useState<any>(null);
@@ -50,22 +52,22 @@ export default function DashboardBlog() {
             {postToDelete && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-75" onClick={() => setPostToDelete(null)}>
                     <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm animate-in zoom-in-95 duration-75" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Post?</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.blog.delete.title")}</h3>
                         <p className="text-sm text-gray-500 mb-6">
-                            Are you sure you want to delete "{postToDelete.title}"? This action cannot be undone.
+                            {t("dashboard.blog.delete.body", { title: postToDelete.title })}
                         </p>
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setPostToDelete(null)}
                                 className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.blog.delete.cancel")}
                             </button>
                             <button
                                 onClick={confirmDelete}
                                 className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
                             >
-                                Delete
+                                {t("dashboard.blog.delete.action")}
                             </button>
                         </div>
                     </div>
@@ -77,10 +79,10 @@ export default function DashboardBlog() {
                 <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold uppercase tracking-wider mb-3">
                         <FileText className="w-3 h-3" />
-                        Blog
+                        {t("dashboard.blog.badge")}
                     </div>
-                    <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">Blog Posts</h1>
-                    <p className="text-lg text-text-muted">Manage your content and stories.</p>
+                    <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">{t("dashboard.blog.title")}</h1>
+                    <p className="text-lg text-text-muted">{t("dashboard.blog.subtitle")}</p>
                 </div>
                 <button
                     onClick={() => {
@@ -89,7 +91,7 @@ export default function DashboardBlog() {
                     }}
                     className="btn btn-primary"
                 >
-                    <Plus className="w-4 h-4" /> New Post
+                    <Plus className="w-4 h-4" /> {t("dashboard.blog.newPost")}
                 </button>
             </header>
 
@@ -102,7 +104,7 @@ export default function DashboardBlog() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
-                            placeholder="Search posts..."
+                            placeholder={t("dashboard.blog.searchPlaceholder")}
                             className="w-full pl-9 pr-4 py-2 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                         />
                     </div>
@@ -110,9 +112,9 @@ export default function DashboardBlog() {
                         <div className="relative w-full md:w-48">
                             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                             <select className="w-full pl-9 pr-8 py-2 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm appearance-none cursor-pointer">
-                                <option value="all">All Status</option>
-                                <option value="published">Published</option>
-                                <option value="draft">Draft</option>
+                                <option value="all">{t("dashboard.blog.status.all")}</option>
+                                <option value="published">{t("dashboard.blog.status.published")}</option>
+                                <option value="draft">{t("dashboard.blog.status.draft")}</option>
                             </select>
                         </div>
                     </div>
@@ -120,10 +122,10 @@ export default function DashboardBlog() {
 
                 {/* Table Header */}
                 <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-surface-muted border-b border-border text-xs font-bold text-text-muted uppercase tracking-wider">
-                    <div className="col-span-6">Post</div>
-                    <div className="col-span-2">Status</div>
-                    <div className="col-span-2">Stats</div>
-                    <div className="col-span-2 text-right">Actions</div>
+                    <div className="col-span-6">{t("dashboard.blog.table.post")}</div>
+                    <div className="col-span-2">{t("dashboard.blog.table.status")}</div>
+                    <div className="col-span-2">{t("dashboard.blog.table.stats")}</div>
+                    <div className="col-span-2 text-right">{t("dashboard.blog.table.actions")}</div>
                 </div>
 
                 {/* List */}
@@ -152,7 +154,7 @@ export default function DashboardBlog() {
                                             : 'bg-gray-50 text-gray-600 border-gray-200'
                                             }`}>
                                             {post.status === 'published' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>}
-                                            <span className="capitalize">{post.status}</span>
+                                            <span className="capitalize">{post.status === 'published' ? t("dashboard.blog.status.published") : t("dashboard.blog.status.draft")}</span>
                                         </span>
 
                                         <div className="flex items-center gap-1 text-[10px] text-text-muted">
@@ -175,7 +177,7 @@ export default function DashboardBlog() {
                                     }`}>
                                     {post.status === 'published' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>}
                                     {post.status === 'draft' && <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>}
-                                    <span className="capitalize">{post.status}</span>
+                                    <span className="capitalize">{post.status === 'published' ? t("dashboard.blog.status.published") : t("dashboard.blog.status.draft")}</span>
                                 </span>
                             </div>
 
@@ -187,7 +189,7 @@ export default function DashboardBlog() {
                                 </div>
                                 <div className="flex items-center gap-1.5 text-xs text-text-muted">
                                     <Eye className="w-3 h-3" />
-                                    <span>{post.views.toLocaleString()} views</span>
+                                    <span>{t("dashboard.blog.views", { count: post.views })}</span>
                                 </div>
                             </div>
 
@@ -196,14 +198,14 @@ export default function DashboardBlog() {
                                 <button
                                     onClick={() => handleEdit(post)}
                                     className="p-2 text-text-muted hover:text-primary-foreground hover:bg-primary/10 rounded-lg transition-colors bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border md:border-none border-gray-100 shadow-sm md:shadow-none"
-                                    title="Edit"
+                                    title={t("dashboard.blog.actions.edit")}
                                 >
                                     <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(post)}
                                     className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border md:border-none border-gray-100 shadow-sm md:shadow-none"
-                                    title="Delete"
+                                    title={t("dashboard.blog.actions.delete")}
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -214,10 +216,10 @@ export default function DashboardBlog() {
 
                 {/* Empty State / Pagination Footer */}
                 <div className="px-6 py-4 border-t border-border bg-surface-muted/30 flex items-center justify-between text-xs text-text-muted">
-                    <span>Showing {posts.length} posts</span>
+                    <span>{t("dashboard.blog.showing", { count: posts.length })}</span>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Previous</button>
-                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Next</button>
+                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>{t("dashboard.blog.pagination.previous")}</button>
+                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>{t("dashboard.blog.pagination.next")}</button>
                     </div>
                 </div>
             </div>

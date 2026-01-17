@@ -23,144 +23,146 @@ import {
   TrendingUpIcon
 } from "~/components/shared/icons";
 
-export const palette: Array<{ type: BioBlock["type"] | string; label: string; icon: React.ReactNode; category: string; isPro?: boolean }> = [
+export type PaletteItem = { type: BioBlock["type"] | string; label: string; icon: React.ReactNode; category: string; isPro?: boolean };
+
+export const getPalette = (t: (key: string) => string): PaletteItem[] => [
   {
     type: "heading",
-    label: "Heading",
+    label: t("dashboard.editor.palette.heading"),
     category: "Content",
     icon: <HeadingIcon width="24" height="24" />
   },
   {
     type: "qrcode",
-    label: "QR Code",
+    label: t("dashboard.editor.palette.qrcode"),
     category: "Content",
     icon: <QrCodeIcon width="24" height="24" />
   },
   {
     type: "text",
-    label: "Text",
+    label: t("dashboard.editor.palette.text"),
     category: "Content",
     icon: <TextIcon width="24" height="24" />
   },
   {
     type: "button",
-    label: "Button",
+    label: t("dashboard.editor.palette.button"),
     category: "Content",
     icon: <ButtonIcon width="24" height="24" />
   },
   {
     type: "button_grid",
-    label: "Button Grid",
+    label: t("dashboard.editor.palette.buttonGrid"),
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
   },
   {
     type: "image",
-    label: "Image",
+    label: t("dashboard.editor.palette.image"),
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
   },
   {
     type: "marketing",
-    label: "Marketing Slot",
+    label: t("dashboard.editor.marketing.slotTitle"),
     category: "Marketing",
     icon: <TrendingUpIcon width="24" height="24" />
   },
   {
     type: "socials",
-    label: "Socials",
+    label: t("dashboard.editor.palette.socials"),
     category: "Social",
     icon: <SocialsIcon width="24" height="24" />
   },
   {
     type: "video",
-    label: "Video",
+    label: t("dashboard.editor.palette.video"),
     category: "Content",
     icon: <VideoIcon width="24" height="24" />
   },
   {
     type: "blog",
-    label: "Blog",
+    label: t("dashboard.editor.palette.blog"),
     category: "Blog",
     icon: <BlogIcon width="24" height="24" />
   },
   {
     type: "product",
-    label: "Product List",
+    label: t("dashboard.editor.palette.productList"),
     category: "Shop",
     icon: <ProductIcon width="24" height="24" />
   },
   {
     type: "calendar",
-    label: "Calendar",
+    label: t("dashboard.editor.palette.calendar"),
     category: "Content",
     isPro: true,
     icon: <CalendarIcon width="24" height="24" />
   },
   {
     type: "map",
-    label: "Map",
+    label: t("dashboard.editor.palette.map"),
     category: "Content",
     icon: <MapIcon width="24" height="24" />
   },
   {
     type: "featured",
-    label: "Featured",
+    label: t("dashboard.editor.palette.featured"),
     category: "Shop",
     icon: <StarIcon width="24" height="24" />
   },
   {
     type: "affiliate",
-    label: "Affiliate Code",
+    label: t("dashboard.editor.palette.affiliateCode"),
     category: "Shop",
     icon: <CopyIcon width="24" height="24" />
   },
   {
     type: "event",
-    label: "Event",
+    label: t("dashboard.editor.palette.event"),
     category: "Content",
     icon: <EventIcon width="24" height="24" />
   },
   {
     type: "tour",
-    label: "Tour Dates",
+    label: t("dashboard.editor.palette.tourDates"),
     category: "Content",
     isPro: true,
     icon: <TourIcon width="24" height="24" />
   },
   {
     type: "spotify",
-    label: "Spotify",
+    label: t("dashboard.editor.palette.spotify"),
     category: "Music",
     icon: <SpotifyIcon width="24" height="24" />
   },
   {
     type: "instagram",
-    label: "Instagram Feed",
+    label: t("dashboard.editor.palette.instagramFeed"),
     category: "Social",
     icon: <InstagramIcon width="24" height="24" />
   },
   {
     type: "youtube",
-    label: "YouTube Feed",
+    label: t("dashboard.editor.palette.youtubeFeed"),
     category: "Social",
     icon: <YouTubeIcon width="24" height="24" />
   },
   {
     type: "divider",
-    label: "Divider",
+    label: t("dashboard.editor.palette.divider"),
     category: "Layout",
     icon: <DividerIcon width="24" height="24" />
   },
   {
     type: "form",
-    label: "Form",
+    label: t("dashboard.editor.palette.form"),
     category: "Content",
     icon: <FormIcon width="24" height="24" />
   },
   {
     type: "portfolio",
-    label: "Portfolio",
+    label: t("dashboard.editor.palette.portfolio"),
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
   },

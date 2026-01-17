@@ -1,11 +1,13 @@
 import { useState } from "react";
 import type { MetaFunction } from "react-router";
 import { Shield, FileText, Cookie } from "lucide-react";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Legal | Portyo" },
-        { name: "description", content: "Privacy Policy, Terms of Service, and Cookie Policy for Portyo." },
+        { title: i18n.t("meta.legal.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.legal.description", { lng: lang }) },
     ];
 };
 

@@ -1,4 +1,8 @@
 import { Router } from "express";
+import path from "path";
+import fs from "fs/promises";
+import { existsSync } from "fs";
+import sharp from "sharp";
 import redisClient from "../../../config/redis.client";
 import { logger } from "../../../shared/utils/logger";
 
@@ -7,6 +11,89 @@ const router = Router();
 // Cache control: no-cache - we want the browser to always revalidate with the server (ETag)
 // because the URL stays the same even if the content changes (user uploads new photo).
 const CACHE_CONTROL = "no-cache, must-revalidate, max-age=0";
+
+const guessPublicDir = () => {
+    const candidates = [
+        path.resolve(process.cwd(), "../frontend/public"),
+        path.resolve(process.cwd(), "frontend/public"),
+        path.resolve(__dirname, "../../../../frontend/public")
+    ];
+
+    return candidates.find((candidate) => existsSync(candidate)) || candidates[0];
+};
+
+const PUBLIC_DIR = guessPublicDir();
+const ALLOWED_PUBLIC_PATHS = ["/users-photos/", "/icons/"];
+
+router.get("/optimize", async (req, res) => {
+    try {
+        const imagePath = typeof req.query.path === "string" ? req.query.path : "";
+
+        if (!imagePath || !ALLOWED_PUBLIC_PATHS.some((prefix) => imagePath.startsWith(prefix))) {
+            return res.status(400).json({ message: "Invalid image path" });
+        }
+
+        const width = req.query.w ? Number(req.query.w) : undefined;
+        const height = req.query.h ? Number(req.query.h) : undefined;
+        const quality = req.query.q ? Number(req.query.q) : undefined;
+        const formatParam = typeof req.query.format === "string" ? req.query.format : undefined;
+
+        if ((width && (!Number.isFinite(width) || width <= 0)) || (height && (!Number.isFinite(height) || height <= 0))) {
+            return res.status(400).json({ message: "Invalid width/height" });
+        }
+
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${imagePath}`);
+        if (!resolvedPath.startsWith(PUBLIC_DIR)) {
+            return res.status(400).json({ message: "Invalid image path" });
+        }
+
+        const buffer = await fs.readFile(resolvedPath);
+
+        let transformer = sharp(buffer).rotate();
+        if (width || height) {
+            transformer = transformer.resize({
+                width,
+                height,
+                fit: "cover",
+                withoutEnlargement: true
+            });
+        }
+
+        const accept = req.headers.accept || "";
+        const preferredFormat = formatParam || (accept.includes("image/avif") ? "avif" : accept.includes("image/webp") ? "webp" : "png");
+
+        let contentType = "image/png";
+        switch (preferredFormat) {
+            case "avif":
+                transformer = transformer.avif({ quality: Number.isFinite(quality) ? quality : 45 });
+                contentType = "image/avif";
+                break;
+            case "webp":
+                transformer = transformer.webp({ quality: Number.isFinite(quality) ? quality : 78 });
+                contentType = "image/webp";
+                break;
+            case "jpg":
+            case "jpeg":
+                transformer = transformer.jpeg({ quality: Number.isFinite(quality) ? quality : 78, mozjpeg: true });
+                contentType = "image/jpeg";
+                break;
+            case "png":
+            default:
+                transformer = transformer.png();
+                contentType = "image/png";
+                break;
+        }
+
+        const output = await transformer.toBuffer();
+        res.set("Content-Type", contentType);
+        res.set("Cache-Control", "public, max-age=31536000, immutable");
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+        return res.send(output);
+    } catch (error) {
+        logger.error("Error optimizing public image:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 router.get("/blog/:userId/:imageId/:filename", async (req, res) => {
     try {

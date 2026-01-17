@@ -1,8 +1,18 @@
 import React from 'react';
 import { ArrowRight, Bell, Image, Clock, Check, UserPlus, Mail, Zap } from "lucide-react";
 import { NikeIcon } from "~/components/shared/icons";
+import { useTranslation } from "react-i18next";
 
 export default function FeaturesSection() {
+  const { t } = useTranslation();
+  const schedulerDaysValue = t("home.features.scheduler.days", {
+    returnObjects: true,
+    defaultValue: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+  });
+  const schedulerDays = Array.isArray(schedulerDaysValue)
+    ? schedulerDaysValue
+    : ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
   return (
     <div className="w-full flex flex-col">
 
@@ -11,13 +21,13 @@ export default function FeaturesSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24">
           <div className="flex-1 flex flex-col gap-8 text-left order-2 md:order-1">
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">Newsletter</h2>
-              <p className="text-xl text-text-muted leading-relaxed max-w-lg">
-                Build a loyal audience by collecting emails directly from your bio. Send beautiful, automated newsletters to your subscribers without ever leaving the platform.
+              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">{t("home.features.newsletter.title")}</h2>
+              <p className="text-xl text-gray-700 leading-relaxed max-w-lg">
+                {t("home.features.newsletter.body")}
               </p>
             </div>
             <button className="w-fit mt-2 font-bold text-text-main hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-              Learn more <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t("home.features.newsletter.cta")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
@@ -36,9 +46,9 @@ export default function FeaturesSection() {
                 <div className="h-4 w-3/4 bg-gray-50 rounded-full"></div>
               </div>
               <div className="mt-8 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                <p className="text-xs font-bold text-text-main mb-2 uppercase tracking-wider">Join the list</p>
+                <p className="text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("home.features.newsletter.joinList")}</p>
                 <div className="flex gap-2">
-                  <div className="flex-1 h-12 bg-white border border-gray-200 rounded-xl px-4 flex items-center text-gray-400 text-sm">your@email.com</div>
+                  <div className="flex-1 h-12 bg-white border border-gray-200 rounded-xl px-4 flex items-center text-gray-600 text-sm">{t("home.features.newsletter.emailPlaceholder")}</div>
                   <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-text-main shadow-sm cursor-pointer hover:bg-primary-hover transition-colors">
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -53,8 +63,8 @@ export default function FeaturesSection() {
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Notification</p>
-                  <p className="font-bold text-sm">New Subscriber!</p>
+                  <p className="text-xs text-gray-300">{t("home.features.newsletter.notificationLabel")}</p>
+                  <p className="font-bold text-sm">{t("home.features.newsletter.notificationValue")}</p>
                 </div>
               </div>
             </div>
@@ -75,7 +85,7 @@ export default function FeaturesSection() {
               <div className="absolute right-0 md:-right-4 -top-3 z-50">
                 <div className="bg-[#ccf32f] text-black px-5 py-2 rounded-full shadow-lg rotate-[5deg] flex items-center gap-2 border-[4px] border-neutral-900">
                   <Zap className="w-3.5 h-3.5 fill-black" />
-                  <span className="font-bold text-xs tracking-wide uppercase">Running</span>
+                  <span className="font-bold text-xs tracking-wide uppercase">{t("home.features.automation.running")}</span>
                 </div>
               </div>
 
@@ -143,10 +153,10 @@ export default function FeaturesSection() {
                       <UserPlus className="w-5 h-5 text-[#ff8e3c]" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-800 text-sm">New Subscriber</h4>
+                      <p className="font-bold text-gray-800 text-sm">{t("home.features.automation.node1Title")}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Trigger</span>
-                        <span className="text-[10px] font-mono text-gray-500 bg-gray-50 px-1.5 rounded">join</span>
+                        <span className="text-[10px] uppercase font-bold text-gray-600 tracking-wider">{t("home.features.automation.node1Trigger")}</span>
+                        <span className="text-[10px] font-mono text-gray-500 bg-gray-50 px-1.5 rounded">{t("home.features.automation.node1TriggerValue")}</span>
                       </div>
                     </div>
                     {/* Handle Bottom */}
@@ -164,8 +174,8 @@ export default function FeaturesSection() {
                       <Mail className="w-5 h-5 text-[#3b82f6]" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-800 text-sm">Send Email</h4>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Welcome Kit</p>
+                      <p className="font-bold text-gray-800 text-sm">{t("home.features.automation.node2Title")}</p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">{t("home.features.automation.node2Subtitle")}</p>
                     </div>
 
                     {/* Handle Bottom */}
@@ -183,9 +193,9 @@ export default function FeaturesSection() {
                       <Zap className="w-5 h-5 text-[#8b5cf6]" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-800 text-sm">Add Tag</h4>
+                      <p className="font-bold text-gray-800 text-sm">{t("home.features.automation.node3Title")}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[10px] font-mono text-purple-600 bg-purple-50 px-1.5 rounded">#pro-lead</span>
+                        <span className="text-[10px] font-mono text-purple-600 bg-purple-50 px-1.5 rounded">{t("home.features.automation.node3Tag")}</span>
                       </div>
                     </div>
                   </div>
@@ -198,13 +208,13 @@ export default function FeaturesSection() {
           {/* Content (Right) */}
           <div className="flex-1 flex flex-col gap-8 text-left order-2">
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-extrabold text-white font-sans tracking-tight leading-[1.1]">Powerful Automation</h2>
-              <p className="text-xl text-gray-400 leading-relaxed max-w-lg">
-                Build workflows that work while you sleep. Trigger emails, messages, and more based on visitor actions.
+              <h2 className="text-5xl md:text-7xl font-extrabold text-white font-sans tracking-tight leading-[1.1]">{t("home.features.automation.title")}</h2>
+              <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+                {t("home.features.automation.body")}
               </p>
             </div>
             <button className="w-fit mt-2 font-bold text-white hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-              Create Workflows <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t("home.features.automation.cta")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
@@ -215,20 +225,20 @@ export default function FeaturesSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24">
           <div className="flex-1 flex flex-col gap-8 text-left order-2 md:order-1">
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">Smart Scheduler</h2>
-              <p className="text-xl text-text-muted leading-relaxed max-w-lg">
-                Let clients book you effortlessly. Syncs with Google Calendar to prevent double bookings. Set your availability and get booked.
+              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">{t("home.features.scheduler.title")}</h2>
+              <p className="text-xl text-gray-700 leading-relaxed max-w-lg">
+                {t("home.features.scheduler.body")}
               </p>
             </div>
             <button className="w-fit mt-2 font-bold text-text-main hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-              Start Booking <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t("home.features.scheduler.cta")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
           <div className="flex-1 w-full relative min-h-[400px] flex items-center justify-center order-1 md:order-2">
             <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-xl p-8 relative z-10 rotate-[2deg] hover:rotate-0 transition-transform duration-500">
               <div className="mb-6 flex justify-between items-center">
-                <span className="font-bold text-lg text-text-main">September 2025</span>
+                <span className="font-bold text-lg text-text-main">{t("home.features.scheduler.month")}</span>
                 <div className="flex gap-2">
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200">{"<"}</div>
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200">{">"}</div>
@@ -236,7 +246,9 @@ export default function FeaturesSection() {
               </div>
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-2 mb-4">
-                {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(d => <div key={d} className="text-xs font-bold text-gray-400 text-center">{d}</div>)}
+                {schedulerDays.map((day) => (
+                  <div key={day} className="text-xs font-bold text-gray-600 text-center">{day}</div>
+                ))}
               </div>
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(30)].map((_, i) => (
@@ -250,8 +262,8 @@ export default function FeaturesSection() {
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-text-main">Discovery Call</p>
-                  <p className="text-xs text-gray-400">10:00 AM - 10:30 AM</p>
+                  <p className="font-bold text-sm text-text-main">{t("home.features.scheduler.eventTitle")}</p>
+                  <p className="text-xs text-gray-600">{t("home.features.scheduler.eventTime")}</p>
                 </div>
               </div>
             </div>
@@ -262,8 +274,8 @@ export default function FeaturesSection() {
                   <Check className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Status</p>
-                  <p className="font-bold text-sm">Confirmed</p>
+                  <p className="text-xs text-gray-600">{t("home.features.scheduler.statusLabel")}</p>
+                  <p className="font-bold text-sm">{t("home.features.scheduler.statusValue")}</p>
                 </div>
               </div>
             </div>
@@ -276,13 +288,13 @@ export default function FeaturesSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24">
           <div className="flex-1 flex flex-col gap-8 text-left order-2">
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-extrabold text-white font-sans tracking-tight leading-[1.1]">Partnerships</h2>
-              <p className="text-xl text-gray-400 leading-relaxed max-w-lg">
-                Stop missing out on opportunities. Let brands reach out to you directly with a dedicated partnership inquiry flow.
+              <h2 className="text-5xl md:text-7xl font-extrabold text-white font-sans tracking-tight leading-[1.1]">{t("home.features.partnerships.title")}</h2>
+              <p className="text-xl text-gray-300 leading-relaxed max-w-lg">
+                {t("home.features.partnerships.body")}
               </p>
             </div>
             <button className="w-fit mt-2 font-bold text-white hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-              Get Sponsored <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t("home.features.partnerships.cta")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
@@ -292,18 +304,18 @@ export default function FeaturesSection() {
               <div className="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm overflow-hidden">
                 <img src="/Street Life - Head (1).svg" alt="Collaboration" className="w-full h-full object-cover scale-150 translate-y-2 opacity-80" />
               </div>
-              <h3 className="text-2xl font-bold text-black mb-2">Collaboration Request</h3>
-              <p className="text-black/70 mb-8">Nike wants to collaborate with you on their new campaign.</p>
+              <h3 className="text-2xl font-bold text-black mb-2">{t("home.features.partnerships.cardTitle")}</h3>
+              <p className="text-black/70 mb-8">{t("home.features.partnerships.cardBody")}</p>
 
               <div className="flex gap-4">
-                <button className="flex-1 bg-black text-white py-3 rounded-xl font-bold shadow-lg hover:bg-gray-900 transition-colors">Accept</button>
-                <button className="flex-1 bg-white/30 text-black py-3 rounded-xl font-bold hover:bg-white/40 transition-colors">Decline</button>
+                <button className="flex-1 bg-black text-white py-3 rounded-xl font-bold shadow-lg hover:bg-gray-900 transition-colors">{t("home.features.partnerships.accept")}</button>
+                <button className="flex-1 bg-white/30 text-black py-3 rounded-xl font-bold hover:bg-white/40 transition-colors">{t("home.features.partnerships.decline")}</button>
               </div>
             </div>
 
             {/* Floating Badge */}
             <div className="absolute right-0 md:-right-8 top-1/2 bg-white text-text-main px-6 py-3 rounded-2xl shadow-xl z-20 rotate-[10deg]">
-              <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Budget</p>
+              <p className="text-xs text-gray-600 uppercase tracking-wider font-bold">{t("home.features.partnerships.budgetLabel")}</p>
               <p className="text-2xl font-bold text-green-600">$1,200</p>
             </div>
           </div>
@@ -322,13 +334,13 @@ export default function FeaturesSection() {
                 </div>
               </div>
               <div className="flex gap-2 mb-4">
-                <span className="px-3 py-1 bg-white/40 rounded-full text-xs font-bold text-black/70">Lifestyle</span>
-                <span className="px-3 py-1 bg-white/40 rounded-full text-xs font-bold text-black/70">5 min read</span>
+                <span className="px-3 py-1 bg-white/40 rounded-full text-xs font-bold text-black/70">{t("home.features.blog.tagLifestyle")}</span>
+                <span className="px-3 py-1 bg-white/40 rounded-full text-xs font-bold text-black/70">{t("home.features.blog.tagReadTime")}</span>
               </div>
-              <h3 className="text-2xl font-bold text-text-main mb-4 leading-tight">10 Tips for Growing Your Audience in 2025</h3>
+              <h3 className="text-2xl font-bold text-text-main mb-4 leading-tight">{t("home.features.blog.cardTitle")}</h3>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-black/10"></div>
-                <span className="text-sm font-medium text-black/60">By You</span>
+                <span className="text-sm font-medium text-black/60">{t("home.features.blog.byYou")}</span>
               </div>
             </div>
 
@@ -336,20 +348,20 @@ export default function FeaturesSection() {
             <div className="absolute left-0 md:-left-4 top-20 bg-white text-text-main px-5 py-3 rounded-xl shadow-xl z-20 rotate-[-5deg]">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="font-bold text-sm">Published</span>
+                  <span className="font-bold text-sm">{t("home.features.blog.published")}</span>
               </div>
             </div>
           </div>
 
           <div className="flex-1 flex flex-col gap-8 text-left order-2 md:order-1">
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">Integrated Blog</h2>
-              <p className="text-xl text-text-muted leading-relaxed max-w-lg">
-                Your voice matters. Share your thoughts, stories, and expertise with a fully integrated blogging platform. SEO-optimized.
+              <h2 className="text-5xl md:text-7xl font-extrabold text-text-main font-sans tracking-tight leading-[1.1]">{t("home.features.blog.title")}</h2>
+              <p className="text-xl text-gray-700 leading-relaxed max-w-lg">
+                {t("home.features.blog.body")}
               </p>
             </div>
             <button className="w-fit mt-2 font-bold text-text-main hover:text-primary transition-colors flex items-center gap-3 group text-xl">
-              Start Writing <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t("home.features.blog.cta")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>

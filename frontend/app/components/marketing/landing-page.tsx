@@ -14,22 +14,22 @@ export default function LandingPage() {
         <main className="flex items-center justify-center pt-16 pb-16 bg-surface-alt min-h-screen">
             <div className="flex-1 flex flex-col items-center gap-10 min-h-0 w-full">
                 <HeroSection />
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[420px] w-full" />}>
                     <CarouselSection />
                 </Suspense>
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[520px] w-full" />}>
                     <AnalyticsSection />
                 </Suspense>
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[220px] w-full" />}>
                     <FeaturedSection />
                 </Suspense>
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[720px] w-full" />}>
                     <FeaturesSection />
                 </Suspense>
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[760px] w-full" />}>
                     <PricingSection />
                 </Suspense>
-                <Suspense fallback={<div className="h-96" />}>
+                <Suspense fallback={<div className="min-h-[520px] w-full" />}>
                     <BlogSection />
                 </Suspense>
             </div>

@@ -1,0 +1,1342 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "manifesto": "Manifesto",
+    "pricing": "Pricing",
+    "launch": "Launch your page",
+    "signIn": "Sign in",
+    "startFree": "Start For Free",
+    "getStarted": "Get Started",
+    "view": "View",
+    "menu": "Menu",
+    "goToDashboard": "Go to Dashboard",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "meta": {
+    "root": {
+      "title": "Portyo - Link in Bio",
+      "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform."
+    },
+    "home": {
+      "title": "Portyo - Link in Bio",
+      "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform."
+    },
+    "about": {
+      "title": "About | Portyo",
+      "description": "We are empowering creators to build their future."
+    },
+    "pricing": {
+      "title": "Pricing | Portyo",
+      "description": "Choose the perfect plan for your needs."
+    },
+    "contact": {
+      "title": "Contact | Portyo",
+      "description": "Get in touch with the Portyo team."
+    },
+    "legal": {
+      "title": "Legal | Portyo",
+      "description": "Privacy Policy, Terms of Service, and Cookie Policy for Portyo."
+    },
+    "privacyPolicy": {
+      "title": "Privacy Policy | Portyo",
+      "description": "Privacy Policy for Portyo."
+    },
+    "termsOfService": {
+      "title": "Terms of Service | Portyo",
+      "description": "Terms of Service for Portyo."
+    },
+    "login": {
+      "title": "Login - Portyo"
+    },
+    "signUp": {
+      "title": "Sign Up - Portyo"
+    },
+    "verifyEmail": {
+      "title": "Verify Email - Portyo"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password | Portyo",
+      "description": "Reset your Portyo password"
+    },
+    "resetPassword": {
+      "title": "Reset Password | Portyo",
+      "description": "Create a new password for your Portyo account"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "overview": "Overview",
+      "editor": "Editor",
+      "leads": "Leads",
+      "products": "Products",
+      "portfolio": "Portfolio",
+      "blog": "Blog",
+      "qrCode": "QR Code",
+      "marketing": "Marketing",
+      "scheduler": "Scheduler",
+      "emailTemplates": "Email Templates",
+      "integrations": "Integrations",
+      "automation": "Automation",
+      "forms": "Forms",
+      "seoSettings": "SEO Settings",
+      "analytics": "Analytics",
+      "adminPanel": "Admin Panel",
+      "announcements": "Announcements",
+      "siteBlog": "Site Blog"
+    },
+    "sidebar": {
+      "newPage": "New Page",
+      "claimTitle": "Claim your link",
+      "claimSubtitle": "Choose a unique username for your new page.",
+      "closeModal": "Close modal",
+      "usernamePlaceholder": "yourname",
+      "createPage": "Create Page",
+      "closeSidebar": "Close sidebar",
+      "switchWorkspace": "Switch workspace",
+      "currentPage": "Current Page",
+      "selectPage": "Select Page",
+      "yourPages": "Your Pages",
+      "createNewPage": "Create new page",
+      "limitReached": "Limit Reached",
+      "menu": "Menu",
+      "proBadge": "PRO",
+      "standardBadge": "Standard",
+      "selectOrCreate": "Select or create a page to access the menu.",
+      "unlockMorePages": "Unlock More Pages",
+      "livePage": "Live Page",
+      "userFallback": "User",
+      "logout": "Log out",
+      "createError": "Failed to create page. Username might be taken."
+    },
+    "overview": {
+      "overview": "Overview",
+      "title": "Dashboard",
+      "subtitle": "Welcome back! Here's what's happening with your profile.",
+      "viewPage": "View Page",
+      "openEditor": "Open Editor",
+      "totalViews": "Total Views",
+      "totalClicks": "Total Clicks",
+      "avgCtr": "Avg. CTR",
+      "salesRevenue": "Sales & Revenue",
+      "salesRevenueSubtitle": "Your product sales this month",
+      "totalSales": "Total Sales",
+      "totalRevenue": "Total Revenue",
+      "avgOrderValue": "Avg. Order Value",
+      "revenueTrend": "Revenue Trend (30 days)",
+      "connectStripeHint": "Connect Stripe to see your sales analytics",
+      "connectStripe": "Connect Stripe",
+      "recentActivity": "Recent Activity",
+      "filters": {
+        "all": "All Activity",
+        "purchases": "Purchases",
+        "subscribers": "Subscribers",
+        "clicks": "Clicks",
+        "views": "Views"
+      },
+      "pageOf": "Page {{page}} of {{totalPages}}",
+      "at": "at",
+      "sale": "Sale",
+      "previous": "Previous",
+      "next": "Next",
+      "noActivityTitle": "No activity yet",
+      "noActivityBody": "Share your page to start tracking views and clicks from your audience.",
+      "proFeature": "Pro Feature",
+      "upgradeTitle": "Upgrade to Pro",
+      "upgradeBody": "Get detailed analytics, custom domains, and remove Portyo branding from your page.",
+      "upgradeCta": "Upgrade Plan",
+      "vsLastMonth": "vs last month"
+    },
+    "leads": {
+      "title": "Audience",
+      "subtitle": "Manage your subscribers and grow your community.",
+      "acceptingLeads": "Accepting Leads",
+      "leadsDisabled": "Leads Disabled",
+      "exportCsv": "Export CSV",
+      "active": "Active",
+      "totalSubscribers": "Total Subscribers",
+      "today": "Today",
+      "newSubscribers": "New Subscribers",
+      "avg": "Avg.",
+      "conversionRate": "Conversion Rate",
+      "searchPlaceholder": "Search subscribers by email...",
+      "results": "{{count}} results",
+      "table": {
+        "subscriber": "Subscriber",
+        "status": "Status",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "syncing": "Syncing audience...",
+      "noSubscribers": "No subscribers found",
+      "tryAdjustSearch": "Try adjusting your search terms",
+      "shareBio": "Share your bio link to start growing your list",
+      "subscriberLabel": "Subscriber",
+      "sendEmail": "Send email",
+      "removeSubscriber": "Remove Subscriber",
+      "removeSubscribers": "Remove Multiple Subscribers",
+      "removeSingleDesc": "Are you sure you want to remove {{email}} from your list? This subscriber will no longer receive your updates.",
+      "removeBulkDesc": "Are you sure you want to remove {{count}} subscribers? This action cannot be undone.",
+      "deleteError": "Failed to delete lead(s)",
+      "selected": "selected",
+      "sendSelected": "Send email to selected",
+      "message": "Message",
+      "export": "Export",
+      "delete": "Delete"
+    },
+    "qrcode": {
+      "share": "Share",
+      "title": "QR Codes",
+      "subtitle": "Manage and track your QR codes.",
+      "createTitle": "Create New QR Code",
+      "destinationUrl": "Destination URL",
+      "urlPlaceholder": "https://example.com",
+      "generate": "Generate QR Code",
+      "yourCodes": "Your QR Codes",
+      "mainProfile": "Main Profile",
+      "loading": "Loading...",
+      "views": "{{count}} views",
+      "custom": "Custom QR Code",
+      "profile": "Profile QR Code",
+      "copyUrl": "Copy URL",
+      "scans": "Scans",
+      "clicks": "Clicks",
+      "appearance": "Appearance",
+      "reset": "Reset",
+      "colorPresets": "Color Presets",
+      "foreground": "Foreground Color",
+      "background": "Background Color",
+      "downloadPng": "Download PNG"
+    },
+    "seo": {
+      "upgradeTitle": "Upgrade to Pro",
+      "upgradeSubtitle": "SEO settings are available for Standard and Pro plans. Upgrade now to customize your page title, description, and favicon.",
+      "upgradeCta": "Upgrade Plan",
+      "title": "SEO Settings",
+      "subtitle": "Customize how your page appears in search results and social media.",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "characters": "/ {{count}} characters",
+      "section": {
+        "search": {
+          "title": "Search Engine Optimization",
+          "subtitle": "Control how your page looks on Google and other search engines."
+        },
+        "social": {
+          "title": "Social Media Sharing",
+          "subtitle": "Customize how your link looks when shared on social media."
+        }
+      },
+      "fields": {
+        "pageTitle": "Page Title",
+        "metaDescription": "Meta Description",
+        "keywords": "Keywords",
+        "favicon": "Page Favicon",
+        "socialTitle": "Social Title",
+        "socialDescription": "Social Description",
+        "socialImage": "Social Share Image"
+      },
+      "placeholders": {
+        "pageTitle": "e.g. John Doe - Digital Creator",
+        "metaDescription": "A brief description of your page...",
+        "keywords": "portfolio, links, creator, design (comma separated)",
+        "socialTitle": "Same as page title",
+        "socialDescription": "Same as meta description"
+      },
+      "help": {
+        "favicon": "Upload a square image (PNG, JPG) for your browser tab icon. Recommended 512x512px.",
+        "socialImage": "Image that appears when your link is shared on social media. Recommended 1200x630px."
+      }
+    },
+    "products": {
+      "title": "Product Catalog",
+      "subtitle": "Manage your digital products and services.",
+      "addProduct": "Add Product",
+      "addNew": "Add New Product",
+      "addNewSubtitle": "Create a new digital product",
+      "searchPlaceholder": "Search products...",
+      "digitalProduct": "Digital Product",
+      "price": "Price",
+      "edit": "Edit",
+      "remove": "Remove",
+      "status": {
+        "all": "All Status",
+        "active": "Active",
+        "draft": "Draft"
+      },
+      "fee": {
+        "title": "Transaction Fee: {{fee}}%",
+        "subtitle": "Upgrade to Pro to remove transaction fees.",
+        "upgrade": "Upgrade"
+      },
+      "form": {
+        "productTitle": "Product Title",
+        "productTitlePlaceholder": "e.g. Digital Guide",
+        "price": "Price",
+        "currency": "Currency",
+        "productImage": "Product Image"
+      },
+      "create": {
+        "title": "Create Product",
+        "creating": "Creating...",
+        "action": "Create Product"
+      },
+      "editModal": {
+        "title": "Edit Product",
+        "saving": "Saving...",
+        "action": "Save Changes"
+      },
+      "delete": {
+        "title": "Delete Product?",
+        "body": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+        "cancel": "Cancel",
+        "action": "Delete"
+      },
+      "stripe": {
+        "title": "Stripe Not Connected",
+        "subtitle": "Connect to sell products",
+        "body": "To create and sell products, you need to connect your Stripe account first. Go to Integrations and set up your Stripe connection.",
+        "cta": "Go to Integrations",
+        "close": "Close"
+      },
+      "errors": {
+        "create": "Failed to create product. Please try again.",
+        "update": "Failed to update product",
+        "delete": "Failed to delete product"
+      }
+    },
+    "blog": {
+      "badge": "Blog",
+      "title": "Blog Posts",
+      "subtitle": "Manage your content and stories.",
+      "newPost": "New Post",
+      "searchPlaceholder": "Search posts...",
+      "status": {
+        "all": "All Status",
+        "published": "Published",
+        "draft": "Draft"
+      },
+      "table": {
+        "post": "Post",
+        "status": "Status",
+        "stats": "Stats",
+        "actions": "Actions"
+      },
+      "views": "{{count}} views",
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "delete": {
+        "title": "Delete Post?",
+        "body": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+        "cancel": "Cancel",
+        "action": "Delete"
+      },
+      "showing": "Showing {{count}} posts",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "scheduler": {
+      "title": "Booking Scheduler",
+      "subtitle": "Configure your weekly availability and manage blocked dates.",
+      "status": {
+        "active": "Scheduler Active",
+        "paused": "Scheduler Paused",
+        "all": "All",
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "save": {
+        "saved": "Saved!",
+        "saving": "Saving...",
+        "action": "Save Changes"
+      },
+      "tabs": {
+        "today": "Today's Schedule",
+        "bookings": "All Appointments",
+        "availability": "Availability & Settings"
+      },
+      "clearDate": "Clear Date",
+      "empty": {
+        "todayTitle": "No bookings for today",
+        "todayBody": "You have no appointments scheduled for today.",
+        "title": "No bookings found",
+        "body": "Try changing the filter or share your booking link."
+      },
+      "actions": {
+        "reschedule": "Reschedule",
+        "cancel": "Cancel",
+        "confirmCancel": "Cancel this booking?"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {{page}} of {{totalPages}}"
+      },
+      "weeklySchedule": {
+        "title": "Weekly Schedule",
+        "unavailable": "Unavailable"
+      },
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "weekdaysShort": {
+        "sun": "Su",
+        "mon": "Mo",
+        "tue": "Tu",
+        "wed": "We",
+        "thu": "Th",
+        "fri": "Fr",
+        "sat": "Sa"
+      },
+      "blockedDate": "Blocked Date",
+      "blockedDates": {
+        "title": "Blocked Dates",
+        "subtitle": "Select dates to block off from your calendar."
+      },
+      "meetingDuration": {
+        "title": "Meeting Duration",
+        "minutes": "{{count}} Minutes"
+      },
+      "googleCalendar": {
+        "active": "Active",
+        "connected": "Your bookings are automatically syncing with your Google Calendar.",
+        "disconnected": "Connect your calendar to automatically create events with Google Meet links for every booking.",
+        "connect": "Connect Google Calendar",
+        "reconnect": "Reconnect Calendar"
+      },
+      "reschedule": {
+        "title": "Reschedule Booking",
+        "for": "Rescheduling for {{name}}",
+        "helper": "Select a new date and time. The customer will receive an email to confirm.",
+        "availableTimes": "Available times for {{date}}:",
+        "noSlots": "No available slots for this date.",
+        "cancel": "Cancel",
+        "loading": "Rescheduling...",
+        "confirm": "Confirm & Send Email"
+      },
+      "errors": {
+        "saveSettings": "Failed to save settings",
+        "cancel": "Failed to cancel",
+        "reschedule": "Failed to reschedule"
+      }
+    },
+    "domains": {
+      "upgrade": {
+        "title": "Upgrade to Standard",
+        "body": "Custom domains are available on Standard and Pro plans. Upgrade now to connect your own domain (e.g., yourname.com) to your page.",
+        "cta": "Upgrade Plan"
+      },
+      "title": "Custom Domain",
+      "subtitle": "Connect your own domain name to your Portyo page.",
+      "config": {
+        "title": "Domain Configuration",
+        "subtitle": "Enter the domain you want to use for your page.",
+        "domainLabel": "Your Domain",
+        "domainPlaceholder": "e.g. portfolio.com",
+        "save": "Save",
+        "saving": "Saving...",
+        "helper": "Enter your domain without http:// or https://"
+      },
+      "dns": {
+        "title": "DNS Configuration Required",
+        "body": "To make your domain work, you need to add a DNS record to your domain provider (like GoDaddy, Namecheap, or Cloudflare).",
+        "type": "Type",
+        "nameHost": "Name / Host",
+        "valueTarget": "Value / Target",
+        "note": "Note: DNS changes can take up to 48 hours to propagate globally, though it usually happens within a few minutes."
+      },
+      "status": {
+        "title": "Domain Linked",
+        "body": "Your bio is configured to use {{domain}}. If you've set up your DNS correctly, your page should be accessible soon.",
+        "visit": "Visit {{domain}}"
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "subtitle": "Connect your favorite tools to supercharge your bio page.",
+      "filters": {
+        "all": "All",
+        "social": "Social",
+        "content": "Content",
+        "marketing": "Marketing",
+        "analytics": "Analytics"
+      },
+      "status": {
+        "connected": "Connected",
+        "comingSoon": "Coming Soon"
+      },
+      "actions": {
+        "notAvailable": "Not Available Yet",
+        "dashboard": "Dashboard",
+        "disconnect": "Disconnect",
+        "upgradeToConnect": "Upgrade to Connect",
+        "connect": "Connect"
+      },
+      "items": {
+        "stripe": "Accept payments and donations directly on your page.",
+        "instagram": "Display your latest posts and stories directly on your bio page.",
+        "youtube": "Embed your latest videos or playlists automatically.",
+        "tiktok": "Showcase your viral TikTok videos to your audience.",
+        "spotify": "Share your favorite tracks, albums, or playlists.",
+        "twitter": "Display your latest tweets and engage with your followers.",
+        "linkedin": "Connect your professional profile and show your latest updates.",
+        "mailchimp": "Collect emails and grow your newsletter audience.",
+        "googleAnalytics": "Track visitors and gain deeper insights into your traffic.",
+        "productHunt": "Showcase your latest launched products."
+      }
+    },
+    "editor": {
+      "defaults": {
+        "headingTitle": "Introduce yourself",
+        "headingBody": "In one line, tell people why they should connect with you.",
+        "buttonTitle": "Main link",
+        "newButton": "New button",
+        "newHeading": "New heading",
+        "newVideo": "New video",
+        "newBlock": "New block",
+        "textBody": "Describe something here.",
+        "product": "Product {{index}}",
+        "viewProduct": "View Product",
+        "bookCall": "Book a Call",
+        "mapTitle": "Our Office",
+        "mapAddress": "123 Main St, City",
+        "featuredTitle": "Glow lipstick",
+        "affiliateTitle": "Copy my coupon code",
+        "portfolioTitle": "Portfolio"
+      },
+      "event": {
+        "defaultTitle": "Live Webinar",
+        "defaultButton": "Register Now",
+        "started": "Event Started",
+        "days": "Days",
+        "hours": "Hours",
+        "mins": "Mins",
+        "secs": "Secs"
+      },
+      "blog": {
+        "author": "By You",
+        "placeholderTitlePrimary": "Senior Developer",
+        "placeholderTitle": "Blog Post Title {{index}}",
+        "placeholderSubtitlePrimary": "Tech4Humans • São Paulo, SP - Remote",
+        "placeholderSubtitle": "Category • Location",
+        "placeholderContent": "FullStack Developer at Tech4Humans, working on projects for large insurance companies. I had the chance to participate in the development of new features...",
+        "placeholderTag1": "FullStack Dev",
+        "placeholderTag2": "Soft Skills",
+        "placeholderTag3": "Hard Skills",
+        "category": "Blog",
+        "readTime": "5 min read",
+        "readMore": "Read more →"
+      },
+      "tour": {
+        "title": "TOURS",
+        "empty": "No tour dates added yet",
+        "soldOut": "Sold Out",
+        "sellingFast": "Selling fast"
+      },
+      "spotify": {
+        "empty": "Add a Spotify link to display the player",
+        "invalidUrl": "Invalid Spotify URL"
+      },
+      "youtube": {
+        "channel": "YouTube Channel",
+        "videoAlt": "YouTube video"
+      },
+      "instagram": {
+        "postAlt": "Instagram post"
+      },
+      "qr": {
+        "defaultUrl": "https://example.com",
+        "empty": "Add QR Codes to display"
+      },
+      "marketing": {
+        "activeTitle": "Active Advertisement",
+        "activeSubtitle": "Company ad will appear here",
+        "viewDetails": "View Details",
+        "slotTitle": "Marketing Slot",
+        "slotHintLine1": "Configure this slot in the Marketing dashboard",
+        "slotHintLine2": "Companies can submit advertising proposals",
+        "createSlot": "Create Slot"
+      },
+      "blockItem": {
+        "general": {
+          "dropHere": "Drop here",
+          "removeBlock": "Remove block",
+          "campaignInProgress": "Campaign in progress"
+        },
+        "common": {
+          "background": "Background",
+          "textColor": "Text Color",
+          "text": "Text",
+          "accent": "Accent",
+          "animation": "Animation",
+          "alignment": "Alignment",
+          "layout": "Layout",
+          "style": "Style",
+          "shape": "Shape",
+          "label": "Label",
+          "url": "URL",
+          "title": "Title",
+          "description": "Description",
+          "buttonText": "Button Text",
+          "image": "Image",
+          "backgroundImage": "Background Image",
+          "icon": "Icon",
+          "selectIcon": "Select an icon",
+          "address": "Address",
+          "displayType": "Display Type",
+          "textPosition": "Text Position"
+        },
+        "sections": {
+          "content": "Content",
+          "design": "Design",
+          "options": "Options",
+          "colors": "Colors"
+        },
+        "heading": {
+          "title": "Title",
+          "titlePlaceholder": "Title",
+          "subtitle": "Subtitle",
+          "subtitlePlaceholder": "Subtitle"
+        },
+        "text": {
+          "content": "Content",
+          "placeholder": "Write your text"
+        },
+        "typography": {
+          "title": "Typography",
+          "fontSize": "Font Size",
+          "fontWeight": "Font Weight"
+        },
+        "size": {
+          "small": "Small",
+          "normal": "Normal",
+          "medium": "Medium",
+          "large": "Large",
+          "xl": "XL"
+        },
+        "weight": {
+          "light": "Light",
+          "normal": "Normal",
+          "medium": "Medium",
+          "semibold": "Semibold",
+          "bold": "Bold",
+          "extraBold": "Extra Bold",
+          "black": "Black"
+        },
+        "align": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right",
+          "justify": "Justify"
+        },
+        "animation": {
+          "none": "None",
+          "bounce": "Bounce",
+          "pulse": "Pulse",
+          "shake": "Shake",
+          "wobble": "Wobble",
+          "loop": "Loop",
+          "once": "Once",
+          "hover": "Hover"
+        },
+        "buttonGrid": {
+          "labelPlaceholder": "Button Label",
+          "newLink": "New Link",
+          "addButton": "Add Button"
+        },
+        "button": {
+          "labelPlaceholder": "Button text",
+          "imageOptional": "Image (optional)",
+          "secondaryShadow": "Secondary / Shadow",
+          "sensitiveContent": "Sensitive Content",
+          "mark18": "Mark as 18+ content"
+        },
+        "buttonStyles": {
+          "solid": "Solid",
+          "outline": "Outline",
+          "ghost": "Ghost",
+          "retro": "Retro",
+          "softShadow": "Soft Shadow",
+          "threeD": "3D",
+          "glass": "Glass",
+          "gradient": "Gradient",
+          "neon": "Neon",
+          "architect": "Architect",
+          "material": "Material",
+          "brutalist": "Brutalist",
+          "outlineThick": "Outline Thick",
+          "imageCard": "Image Card"
+        },
+        "shapes": {
+          "pill": "Pill",
+          "rounded": "Rounded",
+          "square": "Square"
+        },
+        "socials": {
+          "helper": "Add your social media links below.",
+          "inlineRow": "Inline (Row)",
+          "listColumn": "List (Column)",
+          "showText": "Show Text"
+        },
+        "calendar": {
+          "bookingSettings": "Booking Settings",
+          "bookingHint": "Availability and booking settings are managed in the",
+          "scheduler": "Scheduler",
+          "tabSuffix": " tab.",
+          "titlePlaceholder": "Book a time",
+          "descriptionPlaceholder": "Brief description"
+        },
+        "video": {
+          "youtubeUrl": "YouTube URL",
+          "youtubePlaceholder": "https://youtube.com/watch?v=..."
+        },
+        "product": {
+          "layoutGrid": "Grid",
+          "layoutList": "List",
+          "layoutCarousel": "Carousel",
+          "cardStyle": "Card Style",
+          "cardDefault": "Default",
+          "cardMinimal": "Minimal",
+          "accentColor": "Accent Color",
+          "buttonPlaceholder": "e.g. Buy Now",
+          "products": "Products",
+          "removeProduct": "Remove product",
+          "addFromStripe": "Add Product from Stripe",
+          "selectToAdd": "Select a product to add...",
+          "emptyTitle": "No products found",
+          "emptyBody": "Create a new product to add it here.",
+          "createNew": "Create New Product",
+          "createTitle": "Create Product",
+          "productTitle": "Product Title",
+          "productTitlePlaceholder": "e.g. Digital Guide",
+          "price": "Price",
+          "currency": "Currency",
+          "imageOptional": "Product Image (Optional)",
+          "creating": "Creating...",
+          "createAction": "Create Product"
+        },
+        "map": {
+          "locationName": "Location Name",
+          "locationPlaceholder": "e.g. Our Office",
+          "addressPlaceholder": "e.g. 123 Main St, City"
+        },
+        "featured": {
+          "productTitle": "Product Title",
+          "productTitlePlaceholder": "Product Name",
+          "productImage": "Product Image",
+          "productUrl": "Product URL"
+        },
+        "affiliate": {
+          "titlePlaceholder": "Copy my coupon code",
+          "couponCode": "Coupon Code",
+          "couponPlaceholder": "CODE123",
+          "affiliateUrl": "Affiliate URL"
+        },
+        "event": {
+          "eventTitle": "Event Title",
+          "eventTitlePlaceholder": "Live Webinar",
+          "dateTime": "Date & Time",
+          "buttonPlaceholder": "Register",
+          "buttonUrl": "Button URL"
+        },
+        "spotify": {
+          "url": "Spotify URL",
+          "placeholder": "https://open.spotify.com/track/...",
+          "helper": "Supports tracks, albums, and playlists",
+          "compactPlayer": "Compact Player"
+        },
+        "instagram": {
+          "username": "Instagram Username",
+          "usernamePlaceholder": "username",
+          "displayGrid": "Grid (3 Columns)",
+          "displayList": "List (Vertical)",
+          "showUsername": "Show Username"
+        },
+        "youtube": {
+          "channelUrl": "YouTube Channel URL",
+          "channelPlaceholder": "https://youtube.com/@...",
+          "displayGrid": "Grid (2 Columns)",
+          "displayList": "List (Vertical)",
+          "showChannelName": "Show Channel Name"
+        },
+        "tour": {
+          "sectionTitle": "Section Title",
+          "sectionPlaceholder": "TOURS",
+          "tourDates": "Tour Dates",
+          "date": "Date",
+          "datePlaceholder": "AUG 1",
+          "location": "Location",
+          "locationPlaceholder": "City, Country",
+          "image": "Tour Image",
+          "ticketLink": "Ticket Link",
+          "sellingFast": "Selling Fast",
+          "soldOut": "Sold Out",
+          "defaultDate": "TBA",
+          "defaultLocation": "City",
+          "addTourDate": "Add Tour Date"
+        },
+        "position": {
+          "top": "Top",
+          "bottom": "Bottom"
+        },
+        "qr": {
+          "layout": {
+            "single": "Single",
+            "multiple": "Multiple",
+            "grid": "Grid"
+          },
+          "selectQr": "Select QR Code",
+          "selectQrOption": "Select a QR Code",
+          "createNew": "Create new QR Code",
+          "helper": "Select an existing QR code or create a new one.",
+          "qrCodes": "QR Codes",
+          "newLabel": "New QR Code",
+          "addItem": "Add QR Code Item",
+          "foreground": "Foreground"
+        },
+        "divider": {
+          "helper": "Simple dividing line."
+        },
+        "preview": {
+          "noUrl": "No URL set",
+          "mediaAttached": "Media attached",
+          "noMedia": "No media",
+          "links_one": "{{count}} link",
+          "links_other": "{{count}} links",
+          "noLinks": "No links",
+          "qrConfigured": "QR configured",
+          "noQrValue": "No QR value",
+          "formSelected": "Form selected",
+          "noFormSelected": "No form selected",
+          "portfolioFallback": "Portfolio",
+          "slotConnected": "Slot connected",
+          "noSlotSelected": "No slot selected"
+        },
+        "form": {
+          "helper": "Select a form to display on your bio page.",
+          "selectLabel": "Select Form",
+          "loading": "Loading forms...",
+          "empty": "No forms found. Please create a form in the \"Forms\" tab first.",
+          "placeholder": "Select a form..."
+        },
+        "marketing": {
+          "helper": "Connect this block to a marketing slot from your dashboard. Companies will be able to advertise here.",
+          "locked": "Campaign in progress. This block is locked and can't be edited or moved.",
+          "selectLabel": "Select Marketing Slot",
+          "loading": "Loading slots...",
+          "empty": "No slots found for this bio.",
+          "createCta": "Create one →",
+          "noneSelected": "No slot selected",
+          "manageCta": "Manage slots →",
+          "days": "days"
+        },
+        "portfolio": {
+          "helper": "Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.",
+          "emptyTitle": "No projects found",
+          "emptyBody": "You haven't created any portfolio projects yet. They will appear here after they're created.",
+          "createCta": "Create my first project →",
+          "sectionTitle": "Section Title",
+          "defaultTitle": "Portfolio",
+          "placeholder": "Portfolio"
+        },
+        "blockTypes": {
+          "heading": "Heading",
+          "text": "Text",
+          "button": "Button",
+          "button_grid": "Button Grid",
+          "image": "Image",
+          "video": "Video",
+          "socials": "Socials",
+          "divider": "Divider",
+          "qrcode": "QR Code",
+          "spotify": "Spotify",
+          "instagram": "Instagram",
+          "youtube": "YouTube",
+          "blog": "Blog",
+          "product": "Product",
+          "tour": "Tour",
+          "event": "Event",
+          "calendar": "Calendar",
+          "map": "Map",
+          "form": "Form",
+          "portfolio": "Portfolio",
+          "marketing": "Marketing"
+        }
+      },
+      "subscribeThanks": "Thanks for subscribing!",
+      "noBioTitle": "No Bio Selected",
+      "noBioBody": "Create or select a bio to start editing.",
+      "top": {
+        "editor": "Editor",
+        "undoTitle": "Undo last change",
+        "undo": "Undo",
+        "share": "Share",
+        "openPage": "Open page",
+        "saving": "Saving...",
+        "saveBio": "Save bio"
+      },
+      "tabs": {
+        "blocks": "Blocks",
+        "settings": "Settings"
+      },
+      "searchPlaceholder": "Search blocks...",
+      "noBlocks": "No blocks found",
+      "settings": {
+        "typography": "Typography",
+        "fontFamily": "Font Family",
+        "uploadFont": "Upload Custom Font",
+        "fontSupport": "Supports .ttf, .otf, .woff, .woff2 (max 10MB)",
+        "fontUploadError": "Failed to upload font. Please try a valid font file (ttf, otf, woff, woff2).",
+        "background": "Background",
+        "overlayColor": "Overlay Color",
+        "cardStyle": "Card Style",
+        "cardType": "Card Type",
+        "cardColor": "Card Color",
+        "opacity": "Opacity",
+        "blur": "Blur",
+        "profile": "Profile",
+        "imageShape": "Image Shape",
+        "usernameColor": "Username Color",
+        "verificationStatus": "Verification Status",
+        "verified": "Verified",
+        "getVerified": "Get Verified",
+        "features": "Features",
+        "emailSignup": "Email Signup",
+        "removeBranding": "Remove Branding",
+        "standardPro": "STANDARD / PRO",
+        "imageShapes": {
+          "circle": "Circle",
+          "rounded": "Rounded",
+          "square": "Square",
+          "amoeba": "Amoeba",
+          "star": "Star",
+          "hexagon": "Hexagon"
+        },
+        "cardTypes": {
+          "none": "None",
+          "solid": "Solid",
+          "frosted": "Frosted"
+        },
+        "backgroundTypes": {
+          "color": "Color",
+          "image": "Image",
+          "video": "Video",
+          "grid": "Grid",
+          "dots": "Dots",
+          "waves": "Waves",
+          "abstract": "Abstract",
+          "palm-leaves": "Palm leaves",
+          "wheat": "Wheat",
+          "gradient": "Gradient",
+          "blueprint": "Blueprint",
+          "marble": "Marble",
+          "wood-grain": "Wood grain",
+          "brick": "Brick",
+          "frosted-glass": "Frosted glass",
+          "steel": "Steel",
+          "concrete": "Concrete",
+          "terracotta": "Terracotta"
+        }
+      },
+      "categories": {
+        "Content": "Content",
+        "Social": "Social",
+        "Shop": "Shop",
+        "Music": "Music",
+        "Blog": "Blog",
+        "Marketing": "Marketing",
+        "Layout": "Layout"
+      },
+      "palette": {
+        "heading": "Heading",
+        "qrcode": "QR Code",
+        "text": "Text",
+        "button": "Button",
+        "buttonGrid": "Button Grid",
+        "image": "Image",
+        "socials": "Socials",
+        "video": "Video",
+        "blog": "Blog",
+        "productList": "Product List",
+        "calendar": "Calendar",
+        "map": "Map",
+        "featured": "Featured",
+        "affiliateCode": "Affiliate Code",
+        "event": "Event",
+        "tourDates": "Tour Dates",
+        "spotify": "Spotify",
+        "instagramFeed": "Instagram Feed",
+        "youtubeFeed": "YouTube Feed",
+        "divider": "Divider",
+        "form": "Form",
+        "portfolio": "Portfolio"
+      },
+      "layout": {
+        "title": "Layout",
+        "dragToReorder": "Drag to reorder"
+      },
+      "empty": {
+        "title": "Your bio is empty",
+        "body": "Drag blocks from the left sidebar to start building your page."
+      },
+      "preview": {
+        "live": "Live Preview",
+        "aria": "Preview Bio",
+        "title": "Bio Preview",
+        "mobileTitle": "Mobile Preview"
+      },
+      "qrModal": {
+        "title": "Create New QR Code",
+        "destination": "Destination URL",
+        "placeholder": "https://example.com",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create QR"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Agent Login",
+      "subtitle": "Hey, Enter your details to get sign in to your account",
+      "emailPlaceholder": "Enter Email",
+      "passwordPlaceholder": "Passcode",
+      "show": "Show",
+      "hide": "Hide",
+      "trouble": "Having trouble in sign in?",
+      "submit": "Sign in",
+      "or": "Or Sign in with",
+      "google": "Google",
+      "apple": "Apple ID",
+      "facebook": "Facebook",
+      "noAccount": "Don't have an account?",
+      "createNow": "Create Now",
+      "oauthError": "OAuth login failed. Please try again.",
+      "invalidCredentials": "Failed to login. Please check your credentials."
+    },
+    "signup": {
+      "titleStep1": "Create Account",
+      "titleStep2": "Choose Username",
+      "subtitleStep1": "Join us! Enter your details to create your account",
+      "subtitleStep2": "Claim your unique spot on Portyo",
+      "fullNamePlaceholder": "Full Name",
+      "emailPlaceholder": "Enter Email / Phone No",
+      "passwordPlaceholder": "Passcode",
+      "show": "Show",
+      "hide": "Hide",
+      "requirementsTitle": "Requirements:",
+      "requirements": {
+        "fullName": "Full name is required",
+        "uppercase": "At least one uppercase letter",
+        "length": "At least 8 characters"
+      },
+      "usernamePlaceholder": "yourname",
+      "usernameHint": "This will be your public profile URL. You can't change it later !",
+      "back": "Back",
+      "continue": "Continue",
+      "submit": "Create Account",
+      "or": "Or Sign up with",
+      "google": "Google",
+      "apple": "Apple ID",
+      "facebook": "Facebook",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "createError": "Failed to create account. Please try again."
+    },
+    "forgot": {
+      "title": "Forgot password?",
+      "subtitle": "No worries! Enter your email and we'll send you a reset link.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "sendReset": "Send reset link",
+      "sending": "Sending...",
+      "backToLogin": "Back to login",
+      "successTitle": "Check your email",
+      "successBody": "If an account exists for {{email}}, we've sent a password reset link.",
+      "successHint": "Didn't receive the email? Check your spam folder or",
+      "tryAgain": "try again",
+      "goToLogin": "Go to login page →",
+      "genericError": "Something went wrong. Please try again."
+    },
+    "verify": {
+      "title": "Check your email",
+      "subtitle": "We sent a verification code to {{email}}. Please enter the 6-digit code below to verify your account.",
+      "fallbackEmail": "your email address",
+      "verifying": "Verifying...",
+      "submit": "Verify Code",
+      "noCode": "Didn't receive code?",
+      "resend": "Resend",
+      "backToLogin": "Back to Login",
+      "success": "Email verified successfully! Redirecting...",
+      "error": "Verification failed. Please try again.",
+      "resent": "Verification code sent!",
+      "resentError": "Failed to resend code."
+    }
+  },
+  "home": {
+    "hero": {
+      "title": {
+        "pre": "Convert your followers into",
+        "highlight": "customers",
+        "post": "with one link"
+      },
+      "subtitle": "Generate powerful revenue-generating Bio's with our all-in-one platform. Grow your following and earn while you sleep!",
+      "ctaPlaceholder": "yourname",
+      "ctaButton": "Claim Now",
+      "floating": {
+        "roleLabel": "Role",
+        "roleValue": "Digital Artist",
+        "newArt": "New 3D Art",
+        "viral": "Viral!",
+        "founderLabel": "Founder",
+        "founderValue": "Startup Life",
+        "revenue": "Revenue +120%",
+        "newVideo": "New Video"
+      }
+    },
+    "featured": {
+      "title": "As featured in"
+    },
+    "analytics": {
+      "title": "Turn every interaction into opportunity",
+      "subtitle": "Gain deep insights into your audience behavior. From QR scans to sales conversion, track what matters most and optimize your digital presence for real growth.",
+      "cards": {
+        "subscribers": "Subscribers",
+        "qrScans": "QR Scans",
+        "sales": "Sales",
+        "conversionRate": "Conversion Rate",
+        "conversionBadge": "+24%"
+      }
+    },
+    "features": {
+      "newsletter": {
+        "title": "Newsletter",
+        "body": "Build a loyal audience by collecting emails directly from your bio. Send beautiful, automated newsletters to your subscribers without ever leaving the platform.",
+        "cta": "Learn more",
+        "joinList": "Join the list",
+        "emailPlaceholder": "your@email.com",
+        "notificationLabel": "Notification",
+        "notificationValue": "New Subscriber!"
+      },
+      "automation": {
+        "title": "Powerful Automation",
+        "body": "Build workflows that work while you sleep. Trigger emails, messages, and more based on visitor actions.",
+        "cta": "Create Workflows",
+        "running": "Running",
+        "node1Title": "New Subscriber",
+        "node1Trigger": "Trigger",
+        "node1TriggerValue": "join",
+        "node2Title": "Send Email",
+        "node2Subtitle": "Welcome Kit",
+        "node3Title": "Add Tag",
+        "node3Tag": "#pro-lead"
+      },
+      "scheduler": {
+        "title": "Smart Scheduler",
+        "body": "Let clients book you effortlessly. Syncs with Google Calendar to prevent double bookings. Set your availability and get booked.",
+        "cta": "Start Booking",
+        "month": "September 2025",
+        "days": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+        "eventTitle": "Discovery Call",
+        "eventTime": "10:00 AM - 10:30 AM",
+        "statusLabel": "Status",
+        "statusValue": "Confirmed"
+      },
+      "partnerships": {
+        "title": "Partnerships",
+        "body": "Stop missing out on opportunities. Let brands reach out to you directly with a dedicated partnership inquiry flow.",
+        "cta": "Get Sponsored",
+        "cardTitle": "Collaboration Request",
+        "cardBody": "Nike wants to collaborate with you on their new campaign.",
+        "accept": "Accept",
+        "decline": "Decline",
+        "budgetLabel": "Budget"
+      },
+      "blog": {
+        "title": "Integrated Blog",
+        "body": "Your voice matters. Share your thoughts, stories, and expertise with a fully integrated blogging platform. SEO-optimized.",
+        "cta": "Start Writing",
+        "tagLifestyle": "Lifestyle",
+        "tagReadTime": "5 min read",
+        "cardTitle": "10 Tips for Growing Your Audience in 2025",
+        "byYou": "By You",
+        "published": "Published"
+      }
+    },
+    "pricing": {
+      "billing": {
+        "monthly": "Monthly",
+        "annually": "Annually (save 25%)"
+      },
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "alerts": {
+        "checkoutMissing": "Something went wrong. Please try again.",
+        "checkoutFailed": "Failed to initiate checkout. Please try again."
+      },
+      "cards": {
+        "free": {
+          "title": "Free",
+          "subtitle": "For getting started",
+          "cta": "Get Started",
+          "features": [
+            "Create only one page",
+            "Create 1 form",
+            "No branding removal",
+            "No custom domain",
+            "Basic analytics",
+            "3% store fee"
+          ],
+          "more": ["Limited integrations"]
+        },
+        "standard": {
+          "badge": "Most Popular",
+          "title": "Standard",
+          "subtitle": "For growing creators",
+          "billedYearly": "Billed $49.50 yearly",
+          "ctaUpgrade": "Upgrade",
+          "ctaTrial": "Start Trial",
+          "features": [
+            "Create up to 2 bios",
+            "Create 3 forms",
+            "Branding removal",
+            "Custom domain",
+            "Email collection",
+            "1% store fee",
+            "150 emails/month"
+          ],
+          "more": [
+            "Automation (2 per bio)",
+            "Email template (2 per bio)",
+            "SEO settings",
+            "Google and Facebook analytics",
+            "More customizations"
+          ]
+        },
+        "pro": {
+          "title": "Pro",
+          "subtitle": "For serious business",
+          "billedYearly": "Billed $135 yearly",
+          "cta": "Go Pro",
+          "features": [
+            "Everything in Standard",
+            "Create up to 5 bios",
+            "Create 4 forms",
+            "Scheduler",
+            "Automation (4 per bio)",
+            "Email template (4 per bio)",
+            "0% store fee",
+            "500 emails/month",
+            "More customizations"
+          ]
+        }
+      }
+    },
+    "blogSection": {
+      "title": "BLOG",
+      "cta": "Read Our Blog",
+      "categoryLabel": "Category",
+      "more": "More",
+      "readTime": "5 Min",
+      "hot": "Hot",
+      "viewAllCategories": "View All Categories",
+      "additionalLinks": {
+        "link1": "HOW TO DESIGN A STUNNING BIO PAGE",
+        "link2": "CONVERT FOLLOWERS INTO PAYING CUSTOMERS"
+      },
+      "defaultPosts": {
+        "p1": {
+          "title": "HOW TO CREATE THE PERFECT LINK IN BIO",
+          "category": "Tips",
+          "date": "08 Jan"
+        },
+        "p2": {
+          "title": "BOOST YOUR SOCIAL MEDIA PRESENCE WITH ONE LINK",
+          "excerpt": "Transform your followers into customers with a powerful bio link. Learn how to optimize your profile and increase conversions with simple strategies...",
+          "category": "Growth"
+        },
+        "p3": {
+          "title": "TOP CREATOR MONETIZATION STRATEGIES",
+          "category": "Revenue",
+          "date": "05 Jan"
+        },
+        "p4": {
+          "title": "ANALYTICS MASTERCLASS | UNDERSTAND YOUR AUDIENCE",
+          "category": "Insights",
+          "date": "03 Jan"
+        }
+      },
+      "categories": {
+        "social": "Social Media",
+        "monetization": "Monetization",
+        "analytics": "Analytics",
+        "design": "Design Tips",
+        "growth": "Growth Hacks",
+        "branding": "Branding",
+        "ecommerce": "E-commerce",
+        "creators": "Creators"
+      }
+    },
+    "carousel": {
+      "defaultRole": "Creator",
+      "defaultDescription": "Explore this creator's page.",
+      "fallback": [
+        {
+          "role": "Architect",
+          "description": "Architect & Designer creating sustainable living spaces."
+        },
+        {
+          "role": "Developer",
+          "description": "Full Stack Developer - Creator of @Portyo.me"
+        },
+        {
+          "role": "Dentist",
+          "description": "Orofacial Harmonization and Resin Veneers Specialist."
+        },
+        {
+          "role": "SaaS",
+          "description": "Connecting students with internship opportunities in Brazil."
+        }
+      ]
+    }
+  }
+  ,
+  "footer": {
+    "tagline": "Turn your bio into your business. The all-in-one platform for creators to grow, monetize, and own their audience.",
+    "cta": "Get Started for Free",
+    "product": {
+      "title": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "analytics": "Analytics",
+      "themes": "Themes"
+    },
+    "resources": {
+      "title": "Resources",
+      "blog": "Blog",
+      "community": "Community",
+      "help": "Help Center",
+      "creators": "Creators"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact"
+    },
+    "copyright": "© 2025 Portyo Inc. All rights reserved."
+  }
+}

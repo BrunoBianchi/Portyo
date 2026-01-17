@@ -4,6 +4,7 @@ import LandingPage from "~/components/marketing/landing-page";
 import BioLayout from "~/components/bio/bio-layout";
 import { BioNotFound } from "~/components/public-bio/not-found";
 import type { ay } from "node_modules/react-router/dist/development/router-5iOvts3c.mjs";
+import i18n from "~/i18n";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -33,7 +34,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { type: 'marketing' };
 }
 
-export function meta({ data }: Route.MetaArgs) {
+export function meta({ data, params }: Route.MetaArgs) {
   if (data?.type === 'bio' && data?.bio) {
     const bio = data.bio;
     // ... Copy meta logic from p.$username.tsx or use a shared helper?
@@ -44,9 +45,10 @@ export function meta({ data }: Route.MetaArgs) {
       // ... add other critical meta
     ];
   }
+  const lang = params?.lang === "pt" ? "pt" : "en";
   return [
-    { title: "Portyo - Link in Bio" },
-    { name: "description", content: "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform." },
+    { title: i18n.t("meta.home.title", { lng: lang }) },
+    { name: "description", content: i18n.t("meta.home.description", { lng: lang }) },
   ];
 }
 

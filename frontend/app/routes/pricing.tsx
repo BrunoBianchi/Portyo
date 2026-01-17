@@ -2,11 +2,13 @@ import { useState } from "react";
 import type { MetaFunction } from "react-router";
 import { Check } from "lucide-react";
 import { Link } from "react-router";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Pricing | Portyo" },
-        { name: "description", content: "Choose the perfect plan for your needs." },
+        { title: i18n.t("meta.pricing.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.pricing.description", { lng: lang }) },
     ];
 };
 

@@ -4,12 +4,17 @@ import { useCookies } from 'react-cookie';
 import { Check, ChevronDown } from "lucide-react";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
+import { useTranslation } from "react-i18next";
 
 export default function PricingSection() {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
     const [expandedFree, setExpandedFree] = useState(false);
     const [expandedStandard, setExpandedStandard] = useState(false);
     const [expandedPro, setExpandedPro] = useState(false);
+    const { t } = useTranslation();
+
+    const ensureStringArray = (value: unknown, fallback: string[]) =>
+        Array.isArray(value) ? value : fallback;
 
     const { user } = useContext(AuthContext);
     const [cookies] = useCookies(['@App:token']);
@@ -37,12 +42,12 @@ export default function PricingSection() {
                 window.location.href = response.data.url;
             } else {
                 console.error("No checkout URL received");
-                alert("Something went wrong. Please try again.");
+                alert(t("home.pricing.alerts.checkoutMissing"));
             }
 
         } catch (error: any) {
             console.error("Upgrade error:", error);
-            alert("Failed to initiate checkout. Please try again.");
+            alert(t("home.pricing.alerts.checkoutFailed"));
         }
     };
 
@@ -121,19 +126,19 @@ export default function PricingSection() {
                             onClick={() => setBillingCycle('monthly')}
                             className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'monthly'
                                 ? 'bg-transparent text-text-main'
-                                : 'text-text-muted hover:text-text-main'
+                                : 'text-gray-700 hover:text-text-main'
                                 }`}
                         >
-                            Monthly
+                            {t("home.pricing.billing.monthly")}
                         </button>
                         <button
                             onClick={() => setBillingCycle('annually')}
                             className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'annually'
                                 ? 'bg-text-main text-white shadow-md'
-                                : 'text-text-muted hover:text-text-main'
+                                : 'text-gray-700 hover:text-text-main'
                                 }`}
                         >
-                            Annually (save 25%)
+                            {t("home.pricing.billing.annually")}
                         </button>
                     </div>
                 </div>
@@ -143,15 +148,25 @@ export default function PricingSection() {
                     {/* Free Card */}
                     <div id="free-card" className="bg-white rounded-[2rem] p-8 w-full lg:w-1/3 shadow-lg flex flex-col gap-6 transition-transform duration-75 ease-linear z-10 border border-gray-100 min-h-[500px]">
                         <div className="text-center">
-                            <h3 className="text-2xl font-bold text-text-main">Free</h3>
-                            <p className="text-text-muted text-sm mt-2">For getting started</p>
+                            <h3 className="text-2xl font-bold text-text-main">{t("home.pricing.cards.free.title")}</h3>
+                            <p className="text-gray-700 text-sm mt-2">{t("home.pricing.cards.free.subtitle")}</p>
                         </div>
                         <div className="text-center py-4">
                             <span className="text-5xl font-bold text-text-main">$0</span>
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            {['Create only one page', 'Create 1 form', 'No branding removal', 'No custom domain', 'Basic analytics', '3% store fee'].map((feature, i) => (
+                            {ensureStringArray(
+                                t("home.pricing.cards.free.features", { returnObjects: true }),
+                                [
+                                    "Create only one page",
+                                    "Create 1 form",
+                                    "No branding removal",
+                                    "No custom domain",
+                                    "Basic analytics",
+                                    "3% store fee",
+                                ]
+                            ).map((feature, i) => (
                                 <div key={i} className="flex items-center gap-3">
                                     <Check className="w-4 h-4 text-green-500" />
                                     <span className="text-text-main text-sm font-medium">{feature}</span>
@@ -160,7 +175,10 @@ export default function PricingSection() {
 
                             {expandedFree && (
                                 <>
-                                    {['Limited integrations'].map((feature, i) => (
+                                    {ensureStringArray(
+                                        t("home.pricing.cards.free.more", { returnObjects: true }),
+                                        ["Limited integrations"]
+                                    ).map((feature, i) => (
                                         <div key={i} className="flex items-center gap-3">
                                             <Check className="w-4 h-4 text-green-500" />
                                             <span className="text-text-main text-sm font-medium">{feature}</span>
@@ -171,9 +189,9 @@ export default function PricingSection() {
 
                             <button
                                 onClick={() => setExpandedFree(!expandedFree)}
-                                className="flex items-center gap-1 text-text-muted hover:text-text-main text-sm font-medium transition-colors mt-2"
+                                className="flex items-center gap-1 text-gray-700 hover:text-text-main text-sm font-medium transition-colors mt-2"
                             >
-                                {expandedFree ? 'Show less' : 'Show more'}
+                                {expandedFree ? t("home.pricing.showLess") : t("home.pricing.showMore")}
                                 <ChevronDown className={`w-4 h-4 transition-transform ${expandedFree ? 'rotate-180' : ''}`} />
                             </button>
                         </div>
@@ -183,7 +201,7 @@ export default function PricingSection() {
                                 onClick={() => navigate(user ? '/dashboard' : '/sign-up')}
                                 className="w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
                             >
-                                Get Started
+                                {t("home.pricing.cards.free.cta")}
                             </button>
                         </div>
                     </div>
@@ -191,12 +209,12 @@ export default function PricingSection() {
                     {/* Standard Card */}
                     <div id="standard-card" className="bg-primary rounded-[2rem] p-8 w-full lg:w-1/3 shadow-xl flex flex-col gap-6 transition-transform duration-75 ease-linear z-20 relative min-h-[500px] border-2 border-primary">
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            <span className="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">Most Popular</span>
+                            <span className="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">{t("home.pricing.cards.standard.badge")}</span>
                         </div>
 
                         <div className="text-center">
-                            <h3 className="text-2xl font-bold text-primary-foreground">Standard</h3>
-                            <p className="text-primary-foreground/80 text-sm mt-2">For growing creators</p>
+                            <h3 className="text-2xl font-bold text-primary-foreground">{t("home.pricing.cards.standard.title")}</h3>
+                            <p className="text-primary-foreground/80 text-sm mt-2">{t("home.pricing.cards.standard.subtitle")}</p>
                         </div>
                         <div className="text-center py-4">
                             <div className="flex items-baseline justify-center gap-1">
@@ -206,12 +224,23 @@ export default function PricingSection() {
                                 <span className="text-primary-foreground/70 text-lg">/mo</span>
                             </div>
                             {billingCycle === 'annually' && (
-                                <span className="text-xs font-bold text-black bg-white/20 px-2 py-1 rounded-full mt-2 inline-block">Billed $49.50 yearly</span>
+                                <span className="text-xs font-bold text-black bg-white/20 px-2 py-1 rounded-full mt-2 inline-block">{t("home.pricing.cards.standard.billedYearly")}</span>
                             )}
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            {['Create up to 2 bios', 'Create 3 forms', 'Branding removal', 'Custom domain', 'Email collection', '1% store fee', '150 emails/month'].map((feature, i) => (
+                            {ensureStringArray(
+                                t("home.pricing.cards.standard.features", { returnObjects: true }),
+                                [
+                                    "Create up to 2 bios",
+                                    "Create 3 forms",
+                                    "Branding removal",
+                                    "Custom domain",
+                                    "Email collection",
+                                    "1% store fee",
+                                    "150 emails/month",
+                                ]
+                            ).map((feature, i) => (
                                 <div key={i} className="flex items-center gap-3">
                                     <Check className="w-4 h-4 text-black" />
                                     <span className="text-primary-foreground text-sm font-medium">{feature}</span>
@@ -220,7 +249,16 @@ export default function PricingSection() {
 
                             {expandedStandard && (
                                 <>
-                                    {['Automation (2 per bio)', 'Email template (2 per bio)', 'SEO settings', 'Google and Facebook analytics', 'More customizations'].map((feature, i) => (
+                                    {ensureStringArray(
+                                        t("home.pricing.cards.standard.more", { returnObjects: true }),
+                                        [
+                                            "Automation (2 per bio)",
+                                            "Email template (2 per bio)",
+                                            "SEO settings",
+                                            "Google and Facebook analytics",
+                                            "More customizations",
+                                        ]
+                                    ).map((feature, i) => (
                                         <div key={i} className="flex items-center gap-3">
                                             <Check className="w-4 h-4 text-black" />
                                             <span className="text-primary-foreground text-sm font-medium">{feature}</span>
@@ -233,7 +271,7 @@ export default function PricingSection() {
                                 onClick={() => setExpandedStandard(!expandedStandard)}
                                 className="flex items-center gap-1 text-primary-foreground/70 hover:text-primary-foreground text-sm font-medium transition-colors mt-2"
                             >
-                                {expandedStandard ? 'Show less' : 'Show more'}
+                                {expandedStandard ? t("home.pricing.showLess") : t("home.pricing.showMore")}
                                 <ChevronDown className={`w-4 h-4 transition-transform ${expandedStandard ? 'rotate-180' : ''}`} />
                             </button>
                         </div>
@@ -243,7 +281,7 @@ export default function PricingSection() {
                                 onClick={() => handleUpgrade('standard')}
                                 className="w-full bg-black text-white hover:bg-gray-900 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
                             >
-                                {user ? 'Upgrade' : 'Start Trial'}
+                                {user ? t("home.pricing.cards.standard.ctaUpgrade") : t("home.pricing.cards.standard.ctaTrial")}
                             </button>
                         </div>
                     </div>
@@ -251,23 +289,36 @@ export default function PricingSection() {
                     {/* Pro Card */}
                     <div id="pro-card" className="bg-black rounded-[2rem] p-8 w-full lg:w-1/3 shadow-2xl flex flex-col gap-6 transition-transform duration-75 ease-linear z-10 min-h-[500px]">
                         <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white">Pro</h3>
-                            <p className="text-gray-400 text-sm mt-2">For serious business</p>
+                            <h3 className="text-2xl font-bold text-white">{t("home.pricing.cards.pro.title")}</h3>
+                            <p className="text-gray-300 text-sm mt-2">{t("home.pricing.cards.pro.subtitle")}</p>
                         </div>
                         <div className="text-center py-4">
                             <div className="flex items-baseline justify-center gap-1">
                                 <span className="text-5xl font-bold text-white">
                                     ${billingCycle === 'monthly' ? '15' : '11.25'}
                                 </span>
-                                <span className="text-gray-400 text-lg">/mo</span>
+                                <span className="text-gray-300 text-lg">/mo</span>
                             </div>
                             {billingCycle === 'annually' && (
-                                <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded-full mt-2 inline-block">Billed $135 yearly</span>
+                                <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded-full mt-2 inline-block">{t("home.pricing.cards.pro.billedYearly")}</span>
                             )}
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            {['Everything in Standard', 'Create up to 5 bios', 'Create 4 forms', 'Scheduler', 'Automation (4 per bio)', 'Email template (4 per bio)', '0% store fee', '500 emails/month', 'More customizations'].map((feature, i) => (
+                            {ensureStringArray(
+                                t("home.pricing.cards.pro.features", { returnObjects: true }),
+                                [
+                                    "Everything in Standard",
+                                    "Create up to 5 bios",
+                                    "Create 4 forms",
+                                    "Scheduler",
+                                    "Automation (4 per bio)",
+                                    "Email template (4 per bio)",
+                                    "0% store fee",
+                                    "500 emails/month",
+                                    "More customizations",
+                                ]
+                            ).map((feature, i) => (
                                 <div key={i} className="flex items-center gap-3">
                                     <Check className="w-4 h-4 text-primary" />
                                     <span className="text-gray-300 text-sm font-medium">{feature}</span>
@@ -287,9 +338,9 @@ export default function PricingSection() {
 
                             <button
                                 onClick={() => setExpandedPro(!expandedPro)}
-                                className="flex items-center gap-1 text-gray-500 hover:text-gray-300 text-sm font-medium transition-colors mt-2"
+                                className="flex items-center gap-1 text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors mt-2"
                             >
-                                {expandedPro ? 'Show less' : 'Show more'}
+                                {expandedPro ? t("home.pricing.showLess") : t("home.pricing.showMore")}
                                 <ChevronDown className={`w-4 h-4 transition-transform ${expandedPro ? 'rotate-180' : ''}`} />
                             </button>
                         </div>
@@ -299,7 +350,7 @@ export default function PricingSection() {
                                 onClick={() => handleUpgrade('pro')}
                                 className="w-full bg-white text-black hover:bg-gray-100 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
                             >
-                                Go Pro
+                                {t("home.pricing.cards.pro.cta")}
                             </button>
                         </div>
                     </div>

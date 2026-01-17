@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 
 export default function ClaimUsernameBar() {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
@@ -40,15 +42,15 @@ export default function ClaimUsernameBar() {
 
         <div className="relative flex items-center bg-white rounded-full p-2 shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-gray-100 transition-shadow duration-300 hover:shadow-[0_12px_50px_rgb(0,0,0,0.12)]">
           <div className="flex items-center h-12 pl-3 md:pl-4">
-            <span className="text-xl md:text-2xl font-bold text-gray-500 select-none tracking-tight">portyo.me/p/</span>
+            <span className="text-xl md:text-2xl font-bold text-gray-700 select-none tracking-tight">portyo.me/p/</span>
           </div>
           <div className="flex-1 flex items-center justify-start relative h-12">
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(normalizeUsername(e.target.value))}
-              placeholder="yourname"
-              className="w-full bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-text-main placeholder:text-gray-300 h-full text-left pl-0.5 tracking-tight"
+              placeholder={t("home.hero.ctaPlaceholder")}
+              className="w-full bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-text-main placeholder:text-gray-400 h-full text-left pl-0.5 tracking-tight"
               spellCheck={false}
             />
           </div>
@@ -57,7 +59,7 @@ export default function ClaimUsernameBar() {
             onClick={() => navigate('/sign-up?step=1&sufix=' + username)}
             className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-base md:text-lg py-3 px-7 md:px-9 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:translate-y-0 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
           >
-            Claim Now
+            {t("home.hero.ctaButton")}
           </button>
         </div>
       </div>

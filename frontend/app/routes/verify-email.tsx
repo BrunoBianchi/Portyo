@@ -1,13 +1,16 @@
 import type { Route } from "./+types/verify-email";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { AuthBackground } from "~/components/shared/auth-background";
 import { useContext, useState, useRef, useEffect } from "react";
 import AuthContext from "~/contexts/auth.context";
 import { EnvelopeIcon } from "~/components/shared/icons";
 import { api } from "~/services/api";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 
-export function meta({ }: Route.MetaArgs) {
-    return [{ title: "Verify Email - Portyo" }];
+export function meta({ params }: Route.MetaArgs) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    return [{ title: i18n.t("meta.verifyEmail.title", { lng: lang }) }];
 }
 
 export default function VerifyEmail() {
@@ -17,6 +20,10 @@ export default function VerifyEmail() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { t } = useTranslation();
+    const location = useLocation();
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
 
     const inputRefs = [
         useRef<HTMLInputElement>(null),
@@ -29,9 +36,9 @@ export default function VerifyEmail() {
 
     useEffect(() => {
         if (!loading && !user) {
-            navigate("/login");
+            navigate(withLang("/login"));
         }
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, currentLang]);
 
 
 
@@ -77,19 +84,19 @@ export default function VerifyEmail() {
         try {
             await api.post("/user/verify-email", { email: user.email, code: verificationCode });
             const response = await refreshUser();
-            setSuccess("Email verificado com sucesso! Redirecionando...");
+            setSuccess(t("auth.verify.success"));
             setTimeout(() => {
                 // Redirect to onboarding if not completed, otherwise to dashboard
                 const updatedUser = response || user;
                 if (!updatedUser?.onboardingCompleted) {
-                    navigate("/onboarding");
+                    navigate(withLang("/onboarding"));
                 } else {
-                    navigate("/dashboard");
+                    navigate(withLang("/dashboard"));
                 }
             }, 2000);
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.message || "Verification failed. Please try again.");
+            setError(err.response?.data?.message || t("auth.verify.error"));
         } finally {
             setIsLoading(false);
         }
@@ -108,9 +115,9 @@ export default function VerifyEmail() {
         try {
             if (!user?.email) return;
             await api.post("/user/resend-verification", { email: user.email });
-            setSuccess("Verification code sent!");
+            setSuccess(t("auth.verify.resent"));
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to resend code.");
+            setError(err.response?.data?.message || t("auth.verify.resentError"));
         }
     };
 
@@ -128,10 +135,9 @@ export default function VerifyEmail() {
                         </div>
                     </div>
 
-                    <h1 className="text-2xl font-bold mb-3">Check your email</h1>
+                    <h1 className="text-2xl font-bold mb-3">{t("auth.verify.title")}</h1>
                     <p className="text-text-muted text-sm mb-6">
-                        We sent a verification code to <span className="font-medium text-text-main">{user?.email || "your email address"}</span>.
-                        Please enter the 6-digit code below to verify your account.
+                        {t("auth.verify.subtitle", { email: user?.email || t("auth.verify.fallbackEmail") })}
                     </p>
 
                     <div className="flex justify-center gap-2 mb-6">
@@ -168,18 +174,18 @@ export default function VerifyEmail() {
                             disabled={isLoading || code.some(c => c === "")}
                             className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
                         >
-                            {isLoading ? "Verifying..." : "Verify Code"}
+                            {isLoading ? t("auth.verify.verifying") : t("auth.verify.submit")}
                         </button>
 
                         <div className="text-sm text-text-muted">
-                            Didn't receive code?{" "}
+                            {t("auth.verify.noCode")}{" "}
                             <button onClick={handleResend} className="font-bold text-text-main hover:text-primary transition-colors">
-                                Resend
+                                {t("auth.verify.resend")}
                             </button>
                         </div>
 
-                        <Link to="/login" className="block w-full text-center text-sm text-text-muted hover:text-primary transition-colors">
-                            Back to Login
+                        <Link to={withLang("/login")} className="block w-full text-center text-sm text-text-muted hover:text-primary transition-colors">
+                            {t("auth.verify.backToLogin")}
                         </Link>
                     </div>
                 </div>

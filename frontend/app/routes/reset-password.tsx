@@ -4,11 +4,13 @@ import { Link, useSearchParams, useNavigate } from "react-router";
 import { Lock, ArrowLeft, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import { api } from "~/services/api";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Reset Password | Portyo" },
-        { name: "description", content: "Create a new password for your Portyo account" },
+        { title: i18n.t("meta.resetPassword.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.resetPassword.description", { lng: lang }) },
     ];
 };
 

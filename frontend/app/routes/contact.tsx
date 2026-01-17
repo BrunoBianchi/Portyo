@@ -2,11 +2,13 @@ import { useState } from "react";
 import type { MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { TikTokIcon } from "~/components/shared/icons";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Contact | Portyo" },
-        { name: "description", content: "Get in touch with the Portyo team." },
+        { title: i18n.t("meta.contact.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.contact.description", { lng: lang }) },
     ];
 };
 

@@ -8,6 +8,7 @@ import { AuthorizationGuard } from "~/contexts/guard.context";
 import AuthContext from "~/contexts/auth.context";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
   return [
@@ -27,6 +28,7 @@ interface Product {
 }
 
 export default function DashboardProducts() {
+  const { t } = useTranslation();
   const { bio } = useContext(BioContext);
   const { user } = useContext(AuthContext);
   const userPlan = (user?.plan || 'free') as PlanType;
@@ -134,7 +136,7 @@ export default function DashboardProducts() {
         setIsCreateProductModalOpen(false);
         setShowStripePopup(true);
       } else {
-        setCreateError(error.response?.data?.message || "Failed to create product. Please try again.");
+        setCreateError(error.response?.data?.message || t("dashboard.products.errors.create"));
       }
     } finally {
       setIsCreatingProduct(false);
@@ -194,7 +196,7 @@ export default function DashboardProducts() {
       setEditImagePreview(null);
     } catch (error: any) {
       console.error("Failed to update product", error);
-      setEditError(error.response?.data?.message || "Failed to update product");
+      setEditError(error.response?.data?.message || t("dashboard.products.errors.update"));
     } finally {
       setIsUpdating(false);
     }
@@ -213,7 +215,7 @@ export default function DashboardProducts() {
       setDeletingProduct(null);
     } catch (error: any) {
       console.error("Failed to delete product", error);
-      alert(error.response?.data?.message || "Failed to delete product");
+      alert(error.response?.data?.message || t("dashboard.products.errors.delete"));
     } finally {
       setIsDeleting(false);
     }
@@ -258,14 +260,14 @@ export default function DashboardProducts() {
         {/* ... (Header and Banner code unchanged) ... */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
-            <p className="text-gray-500 mt-1">Manage your digital products and services.</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.products.title")}</h1>
+            <p className="text-gray-500 mt-1">{t("dashboard.products.subtitle")}</p>
           </div>
           <button
             onClick={() => setIsCreateProductModalOpen(true)}
             className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg shadow-gray-200"
           >
-            <Plus className="w-5 h-5" /> Add Product
+            <Plus className="w-5 h-5" /> {t("dashboard.products.addProduct")}
           </button>
         </div>
 
@@ -277,15 +279,15 @@ export default function DashboardProducts() {
                 <DollarSign className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-blue-900">transaction Fee: {storeFeePercent}%</h3>
-                <p className="text-sm text-blue-700">Upgrade to Pro to remove transaction fees.</p>
+                <h3 className="font-bold text-blue-900">{t("dashboard.products.fee.title", { fee: storeFeePercent })}</h3>
+                <p className="text-sm text-blue-700">{t("dashboard.products.fee.subtitle")}</p>
               </div>
             </div>
             <button
               className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition"
               onClick={() => window.open('/dashboard/settings', '_self')}
             >
-              Upgrade
+              {t("dashboard.products.fee.upgrade")}
             </button>
           </div>
         )}
@@ -295,14 +297,14 @@ export default function DashboardProducts() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t("dashboard.products.searchPlaceholder")}
               className="w-full pl-12 pr-6 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
             />
           </div>
           <select className="px-6 py-3 bg-gray-50 border border-gray-200 rounded-full text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black cursor-pointer">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
+            <option value="all">{t("dashboard.products.status.all")}</option>
+            <option value="active">{t("dashboard.products.status.active")}</option>
+            <option value="draft">{t("dashboard.products.status.draft")}</option>
           </select>
         </div>
 
@@ -331,7 +333,7 @@ export default function DashboardProducts() {
                         : 'bg-white/80 text-gray-600 border-gray-100'
                         }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${product.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                        {product.status === 'active' ? 'Active' : 'Draft'}
+                        {product.status === 'active' ? t("dashboard.products.status.active") : t("dashboard.products.status.draft")}
                       </span>
                     </div>
                   </div>
@@ -340,12 +342,12 @@ export default function DashboardProducts() {
                 <div className="px-4 pb-4 pt-1 flex flex-col flex-1">
                   <div className="mb-3">
                     <h3 className="font-bold text-gray-900 text-base mb-0.5 truncate tracking-tight" title={product.title}>{product.title}</h3>
-                    <p className="text-xs text-gray-500 font-medium">Digital Product</p>
+                    <p className="text-xs text-gray-500 font-medium">{t("dashboard.products.digitalProduct")}</p>
                   </div>
 
                   <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-px">Price</span>
+                      <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-px">{t("dashboard.products.price")}</span>
                       <span className="text-lg font-bold text-gray-900 tracking-tight">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: product.currency }).format(product.price)}
                       </span>
@@ -367,7 +369,7 @@ export default function DashboardProducts() {
                             onClick={() => { setDeletingProduct(product); setOpenMenuId(null); }}
                             className="w-full text-left px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2"
                           >
-                            <Trash2 className="w-3.5 h-3.5" /> Remove
+                            <Trash2 className="w-3.5 h-3.5" /> {t("dashboard.products.remove")}
                           </button>
                         </div>
                       )}
@@ -376,7 +378,7 @@ export default function DashboardProducts() {
                         onClick={() => openEditModal(product)}
                         className="h-9 px-4 bg-black text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1.5"
                       >
-                        Edit
+                        {t("dashboard.products.edit")}
                       </button>
                     </div>
                   </div>
@@ -393,8 +395,8 @@ export default function DashboardProducts() {
                 <Plus className="w-6 h-6" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-gray-900 text-base mb-0.5">Add New Product</p>
-                <p className="text-xs text-gray-500">Create a new digital product</p>
+                <p className="font-bold text-gray-900 text-base mb-0.5">{t("dashboard.products.addNew")}</p>
+                <p className="text-xs text-gray-500">{t("dashboard.products.addNewSubtitle")}</p>
               </div>
             </button>
           </div>
@@ -405,7 +407,7 @@ export default function DashboardProducts() {
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Create Product</h3>
+                <h3 className="text-lg font-bold text-gray-900">{t("dashboard.products.create.title")}</h3>
                 <button
                   onClick={() => setIsCreateProductModalOpen(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -420,18 +422,18 @@ export default function DashboardProducts() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productTitle")}</label>
                   <input
                     required
                     value={newProductData.title}
                     onChange={(e) => setNewProductData({ ...newProductData, title: e.target.value })}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="e.g. Digital Guide"
+                    placeholder={t("dashboard.products.form.productTitlePlaceholder")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                         {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
@@ -449,7 +451,7 @@ export default function DashboardProducts() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.currency")}</label>
                     <select
                       value={newProductData.currency}
                       onChange={(e) => setNewProductData({ ...newProductData, currency: e.target.value })}
@@ -463,7 +465,7 @@ export default function DashboardProducts() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productImage")}</label>
                   <div className="border border-gray-200 rounded-lg p-2 flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                       {createImagePreview ? (
@@ -491,10 +493,10 @@ export default function DashboardProducts() {
                     {isCreatingProduct ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Creating...
+                        {t("dashboard.products.create.creating")}
                       </>
                     ) : (
-                      "Create Product"
+                      t("dashboard.products.create.action")
                     )}
                   </button>
                 </div>
@@ -509,7 +511,7 @@ export default function DashboardProducts() {
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Edit Product</h3>
+                <h3 className="text-lg font-bold text-gray-900">{t("dashboard.products.editModal.title")}</h3>
                 <button
                   onClick={() => setEditingProduct(null)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -524,7 +526,7 @@ export default function DashboardProducts() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productTitle")}</label>
                   <input
                     required
                     value={editFormData.title}
@@ -534,7 +536,7 @@ export default function DashboardProducts() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                         {editFormData.currency === 'usd' ? '$' : editFormData.currency === 'eur' ? '€' : editFormData.currency === 'gbp' ? '£' : editFormData.currency.toUpperCase()}
@@ -551,7 +553,7 @@ export default function DashboardProducts() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.currency")}</label>
                     <select
                       value={editFormData.currency}
                       onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value })}
@@ -565,7 +567,7 @@ export default function DashboardProducts() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productImage")}</label>
                   <div className="border border-gray-200 rounded-lg p-2 flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                       {editImagePreview ? (
@@ -593,10 +595,10 @@ export default function DashboardProducts() {
                     {isUpdating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving...
+                        {t("dashboard.products.editModal.saving")}
                       </>
                     ) : (
-                      "Save Changes"
+                      t("dashboard.products.editModal.action")
                     )}
                   </button>
                 </div>
@@ -613,23 +615,23 @@ export default function DashboardProducts() {
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
                 <Trash2 className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Product?</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.products.delete.title")}</h3>
               <p className="text-gray-500 text-sm mb-6">
-                Are you sure you want to delete <span className="font-semibold text-gray-700">"{deletingProduct.title}"</span>? This action cannot be undone.
+                {t("dashboard.products.delete.body", { title: deletingProduct.title })}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeletingProduct(null)}
                   className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t("dashboard.products.delete.cancel")}
                 </button>
                 <button
                   onClick={handleDeleteProduct}
                   disabled={isDeleting}
                   className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.products.delete.action")}
                 </button>
               </div>
             </div>
@@ -653,13 +655,13 @@ export default function DashboardProducts() {
                   <CreditCard className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Stripe Not Connected</h3>
-                  <p className="text-sm text-gray-500">Connect to sell products</p>
+                  <h3 className="text-xl font-bold text-gray-900">{t("dashboard.products.stripe.title")}</h3>
+                  <p className="text-sm text-gray-500">{t("dashboard.products.stripe.subtitle")}</p>
                 </div>
               </div>
 
               <p className="text-gray-600 mb-6">
-                To create and sell products, you need to connect your Stripe account first. Go to Integrations and set up your Stripe connection.
+                {t("dashboard.products.stripe.body")}
               </p>
 
               <div className="flex gap-3">
@@ -667,14 +669,14 @@ export default function DashboardProducts() {
                   href="/dashboard/integrations"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors"
                 >
-                  Go to Integrations
+                  {t("dashboard.products.stripe.cta")}
                   <ExternalLink className="w-4 h-4" />
                 </a>
                 <button
                   onClick={() => setShowStripePopup(false)}
                   className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Close
+                  {t("dashboard.products.stripe.close")}
                 </button>
               </div>
             </div>

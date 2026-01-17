@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import { AnalyticsService, type SalesData, type AnalyticsData } from "~/services/analytics.service";
 import WorldMap from "~/components/dashboard/world-map";
 import { useAuth } from "~/contexts/auth.context";
+import { useTranslation } from "react-i18next";
 
 interface Activity {
     id: string;
@@ -19,6 +20,7 @@ interface Activity {
 export default function DashboardHome() {
     const { bio } = useContext(BioContext);
     const { isPro } = useAuth();
+    const { t } = useTranslation();
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -78,7 +80,7 @@ export default function DashboardHome() {
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                 <TrendingUp className={`w-3 h-3 ${!isPositive && 'rotate-180'}`} />
                 <span>{isPositive ? '+' : ''}{change}%</span>
-                <span className={`${isPositive ? 'text-green-600/70' : 'text-red-600/70'} font-medium`}>vs last month</span>
+                <span className={`${isPositive ? 'text-green-600/70' : 'text-red-600/70'} font-medium`}>{t("dashboard.overview.vsLastMonth")}</span>
             </div>
         );
     };
@@ -90,10 +92,10 @@ export default function DashboardHome() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold uppercase tracking-wider mb-3">
                             <Sparkles className="w-3 h-3" />
-                            Overview
+                            {t("dashboard.overview.overview")}
                         </div>
-                        <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">Dashboard</h1>
-                        <p className="text-lg text-text-muted">Welcome back! Here's what's happening with your profile.</p>
+                        <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">{t("dashboard.overview.title")}</h1>
+                        <p className="text-lg text-text-muted">{t("dashboard.overview.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {bio && (
@@ -105,14 +107,14 @@ export default function DashboardHome() {
                                     className="btn btn-secondary btn-sm"
                                 >
                                     <ExternalLink className="w-4 h-4" />
-                                    View Page
+                                    {t("dashboard.overview.viewPage")}
                                 </a>
                                 <a
                                     href={`/dashboard/editor`}
                                     className="btn btn-primary btn-sm"
                                 >
                                     <PenTool className="w-4 h-4" />
-                                    Open Editor
+                                    {t("dashboard.overview.openEditor")}
                                 </a>
                             </>
                         )}
@@ -130,7 +132,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
                                     <BarChart3 className="w-6 h-6" />
                                 </div>
-                                <h3 className="label mb-0">Total Views</h3>
+                                <h3 className="label mb-0">{t("dashboard.overview.totalViews")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
@@ -150,7 +152,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
                                     <MousePointer2 className="w-6 h-6" />
                                 </div>
-                                <h3 className="label mb-0">Total Clicks</h3>
+                                <h3 className="label mb-0">{t("dashboard.overview.totalClicks")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
@@ -170,7 +172,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
                                     <ArrowUpRight className="w-6 h-6" />
                                 </div>
-                                <h3 className="label mb-0">Avg. CTR</h3>
+                                <h3 className="label mb-0">{t("dashboard.overview.avgCtr")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
@@ -192,8 +194,8 @@ export default function DashboardHome() {
                                     <DollarSign className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-text-main text-lg">Sales & Revenue</h3>
-                                    <p className="text-sm text-text-muted mt-0.5">Your product sales this month</p>
+                                    <h3 className="font-bold text-text-main text-lg">{t("dashboard.overview.salesRevenue")}</h3>
+                                    <p className="text-sm text-text-muted mt-0.5">{t("dashboard.overview.salesRevenueSubtitle")}</p>
                                 </div>
                             </div>
                         </div>
@@ -207,7 +209,7 @@ export default function DashboardHome() {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
-                                        <p className="text-sm text-text-muted mb-1">Total Sales</p>
+                                        <p className="text-sm text-text-muted mb-1">{t("dashboard.overview.totalSales")}</p>
                                         <p className="text-2xl font-bold text-text-main">{sales.sales.current}</p>
                                         <div className="mt-1 flex items-center gap-1.5 text-sm">
                                             {sales.sales.change >= 0 ? (
@@ -221,11 +223,11 @@ export default function DashboardHome() {
                                                     <span className="text-red-600 font-semibold">{sales.sales.change}%</span>
                                                 </>
                                             )}
-                                            <span className="text-text-muted">vs last month</span>
+                                            <span className="text-text-muted">{t("dashboard.overview.vsLastMonth")}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-text-muted mb-1">Total Revenue</p>
+                                        <p className="text-sm text-text-muted mb-1">{t("dashboard.overview.totalRevenue")}</p>
                                         <p className="text-2xl font-bold text-text-main">
                                             {sales.revenue.currency} ${sales.revenue.current.toFixed(2)}
                                         </p>
@@ -241,7 +243,7 @@ export default function DashboardHome() {
                                                     <span className="text-red-600 font-semibold">{sales.revenue.change}%</span>
                                                 </>
                                             )}
-                                            <span className="text-text-muted">vs last month</span>
+                                            <span className="text-text-muted">{t("dashboard.overview.vsLastMonth")}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -250,7 +252,7 @@ export default function DashboardHome() {
                                 <div className="pt-4 border-t border-border">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm text-text-muted mb-1">Avg. Order Value</p>
+                                            <p className="text-sm text-text-muted mb-1">{t("dashboard.overview.avgOrderValue")}</p>
                                             <p className="text-xl font-bold text-text-main">
                                                 {sales.revenue.currency} ${sales.averageOrderValue.toFixed(2)}
                                             </p>
@@ -264,7 +266,7 @@ export default function DashboardHome() {
                                 {/* Revenue Sparkline */}
                                 {sales.dailyRevenue && sales.dailyRevenue.length > 0 && (
                                     <div className="pt-4 border-t border-border">
-                                        <p className="text-sm text-text-muted mb-3">Revenue Trend (30 days)</p>
+                                        <p className="text-sm text-text-muted mb-3">{t("dashboard.overview.revenueTrend")}</p>
                                         <div className="h-16 flex items-end gap-[2px]">
                                             {sales.dailyRevenue.map((day) => {
                                                 const maxAmount = Math.max(...sales.dailyRevenue.map(d => d.amount), 1);
@@ -291,12 +293,12 @@ export default function DashboardHome() {
                                 <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
                                     <CreditCard className="w-8 h-8 text-text-muted" />
                                 </div>
-                                <p className="text-sm text-text-muted mb-4">Connect Stripe to see your sales analytics</p>
+                                <p className="text-sm text-text-muted mb-4">{t("dashboard.overview.connectStripeHint")}</p>
                                 <Link
                                     to="/dashboard/integrations"
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition-colors"
                                 >
-                                    Connect Stripe
+                                    {t("dashboard.overview.connectStripe")}
                                 </Link>
                             </div>
                         )}
@@ -311,7 +313,7 @@ export default function DashboardHome() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 card p-8 h-fit">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-text-main">Recent Activity</h2>
+                            <h2 className="text-xl font-bold text-text-main">{t("dashboard.overview.recentActivity")}</h2>
                             <div className="flex items-center gap-2">
                                 <select
                                     value={filterType}
@@ -321,13 +323,13 @@ export default function DashboardHome() {
                                     }}
                                     className="bg-surface-alt border border-border rounded-lg px-3 py-1.5 text-sm font-medium text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 >
-                                    <option value="ALL">All Activity</option>
-                                    <option value="PURCHASE">Purchases</option>
-                                    <option value="SUBSCRIBE">Subscribers</option>
-                                    <option value="CLICK">Clicks</option>
-                                    <option value="VIEW">Views</option>
+                                    <option value="ALL">{t("dashboard.overview.filters.all")}</option>
+                                    <option value="PURCHASE">{t("dashboard.overview.filters.purchases")}</option>
+                                    <option value="SUBSCRIBE">{t("dashboard.overview.filters.subscribers")}</option>
+                                    <option value="CLICK">{t("dashboard.overview.filters.clicks")}</option>
+                                    <option value="VIEW">{t("dashboard.overview.filters.views")}</option>
                                 </select>
-                                <div className="text-xs text-text-muted font-medium px-2">Page {page} of {totalPages}</div>
+                                <div className="text-xs text-text-muted font-medium px-2">{t("dashboard.overview.pageOf", { page, totalPages })}</div>
                             </div>
                         </div>
 
@@ -346,12 +348,12 @@ export default function DashboardHome() {
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-medium text-text-main truncate">{activity.description}</p>
                                                 <p className="text-xs text-text-muted">
-                                                    {new Date(activity.createdAt).toLocaleDateString()} at {new Date(activity.createdAt).toLocaleTimeString()}
+                                                    {new Date(activity.createdAt).toLocaleDateString()} {t("dashboard.overview.at")} {new Date(activity.createdAt).toLocaleTimeString()}
                                                 </p>
                                             </div>
                                             {activity.type === "PURCHASE" && (
                                                 <div className="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">
-                                                    Sale
+                                                    {t("dashboard.overview.sale")}
                                                 </div>
                                             )}
                                         </div>
@@ -363,14 +365,14 @@ export default function DashboardHome() {
                                         disabled={page === 1}
                                         className="text-sm font-medium text-text-muted hover:text-text-main disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
-                                        Previous
+                                        {t("dashboard.overview.previous")}
                                     </button>
                                     <button
                                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                         disabled={page >= totalPages}
                                         className="text-sm font-medium text-text-muted hover:text-text-main disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
-                                        Next
+                                        {t("dashboard.overview.next")}
                                     </button>
                                 </div>
                             </>
@@ -379,8 +381,8 @@ export default function DashboardHome() {
                                 <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4 shadow-sm">
                                     <BarChart3 className="w-8 h-8 text-text-muted" />
                                 </div>
-                                <h3 className="text-lg font-bold text-text-main mb-1">No activity yet</h3>
-                                <p className="text-text-muted max-w-xs mx-auto">Share your page to start tracking views and clicks from your audience.</p>
+                                <h3 className="text-lg font-bold text-text-main mb-1">{t("dashboard.overview.noActivityTitle")}</h3>
+                                <p className="text-text-muted max-w-xs mx-auto">{t("dashboard.overview.noActivityBody")}</p>
                             </div>
                         )}
                     </div>
@@ -390,12 +392,12 @@ export default function DashboardHome() {
                         <div className="relative z-10">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
                                 <Sparkles className="w-3 h-3 text-primary" />
-                                Pro Feature
+                                {t("dashboard.overview.proFeature")}
                             </div>
-                            <h2 className="text-2xl font-bold mb-3">Upgrade to Pro</h2>
-                            <p className="text-gray-400 mb-8 leading-relaxed">Get detailed analytics, custom domains, and remove Portyo branding from your page.</p>
+                            <h2 className="text-2xl font-bold mb-3">{t("dashboard.overview.upgradeTitle")}</h2>
+                            <p className="text-gray-400 mb-8 leading-relaxed">{t("dashboard.overview.upgradeBody")}</p>
                             <button className="w-full btn bg-primary text-primary-foreground hover:bg-primary-hover border-none">
-                                Upgrade Plan
+                                {t("dashboard.overview.upgradeCta")}
                             </button>
                         </div>
                     </div>

@@ -2,8 +2,11 @@ import { Link } from "react-router";
 import ClaimUsernameInput from "./claim-username-input";
 import { Palette, Instagram, Image, Rocket, Youtube } from "lucide-react";
 import { DecorativeUnderlineIcon, TikTokIcon } from "~/components/shared/icons";
+import { useTranslation } from "react-i18next";
 
 export default function HeroSection() {
+  const { t } = useTranslation();
+
   return (
     <section className="relative w-full max-w-7xl top-[-102px] mx-auto px-4 py-20 md:py-32 flex flex-col items-center justify-center min-h-[600px] overflow-hidden md:overflow-visible">
       <div className="absolute left-12 lg:left-24 top-1/4 hidden md:block animate-float" style={{ animationDelay: "0s" }}>
@@ -23,8 +26,8 @@ export default function HeroSection() {
               <Palette className="w-4 h-4" />
             </div>
             <div className="flex flex-col ">
-              <span className="text-xs text-text-muted font-medium">Role</span>
-              <span className="text-sm font-bold text-text-main leading-none">Digital Artist</span>
+              <span className="text-xs text-gray-600 font-medium">{t("home.hero.floating.roleLabel")}</span>
+              <span className="text-sm font-bold text-text-main leading-none">{t("home.hero.floating.roleValue")}</span>
             </div>
           </div>
 
@@ -36,7 +39,7 @@ export default function HeroSection() {
           {/* Card: New Post */}
           <div className="absolute -bottom-12 -left-14 bg-white px-3 py-2 rounded-xl shadow-lg transform rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-30">
             <Image className="w-4 h-4 text-blue-500" />
-            <span className="text-xs font-semibold text-text-main">New 3D Art</span>
+            <span className="text-xs font-semibold text-text-main">{t("home.hero.floating.newArt")}</span>
           </div>
         </div>
       </div>
@@ -58,7 +61,7 @@ export default function HeroSection() {
           {/* Card: TikTok */}
           <div className="absolute -top-8 -right-24 bg-white px-3 py-1.5 rounded-xl shadow-lg transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-20">
             <TikTokIcon className="w-4 h-4 text-black" />
-            <span className="text-xs font-bold text-text-main">Viral!</span>
+            <span className="text-xs font-bold text-text-main">{t("home.hero.floating.viral")}</span>
           </div>
         </div>
       </div>
@@ -83,8 +86,8 @@ export default function HeroSection() {
               <Rocket className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs text-text-muted font-medium">Founder</span>
-              <span className="text-sm font-bold text-text-main leading-none">Startup Life</span>
+              <span className="text-xs text-gray-600 font-medium">{t("home.hero.floating.founderLabel")}</span>
+              <span className="text-sm font-bold text-text-main leading-none">{t("home.hero.floating.founderValue")}</span>
             </div>
           </div>
 
@@ -93,7 +96,7 @@ export default function HeroSection() {
           {/* Card: Revenue */}
           <div className="absolute -bottom-12 -right-10 bg-white px-4 py-2 rounded-xl shadow-lg transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-30">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-xs font-bold text-text-main">Revenue +120%</span>
+            <span className="text-xs font-bold text-text-main">{t("home.hero.floating.revenue")}</span>
           </div>
         </div>
       </div>
@@ -115,7 +118,7 @@ export default function HeroSection() {
           {/* Card: YouTube */}
           <div className="absolute -bottom-8 -left-20 bg-white px-3 py-1.5 rounded-xl shadow-lg transform rotate-6 group-hover:rotate-0 transition-transform duration-300 flex items-center gap-2 z-20">
             <Youtube className="w-4 h-4 text-[#FF0000]" />
-            <span className="text-xs font-bold text-text-main">New Video</span>
+            <span className="text-xs font-bold text-text-main">{t("home.hero.floating.newVideo")}</span>
           </div>
         </div>
       </div>
@@ -123,15 +126,14 @@ export default function HeroSection() {
       {/* Main Content */}
       <div className="relative z-10 text-center max-w-3xl mx-auto space-y-8">
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-text-main leading-[1.1]">
-          Convert your followers into <span className="text-primary-hover relative inline-block">
-            customers
+          {t("home.hero.title.pre")} <span className="text-text-main relative inline-block">
+            {t("home.hero.title.highlight")}
             <DecorativeUnderlineIcon className="absolute w-full h-3 -bottom-1 left-0 text-secondary opacity-60 -z-10" />
-          </span> with one link
+          </span> {t("home.hero.title.post")}
         </h1>
 
-        <p className="text-xl text-text-muted max-w-2xl mx-auto leading-relaxed">
-          Generate powerful revenue-generating Bio's with our an all-in-one platform.
-          Grow your following and earn while you sleep!
+        <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
+          {t("home.hero.subtitle")}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full">

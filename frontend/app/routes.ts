@@ -1,29 +1,29 @@
-import { type RouteConfig, index } from "@react-router/dev/routes";
+import { type RouteConfig, type RouteConfigEntry } from "@react-router/dev/routes";
 
-export default [
-    {path:'/',file:"routes/home.tsx", id: "home"},
-    {path:'/login',file:"routes/login.tsx"},
-    {path:'/sign-up',file:"routes/sign-up.tsx"},
-    {path:'/verify-email',file:"routes/verify-email.tsx"},
-    {path:'/forgot-password',file:"routes/forgot-password.tsx"},
-    {path:'/reset-password',file:"routes/reset-password.tsx"},
-    {path:'/onboarding',file:"routes/onboarding.tsx"},
-    {path:'/about',file:"routes/about.tsx"},
-    {path:'/legal',file:"routes/legal.tsx"},
-    {path:'/contact',file:"routes/contact.tsx"},
-    {path:'/privacy-policy',file:"routes/privacy-policy.tsx"},
-    {path:'/terms-of-service',file:"routes/terms-of-service.tsx"},
-    {path:'/pricing',file:"routes/pricing.tsx"},
-    {path:'/robots.txt',file:"routes/robots.ts", id: "robots-txt"},
-    {path:'/robot.txt',file:"routes/robots.ts", id: "robot-txt"},
-    {path:'/sitemap.xml',file:"routes/sitemap.ts", id: "sitemap-xml"},
-    {path:'/sitemap',file:"routes/sitemap.ts", id: "sitemap"},
+const baseRoutes: RouteConfig = [
+    { path: '/', file: "routes/home.tsx", id: "home" },
+    { path: '/login', file: "routes/login.tsx" },
+    { path: '/sign-up', file: "routes/sign-up.tsx" },
+    { path: '/verify-email', file: "routes/verify-email.tsx" },
+    { path: '/forgot-password', file: "routes/forgot-password.tsx" },
+    { path: '/reset-password', file: "routes/reset-password.tsx" },
+    { path: '/onboarding', file: "routes/onboarding.tsx" },
+    { path: '/about', file: "routes/about.tsx" },
+    { path: '/legal', file: "routes/legal.tsx" },
+    { path: '/contact', file: "routes/contact.tsx" },
+    { path: '/privacy-policy', file: "routes/privacy-policy.tsx" },
+    { path: '/terms-of-service', file: "routes/terms-of-service.tsx" },
+    { path: '/pricing', file: "routes/pricing.tsx" },
+    { path: '/robots.txt', file: "routes/robots.ts", id: "robots-txt" },
+    { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
+    { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },
+    { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
     // Per-bio robots & sitemap
-    {path:'/p/:username/robots.txt',file:"routes/robots.ts", id: "bio-robots"},
-    {path:'/p/:username/sitemap.xml',file:"routes/sitemap.ts", id: "bio-sitemap"},
+    { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
+    { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
     {
-        path:'/dashboard',
-        file:"routes/dashboard.tsx",
+        path: '/dashboard',
+        file: "routes/dashboard.tsx",
         children: [
             { index: true, file: "routes/dashboard-home.tsx" },
             { path: "editor", file: "routes/dashboard-editor.tsx" },
@@ -60,4 +60,45 @@ export default [
     { path: "payment-success", file: "routes/payment-success.tsx" },
     { path: "p/:username", file: "routes/p.$username.tsx" },
     { path: "*", file: "routes/catchall.tsx" }
+] satisfies RouteConfig;
+
+const stripLeadingSlash = (path: string) => (path.startsWith("/") ? path.slice(1) : path);
+
+const toLocalizedRoutes = (routes: RouteConfigEntry[], parentKey = ""): RouteConfigEntry[] =>
+    routes.map((route) => {
+        const mapped: any = { ...route };
+
+        const originalPath = route.path ?? (route.index ? "index" : "");
+        const normalizedPath = originalPath === "/" ? "index" : stripLeadingSlash(originalPath || "index");
+        const fileKey = route.file ?? route.id ?? "route";
+        const localKey = [parentKey, fileKey, normalizedPath].filter(Boolean).join(":");
+        mapped.id = `lang:${localKey}`;
+
+        if (route.path === "/") {
+            delete mapped.path;
+            mapped.index = true;
+        } else if (route.path) {
+            mapped.path = stripLeadingSlash(route.path);
+        }
+
+        if (route.children) {
+            mapped.children = toLocalizedRoutes(route.children, localKey);
+        }
+
+        return mapped;
+    });
+
+const nonLocalizedRoutes: RouteConfig = [
+    { path: '/robots.txt', file: "routes/robots.ts", id: "robots-txt" },
+    { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
+    { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },
+    { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
+    { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
+    { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" }
+];
+
+export default [
+    { path: "/:lang", file: "routes/lang.tsx", children: toLocalizedRoutes(baseRoutes) },
+    ...nonLocalizedRoutes,
+    { path: "*", file: "routes/redirect-lang.tsx" }
 ] satisfies RouteConfig;

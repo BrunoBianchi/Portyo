@@ -1,0 +1,1342 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "manifesto": "Manifesto",
+    "pricing": "Preços",
+    "launch": "Lance sua página",
+    "signIn": "Entrar",
+    "startFree": "Começar grátis",
+    "getStarted": "Começar",
+    "view": "Ver",
+    "menu": "Menu",
+    "goToDashboard": "Ir para o painel",
+    "signOut": "Sair",
+    "language": "Idioma"
+  },
+  "meta": {
+    "root": {
+      "title": "Portyo - Link in Bio",
+      "description": "Converta seguidores em clientes com um link. Gere bios poderosas que geram receita com nossa plataforma tudo-em-um."
+    },
+    "home": {
+      "title": "Portyo - Link in Bio",
+      "description": "Converta seguidores em clientes com um link. Gere bios poderosas que geram receita com nossa plataforma tudo-em-um."
+    },
+    "about": {
+      "title": "Sobre | Portyo",
+      "description": "Estamos capacitando criadores a construírem seu futuro."
+    },
+    "pricing": {
+      "title": "Preços | Portyo",
+      "description": "Escolha o plano ideal para suas necessidades."
+    },
+    "contact": {
+      "title": "Contato | Portyo",
+      "description": "Fale com o time da Portyo."
+    },
+    "legal": {
+      "title": "Legal | Portyo",
+      "description": "Política de Privacidade, Termos de Serviço e Política de Cookies da Portyo."
+    },
+    "privacyPolicy": {
+      "title": "Política de Privacidade | Portyo",
+      "description": "Política de Privacidade da Portyo."
+    },
+    "termsOfService": {
+      "title": "Termos de Serviço | Portyo",
+      "description": "Termos de Serviço da Portyo."
+    },
+    "login": {
+      "title": "Entrar - Portyo"
+    },
+    "signUp": {
+      "title": "Criar conta - Portyo"
+    },
+    "verifyEmail": {
+      "title": "Verificar e-mail - Portyo"
+    },
+    "forgotPassword": {
+      "title": "Esqueci a senha | Portyo",
+      "description": "Redefina sua senha da Portyo"
+    },
+    "resetPassword": {
+      "title": "Redefinir senha | Portyo",
+      "description": "Crie uma nova senha para sua conta Portyo"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "overview": "Visão geral",
+      "editor": "Editor",
+      "leads": "Leads",
+      "products": "Produtos",
+      "portfolio": "Portfólio",
+      "blog": "Blog",
+      "qrCode": "Código QR",
+      "marketing": "Marketing",
+      "scheduler": "Agenda",
+      "emailTemplates": "Modelos de e-mail",
+      "integrations": "Integrações",
+      "automation": "Automação",
+      "forms": "Formulários",
+      "seoSettings": "Configurações de SEO",
+      "analytics": "Análises",
+      "adminPanel": "Painel Admin",
+      "announcements": "Anúncios",
+      "siteBlog": "Blog do site"
+    },
+    "sidebar": {
+      "newPage": "Nova página",
+      "claimTitle": "Garanta seu link",
+      "claimSubtitle": "Escolha um nome de usuário único para sua nova página.",
+      "closeModal": "Fechar modal",
+      "usernamePlaceholder": "seunome",
+      "createPage": "Criar página",
+      "closeSidebar": "Fechar sidebar",
+      "switchWorkspace": "Trocar workspace",
+      "currentPage": "Página atual",
+      "selectPage": "Selecionar página",
+      "yourPages": "Suas páginas",
+      "createNewPage": "Criar nova página",
+      "limitReached": "Limite atingido",
+      "menu": "Menu",
+      "proBadge": "PRO",
+      "standardBadge": "Standard",
+      "selectOrCreate": "Selecione ou crie uma página para acessar o menu.",
+      "unlockMorePages": "Desbloquear mais páginas",
+      "livePage": "Página ao vivo",
+      "userFallback": "Usuário",
+      "logout": "Sair",
+      "createError": "Falha ao criar página. O nome de usuário pode já estar em uso."
+    },
+    "overview": {
+      "overview": "Visão geral",
+      "title": "Painel",
+      "subtitle": "Bem-vindo de volta! Veja o que está acontecendo com seu perfil.",
+      "viewPage": "Ver página",
+      "openEditor": "Abrir editor",
+      "totalViews": "Visualizações totais",
+      "totalClicks": "Cliques totais",
+      "avgCtr": "CTR médio",
+      "salesRevenue": "Vendas e receita",
+      "salesRevenueSubtitle": "Suas vendas de produtos neste mês",
+      "totalSales": "Vendas totais",
+      "totalRevenue": "Receita total",
+      "avgOrderValue": "Ticket médio",
+      "revenueTrend": "Tendência de receita (30 dias)",
+      "connectStripeHint": "Conecte o Stripe para ver suas análises de vendas",
+      "connectStripe": "Conectar Stripe",
+      "recentActivity": "Atividade recente",
+      "filters": {
+        "all": "Todas as atividades",
+        "purchases": "Compras",
+        "subscribers": "Inscritos",
+        "clicks": "Cliques",
+        "views": "Visualizações"
+      },
+      "pageOf": "Página {{page}} de {{totalPages}}",
+      "at": "às",
+      "sale": "Venda",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "noActivityTitle": "Sem atividades ainda",
+      "noActivityBody": "Compartilhe sua página para começar a acompanhar visualizações e cliques do seu público.",
+      "proFeature": "Recurso Pro",
+      "upgradeTitle": "Faça upgrade para Pro",
+      "upgradeBody": "Tenha análises detalhadas, domínio personalizado e remova a marca Portyo da sua página.",
+      "upgradeCta": "Fazer upgrade",
+      "vsLastMonth": "vs mês passado"
+    },
+    "leads": {
+      "title": "Audiência",
+      "subtitle": "Gerencie seus inscritos e faça sua comunidade crescer.",
+      "acceptingLeads": "Recebendo leads",
+      "leadsDisabled": "Leads desativados",
+      "exportCsv": "Exportar CSV",
+      "active": "Ativo",
+      "totalSubscribers": "Total de inscritos",
+      "today": "Hoje",
+      "newSubscribers": "Novos inscritos",
+      "avg": "Média",
+      "conversionRate": "Taxa de conversão",
+      "searchPlaceholder": "Pesquisar inscritos por e-mail...",
+      "results": "{{count}} resultados",
+      "table": {
+        "subscriber": "Inscrito",
+        "status": "Status",
+        "joined": "Entrou",
+        "actions": "Ações"
+      },
+      "syncing": "Sincronizando audiência...",
+      "noSubscribers": "Nenhum inscrito encontrado",
+      "tryAdjustSearch": "Tente ajustar seus termos de busca",
+      "shareBio": "Compartilhe seu link para começar a crescer sua lista",
+      "subscriberLabel": "Inscrito",
+      "sendEmail": "Enviar e-mail",
+      "removeSubscriber": "Remover inscrito",
+      "removeSubscribers": "Remover vários inscritos",
+      "removeSingleDesc": "Tem certeza de que deseja remover {{email}} da sua lista? Este inscrito não receberá mais suas atualizações.",
+      "removeBulkDesc": "Tem certeza de que deseja remover {{count}} inscritos? Esta ação não pode ser desfeita.",
+      "deleteError": "Falha ao remover lead(s)",
+      "selected": "selecionados",
+      "sendSelected": "Enviar e-mail para selecionados",
+      "message": "Mensagem",
+      "export": "Exportar",
+      "delete": "Excluir"
+    },
+    "qrcode": {
+      "share": "Compartilhar",
+      "title": "Códigos QR",
+      "subtitle": "Gerencie e acompanhe seus códigos QR.",
+      "createTitle": "Criar novo código QR",
+      "destinationUrl": "URL de destino",
+      "urlPlaceholder": "https://exemplo.com",
+      "generate": "Gerar código QR",
+      "yourCodes": "Seus códigos QR",
+      "mainProfile": "Perfil principal",
+      "loading": "Carregando...",
+      "views": "{{count}} visualizações",
+      "custom": "Código QR personalizado",
+      "profile": "Código QR do perfil",
+      "copyUrl": "Copiar URL",
+      "scans": "Leituras",
+      "clicks": "Cliques",
+      "appearance": "Aparência",
+      "reset": "Resetar",
+      "colorPresets": "Paletas de cores",
+      "foreground": "Cor do primeiro plano",
+      "background": "Cor do fundo",
+      "downloadPng": "Baixar PNG"
+    },
+    "seo": {
+      "upgradeTitle": "Faça upgrade para Pro",
+      "upgradeSubtitle": "As configurações de SEO estão disponíveis nos planos Standard e Pro. Faça upgrade para personalizar título, descrição e favicon.",
+      "upgradeCta": "Fazer upgrade",
+      "title": "Configurações de SEO",
+      "subtitle": "Personalize como sua página aparece na busca e nas redes sociais.",
+      "saving": "Salvando...",
+      "saveChanges": "Salvar alterações",
+      "characters": "/ {{count}} caracteres",
+      "section": {
+        "search": {
+          "title": "Otimização para mecanismos de busca",
+          "subtitle": "Controle como sua página aparece no Google e outros buscadores."
+        },
+        "social": {
+          "title": "Compartilhamento em redes sociais",
+          "subtitle": "Personalize como seu link aparece ao ser compartilhado."
+        }
+      },
+      "fields": {
+        "pageTitle": "Título da página",
+        "metaDescription": "Meta descrição",
+        "keywords": "Palavras-chave",
+        "favicon": "Favicon da página",
+        "socialTitle": "Título social",
+        "socialDescription": "Descrição social",
+        "socialImage": "Imagem de compartilhamento"
+      },
+      "placeholders": {
+        "pageTitle": "ex.: João Silva - Criador Digital",
+        "metaDescription": "Uma breve descrição da sua página...",
+        "keywords": "portfólio, links, criador, design (separado por vírgulas)",
+        "socialTitle": "Igual ao título da página",
+        "socialDescription": "Igual à meta descrição"
+      },
+      "help": {
+        "favicon": "Envie uma imagem quadrada (PNG, JPG) para o ícone da aba. Recomendado 512x512px.",
+        "socialImage": "Imagem exibida ao compartilhar seu link. Recomendado 1200x630px."
+      }
+    },
+    "products": {
+      "title": "Catálogo de produtos",
+      "subtitle": "Gerencie seus produtos digitais e serviços.",
+      "addProduct": "Adicionar produto",
+      "addNew": "Adicionar novo produto",
+      "addNewSubtitle": "Crie um novo produto digital",
+      "searchPlaceholder": "Pesquisar produtos...",
+      "digitalProduct": "Produto digital",
+      "price": "Preço",
+      "edit": "Editar",
+      "remove": "Remover",
+      "status": {
+        "all": "Todos os status",
+        "active": "Ativo",
+        "draft": "Rascunho"
+      },
+      "fee": {
+        "title": "Taxa de transação: {{fee}}%",
+        "subtitle": "Faça upgrade para o Pro e remova as taxas de transação.",
+        "upgrade": "Fazer upgrade"
+      },
+      "form": {
+        "productTitle": "Título do produto",
+        "productTitlePlaceholder": "ex.: Guia digital",
+        "price": "Preço",
+        "currency": "Moeda",
+        "productImage": "Imagem do produto"
+      },
+      "create": {
+        "title": "Criar produto",
+        "creating": "Criando...",
+        "action": "Criar produto"
+      },
+      "editModal": {
+        "title": "Editar produto",
+        "saving": "Salvando...",
+        "action": "Salvar alterações"
+      },
+      "delete": {
+        "title": "Excluir produto?",
+        "body": "Tem certeza de que deseja excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "action": "Excluir"
+      },
+      "stripe": {
+        "title": "Stripe não conectado",
+        "subtitle": "Conecte para vender produtos",
+        "body": "Para criar e vender produtos, você precisa conectar sua conta Stripe primeiro. Vá em Integrações e configure sua conexão com o Stripe.",
+        "cta": "Ir para Integrações",
+        "close": "Fechar"
+      },
+      "errors": {
+        "create": "Falha ao criar produto. Tente novamente.",
+        "update": "Falha ao atualizar produto",
+        "delete": "Falha ao excluir produto"
+      }
+    },
+    "blog": {
+      "badge": "Blog",
+      "title": "Posts do blog",
+      "subtitle": "Gerencie seu conteúdo e histórias.",
+      "newPost": "Novo post",
+      "searchPlaceholder": "Pesquisar posts...",
+      "status": {
+        "all": "Todos os status",
+        "published": "Publicado",
+        "draft": "Rascunho"
+      },
+      "table": {
+        "post": "Post",
+        "status": "Status",
+        "stats": "Estatísticas",
+        "actions": "Ações"
+      },
+      "views": "{{count}} visualizações",
+      "actions": {
+        "edit": "Editar",
+        "delete": "Excluir"
+      },
+      "delete": {
+        "title": "Excluir post?",
+        "body": "Tem certeza de que deseja excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "action": "Excluir"
+      },
+      "showing": "Mostrando {{count}} posts",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Próximo"
+      }
+    },
+    "scheduler": {
+      "title": "Agenda de reservas",
+      "subtitle": "Configure sua disponibilidade semanal e gerencie datas bloqueadas.",
+      "status": {
+        "active": "Agenda ativa",
+        "paused": "Agenda pausada",
+        "all": "Todos",
+        "pending": "Pendente",
+        "confirmed": "Confirmado",
+        "completed": "Concluído",
+        "cancelled": "Cancelado"
+      },
+      "save": {
+        "saved": "Salvo!",
+        "saving": "Salvando...",
+        "action": "Salvar alterações"
+      },
+      "tabs": {
+        "today": "Agenda de hoje",
+        "bookings": "Todos os agendamentos",
+        "availability": "Disponibilidade e configurações"
+      },
+      "clearDate": "Limpar data",
+      "empty": {
+        "todayTitle": "Sem reservas para hoje",
+        "todayBody": "Você não tem agendamentos para hoje.",
+        "title": "Nenhuma reserva encontrada",
+        "body": "Tente mudar o filtro ou compartilhar seu link de agendamento."
+      },
+      "actions": {
+        "reschedule": "Reagendar",
+        "cancel": "Cancelar",
+        "confirmCancel": "Cancelar este agendamento?"
+      },
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Próximo",
+        "pageOf": "Página {{page}} de {{totalPages}}"
+      },
+      "weeklySchedule": {
+        "title": "Agenda semanal",
+        "unavailable": "Indisponível"
+      },
+      "days": {
+        "mon": "Seg",
+        "tue": "Ter",
+        "wed": "Qua",
+        "thu": "Qui",
+        "fri": "Sex",
+        "sat": "Sáb",
+        "sun": "Dom"
+      },
+      "weekdaysShort": {
+        "sun": "Dom",
+        "mon": "Seg",
+        "tue": "Ter",
+        "wed": "Qua",
+        "thu": "Qui",
+        "fri": "Sex",
+        "sat": "Sáb"
+      },
+      "blockedDate": "Data bloqueada",
+      "blockedDates": {
+        "title": "Datas bloqueadas",
+        "subtitle": "Selecione datas para bloquear no seu calendário."
+      },
+      "meetingDuration": {
+        "title": "Duração da reunião",
+        "minutes": "{{count}} minutos"
+      },
+      "googleCalendar": {
+        "active": "Ativo",
+        "connected": "Suas reservas estão sincronizando automaticamente com o Google Calendar.",
+        "disconnected": "Conecte seu calendário para criar eventos automaticamente com links do Google Meet em cada reserva.",
+        "connect": "Conectar Google Calendar",
+        "reconnect": "Reconectar calendário"
+      },
+      "reschedule": {
+        "title": "Reagendar reserva",
+        "for": "Reagendando para {{name}}",
+        "helper": "Selecione uma nova data e horário. O cliente receberá um email para confirmar.",
+        "availableTimes": "Horários disponíveis para {{date}}:",
+        "noSlots": "Não há horários disponíveis para esta data.",
+        "cancel": "Cancelar",
+        "loading": "Reagendando...",
+        "confirm": "Confirmar e enviar email"
+      },
+      "errors": {
+        "saveSettings": "Falha ao salvar configurações",
+        "cancel": "Falha ao cancelar",
+        "reschedule": "Falha ao reagendar"
+      }
+    },
+    "domains": {
+      "upgrade": {
+        "title": "Faça upgrade para Standard",
+        "body": "Domínios personalizados estão disponíveis nos planos Standard e Pro. Faça upgrade para conectar seu domínio (ex.: yourname.com) à sua página.",
+        "cta": "Fazer upgrade"
+      },
+      "title": "Domínio personalizado",
+      "subtitle": "Conecte seu domínio à sua página do Portyo.",
+      "config": {
+        "title": "Configuração de domínio",
+        "subtitle": "Informe o domínio que você quer usar na sua página.",
+        "domainLabel": "Seu domínio",
+        "domainPlaceholder": "ex.: portfolio.com",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "helper": "Digite o domínio sem http:// ou https://"
+      },
+      "dns": {
+        "title": "Configuração DNS necessária",
+        "body": "Para o domínio funcionar, adicione um registro DNS no seu provedor (como GoDaddy, Namecheap ou Cloudflare).",
+        "type": "Tipo",
+        "nameHost": "Nome / Host",
+        "valueTarget": "Valor / Target",
+        "note": "Nota: alterações de DNS podem levar até 48 horas para propagar globalmente, mas geralmente acontecem em poucos minutos."
+      },
+      "status": {
+        "title": "Domínio vinculado",
+        "body": "Sua bio está configurada para usar {{domain}}. Se o DNS estiver correto, sua página ficará acessível em breve.",
+        "visit": "Visitar {{domain}}"
+      }
+    },
+    "integrations": {
+      "title": "Integrações",
+      "subtitle": "Conecte suas ferramentas favoritas para turbinar sua bio.",
+      "filters": {
+        "all": "Todas",
+        "social": "Social",
+        "content": "Conteúdo",
+        "marketing": "Marketing",
+        "analytics": "Analytics"
+      },
+      "status": {
+        "connected": "Conectado",
+        "comingSoon": "Em breve"
+      },
+      "actions": {
+        "notAvailable": "Ainda não disponível",
+        "dashboard": "Dashboard",
+        "disconnect": "Desconectar",
+        "upgradeToConnect": "Fazer upgrade para conectar",
+        "connect": "Conectar"
+      },
+      "items": {
+        "stripe": "Aceite pagamentos e doações diretamente na sua página.",
+        "instagram": "Mostre seus posts e stories mais recentes na sua bio.",
+        "youtube": "Incorpore seus vídeos ou playlists automaticamente.",
+        "tiktok": "Mostre seus vídeos do TikTok para sua audiência.",
+        "spotify": "Compartilhe suas faixas, álbuns ou playlists favoritas.",
+        "twitter": "Mostre seus tweets mais recentes e engaje seguidores.",
+        "linkedin": "Conecte seu perfil profissional e mostre atualizações.",
+        "mailchimp": "Colete emails e aumente sua newsletter.",
+        "googleAnalytics": "Acompanhe visitantes e obtenha insights do tráfego.",
+        "productHunt": "Mostre seus produtos recém-lançados."
+      }
+    },
+    "editor": {
+      "defaults": {
+        "headingTitle": "Apresente-se",
+        "headingBody": "Em uma linha, diga por que as pessoas devem se conectar com você.",
+        "buttonTitle": "Link principal",
+        "newButton": "Novo botão",
+        "newHeading": "Novo título",
+        "newVideo": "Novo vídeo",
+        "newBlock": "Novo bloco",
+        "textBody": "Descreva algo aqui.",
+        "product": "Produto {{index}}",
+        "viewProduct": "Ver produto",
+        "bookCall": "Agendar chamada",
+        "mapTitle": "Nosso escritório",
+        "mapAddress": "Rua Principal 123, Cidade",
+        "featuredTitle": "Batom Glow",
+        "affiliateTitle": "Copie meu cupom",
+        "portfolioTitle": "Portfólio"
+      },
+      "event": {
+        "defaultTitle": "Webinar ao vivo",
+        "defaultButton": "Inscreva-se agora",
+        "started": "Evento iniciado",
+        "days": "Dias",
+        "hours": "Horas",
+        "mins": "Min",
+        "secs": "Seg"
+      },
+      "blog": {
+        "author": "Por você",
+        "placeholderTitlePrimary": "Desenvolvedor Sênior",
+        "placeholderTitle": "Título do post {{index}}",
+        "placeholderSubtitlePrimary": "Tech4Humans • São Paulo, SP - Remoto",
+        "placeholderSubtitle": "Categoria • Local",
+        "placeholderContent": "Desenvolvedor FullStack na Tech4Humans, trabalhando em projetos para grandes seguradoras. Tive a chance de participar do desenvolvimento de novas funcionalidades...",
+        "placeholderTag1": "FullStack",
+        "placeholderTag2": "Soft Skills",
+        "placeholderTag3": "Hard Skills",
+        "category": "Blog",
+        "readTime": "5 min de leitura",
+        "readMore": "Ler mais →"
+      },
+      "tour": {
+        "title": "TURNÊS",
+        "empty": "Nenhuma data de turnê adicionada",
+        "soldOut": "Esgotado",
+        "sellingFast": "Esgotando"
+      },
+      "spotify": {
+        "empty": "Adicione um link do Spotify para exibir o player",
+        "invalidUrl": "URL do Spotify inválida"
+      },
+      "youtube": {
+        "channel": "Canal do YouTube",
+        "videoAlt": "Vídeo do YouTube"
+      },
+      "instagram": {
+        "postAlt": "Post do Instagram"
+      },
+      "qr": {
+        "defaultUrl": "https://exemplo.com",
+        "empty": "Adicione códigos QR para exibir"
+      },
+      "marketing": {
+        "activeTitle": "Anúncio ativo",
+        "activeSubtitle": "O anúncio da empresa aparecerá aqui",
+        "viewDetails": "Ver detalhes",
+        "slotTitle": "Espaço de marketing",
+        "slotHintLine1": "Configure este espaço no painel de Marketing",
+        "slotHintLine2": "Empresas podem enviar propostas de anúncios",
+        "createSlot": "Criar espaço"
+      },
+      "blockItem": {
+        "general": {
+          "dropHere": "Solte aqui",
+          "removeBlock": "Remover bloco",
+          "campaignInProgress": "Campanha em andamento"
+        },
+        "common": {
+          "background": "Fundo",
+          "textColor": "Cor do texto",
+          "text": "Texto",
+          "accent": "Destaque",
+          "animation": "Animação",
+          "alignment": "Alinhamento",
+          "layout": "Layout",
+          "style": "Estilo",
+          "shape": "Forma",
+          "label": "Rótulo",
+          "url": "URL",
+          "title": "Título",
+          "description": "Descrição",
+          "buttonText": "Texto do botão",
+          "image": "Imagem",
+          "backgroundImage": "Imagem de fundo",
+          "icon": "Ícone",
+          "selectIcon": "Selecionar ícone",
+          "address": "Endereço",
+          "displayType": "Tipo de exibição",
+          "textPosition": "Posição do texto"
+        },
+        "sections": {
+          "content": "Conteúdo",
+          "design": "Design",
+          "options": "Opções",
+          "colors": "Cores"
+        },
+        "heading": {
+          "title": "Título",
+          "titlePlaceholder": "Título",
+          "subtitle": "Subtítulo",
+          "subtitlePlaceholder": "Subtítulo"
+        },
+        "text": {
+          "content": "Conteúdo",
+          "placeholder": "Escreva seu texto"
+        },
+        "typography": {
+          "title": "Tipografia",
+          "fontSize": "Tamanho da fonte",
+          "fontWeight": "Peso da fonte"
+        },
+        "size": {
+          "small": "Pequeno",
+          "normal": "Normal",
+          "medium": "Médio",
+          "large": "Grande",
+          "xl": "XL"
+        },
+        "weight": {
+          "light": "Leve",
+          "normal": "Normal",
+          "medium": "Médio",
+          "semibold": "Semibold",
+          "bold": "Negrito",
+          "extraBold": "Extra negrito",
+          "black": "Black"
+        },
+        "align": {
+          "left": "Esquerda",
+          "center": "Centro",
+          "right": "Direita",
+          "justify": "Justificar"
+        },
+        "animation": {
+          "none": "Nenhuma",
+          "bounce": "Saltar",
+          "pulse": "Pulsar",
+          "shake": "Tremer",
+          "wobble": "Oscilar",
+          "loop": "Loop",
+          "once": "Uma vez",
+          "hover": "Ao passar"
+        },
+        "buttonGrid": {
+          "labelPlaceholder": "Texto do botão",
+          "newLink": "Novo link",
+          "addButton": "Adicionar botão"
+        },
+        "button": {
+          "labelPlaceholder": "Texto do botão",
+          "imageOptional": "Imagem (opcional)",
+          "secondaryShadow": "Secundária / Sombra",
+          "sensitiveContent": "Conteúdo sensível",
+          "mark18": "Marcar como conteúdo +18"
+        },
+        "buttonStyles": {
+          "solid": "Sólido",
+          "outline": "Contorno",
+          "ghost": "Fantasma",
+          "retro": "Retrô",
+          "softShadow": "Sombra suave",
+          "threeD": "3D",
+          "glass": "Vidro",
+          "gradient": "Gradiente",
+          "neon": "Neon",
+          "architect": "Arquitetura",
+          "material": "Material",
+          "brutalist": "Brutalista",
+          "outlineThick": "Contorno grosso",
+          "imageCard": "Card de imagem"
+        },
+        "shapes": {
+          "pill": "Pílula",
+          "rounded": "Arredondado",
+          "square": "Quadrado"
+        },
+        "socials": {
+          "helper": "Adicione seus links de redes sociais abaixo.",
+          "inlineRow": "Inline (Linha)",
+          "listColumn": "Lista (Coluna)",
+          "showText": "Mostrar texto"
+        },
+        "calendar": {
+          "bookingSettings": "Configurações de agendamento",
+          "bookingHint": "A disponibilidade e as configurações de agendamento são gerenciadas na aba",
+          "scheduler": "Agenda",
+          "tabSuffix": ".",
+          "titlePlaceholder": "Agendar horário",
+          "descriptionPlaceholder": "Breve descrição"
+        },
+        "video": {
+          "youtubeUrl": "URL do YouTube",
+          "youtubePlaceholder": "https://youtube.com/watch?v=..."
+        },
+        "product": {
+          "layoutGrid": "Grade",
+          "layoutList": "Lista",
+          "layoutCarousel": "Carrossel",
+          "cardStyle": "Estilo do card",
+          "cardDefault": "Padrão",
+          "cardMinimal": "Minimalista",
+          "accentColor": "Cor de destaque",
+          "buttonPlaceholder": "ex.: Comprar agora",
+          "products": "Produtos",
+          "removeProduct": "Remover produto",
+          "addFromStripe": "Adicionar produto do Stripe",
+          "selectToAdd": "Selecione um produto para adicionar...",
+          "emptyTitle": "Nenhum produto encontrado",
+          "emptyBody": "Crie um novo produto para adicioná-lo aqui.",
+          "createNew": "Criar novo produto",
+          "createTitle": "Criar produto",
+          "productTitle": "Título do produto",
+          "productTitlePlaceholder": "ex.: Guia digital",
+          "price": "Preço",
+          "currency": "Moeda",
+          "imageOptional": "Imagem do produto (opcional)",
+          "creating": "Criando...",
+          "createAction": "Criar produto"
+        },
+        "map": {
+          "locationName": "Nome do local",
+          "locationPlaceholder": "ex.: Nosso escritório",
+          "addressPlaceholder": "ex.: Rua Principal 123, Cidade"
+        },
+        "featured": {
+          "productTitle": "Título do produto",
+          "productTitlePlaceholder": "Nome do produto",
+          "productImage": "Imagem do produto",
+          "productUrl": "URL do produto"
+        },
+        "affiliate": {
+          "titlePlaceholder": "Copie meu cupom",
+          "couponCode": "Código do cupom",
+          "couponPlaceholder": "CODIGO123",
+          "affiliateUrl": "URL de afiliado"
+        },
+        "event": {
+          "eventTitle": "Título do evento",
+          "eventTitlePlaceholder": "Webinar ao vivo",
+          "dateTime": "Data e hora",
+          "buttonPlaceholder": "Inscrever-se",
+          "buttonUrl": "URL do botão"
+        },
+        "spotify": {
+          "url": "URL do Spotify",
+          "placeholder": "https://open.spotify.com/track/...",
+          "helper": "Suporta faixas, álbuns e playlists",
+          "compactPlayer": "Player compacto"
+        },
+        "instagram": {
+          "username": "Usuário do Instagram",
+          "usernamePlaceholder": "usuario",
+          "displayGrid": "Grade (3 colunas)",
+          "displayList": "Lista (Vertical)",
+          "showUsername": "Mostrar usuário"
+        },
+        "youtube": {
+          "channelUrl": "URL do canal do YouTube",
+          "channelPlaceholder": "https://youtube.com/@...",
+          "displayGrid": "Grade (2 colunas)",
+          "displayList": "Lista (Vertical)",
+          "showChannelName": "Mostrar nome do canal"
+        },
+        "tour": {
+          "sectionTitle": "Título da seção",
+          "sectionPlaceholder": "TURNÊS",
+          "tourDates": "Datas da turnê",
+          "date": "Data",
+          "datePlaceholder": "1 AGO",
+          "location": "Local",
+          "locationPlaceholder": "Cidade, País",
+          "image": "Imagem da turnê",
+          "ticketLink": "Link de ingressos",
+          "sellingFast": "Esgotando",
+          "soldOut": "Esgotado",
+          "defaultDate": "A definir",
+          "defaultLocation": "Cidade",
+          "addTourDate": "Adicionar data"
+        },
+        "position": {
+          "top": "Topo",
+          "bottom": "Base"
+        },
+        "qr": {
+          "layout": {
+            "single": "Único",
+            "multiple": "Múltiplo",
+            "grid": "Grade"
+          },
+          "selectQr": "Selecionar QR",
+          "selectQrOption": "Selecione um QR",
+          "createNew": "Criar novo QR",
+          "helper": "Selecione um QR existente ou crie um novo.",
+          "qrCodes": "QR Codes",
+          "newLabel": "Novo QR",
+          "addItem": "Adicionar item de QR",
+          "foreground": "Frente"
+        },
+        "divider": {
+          "helper": "Linha divisória simples."
+        },
+        "preview": {
+          "noUrl": "Nenhuma URL definida",
+          "mediaAttached": "Mídia anexada",
+          "noMedia": "Sem mídia",
+          "links_one": "{{count}} link",
+          "links_other": "{{count}} links",
+          "noLinks": "Nenhum link",
+          "qrConfigured": "QR configurado",
+          "noQrValue": "Sem valor de QR",
+          "formSelected": "Formulário selecionado",
+          "noFormSelected": "Nenhum formulário selecionado",
+          "portfolioFallback": "Portfólio",
+          "slotConnected": "Slot conectado",
+          "noSlotSelected": "Nenhum slot selecionado"
+        },
+        "form": {
+          "helper": "Selecione um formulário para exibir na sua bio.",
+          "selectLabel": "Selecionar formulário",
+          "loading": "Carregando formulários...",
+          "empty": "Nenhum formulário encontrado. Crie um formulário na aba \"Formulários\" primeiro.",
+          "placeholder": "Selecione um formulário..."
+        },
+        "marketing": {
+          "helper": "Conecte este bloco a um slot de marketing no seu dashboard. As empresas poderão anunciar aqui.",
+          "locked": "Campanha em andamento. Este bloco está bloqueado e não pode ser editado ou movido.",
+          "selectLabel": "Selecionar slot de marketing",
+          "loading": "Carregando slots...",
+          "empty": "Nenhum slot encontrado para esta bio.",
+          "createCta": "Criar um →",
+          "noneSelected": "Nenhum slot selecionado",
+          "manageCta": "Gerenciar slots →",
+          "days": "dias"
+        },
+        "portfolio": {
+          "helper": "Exiba seus itens de portfólio na sua bio. Adicione e gerencie itens na aba Portfólio.",
+          "emptyTitle": "Nenhum projeto encontrado",
+          "emptyBody": "Você ainda não criou nenhum projeto no portfólio. Eles aparecerão aqui após serem criados.",
+          "createCta": "Criar meu primeiro projeto →",
+          "sectionTitle": "Título da seção",
+          "defaultTitle": "Portfólio",
+          "placeholder": "Portfólio"
+        },
+        "blockTypes": {
+          "heading": "Título",
+          "text": "Texto",
+          "button": "Botão",
+          "button_grid": "Grade de botões",
+          "image": "Imagem",
+          "video": "Vídeo",
+          "socials": "Redes sociais",
+          "divider": "Divisor",
+          "qrcode": "QR code",
+          "spotify": "Spotify",
+          "instagram": "Instagram",
+          "youtube": "YouTube",
+          "blog": "Blog",
+          "product": "Produto",
+          "tour": "Tour",
+          "event": "Evento",
+          "calendar": "Calendário",
+          "map": "Mapa",
+          "form": "Formulário",
+          "portfolio": "Portfólio",
+          "marketing": "Marketing"
+        }
+      },
+      "subscribeThanks": "Obrigado por se inscrever!",
+      "noBioTitle": "Nenhuma bio selecionada",
+      "noBioBody": "Crie ou selecione uma bio para começar a editar.",
+      "top": {
+        "editor": "Editor",
+        "undoTitle": "Desfazer a última alteração",
+        "undo": "Desfazer",
+        "share": "Compartilhar",
+        "openPage": "Abrir página",
+        "saving": "Salvando...",
+        "saveBio": "Salvar bio"
+      },
+      "tabs": {
+        "blocks": "Blocos",
+        "settings": "Configurações"
+      },
+      "searchPlaceholder": "Pesquisar blocos...",
+      "noBlocks": "Nenhum bloco encontrado",
+      "settings": {
+        "typography": "Tipografia",
+        "fontFamily": "Fonte",
+        "uploadFont": "Enviar fonte personalizada",
+        "fontSupport": "Suporta .ttf, .otf, .woff, .woff2 (máx. 10MB)",
+        "fontUploadError": "Falha ao enviar a fonte. Tente um arquivo válido (ttf, otf, woff, woff2).",
+        "background": "Fundo",
+        "overlayColor": "Cor de sobreposição",
+        "cardStyle": "Estilo do card",
+        "cardType": "Tipo de card",
+        "cardColor": "Cor do card",
+        "opacity": "Opacidade",
+        "blur": "Desfoque",
+        "profile": "Perfil",
+        "imageShape": "Forma da imagem",
+        "usernameColor": "Cor do nome de usuário",
+        "verificationStatus": "Status de verificação",
+        "verified": "Verificado",
+        "getVerified": "Obter verificação",
+        "features": "Recursos",
+        "emailSignup": "Inscrição por e-mail",
+        "removeBranding": "Remover marca",
+        "standardPro": "STANDARD / PRO",
+        "imageShapes": {
+          "circle": "Círculo",
+          "rounded": "Arredondado",
+          "square": "Quadrado",
+          "amoeba": "Ameba",
+          "star": "Estrela",
+          "hexagon": "Hexágono"
+        },
+        "cardTypes": {
+          "none": "Nenhum",
+          "solid": "Sólido",
+          "frosted": "Fosco"
+        },
+        "backgroundTypes": {
+          "color": "Cor",
+          "image": "Imagem",
+          "video": "Vídeo",
+          "grid": "Grade",
+          "dots": "Pontos",
+          "waves": "Ondas",
+          "abstract": "Abstrato",
+          "palm-leaves": "Folhas de palmeira",
+          "wheat": "Trigo",
+          "gradient": "Degradê",
+          "blueprint": "Blueprint",
+          "marble": "Mármore",
+          "wood-grain": "Textura de madeira",
+          "brick": "Tijolo",
+          "frosted-glass": "Vidro fosco",
+          "steel": "Aço",
+          "concrete": "Concreto",
+          "terracotta": "Terracota"
+        }
+      },
+      "categories": {
+        "Content": "Conteúdo",
+        "Social": "Social",
+        "Shop": "Loja",
+        "Music": "Música",
+        "Blog": "Blog",
+        "Marketing": "Marketing",
+        "Layout": "Layout"
+      },
+      "palette": {
+        "heading": "Título",
+        "qrcode": "QR Code",
+        "text": "Texto",
+        "button": "Botão",
+        "buttonGrid": "Grade de botões",
+        "image": "Imagem",
+        "socials": "Redes sociais",
+        "video": "Vídeo",
+        "blog": "Blog",
+        "productList": "Lista de produtos",
+        "calendar": "Calendário",
+        "map": "Mapa",
+        "featured": "Destaque",
+        "affiliateCode": "Código de afiliado",
+        "event": "Evento",
+        "tourDates": "Datas de tour",
+        "spotify": "Spotify",
+        "instagramFeed": "Feed do Instagram",
+        "youtubeFeed": "Feed do YouTube",
+        "divider": "Divisor",
+        "form": "Formulário",
+        "portfolio": "Portfólio"
+      },
+      "layout": {
+        "title": "Layout",
+        "dragToReorder": "Arraste para reorganizar"
+      },
+      "empty": {
+        "title": "Sua bio está vazia",
+        "body": "Arraste blocos da barra lateral esquerda para começar a montar sua página."
+      },
+      "preview": {
+        "live": "Pré-visualização ao vivo",
+        "aria": "Pré-visualizar bio",
+        "title": "Pré-visualização da bio",
+        "mobileTitle": "Pré-visualização no mobile"
+      },
+      "qrModal": {
+        "title": "Criar novo código QR",
+        "destination": "URL de destino",
+        "placeholder": "https://exemplo.com",
+        "cancel": "Cancelar",
+        "creating": "Criando...",
+        "create": "Criar QR"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Acessar conta",
+      "subtitle": "Olá! Insira seus dados para entrar na sua conta",
+      "emailPlaceholder": "Digite seu e-mail",
+      "passwordPlaceholder": "Senha",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "trouble": "Problemas para entrar?",
+      "submit": "Entrar",
+      "or": "Ou entre com",
+      "google": "Google",
+      "apple": "Apple ID",
+      "facebook": "Facebook",
+      "noAccount": "Ainda não tem conta?",
+      "createNow": "Criar agora",
+      "oauthError": "Falha no login com OAuth. Tente novamente.",
+      "invalidCredentials": "Falha ao entrar. Verifique suas credenciais."
+    },
+    "signup": {
+      "titleStep1": "Criar conta",
+      "titleStep2": "Escolha seu usuário",
+      "subtitleStep1": "Junte-se a nós! Preencha seus dados para criar sua conta",
+      "subtitleStep2": "Garanta seu espaço único no Portyo",
+      "fullNamePlaceholder": "Nome completo",
+      "emailPlaceholder": "Digite seu e-mail / telefone",
+      "passwordPlaceholder": "Senha",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "requirementsTitle": "Requisitos:",
+      "requirements": {
+        "fullName": "Nome completo é obrigatório",
+        "uppercase": "Pelo menos uma letra maiúscula",
+        "length": "Pelo menos 8 caracteres"
+      },
+      "usernamePlaceholder": "seunome",
+      "usernameHint": "Este será o URL do seu perfil público. Você não poderá alterá-lo depois!",
+      "back": "Voltar",
+      "continue": "Continuar",
+      "submit": "Criar conta",
+      "or": "Ou cadastre-se com",
+      "google": "Google",
+      "apple": "Apple ID",
+      "facebook": "Facebook",
+      "haveAccount": "Já tem uma conta?",
+      "signIn": "Entrar",
+      "createError": "Falha ao criar conta. Tente novamente."
+    },
+    "forgot": {
+      "title": "Esqueceu a senha?",
+      "subtitle": "Sem problemas! Informe seu e-mail e enviaremos um link de redefinição.",
+      "emailLabel": "Endereço de e-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "sendReset": "Enviar link de redefinição",
+      "sending": "Enviando...",
+      "backToLogin": "Voltar para login",
+      "successTitle": "Verifique seu e-mail",
+      "successBody": "Se existir uma conta para {{email}}, enviamos um link de redefinição de senha.",
+      "successHint": "Não recebeu o e-mail? Verifique o spam ou",
+      "tryAgain": "tente novamente",
+      "goToLogin": "Ir para a página de login →",
+      "genericError": "Algo deu errado. Tente novamente."
+    },
+    "verify": {
+      "title": "Verifique seu e-mail",
+      "subtitle": "Enviamos um código de verificação para {{email}}. Insira o código de 6 dígitos abaixo para validar sua conta.",
+      "fallbackEmail": "seu e-mail",
+      "verifying": "Verificando...",
+      "submit": "Verificar código",
+      "noCode": "Não recebeu o código?",
+      "resend": "Reenviar",
+      "backToLogin": "Voltar para login",
+      "success": "E-mail verificado com sucesso! Redirecionando...",
+      "error": "Falha na verificação. Tente novamente.",
+      "resent": "Código de verificação enviado!",
+      "resentError": "Falha ao reenviar o código."
+    }
+  },
+  "home": {
+    "hero": {
+      "title": {
+        "pre": "Converta seus seguidores em",
+        "highlight": "clientes",
+        "post": "com um único link"
+      },
+      "subtitle": "Gere bios poderosas que geram receita com nossa plataforma tudo-em-um. Cresça sua audiência e ganhe enquanto dorme!",
+      "ctaPlaceholder": "seunome",
+      "ctaButton": "Resgatar agora",
+      "floating": {
+        "roleLabel": "Função",
+        "roleValue": "Artista Digital",
+        "newArt": "Nova arte 3D",
+        "viral": "Viral!",
+        "founderLabel": "Fundador",
+        "founderValue": "Vida de Startup",
+        "revenue": "Receita +120%",
+        "newVideo": "Novo vídeo"
+      }
+    },
+    "featured": {
+      "title": "Em destaque em"
+    },
+    "analytics": {
+      "title": "Transforme cada interação em oportunidade",
+      "subtitle": "Obtenha insights profundos sobre o comportamento do seu público. De leituras de QR a conversão em vendas, acompanhe o que importa e otimize sua presença digital para crescer de verdade.",
+      "cards": {
+        "subscribers": "Inscritos",
+        "qrScans": "Leituras de QR",
+        "sales": "Vendas",
+        "conversionRate": "Taxa de conversão",
+        "conversionBadge": "+24%"
+      }
+    },
+    "features": {
+      "newsletter": {
+        "title": "Newsletter",
+        "body": "Construa uma audiência fiel coletando e-mails diretamente da sua bio. Envie newsletters bonitas e automatizadas sem sair da plataforma.",
+        "cta": "Saiba mais",
+        "joinList": "Entre na lista",
+        "emailPlaceholder": "seu@email.com",
+        "notificationLabel": "Notificação",
+        "notificationValue": "Novo inscrito!"
+      },
+      "automation": {
+        "title": "Automação poderosa",
+        "body": "Crie fluxos que trabalham enquanto você dorme. Dispare e-mails, mensagens e muito mais com base nas ações do visitante.",
+        "cta": "Criar fluxos",
+        "running": "Em execução",
+        "node1Title": "Novo inscrito",
+        "node1Trigger": "Gatilho",
+        "node1TriggerValue": "entrar",
+        "node2Title": "Enviar e-mail",
+        "node2Subtitle": "Kit de boas-vindas",
+        "node3Title": "Adicionar tag",
+        "node3Tag": "#pro-lead"
+      },
+      "scheduler": {
+        "title": "Agenda inteligente",
+        "body": "Deixe clientes agendarem com facilidade. Sincroniza com o Google Calendar para evitar conflitos. Defina sua disponibilidade e receba reservas.",
+        "cta": "Começar a agendar",
+        "month": "Setembro 2025",
+        "days": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        "eventTitle": "Chamada de descoberta",
+        "eventTime": "10:00 - 10:30",
+        "statusLabel": "Status",
+        "statusValue": "Confirmado"
+      },
+      "partnerships": {
+        "title": "Parcerias",
+        "body": "Pare de perder oportunidades. Permita que marcas entrem em contato diretamente com um fluxo dedicado de parcerias.",
+        "cta": "Seja patrocinado",
+        "cardTitle": "Pedido de colaboração",
+        "cardBody": "A Nike quer colaborar com você na nova campanha.",
+        "accept": "Aceitar",
+        "decline": "Recusar",
+        "budgetLabel": "Orçamento"
+      },
+      "blog": {
+        "title": "Blog integrado",
+        "body": "Sua voz importa. Compartilhe ideias, histórias e expertise com uma plataforma de blog totalmente integrada. Otimizada para SEO.",
+        "cta": "Começar a escrever",
+        "tagLifestyle": "Estilo de vida",
+        "tagReadTime": "5 min de leitura",
+        "cardTitle": "10 dicas para crescer sua audiência em 2025",
+        "byYou": "Por você",
+        "published": "Publicado"
+      }
+    },
+    "pricing": {
+      "billing": {
+        "monthly": "Mensal",
+        "annually": "Anual (economize 25%)"
+      },
+      "showMore": "Mostrar mais",
+      "showLess": "Mostrar menos",
+      "alerts": {
+        "checkoutMissing": "Algo deu errado. Tente novamente.",
+        "checkoutFailed": "Falha ao iniciar o checkout. Tente novamente."
+      },
+      "cards": {
+        "free": {
+          "title": "Grátis",
+          "subtitle": "Para começar",
+          "cta": "Começar",
+          "features": [
+            "Criar apenas uma página",
+            "Criar 1 formulário",
+            "Sem remoção de marca",
+            "Sem domínio personalizado",
+            "Analytics básico",
+            "Taxa de loja de 3%"
+          ],
+          "more": ["Integrações limitadas"]
+        },
+        "standard": {
+          "badge": "Mais popular",
+          "title": "Standard",
+          "subtitle": "Para criadores em crescimento",
+          "billedYearly": "Cobrado $49,50 por ano",
+          "ctaUpgrade": "Fazer upgrade",
+          "ctaTrial": "Iniciar teste",
+          "features": [
+            "Criar até 2 bios",
+            "Criar 3 formulários",
+            "Remoção de marca",
+            "Domínio personalizado",
+            "Coleta de e-mails",
+            "Taxa de loja de 1%",
+            "150 e-mails/mês"
+          ],
+          "more": [
+            "Automação (2 por bio)",
+            "Template de e-mail (2 por bio)",
+            "Configurações de SEO",
+            "Analytics do Google e Facebook",
+            "Mais personalizações"
+          ]
+        },
+        "pro": {
+          "title": "Pro",
+          "subtitle": "Para negócios sérios",
+          "billedYearly": "Cobrado $135 por ano",
+          "cta": "Virar Pro",
+          "features": [
+            "Tudo do Standard",
+            "Criar até 5 bios",
+            "Criar 4 formulários",
+            "Agenda",
+            "Automação (4 por bio)",
+            "Template de e-mail (4 por bio)",
+            "Taxa de loja 0%",
+            "500 e-mails/mês",
+            "Mais personalizações"
+          ]
+        }
+      }
+    },
+    "blogSection": {
+      "title": "BLOG",
+      "cta": "Leia nosso blog",
+      "categoryLabel": "Categoria",
+      "more": "Mais",
+      "readTime": "5 min",
+      "hot": "Em alta",
+      "viewAllCategories": "Ver todas as categorias",
+      "additionalLinks": {
+        "link1": "COMO CRIAR UMA BIO INCRÍVEL",
+        "link2": "CONVERTA SEGUIDORES EM CLIENTES PAGANTES"
+      },
+      "defaultPosts": {
+        "p1": {
+          "title": "COMO CRIAR O LINK NA BIO PERFEITO",
+          "category": "Dicas",
+          "date": "08 Jan"
+        },
+        "p2": {
+          "title": "TURBINE SUA PRESENÇA NAS REDES COM UM ÚNICO LINK",
+          "excerpt": "Transforme seguidores em clientes com um link poderoso na bio. Aprenda a otimizar seu perfil e aumentar conversões com estratégias simples...",
+          "category": "Crescimento"
+        },
+        "p3": {
+          "title": "PRINCIPAIS ESTRATÉGIAS DE MONETIZAÇÃO PARA CRIADORES",
+          "category": "Receita",
+          "date": "05 Jan"
+        },
+        "p4": {
+          "title": "MASTERCLASS DE ANALYTICS | ENTENDA SUA AUDIÊNCIA",
+          "category": "Insights",
+          "date": "03 Jan"
+        }
+      },
+      "categories": {
+        "social": "Redes sociais",
+        "monetization": "Monetização",
+        "analytics": "Analytics",
+        "design": "Dicas de design",
+        "growth": "Hacks de crescimento",
+        "branding": "Branding",
+        "ecommerce": "E-commerce",
+        "creators": "Criadores"
+      }
+    },
+    "carousel": {
+      "defaultRole": "Criador",
+      "defaultDescription": "Explore a página deste criador.",
+      "fallback": [
+        {
+          "role": "Arquiteta",
+          "description": "Arquiteta e designer criando espaços sustentáveis."
+        },
+        {
+          "role": "Desenvolvedor",
+          "description": "Desenvolvedor full stack - Criador do @Portyo.me"
+        },
+        {
+          "role": "Dentista",
+          "description": "Especialista em harmonização orofacial e lentes de resina."
+        },
+        {
+          "role": "SaaS",
+          "description": "Conectando estudantes a oportunidades de estágio no Brasil."
+        }
+      ]
+    }
+  }
+  ,
+  "footer": {
+    "tagline": "Transforme sua bio no seu negócio. A plataforma tudo-em-um para criadores crescerem, monetizarem e dominarem sua audiência.",
+    "cta": "Começar grátis",
+    "product": {
+      "title": "Produto",
+      "features": "Recursos",
+      "pricing": "Preços",
+      "analytics": "Analytics",
+      "themes": "Temas"
+    },
+    "resources": {
+      "title": "Recursos",
+      "blog": "Blog",
+      "community": "Comunidade",
+      "help": "Central de ajuda",
+      "creators": "Criadores"
+    },
+    "company": {
+      "title": "Empresa",
+      "about": "Sobre",
+      "privacy": "Política de privacidade",
+      "terms": "Termos de serviço",
+      "contact": "Contato"
+    },
+    "copyright": "© 2025 Portyo Inc. Todos os direitos reservados."
+  }
+}

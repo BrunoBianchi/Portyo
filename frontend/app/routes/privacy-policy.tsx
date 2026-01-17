@@ -1,10 +1,12 @@
 import type { MetaFunction } from "react-router";
 import { Link } from "react-router";
+import i18n from "~/i18n";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Privacy Policy | Portyo" },
-        { name: "description", content: "Privacy Policy for Portyo." },
+        { title: i18n.t("meta.privacyPolicy.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.privacyPolicy.description", { lng: lang }) },
     ];
 };
 

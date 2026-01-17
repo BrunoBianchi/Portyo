@@ -3,6 +3,7 @@ import { ArrowRight, Flame, Play } from 'lucide-react';
 import { getPublicSitePosts, type SitePost } from '~/services/site-blog.service';
 import { format } from 'date-fns';
 import { Link } from 'react-router';
+import { useTranslation } from "react-i18next";
 
 interface BlogPost {
     id: number | string;
@@ -17,94 +18,43 @@ interface BlogPost {
     bgImage?: string;
 }
 
-const defaultPosts: BlogPost[] = [
-    {
-        id: 'default-1',
-        title: 'HOW TO CREATE THE PERFECT LINK IN BIO',
-        category: 'Tips',
-        date: '08 Jan',
-        bgColor: 'linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%)',
-        bgImage: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80',
-        isHot: true,
-    },
-    {
-        id: 'default-2',
-        title: 'BOOST YOUR SOCIAL MEDIA PRESENCE WITH ONE LINK',
-        excerpt: 'Transform your followers into customers with a powerful bio link. Learn how to optimize your profile and increase conversions with simple strategies...',
-        category: 'Growth',
-        bgColor: '#e8f5d3',
-        bgImage: 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=300&q=80',
-    },
-    {
-        id: 'default-3',
-        title: 'TOP CREATOR MONETIZATION STRATEGIES',
-        category: 'Revenue',
-        date: '05 Jan',
-        bgColor: 'linear-gradient(135deg, #fff4e6 0%, #ffe4c4 100%)',
-        bgImage: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=200&q=80',
-        isHot: true,
-    },
-    {
-        id: 'default-4',
-        title: 'ANALYTICS MASTERCLASS | UNDERSTAND YOUR AUDIENCE',
-        category: 'Insights',
-        date: '03 Jan',
-        bgImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80',
-        isVideo: true,
-    },
-];
-
-const categories = [
-    { name: 'Social Media', color: 'bg-purple-700 text-white' },
-    { name: 'Monetization', color: 'bg-yellow-300 text-text-main' },
-    { name: 'Analytics', color: 'bg-white text-text-main border border-border' },
-    { name: 'Design Tips', color: 'bg-white text-text-main border border-border' },
-    { name: 'Growth Hacks', color: 'bg-yellow-300 text-text-main' },
-    { name: 'Branding', color: 'bg-white text-text-main border border-border' },
-    { name: 'E-commerce', color: 'bg-white text-text-main border border-border' },
-    { name: 'Creators', color: 'bg-white text-text-main border border-border' },
-];
-
-const additionalLinks = [
-    'HOW TO DESIGN A STUNNING BIO PAGE',
-    'CONVERT FOLLOWERS INTO PAYING CUSTOMERS',
-];
-
 export default function BlogSection() {
-    const [posts, setPosts] = useState<BlogPost[]>(defaultPosts);
+    const { t } = useTranslation();
+
+    const stylePresets = [
+        { bgColor: 'linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%)' },
+        { bgColor: '#e8f5d3' },
+        { bgColor: 'linear-gradient(135deg, #fff4e6 0%, #ffe4c4 100%)' },
+        { bgColor: '#0f172a' }
+    ];
+
+    const [posts, setPosts] = useState<BlogPost[]>([]);
 
     useEffect(() => {
         const fetchPosts = async () => {
             const sitePosts = await getPublicSitePosts();
             if (sitePosts && sitePosts.length > 0) {
-                const mappedPosts: BlogPost[] = sitePosts.slice(0, 4).map((post, index) => {
-                    const defaultPost = defaultPosts[index] || defaultPosts[0]; // Fallback style
-                    return {
-                        id: post.id,
-                        title: post.title,
-                        excerpt: post.content ? post.content.substring(0, 100) + '...' : '',
-                        category: post.keywords?.[0] || defaultPost.category,
-                        date: format(new Date(post.createdAt), 'dd MMM'),
-                        bgColor: defaultPost.bgColor, // Preserve layout styling
-                        bgImage: post.thumbnail || defaultPost.bgImage,
-                        isHot: index === 0 || index === 2, // Mimic layout hot posts
-                        isVideo: false
-                    };
-                });
-
-                // If we fetched fewer than 4 posts, fill the rest with defaults
-                if (mappedPosts.length < 4) {
-                    const remaining = 4 - mappedPosts.length;
-                    for (let i = 0; i < remaining; i++) {
-                        mappedPosts.push(defaultPosts[mappedPosts.length]);
-                    }
-                }
+                const mappedPosts: BlogPost[] = sitePosts.slice(0, 4).map((post, index) => ({
+                    id: post.id,
+                    title: post.title,
+                    excerpt: post.content ? post.content.substring(0, 100) + '...' : '',
+                    category: post.keywords?.[0] || "",
+                    date: format(new Date(post.createdAt), 'dd MMM'),
+                    bgColor: stylePresets[index]?.bgColor,
+                    bgImage: post.thumbnail,
+                    isHot: index === 0 || index === 2,
+                    isVideo: false
+                }));
 
                 setPosts(mappedPosts);
+            } else {
+                setPosts([]);
             }
         };
         fetchPosts();
     }, []);
+
+    if (posts.length < 4) return null;
 
     return (
         <section className="w-full py-16 px-4 bg-surface-alt">
@@ -112,10 +62,10 @@ export default function BlogSection() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-10">
                     <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
-                        BLOG
+                        {t("home.blogSection.title")}
                     </h2>
                     <button className="btn bg-white text-text-main border border-border rounded-full px-6 py-3 hover:shadow-md transition-all duration-300 group">
-                        Read Our Blog
+                        {t("home.blogSection.cta")}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
@@ -167,7 +117,7 @@ export default function BlogSection() {
                                 {/* Text content */}
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-2 text-white/70 text-sm mb-3">
-                                        <span>Category</span>
+                                        <span>{t("home.blogSection.categoryLabel")}</span>
                                         <span className="text-primary font-bold">{posts[0].category}</span>
                                         <span className="mx-1">|</span>
                                         <span>{posts[0].date}</span>
@@ -199,19 +149,19 @@ export default function BlogSection() {
 
                             <div className="flex gap-6 h-full">
                                 <div className="flex-1 flex flex-col">
-                                    <div className="flex items-center gap-2 text-text-muted text-sm mb-4">
-                                        <span>Category</span>
+                                    <div className="flex items-center gap-2 text-gray-700 text-sm mb-4">
+                                        <span>{t("home.blogSection.categoryLabel")}</span>
                                         <span>.</span>
                                         <span className="text-text-main font-bold">{posts[1].category}</span>
                                     </div>
                                     <h3 className="text-xl md:text-2xl font-black text-text-main leading-tight tracking-tight mb-4">
                                         {posts[1].title}
                                     </h3>
-                                    <p className="text-text-muted text-sm leading-relaxed flex-1 line-clamp-3">
+                                    <p className="text-gray-700 text-sm leading-relaxed flex-1 line-clamp-3">
                                         {posts[1].excerpt}
                                     </p>
                                     <span className="text-text-main font-bold mt-2 cursor-pointer hover:underline block">
-                                        More
+                                        {t("home.blogSection.more")}
                                     </span>
                                 </div>
 
@@ -231,20 +181,6 @@ export default function BlogSection() {
                             </div>
                         </Link>
 
-                        {/* Additional Links */}
-                        <div className="space-y-1 px-1">
-                            {additionalLinks.map((link, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center justify-between py-4 px-2 border-b border-border/40 cursor-pointer group transition-colors hover:bg-white/50 rounded-lg"
-                                >
-                                    <span className="text-text-main font-bold text-sm tracking-wide uppercase group-hover:text-primary transition-colors">
-                                        {link}
-                                    </span>
-                                    <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                                </div>
-                            ))}
-                        </div>
 
                         {/* Video Card (Using 4th post) */}
                         <Link
@@ -263,7 +199,7 @@ export default function BlogSection() {
 
                             {/* Category Badge */}
                             <div className="absolute top-5 left-6 flex items-center gap-2 text-white/80 text-xs">
-                                <span>Category</span>
+                                <span>{t("home.blogSection.categoryLabel")}</span>
                                 <span>.</span>
                                 <span className="text-primary font-bold">{posts[3].category}</span>
                             </div>
@@ -278,13 +214,13 @@ export default function BlogSection() {
                             {/* Content */}
                             <div className="absolute bottom-5 left-6 right-6">
                                 <div className="flex items-center gap-2 text-white/70 text-xs mb-2">
-                                    <span>5 Min</span>
+                                    <span>{t("home.blogSection.readTime")}</span>
                                     <span>.</span>
                                     <span>{posts[3].date}</span>
                                 </div>
-                                <h4 className="text-sm font-bold text-white tracking-wide uppercase">
+                                <h3 className="text-sm font-bold text-white tracking-wide uppercase">
                                     {posts[3].title}
-                                </h4>
+                                </h3>
                             </div>
                         </Link>
                     </div>
@@ -307,18 +243,18 @@ export default function BlogSection() {
 
                             <div className="absolute top-6 left-6 right-20">
                                 <div className="flex items-center gap-2 text-text-main/70 text-xs mb-2">
-                                    <span>Category</span>
+                                    <span>{t("home.blogSection.categoryLabel")}</span>
                                     <span>.</span>
                                     <span className="text-text-main font-bold">{posts[2].category}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-red-500 text-xs mb-4 font-semibold">
-                                    <span>Hot</span>
+                                    <span>{t("home.blogSection.hot")}</span>
                                     <span>.</span>
                                     <span className="text-text-main/60">{posts[2].date}</span>
                                 </div>
-                                <h4 className="text-lg md:text-xl font-black text-text-main leading-tight tracking-tight">
+                                <h3 className="text-lg md:text-xl font-black text-text-main leading-tight tracking-tight">
                                     {posts[2].title}
-                                </h4>
+                                </h3>
                             </div>
 
                             {/* Image */}
@@ -332,33 +268,6 @@ export default function BlogSection() {
                             />
                         </Link>
 
-                        {/* Categories Card - Purple */}
-                        <div
-                            className="bg-gradient-to-br from-purple-100 to-purple-200 p-6 flex-1 flex flex-col transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                            style={{
-                                borderRadius: '32px 100px 32px 32px',
-                                minHeight: '320px',
-                            }}
-                        >
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                {categories.map((category, index) => (
-                                    <span
-                                        key={index}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all duration-200 hover:scale-105 shadow-sm ${category.color}`}
-                                    >
-                                        {category.name}
-                                    </span>
-                                ))}
-                            </div>
-
-                            {/* View All Categories */}
-                            <div className="flex items-center justify-between mt-auto cursor-pointer group pt-4">
-                                <span className="text-text-main font-black text-sm">View All Categories</span>
-                                <div className="bg-white rounded-full p-3 shadow-sm group-hover:shadow-md transition-all group-hover:translate-x-1">
-                                    <ArrowRight className="w-5 h-5 text-text-main" />
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

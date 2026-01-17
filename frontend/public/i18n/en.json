@@ -1,0 +1,243 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "manifesto": "Manifesto",
+    "pricing": "Pricing",
+    "launch": "Launch your page",
+    "signIn": "Sign in",
+    "startFree": "Start For Free",
+    "getStarted": "Get Started",
+    "view": "View",
+    "menu": "Menu",
+    "goToDashboard": "Go to Dashboard",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "title": {
+        "pre": "Convert your followers into",
+        "highlight": "customers",
+        "post": "with one link"
+      },
+      "subtitle": "Generate powerful revenue-generating Bio's with our all-in-one platform. Grow your following and earn while you sleep!",
+      "ctaPlaceholder": "yourname",
+      "ctaButton": "Claim Now",
+      "floating": {
+        "roleLabel": "Role",
+        "roleValue": "Digital Artist",
+        "newArt": "New 3D Art",
+        "viral": "Viral!",
+        "founderLabel": "Founder",
+        "founderValue": "Startup Life",
+        "revenue": "Revenue +120%",
+        "newVideo": "New Video"
+      }
+    },
+    "featured": {
+      "title": "As featured in"
+    },
+    "analytics": {
+      "title": "Turn every interaction into opportunity",
+      "subtitle": "Gain deep insights into your audience behavior. From QR scans to sales conversion, track what matters most and optimize your digital presence for real growth.",
+      "cards": {
+        "subscribers": "Subscribers",
+        "qrScans": "QR Scans",
+        "sales": "Sales",
+        "conversionRate": "Conversion Rate",
+        "conversionBadge": "+24%"
+      }
+    },
+    "features": {
+      "newsletter": {
+        "title": "Newsletter",
+        "body": "Build a loyal audience by collecting emails directly from your bio. Send beautiful, automated newsletters to your subscribers without ever leaving the platform.",
+        "cta": "Learn more",
+        "joinList": "Join the list",
+        "emailPlaceholder": "your@email.com",
+        "notificationLabel": "Notification",
+        "notificationValue": "New Subscriber!"
+      },
+      "automation": {
+        "title": "Powerful Automation",
+        "body": "Build workflows that work while you sleep. Trigger emails, messages, and more based on visitor actions.",
+        "cta": "Create Workflows",
+        "running": "Running",
+        "node1Title": "New Subscriber",
+        "node1Trigger": "Trigger",
+        "node1TriggerValue": "join",
+        "node2Title": "Send Email",
+        "node2Subtitle": "Welcome Kit",
+        "node3Title": "Add Tag",
+        "node3Tag": "#pro-lead"
+      },
+      "scheduler": {
+        "title": "Smart Scheduler",
+        "body": "Let clients book you effortlessly. Syncs with Google Calendar to prevent double bookings. Set your availability and get booked.",
+        "cta": "Start Booking",
+        "month": "September 2025",
+        "days": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+        "eventTitle": "Discovery Call",
+        "eventTime": "10:00 AM - 10:30 AM",
+        "statusLabel": "Status",
+        "statusValue": "Confirmed"
+      },
+      "partnerships": {
+        "title": "Partnerships",
+        "body": "Stop missing out on opportunities. Let brands reach out to you directly with a dedicated partnership inquiry flow.",
+        "cta": "Get Sponsored",
+        "cardTitle": "Collaboration Request",
+        "cardBody": "Nike wants to collaborate with you on their new campaign.",
+        "accept": "Accept",
+        "decline": "Decline",
+        "budgetLabel": "Budget"
+      },
+      "blog": {
+        "title": "Integrated Blog",
+        "body": "Your voice matters. Share your thoughts, stories, and expertise with a fully integrated blogging platform. SEO-optimized.",
+        "cta": "Start Writing",
+        "tagLifestyle": "Lifestyle",
+        "tagReadTime": "5 min read",
+        "cardTitle": "10 Tips for Growing Your Audience in 2025",
+        "byYou": "By You",
+        "published": "Published"
+      }
+    },
+    "pricing": {
+      "billing": {
+        "monthly": "Monthly",
+        "annually": "Annually (save 25%)"
+      },
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "alerts": {
+        "checkoutMissing": "Something went wrong. Please try again.",
+        "checkoutFailed": "Failed to initiate checkout. Please try again."
+      },
+      "cards": {
+        "free": {
+          "title": "Free",
+          "subtitle": "For getting started",
+          "cta": "Get Started",
+          "features": [
+            "Create only one page",
+            "Create 1 form",
+            "No branding removal",
+            "No custom domain",
+            "Basic analytics",
+            "3% store fee"
+          ],
+          "more": ["Limited integrations"]
+        },
+        "standard": {
+          "badge": "Most Popular",
+          "title": "Standard",
+          "subtitle": "For growing creators",
+          "billedYearly": "Billed $49.50 yearly",
+          "ctaUpgrade": "Upgrade",
+          "ctaTrial": "Start Trial",
+          "features": [
+            "Create up to 2 bios",
+            "Create 3 forms",
+            "Branding removal",
+            "Custom domain",
+            "Email collection",
+            "1% store fee",
+            "150 emails/month"
+          ],
+          "more": [
+            "Automation (2 per bio)",
+            "Email template (2 per bio)",
+            "SEO settings",
+            "Google and Facebook analytics",
+            "More customizations"
+          ]
+        },
+        "pro": {
+          "title": "Pro",
+          "subtitle": "For serious business",
+          "billedYearly": "Billed $135 yearly",
+          "cta": "Go Pro",
+          "features": [
+            "Everything in Standard",
+            "Create up to 5 bios",
+            "Create 4 forms",
+            "Scheduler",
+            "Automation (4 per bio)",
+            "Email template (4 per bio)",
+            "0% store fee",
+            "500 emails/month",
+            "More customizations"
+          ]
+        }
+      }
+    },
+    "blogSection": {
+      "title": "BLOG",
+      "cta": "Read Our Blog",
+      "categoryLabel": "Category",
+      "more": "More",
+      "readTime": "5 Min",
+      "hot": "Hot",
+      "viewAllCategories": "View All Categories",
+      "additionalLinks": {
+        "link1": "HOW TO DESIGN A STUNNING BIO PAGE",
+        "link2": "CONVERT FOLLOWERS INTO PAYING CUSTOMERS"
+      },
+      "defaultPosts": {
+        "p1": {
+          "title": "HOW TO CREATE THE PERFECT LINK IN BIO",
+          "category": "Tips",
+          "date": "08 Jan"
+        },
+        "p2": {
+          "title": "BOOST YOUR SOCIAL MEDIA PRESENCE WITH ONE LINK",
+          "excerpt": "Transform your followers into customers with a powerful bio link. Learn how to optimize your profile and increase conversions with simple strategies...",
+          "category": "Growth"
+        },
+        "p3": {
+          "title": "TOP CREATOR MONETIZATION STRATEGIES",
+          "category": "Revenue",
+          "date": "05 Jan"
+        },
+        "p4": {
+          "title": "ANALYTICS MASTERCLASS | UNDERSTAND YOUR AUDIENCE",
+          "category": "Insights",
+          "date": "03 Jan"
+        }
+      },
+      "categories": {
+        "social": "Social Media",
+        "monetization": "Monetization",
+        "analytics": "Analytics",
+        "design": "Design Tips",
+        "growth": "Growth Hacks",
+        "branding": "Branding",
+        "ecommerce": "E-commerce",
+        "creators": "Creators"
+      }
+    },
+    "carousel": {
+      "defaultRole": "Creator",
+      "defaultDescription": "Explore this creator's page.",
+      "fallback": [
+        {
+          "role": "Architect",
+          "description": "Architect & Designer creating sustainable living spaces."
+        },
+        {
+          "role": "Developer",
+          "description": "Full Stack Developer - Creator of @Portyo.me"
+        },
+        {
+          "role": "Dentist",
+          "description": "Orofacial Harmonization and Resin Veneers Specialist."
+        },
+        {
+          "role": "SaaS",
+          "description": "Connecting students with internship opportunities in Brazil."
+        }
+      ]
+    }
+  }
+}

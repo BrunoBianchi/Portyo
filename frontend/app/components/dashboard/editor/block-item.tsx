@@ -1,4 +1,6 @@
 import React, { memo, useState, useEffect, useContext } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import { api } from "~/services/api";
@@ -26,7 +28,6 @@ import { ColorPicker } from "./ColorPicker";
 import { FormInput, FormTextarea } from "./FormInput";
 import { FormSelect } from "./FormSelect";
 import { ImageUpload } from "./image-upload";
-
 
 interface BlockItemProps {
   block: BioBlock;
@@ -81,33 +82,48 @@ const getBlockTypeAccent = (type: string): { bg: string; text: string; border: s
 };
 
 // Get a preview snippet for block content
-const getBlockPreview = (block: BioBlock): string => {
+const getBlockPreview = (block: BioBlock, t: TFunction): string => {
   switch (block.type) {
     case 'button':
-      return block.href ? new URL(block.href).hostname.replace('www.', '') : 'No URL set';
+      return block.href ? new URL(block.href).hostname.replace('www.', '') : t("dashboard.editor.blockItem.preview.noUrl");
     case 'heading':
     case 'text':
       return block.body?.substring(0, 40) || '';
     case 'image':
     case 'video':
-      return block.mediaUrl ? 'Media attached' : 'No media';
-    case 'socials':
+      return block.mediaUrl ? t("dashboard.editor.blockItem.preview.mediaAttached") : t("dashboard.editor.blockItem.preview.noMedia");
+    case 'socials': {
       const count = Object.values(block.socials || {}).filter(Boolean).length;
-      return count ? `${count} link${count > 1 ? 's' : ''}` : 'No links';
+      return count
+        ? t("dashboard.editor.blockItem.preview.links", { count })
+        : t("dashboard.editor.blockItem.preview.noLinks");
+    }
     case 'qrcode':
-      return block.qrCodeValue ? 'QR configured' : 'No QR value';
+      return block.qrCodeValue
+        ? t("dashboard.editor.blockItem.preview.qrConfigured")
+        : t("dashboard.editor.blockItem.preview.noQrValue");
     case 'form':
-      return block.formId ? 'Form selected' : 'No form selected';
+      return block.formId
+        ? t("dashboard.editor.blockItem.preview.formSelected")
+        : t("dashboard.editor.blockItem.preview.noFormSelected");
     case 'portfolio':
-      return block.portfolioTitle || 'Portfolio';
+      return block.portfolioTitle || t("dashboard.editor.blockItem.preview.portfolioFallback");
     case 'marketing':
-      return block.marketingId ? 'Slot connected' : 'No slot selected';
+      return block.marketingId
+        ? t("dashboard.editor.blockItem.preview.slotConnected")
+        : t("dashboard.editor.blockItem.preview.noSlotSelected");
     default:
       return '';
   }
 };
 
+const getBlockTypeLabel = (type: string, t: TFunction): string => {
+  const fallback = type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
+  return t(`dashboard.editor.blockItem.blockTypes.${type}`, { defaultValue: fallback });
+};
+
 const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string }) => {
+  const { t } = useTranslation();
   const [forms, setForms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -122,18 +138,18 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500">Select a form to display on your bio page.</p>
+      <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.form.helper")}</p>
 
       <div>
-        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Select Form</label>
+        <label className="text-xs font-medium text-gray-700 mb-1.5 block">{t("dashboard.editor.blockItem.form.selectLabel")}</label>
         {loading ? (
           <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
             <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-            Loading forms...
+            {t("dashboard.editor.blockItem.form.loading")}
           </div>
         ) : forms.length === 0 ? (
           <div className="text-xs text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">
-            No forms found. Please create a form in the "Forms" tab first.
+            {t("dashboard.editor.blockItem.form.empty")}
           </div>
         ) : (
           <select
@@ -141,7 +157,7 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
             onChange={(e) => onChange("formId", e.target.value)}
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
           >
-            <option value="">Select a form...</option>
+            <option value="">{t("dashboard.editor.blockItem.form.placeholder")}</option>
             {forms.map(form => (
               <option key={form.id} value={form.id}>
                 {form.title}
@@ -153,12 +169,12 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
 
       <div className="grid grid-cols-2 gap-3">
         <ColorPicker
-          label="Background"
+          label={t("dashboard.editor.blockItem.common.background")}
           value={block.formBackgroundColor || "#ffffff"}
           onChange={(val) => onChange("formBackgroundColor", val)}
         />
         <ColorPicker
-          label="Text Color"
+          label={t("dashboard.editor.blockItem.common.textColor")}
           value={block.formTextColor || "#1f2937"}
           onChange={(val) => onChange("formTextColor", val)}
         />
@@ -169,6 +185,7 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
 };
 
 const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string; isLocked?: boolean }) => {
+  const { t } = useTranslation();
   const [slots, setSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -193,22 +210,22 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
 
   return (
     <div className="space-y-3 pt-3">
-      <p className="text-xs text-gray-500">Connect this block to a marketing slot from your dashboard. Companies will be able to advertise here.</p>
+      <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.marketing.helper")}</p>
       {isLocked && (
         <div className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
-          Campaign in progress. This block is locked and can't be edited or moved.
+          {t("dashboard.editor.blockItem.marketing.locked")}
         </div>
       )}
       <div>
-        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Select Marketing Slot</label>
+        <label className="text-xs font-medium text-gray-700 mb-1.5 block">{t("dashboard.editor.blockItem.marketing.selectLabel")}</label>
         {loading ? (
           <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
             <div className="w-4 h-4 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
-            Loading slots...
+            {t("dashboard.editor.blockItem.marketing.loading")}
           </div>
         ) : slots.length === 0 ? (
           <p className="text-xs text-gray-400 mt-1.5">
-            No slots found for this bio. <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">Create one →</a>
+            {t("dashboard.editor.blockItem.marketing.empty")} <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">{t("dashboard.editor.blockItem.marketing.createCta")}</a>
           </p>
         ) : (
           <select
@@ -217,15 +234,15 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
             disabled={isLocked}
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <option value="">No slot selected</option>
+            <option value="">{t("dashboard.editor.blockItem.marketing.noneSelected")}</option>
             {slots.map(slot => (
-              <option key={slot.id} value={slot.id}>{slot.slotName} ({slot.duration} days)</option>
+              <option key={slot.id} value={slot.id}>{slot.slotName} ({slot.duration} {t("dashboard.editor.blockItem.marketing.days")})</option>
             ))}
           </select>
         )}
         {slots.length > 0 && (
           <p className="text-xs text-gray-400 mt-1.5">
-            <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">Manage slots →</a>
+            <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">{t("dashboard.editor.blockItem.marketing.manageCta")}</a>
           </p>
         )}
       </div>
@@ -234,6 +251,7 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
 };
 
 const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange: (key: keyof BioBlock, value: any) => void; bioId?: string }) => {
+  const { t } = useTranslation();
   const [itemCount, setItemCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -248,27 +266,27 @@ const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
 
   return (
     <div className="space-y-3 pt-3">
-      <p className="text-xs text-gray-500">Display your portfolio items on your bio page. Add and manage items in the Portfolio tab.</p>
+      <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.portfolio.helper")}</p>
 
 
       {!loading && (itemCount === 0 || itemCount === null) && (
         <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 flex flex-col gap-1.5">
-          <span className="font-semibold">Nenhum projeto encontrado</span>
-          <span>Você ainda não criou nenhum projeto no portfólio. Eles aparecerão aqui após serem criados.</span>
+          <span className="font-semibold">{t("dashboard.editor.blockItem.portfolio.emptyTitle")}</span>
+          <span>{t("dashboard.editor.blockItem.portfolio.emptyBody")}</span>
           <a href="/dashboard/portfolio" target="_blank" className="font-bold underline cursor-pointer hover:text-amber-800 transition-colors">
-            Criar meu primeiro projeto &rarr;
+            {t("dashboard.editor.blockItem.portfolio.createCta")}
           </a>
         </div>
       )}
 
       <div>
-        <label className="text-xs font-medium text-gray-700 mb-1.5 block">Section Title</label>
+        <label className="text-xs font-medium text-gray-700 mb-1.5 block">{t("dashboard.editor.blockItem.portfolio.sectionTitle")}</label>
         <input
           type="text"
-          value={block.portfolioTitle || "Portfólio"}
+          value={block.portfolioTitle || t("dashboard.editor.blockItem.portfolio.defaultTitle")}
           onChange={(e) => onChange("portfolioTitle", e.target.value)}
           className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
-          placeholder="Portfolio"
+          placeholder={t("dashboard.editor.blockItem.portfolio.placeholder")}
         />
       </div>
     </div>
@@ -293,6 +311,7 @@ const BlockItem = memo(({
   availableQrCodes = [],
   onCreateQrCode
 }: BlockItemProps) => {
+  const { t } = useTranslation();
   const { bio } = useContext(BioContext);
   const [stripeProducts, setStripeProducts] = useState<any[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -383,6 +402,7 @@ const BlockItem = memo(({
   };
 
   const isMarketingLocked = block.type === 'marketing' && !!isLocked;
+  const blockTypeLabel = getBlockTypeLabel(block.type, t);
 
   return (
     <div className="group">
@@ -406,7 +426,7 @@ const BlockItem = memo(({
       >
         {isDragging ? (
           <div className="h-16 flex items-center justify-center">
-            <span className="text-sm font-medium text-primary/60">Drop here</span>
+            <span className="text-sm font-medium text-primary/60">{t("dashboard.editor.blockItem.general.dropHere")}</span>
           </div>
         ) : (
           <div
@@ -443,14 +463,14 @@ const BlockItem = memo(({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900 truncate">{block.title || block.type.charAt(0).toUpperCase() + block.type.slice(1).replace('_', ' ')}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{block.title || blockTypeLabel}</p>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${getBlockTypeAccent(block.type).bg} ${getBlockTypeAccent(block.type).text}`}>
-                    {block.type.replace('_', ' ')}
+                    {blockTypeLabel}
                   </span>
                   {(() => {
                     try {
-                      const preview = getBlockPreview(block);
+                      const preview = getBlockPreview(block, t);
                       return preview ? (
                         <span className="text-xs text-gray-400 truncate">{preview}</span>
                       ) : null;
@@ -470,7 +490,7 @@ const BlockItem = memo(({
                   onRemove(block.id);
                 }}
                 type="button"
-                title={isMarketingLocked ? "Campaign in progress" : "Remove block"}
+                title={isMarketingLocked ? t("dashboard.editor.blockItem.general.campaignInProgress") : t("dashboard.editor.blockItem.general.removeBlock")}
                 disabled={isMarketingLocked}
               >
                 <TrashIcon />
@@ -603,30 +623,30 @@ const BlockItem = memo(({
             {block.type === "text" && (
               <div className="pt-4 space-y-4">
                 <FormTextarea
-                  label="Content"
+                  label={t("dashboard.editor.blockItem.text.content")}
                   value={block.body || ""}
                   onChange={(value) => handleFieldChange("body", value)}
-                  placeholder="Write your text"
+                  placeholder={t("dashboard.editor.blockItem.text.placeholder")}
                   rows={3}
                 />
                 <ColorPicker
-                  label="Text Color"
+                  label={t("dashboard.editor.blockItem.common.textColor")}
                   value={block.textColor || "#4b5563"}
                   onChange={(value) => handleFieldChange("textColor", value)}
                 />
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Animation</label>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.animation")}</label>
                   <div className="flex gap-2">
                     <FormSelect
                       label=""
                       value={block.animation || "none"}
                       onChange={(value) => handleFieldChange("animation", value)}
                       options={[
-                        { value: "none", label: "None" },
-                        { value: "bounce", label: "Bounce" },
-                        { value: "pulse", label: "Pulse" },
-                        { value: "shake", label: "Shake" },
-                        { value: "wobble", label: "Wobble" }
+                        { value: "none", label: t("dashboard.editor.blockItem.animation.none") },
+                        { value: "bounce", label: t("dashboard.editor.blockItem.animation.bounce") },
+                        { value: "pulse", label: t("dashboard.editor.blockItem.animation.pulse") },
+                        { value: "shake", label: t("dashboard.editor.blockItem.animation.shake") },
+                        { value: "wobble", label: t("dashboard.editor.blockItem.animation.wobble") }
                       ]}
                       className="flex-1"
                     />
@@ -636,9 +656,9 @@ const BlockItem = memo(({
                         value={block.animationTrigger || "loop"}
                         onChange={(value) => handleFieldChange("animationTrigger", value)}
                         options={[
-                          { value: "loop", label: "Loop" },
-                          { value: "once", label: "Once" },
-                          { value: "hover", label: "Hover" }
+                          { value: "loop", label: t("dashboard.editor.blockItem.animation.loop") },
+                          { value: "once", label: t("dashboard.editor.blockItem.animation.once") },
+                          { value: "hover", label: t("dashboard.editor.blockItem.animation.hover") }
                         ]}
                         className="w-32"
                       />
@@ -648,11 +668,11 @@ const BlockItem = memo(({
 
                 <div className="pt-4 border-t border-gray-100 space-y-3">
                   <div className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Typography
+                    {t("dashboard.editor.blockItem.typography.title")}
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Alignment</label>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                       {(['left', 'center', 'right', 'justify'] as const).map((align) => (
                         <button
@@ -662,7 +682,7 @@ const BlockItem = memo(({
                             ? 'bg-white text-gray-900 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
-                          title={align.charAt(0).toUpperCase() + align.slice(1)}
+                          title={t(`dashboard.editor.blockItem.align.${align}`)}
                         >
                           {align === 'justify' ? (
                             <div className="flex flex-col gap-[2px] items-center justify-center w-full h-full">
@@ -672,7 +692,7 @@ const BlockItem = memo(({
                               <div className="w-3 h-[1px] bg-current"></div>
                             </div>
                           ) : (
-                            align.charAt(0).toUpperCase() + align.slice(1)
+                            t(`dashboard.editor.blockItem.align.${align}`)
                           )}
                         </button>
                       ))}
@@ -681,28 +701,28 @@ const BlockItem = memo(({
 
                   <div className="grid grid-cols-2 gap-3">
                     <FormSelect
-                      label="Font Size"
+                      label={t("dashboard.editor.blockItem.typography.fontSize")}
                       value={block.fontSize || "16px"}
                       onChange={(value) => handleFieldChange("fontSize", value)}
                       options={[
-                        { value: "12px", label: "Small" },
-                        { value: "14px", label: "Normal" },
-                        { value: "16px", label: "Medium" },
-                        { value: "18px", label: "Large" },
-                        { value: "24px", label: "XL" }
+                        { value: "12px", label: t("dashboard.editor.blockItem.size.small") },
+                        { value: "14px", label: t("dashboard.editor.blockItem.size.normal") },
+                        { value: "16px", label: t("dashboard.editor.blockItem.size.medium") },
+                        { value: "18px", label: t("dashboard.editor.blockItem.size.large") },
+                        { value: "24px", label: t("dashboard.editor.blockItem.size.xl") }
                       ]}
                     />
                     <FormSelect
-                      label="Font Weight"
+                      label={t("dashboard.editor.blockItem.typography.fontWeight")}
                       value={block.fontWeight || "500"}
                       onChange={(value) => handleFieldChange("fontWeight", value)}
                       options={[
-                        { value: "300", label: "Light" },
-                        { value: "400", label: "Normal" },
-                        { value: "500", label: "Medium" },
-                        { value: "600", label: "Semibold" },
-                        { value: "700", label: "Bold" },
-                        { value: "900", label: "Black" }
+                        { value: "300", label: t("dashboard.editor.blockItem.weight.light") },
+                        { value: "400", label: t("dashboard.editor.blockItem.weight.normal") },
+                        { value: "500", label: t("dashboard.editor.blockItem.weight.medium") },
+                        { value: "600", label: t("dashboard.editor.blockItem.weight.semibold") },
+                        { value: "700", label: t("dashboard.editor.blockItem.weight.bold") },
+                        { value: "900", label: t("dashboard.editor.blockItem.weight.black") }
                       ]}
                     />
                   </div>
@@ -728,7 +748,7 @@ const BlockItem = memo(({
 
                       <div className="grid gap-3">
                         <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Label</label>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.label")}</label>
                           <input
                             value={item.title}
                             onChange={(e) => {
@@ -737,11 +757,11 @@ const BlockItem = memo(({
                               handleFieldChange("gridItems", newItems);
                             }}
                             className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                            placeholder="Button Label"
+                            placeholder={t("dashboard.editor.blockItem.buttonGrid.labelPlaceholder")}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">URL</label>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.url")}</label>
                           <input
                             value={item.url}
                             onChange={(e) => {
@@ -755,7 +775,7 @@ const BlockItem = memo(({
                         </div>
                         <div>
                           <ImageUpload
-                            label="Background Image"
+                            label={t("dashboard.editor.blockItem.common.backgroundImage")}
                             value={item.image || ""}
                             onChange={(url) => {
                               const newItems = [...(block.gridItems || [])];
@@ -765,7 +785,7 @@ const BlockItem = memo(({
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Icon</label>
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.icon")}</label>
                           <select
                             value={item.icon}
                             onChange={(e) => {
@@ -775,7 +795,7 @@ const BlockItem = memo(({
                             }}
                             className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                           >
-                            <option value="">Select an icon</option>
+                            <option value="">{t("dashboard.editor.blockItem.common.selectIcon")}</option>
                             <option value="https://cdn.simpleicons.org/instagram/E4405F">Instagram</option>
                             <option value="https://cdn.simpleicons.org/vsco/000000">VSCO</option>
                             <option value="https://cdn.simpleicons.org/snapchat/FFFC00">Snapchat</option>
@@ -801,7 +821,7 @@ const BlockItem = memo(({
                     const newItems = [...(block.gridItems || [])];
                     newItems.push({
                       id: makeId(),
-                      title: "New Link",
+                      title: t("dashboard.editor.blockItem.buttonGrid.newLink"),
                       url: "https://",
                       image: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1000&auto=format&fit=crop",
                       icon: ""
@@ -811,7 +831,7 @@ const BlockItem = memo(({
                   className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
                 >
                   <PlusIcon width={16} height={16} />
-                  Add Button
+                  {t("dashboard.editor.blockItem.buttonGrid.addButton")}
                 </button>
               </div>
             )}
@@ -821,20 +841,20 @@ const BlockItem = memo(({
                 {/* Basic Info Section */}
                 <div className="space-y-3">
                   <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-                    Content
+                    {t("dashboard.editor.blockItem.sections.content")}
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Label</label>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.label")}</label>
                       <input
                         value={block.title || ""}
                         onChange={(event) => handleFieldChange("title", event.target.value)}
                         className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
-                        placeholder="Button text"
+                        placeholder={t("dashboard.editor.blockItem.button.labelPlaceholder")}
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">URL</label>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.url")}</label>
                       <input
                         value={block.href || ""}
                         onChange={(event) => handleFieldChange("href", event.target.value)}
@@ -844,7 +864,7 @@ const BlockItem = memo(({
                     </div>
                     <div>
                       <label className="text-xs font-medium text-gray-600 mb-1.5 block">
-                        {block.buttonStyle as any === 'image-grid' ? 'Icon' : 'Image (optional)'}
+                        {block.buttonStyle as any === 'image-grid' ? t("dashboard.editor.blockItem.common.icon") : t("dashboard.editor.blockItem.button.imageOptional")}
                       </label>
                       {block.buttonStyle as any === 'image-grid' ? (
                         <select
@@ -852,7 +872,7 @@ const BlockItem = memo(({
                           onChange={(event) => handleFieldChange("buttonImage", event.target.value)}
                           className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
                         >
-                          <option value="">Select an icon</option>
+                          <option value="">{t("dashboard.editor.blockItem.common.selectIcon")}</option>
                           <option value="https://cdn.simpleicons.org/instagram/E4405F">Instagram</option>
                           <option value="https://cdn.simpleicons.org/vsco/000000">VSCO</option>
                           <option value="https://cdn.simpleicons.org/snapchat/FFFC00">Snapchat</option>
@@ -875,7 +895,7 @@ const BlockItem = memo(({
                     {block.buttonStyle as any === 'image-grid' && (
                       <div>
                         <ImageUpload
-                          label="Background Image"
+                          label={t("dashboard.editor.blockItem.common.backgroundImage")}
                           value={block.mediaUrl || ""}
                           onChange={(url) => handleFieldChange("mediaUrl", url)}
                         />
@@ -887,11 +907,11 @@ const BlockItem = memo(({
                 {/* Style Section */}
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-                    Design
+                    {t("dashboard.editor.blockItem.sections.design")}
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Text Alignment</label>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.textAlignment")}</label>
                       <div className="flex bg-gray-100 p-1 rounded-xl">
                         {(['left', 'center', 'right'] as const).map((align) => (
                           <button
@@ -902,45 +922,45 @@ const BlockItem = memo(({
                               : 'text-gray-500 hover:text-gray-700'
                               }`}
                           >
-                            {align.charAt(0).toUpperCase() + align.slice(1)}
+                            {t(`dashboard.editor.blockItem.align.${align}`)}
                           </button>
                         ))}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Style</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.style")}</label>
                         <select
                           value={block.buttonStyle || "solid"}
                           onChange={(event) => handleFieldChange("buttonStyle", event.target.value)}
                           className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
                         >
-                          <option value="solid">Solid</option>
-                          <option value="outline">Outline</option>
-                          <option value="ghost">Ghost</option>
-                          <option value="hard-shadow">Retro</option>
-                          <option value="soft-shadow">Soft Shadow</option>
-                          <option value="3d">3D</option>
-                          <option value="glass">Glass</option>
-                          <option value="gradient">Gradient</option>
-                          <option value="neon">Neon</option>
-                          <option value="architect">Architect</option>
-                          <option value="material">Material</option>
-                          <option value="brutalist">Brutalist</option>
-                          <option value="outline-thick">Outline Thick</option>
-                          <option value="image-grid">Image Card</option>
+                          <option value="solid">{t("dashboard.editor.blockItem.buttonStyles.solid")}</option>
+                          <option value="outline">{t("dashboard.editor.blockItem.buttonStyles.outline")}</option>
+                          <option value="ghost">{t("dashboard.editor.blockItem.buttonStyles.ghost")}</option>
+                          <option value="hard-shadow">{t("dashboard.editor.blockItem.buttonStyles.retro")}</option>
+                          <option value="soft-shadow">{t("dashboard.editor.blockItem.buttonStyles.softShadow")}</option>
+                          <option value="3d">{t("dashboard.editor.blockItem.buttonStyles.threeD")}</option>
+                          <option value="glass">{t("dashboard.editor.blockItem.buttonStyles.glass")}</option>
+                          <option value="gradient">{t("dashboard.editor.blockItem.buttonStyles.gradient")}</option>
+                          <option value="neon">{t("dashboard.editor.blockItem.buttonStyles.neon")}</option>
+                          <option value="architect">{t("dashboard.editor.blockItem.buttonStyles.architect")}</option>
+                          <option value="material">{t("dashboard.editor.blockItem.buttonStyles.material")}</option>
+                          <option value="brutalist">{t("dashboard.editor.blockItem.buttonStyles.brutalist")}</option>
+                          <option value="outline-thick">{t("dashboard.editor.blockItem.buttonStyles.outlineThick")}</option>
+                          <option value="image-grid">{t("dashboard.editor.blockItem.buttonStyles.imageCard")}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">Shape</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.shape")}</label>
                         <select
                           value={block.buttonShape || "rounded"}
                           onChange={(event) => handleFieldChange("buttonShape", event.target.value)}
                           className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white"
                         >
-                          <option value="pill">Pill</option>
-                          <option value="rounded">Rounded</option>
-                          <option value="square">Square</option>
+                          <option value="pill">{t("dashboard.editor.blockItem.shapes.pill")}</option>
+                          <option value="rounded">{t("dashboard.editor.blockItem.shapes.rounded")}</option>
+                          <option value="square">{t("dashboard.editor.blockItem.shapes.square")}</option>
                         </select>
                       </div>
                     </div>
@@ -948,15 +968,15 @@ const BlockItem = memo(({
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-xs font-semibold text-gray-700 block">Colors</label>
+                  <label className="text-xs font-semibold text-gray-700 block">{t("dashboard.editor.blockItem.sections.colors")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <ColorPicker
-                      label="Background"
+                      label={t("dashboard.editor.blockItem.common.background")}
                       value={block.accent || "#111827"}
                       onChange={(val) => handleFieldChange("accent", val)}
                     />
                     <ColorPicker
-                      label="Text"
+                      label={t("dashboard.editor.blockItem.common.text")}
                       value={block.textColor || "#ffffff"}
                       onChange={(val) => handleFieldChange("textColor", val)}
                     />
@@ -964,7 +984,7 @@ const BlockItem = memo(({
                   {["hard-shadow", "soft-shadow", "3d", "gradient", "cyberpunk", "gradient-border", "neon", "pixel", "sketch", "neumorphism", "clay", "architect", "material", "brutalist", "outline-thick"].includes(block.buttonStyle || "") && (
                     <div className="pt-2">
                       <ColorPicker
-                        label="Secondary / Shadow"
+                        label={t("dashboard.editor.blockItem.button.secondaryShadow")}
                         value={block.buttonShadowColor || block.accent || "#111827"}
                         onChange={(val) => handleFieldChange("buttonShadowColor", val)}
                       />
@@ -975,7 +995,7 @@ const BlockItem = memo(({
                 {/* Options Section */}
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-                    Options
+                    {t("dashboard.editor.blockItem.sections.options")}
                   </div>
                   <div className="space-y-3">
                     <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
@@ -986,23 +1006,23 @@ const BlockItem = memo(({
                         className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                       />
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Sensitive Content</span>
-                        <p className="text-xs text-gray-400">Mark as 18+ content</p>
+                        <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.blockItem.button.sensitiveContent")}</span>
+                        <p className="text-xs text-gray-400">{t("dashboard.editor.blockItem.button.mark18")}</p>
                       </div>
                     </label>
                     <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">Animation</label>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.animation")}</label>
                       <div className="flex gap-2">
                         <select
                           value={block.animation || "none"}
                           onChange={(event) => handleFieldChange("animation", event.target.value)}
                           className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                         >
-                          <option value="none">None</option>
-                          <option value="bounce">Bounce</option>
-                          <option value="pulse">Pulse</option>
-                          <option value="shake">Shake</option>
-                          <option value="wobble">Wobble</option>
+                          <option value="none">{t("dashboard.editor.blockItem.animation.none")}</option>
+                          <option value="bounce">{t("dashboard.editor.blockItem.animation.bounce")}</option>
+                          <option value="pulse">{t("dashboard.editor.blockItem.animation.pulse")}</option>
+                          <option value="shake">{t("dashboard.editor.blockItem.animation.shake")}</option>
+                          <option value="wobble">{t("dashboard.editor.blockItem.animation.wobble")}</option>
                         </select>
                         {block.animation && block.animation !== "none" && (
                           <select
@@ -1010,9 +1030,9 @@ const BlockItem = memo(({
                             onChange={(event) => handleFieldChange("animationTrigger", event.target.value)}
                             className="w-28 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                           >
-                            <option value="loop">Loop</option>
-                            <option value="once">Once</option>
-                            <option value="hover">Hover</option>
+                            <option value="loop">{t("dashboard.editor.blockItem.animation.loop")}</option>
+                            <option value="once">{t("dashboard.editor.blockItem.animation.once")}</option>
+                            <option value="hover">{t("dashboard.editor.blockItem.animation.hover")}</option>
                           </select>
                         )}
                       </div>
@@ -1024,22 +1044,22 @@ const BlockItem = memo(({
 
             {block.type === "socials" && (
               <div className="space-y-3 pt-3">
-                <p className="text-xs text-gray-500">Add your social media links below.</p>
+                <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.socials.helper")}</p>
 
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.layout")}</label>
                     <select
                       value={block.socialsLayout || "row"}
                       onChange={(event) => handleFieldChange("socialsLayout", event.target.value)}
                       className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                     >
-                      <option value="row">Inline (Row)</option>
-                      <option value="column">List (Column)</option>
+                      <option value="row">{t("dashboard.editor.blockItem.socials.inlineRow")}</option>
+                      <option value="column">{t("dashboard.editor.blockItem.socials.listColumn")}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Style</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.style")}</label>
                     <div className="flex items-center h-[38px]">
                       <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
                         <input
@@ -1048,7 +1068,7 @@ const BlockItem = memo(({
                           onChange={(event) => handleFieldChange("socialsLabel", event.target.checked as any)}
                           className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
-                        Show Text
+                        {t("dashboard.editor.blockItem.socials.showText")}
                       </label>
                     </div>
                   </div>
@@ -1084,29 +1104,30 @@ const BlockItem = memo(({
                     <CalendarIcon size={20} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-blue-900">Booking Settings</h4>
+                    <h4 className="text-sm font-bold text-blue-900">{t("dashboard.editor.blockItem.calendar.bookingSettings")}</h4>
                     <p className="text-xs text-blue-700 mt-1">
-                      Availability and booking settings are managed in the
-                      <a href="/dashboard/scheduler" target="_blank" className="underline font-bold ml-1 hover:text-blue-900">Scheduler</a> tab.
+                      {t("dashboard.editor.blockItem.calendar.bookingHint")}
+                      <a href="/dashboard/scheduler" target="_blank" className="underline font-bold ml-1 hover:text-blue-900">{t("dashboard.editor.blockItem.calendar.scheduler")}</a>
+                      {t("dashboard.editor.blockItem.calendar.tabSuffix")}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.title")}</label>
                   <input
                     value={block.title || ""}
                     onChange={(event) => handleFieldChange("title", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Book a time"
+                    placeholder={t("dashboard.editor.blockItem.calendar.titlePlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Description</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.description")}</label>
                   <input
                     value={block.body || ""}
                     onChange={(event) => handleFieldChange("body", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Brief description"
+                    placeholder={t("dashboard.editor.blockItem.calendar.descriptionPlaceholder")}
                   />
                 </div>
               </div>
@@ -1114,12 +1135,12 @@ const BlockItem = memo(({
 
             {block.type === "video" && (
               <div className="pt-3">
-                <label className="text-xs font-medium text-gray-700 mb-1 block">YouTube URL</label>
+                <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.video.youtubeUrl")}</label>
                 <input
                   value={block.mediaUrl || ""}
                   onChange={(event) => handleFieldChange("mediaUrl", event.target.value)}
                   className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  placeholder="https://youtube.com/watch?v=..."
+                  placeholder={t("dashboard.editor.blockItem.video.youtubePlaceholder")}
                 />
               </div>
             )}
@@ -1127,7 +1148,7 @@ const BlockItem = memo(({
             {block.type === "image" && (
               <div className="pt-3">
                 <ImageUpload
-                  label="Image"
+                  label={t("dashboard.editor.blockItem.common.image")}
                   value={block.mediaUrl || ""}
                   onChange={(url) => handleFieldChange("mediaUrl", url)}
                 />
@@ -1138,12 +1159,12 @@ const BlockItem = memo(({
               <div className="pt-3 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.blogBackgroundColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("blogBackgroundColor", val)}
                   />
                   <ColorPicker
-                    label="Text Color"
+                    label={t("dashboard.editor.blockItem.common.textColor")}
                     value={block.blogTextColor || "#1f2937"}
                     onChange={(val) => handleFieldChange("blogTextColor", val)}
                   />
@@ -1154,60 +1175,60 @@ const BlockItem = memo(({
             {block.type === "product" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.layout")}</label>
                   <select
                     value={block.productLayout || "grid"}
                     onChange={(event) => handleFieldChange("productLayout", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   >
-                    <option value="grid">Grid</option>
-                    <option value="list">List</option>
-                    <option value="carousel">Carousel</option>
+                    <option value="grid">{t("dashboard.editor.blockItem.product.layoutGrid")}</option>
+                    <option value="list">{t("dashboard.editor.blockItem.product.layoutList")}</option>
+                    <option value="carousel">{t("dashboard.editor.blockItem.product.layoutCarousel")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Card Style</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.product.cardStyle")}</label>
                   <select
                     value={block.productCardStyle || "default"}
                     onChange={(event) => handleFieldChange("productCardStyle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   >
-                    <option value="default">Default</option>
-                    <option value="minimal">Minimal</option>
+                    <option value="default">{t("dashboard.editor.blockItem.product.cardDefault")}</option>
+                    <option value="minimal">{t("dashboard.editor.blockItem.product.cardMinimal")}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.productBackgroundColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("productBackgroundColor", val)}
                   />
                   <ColorPicker
-                    label="Text Color"
+                    label={t("dashboard.editor.blockItem.common.textColor")}
                     value={block.productTextColor || "#1f2937"}
                     onChange={(val) => handleFieldChange("productTextColor", val)}
                   />
                   <ColorPicker
-                    label="Accent Color"
+                    label={t("dashboard.editor.blockItem.product.accentColor")}
                     value={block.productAccentColor || "#000000"}
                     onChange={(val) => handleFieldChange("productAccentColor", val)}
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Button Text</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.buttonText")}</label>
                   <input
                     type="text"
                     value={block.productButtonText || "View Product"}
                     onChange={(e) => handleFieldChange("productButtonText", e.target.value)}
                     className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
-                    placeholder="e.g. Buy Now"
+                    placeholder={t("dashboard.editor.blockItem.product.buttonPlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-700 block">Products</label>
+                  <label className="text-xs font-medium text-gray-700 block">{t("dashboard.editor.blockItem.product.products")}</label>
                   {(block.products || []).map((product, index) => (
                     <div key={product.id} className="p-3 border border-gray-200 rounded-xl bg-white relative group flex items-center gap-3 hover:border-gray-300 transition-colors">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100">
@@ -1232,7 +1253,7 @@ const BlockItem = memo(({
                           handleFieldChange("products", newProducts as any);
                         }}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                        title="Remove product"
+                        title={t("dashboard.editor.blockItem.product.removeProduct")}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -1240,7 +1261,7 @@ const BlockItem = memo(({
                   ))}
 
                   <div className="pt-2 border-t border-gray-100 mt-4">
-                    <label className="text-xs font-medium text-gray-500 mb-2 block">Add Product from Stripe</label>
+                    <label className="text-xs font-medium text-gray-500 mb-2 block">{t("dashboard.editor.blockItem.product.addFromStripe")}</label>
                     {isLoadingProducts ? (
                       <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
                     ) : (
@@ -1250,7 +1271,7 @@ const BlockItem = memo(({
                           onClick={() => setIsProductSelectOpen(!isProductSelectOpen)}
                           className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-white hover:border-gray-300 transition-colors text-left"
                         >
-                          <span className="text-gray-500">Select a product to add...</span>
+                          <span className="text-gray-500">{t("dashboard.editor.blockItem.product.selectToAdd")}</span>
                           <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${isProductSelectOpen ? 'rotate-180' : ''}`} />
                         </button>
 
@@ -1265,8 +1286,8 @@ const BlockItem = memo(({
                                     <CreditCard className="w-6 h-6" />
                                   </div>
                                   <div className="space-y-1">
-                                    <p className="text-sm font-semibold text-gray-900">No products found</p>
-                                    <p className="text-xs text-gray-500">Create a new product to add it here.</p>
+                                    <p className="text-sm font-semibold text-gray-900">{t("dashboard.editor.blockItem.product.emptyTitle")}</p>
+                                    <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.product.emptyBody")}</p>
                                   </div>
                                 </div>
                               ) : (
@@ -1319,7 +1340,7 @@ const BlockItem = memo(({
                               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                                 <PlusIcon className="w-3 h-3 text-white" />
                               </div>
-                              Create New Product
+                              {t("dashboard.editor.blockItem.product.createNew")}
                             </button>
                           </div>
                         )}
@@ -1334,7 +1355,7 @@ const BlockItem = memo(({
               <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                   <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-gray-900">Create Product</h3>
+                    <h3 className="text-lg font-bold text-gray-900">{t("dashboard.editor.blockItem.product.createTitle")}</h3>
                     <button
                       onClick={() => setIsCreateProductModalOpen(false)}
                       className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1344,18 +1365,18 @@ const BlockItem = memo(({
                   </div>
                   <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.editor.blockItem.product.productTitle")}</label>
                       <input
                         required
                         value={newProductData.title}
                         onChange={(e) => setNewProductData({ ...newProductData, title: e.target.value })}
                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                        placeholder="e.g. Digital Guide"
+                        placeholder={t("dashboard.editor.blockItem.product.productTitlePlaceholder")}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.editor.blockItem.product.price")}</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                             {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
@@ -1373,7 +1394,7 @@ const BlockItem = memo(({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.editor.blockItem.product.currency")}</label>
                         <select
                           value={newProductData.currency}
                           onChange={(e) => setNewProductData({ ...newProductData, currency: e.target.value })}
@@ -1388,7 +1409,7 @@ const BlockItem = memo(({
                     </div>
                     <div>
                       <ImageUpload
-                        label="Product Image (Optional)"
+                        label={t("dashboard.editor.blockItem.product.imageOptional")}
                         value={newProductData.image}
                         onChange={(url) => setNewProductData({ ...newProductData, image: url })}
                       />
@@ -1402,10 +1423,10 @@ const BlockItem = memo(({
                         {isCreatingProduct ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Creating...
+                            {t("dashboard.editor.blockItem.product.creating")}
                           </>
                         ) : (
-                          "Create Product"
+                          t("dashboard.editor.blockItem.product.createAction")
                         )}
                       </button>
                     </div>
@@ -1418,28 +1439,28 @@ const BlockItem = memo(({
             {block.type === "calendar" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.title")}</label>
                   <input
                     value={block.calendarTitle || ""}
                     onChange={(event) => handleFieldChange("calendarTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Book a Call"
+                    placeholder={t("dashboard.editor.blockItem.calendar.titlePlaceholder")}
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.calendarColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("calendarColor", val)}
                   />
                   <ColorPicker
-                    label="Text"
+                    label={t("dashboard.editor.blockItem.common.text")}
                     value={block.calendarTextColor || "#1f2937"}
                     onChange={(val) => handleFieldChange("calendarTextColor", val)}
                   />
                   <ColorPicker
-                    label="Accent"
+                    label={t("dashboard.editor.blockItem.common.accent")}
                     value={block.calendarAccentColor || "#2563eb"}
                     onChange={(val) => handleFieldChange("calendarAccentColor", val)}
                   />
@@ -1450,21 +1471,21 @@ const BlockItem = memo(({
             {block.type === "map" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Location Name</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.map.locationName")}</label>
                   <input
                     value={block.mapTitle || ""}
                     onChange={(event) => handleFieldChange("mapTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="e.g. Our Office"
+                    placeholder={t("dashboard.editor.blockItem.map.locationPlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Address</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.address")}</label>
                   <input
                     value={block.mapAddress || ""}
                     onChange={(event) => handleFieldChange("mapAddress", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="e.g. 123 Main St, City"
+                    placeholder={t("dashboard.editor.blockItem.map.addressPlaceholder")}
                   />
                 </div>
               </div>
@@ -1473,17 +1494,17 @@ const BlockItem = memo(({
             {block.type === "featured" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Product Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.featured.productTitle")}</label>
                   <input
                     value={block.featuredTitle || ""}
                     onChange={(event) => handleFieldChange("featuredTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Product Name"
+                    placeholder={t("dashboard.editor.blockItem.featured.productTitlePlaceholder")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Price</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.product.price")}</label>
                     <input
                       value={block.featuredPrice || ""}
                       onChange={(event) => handleFieldChange("featuredPrice", event.target.value)}
@@ -1493,14 +1514,14 @@ const BlockItem = memo(({
                   </div>
                   <div>
                     <ImageUpload
-                      label="Product Image"
+                      label={t("dashboard.editor.blockItem.featured.productImage")}
                       value={block.featuredImage || ""}
                       onChange={(url) => handleFieldChange("featuredImage", url)}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Product URL</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.featured.productUrl")}</label>
                   <input
                     value={block.featuredUrl || ""}
                     onChange={(event) => handleFieldChange("featuredUrl", event.target.value)}
@@ -1510,12 +1531,12 @@ const BlockItem = memo(({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.featuredColor || "#1f4d36"}
                     onChange={(val) => handleFieldChange("featuredColor", val)}
                   />
                   <ColorPicker
-                    label="Text Color"
+                    label={t("dashboard.editor.blockItem.common.textColor")}
                     value={block.featuredTextColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("featuredTextColor", val)}
                   />
@@ -1526,32 +1547,32 @@ const BlockItem = memo(({
             {block.type === "affiliate" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.title")}</label>
                   <input
                     value={block.affiliateTitle || ""}
                     onChange={(event) => handleFieldChange("affiliateTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Copy my coupon code"
+                    placeholder={t("dashboard.editor.blockItem.affiliate.titlePlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Coupon Code</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.affiliate.couponCode")}</label>
                   <input
                     value={block.affiliateCode || ""}
                     onChange={(event) => handleFieldChange("affiliateCode", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="CODE123"
+                    placeholder={t("dashboard.editor.blockItem.affiliate.couponPlaceholder")}
                   />
                 </div>
                 <div>
                   <ImageUpload
-                    label="Image"
+                    label={t("dashboard.editor.blockItem.common.image")}
                     value={block.affiliateImage || ""}
                     onChange={(url) => handleFieldChange("affiliateImage", url)}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Affiliate URL</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.affiliate.affiliateUrl")}</label>
                   <input
                     value={block.affiliateUrl || ""}
                     onChange={(event) => handleFieldChange("affiliateUrl", event.target.value)}
@@ -1561,12 +1582,12 @@ const BlockItem = memo(({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.affiliateColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("affiliateColor", val)}
                   />
                   <ColorPicker
-                    label="Text Color"
+                    label={t("dashboard.editor.blockItem.common.textColor")}
                     value={block.affiliateTextColor || "#1f2937"}
                     onChange={(val) => handleFieldChange("affiliateTextColor", val)}
                   />
@@ -1577,16 +1598,16 @@ const BlockItem = memo(({
             {block.type === "event" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Event Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.event.eventTitle")}</label>
                   <input
                     value={block.eventTitle || ""}
                     onChange={(event) => handleFieldChange("eventTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Live Webinar"
+                    placeholder={t("dashboard.editor.blockItem.event.eventTitlePlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Date & Time</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.event.dateTime")}</label>
                   <input
                     type="datetime-local"
                     value={block.eventDate || ""}
@@ -1596,16 +1617,16 @@ const BlockItem = memo(({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Button Text</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.buttonText")}</label>
                     <input
                       value={block.eventButtonText || ""}
                       onChange={(event) => handleFieldChange("eventButtonText", event.target.value)}
                       className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      placeholder="Register"
+                      placeholder={t("dashboard.editor.blockItem.event.buttonPlaceholder")}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Button URL</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.event.buttonUrl")}</label>
                     <input
                       value={block.eventButtonUrl || ""}
                       onChange={(event) => handleFieldChange("eventButtonUrl", event.target.value)}
@@ -1616,12 +1637,12 @@ const BlockItem = memo(({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.eventColor || "#111827"}
                     onChange={(val) => handleFieldChange("eventColor", val)}
                   />
                   <ColorPicker
-                    label="Text Color"
+                    label={t("dashboard.editor.blockItem.common.textColor")}
                     value={block.eventTextColor || "#ffffff"}
                     onChange={(val) => handleFieldChange("eventTextColor", val)}
                   />
@@ -1632,18 +1653,18 @@ const BlockItem = memo(({
             {block.type === "spotify" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Spotify URL</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.spotify.url")}</label>
                   <input
                     value={block.spotifyUrl || ""}
                     onChange={(event) => handleFieldChange("spotifyUrl", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://open.spotify.com/track/..."
+                    placeholder={t("dashboard.editor.blockItem.spotify.placeholder")}
                   />
-                  <p className="text-[10px] text-gray-500 mt-1">Supports tracks, albums, and playlists</p>
+                  <p className="text-[10px] text-gray-500 mt-1">{t("dashboard.editor.blockItem.spotify.helper")}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-gray-700">Compact Player</label>
+                  <label className="text-xs font-medium text-gray-700">{t("dashboard.editor.blockItem.spotify.compactPlayer")}</label>
                   <button
                     onClick={() => handleFieldChange("spotifyCompact", !block.spotifyCompact)}
                     className={`w-10 h-5 rounded-full relative transition-colors ${block.spotifyCompact ? 'bg-blue-500' : 'bg-gray-300'}`}
@@ -1657,31 +1678,31 @@ const BlockItem = memo(({
             {block.type === "instagram" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Instagram Username</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.instagram.username")}</label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-gray-400 text-sm">@</span>
                     <input
                       value={block.instagramUsername || ""}
                       onChange={(event) => handleFieldChange("instagramUsername", event.target.value)}
                       className="w-full rounded-lg border border-border pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      placeholder="username"
+                      placeholder={t("dashboard.editor.blockItem.instagram.usernamePlaceholder")}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Display Type</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.displayType")}</label>
                   <select
                     value={block.instagramDisplayType || "grid"}
                     onChange={(event) => handleFieldChange("instagramDisplayType", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   >
-                    <option value="grid">Grid (3 Columns)</option>
-                    <option value="list">List (Vertical)</option>
+                    <option value="grid">{t("dashboard.editor.blockItem.instagram.displayGrid")}</option>
+                    <option value="list">{t("dashboard.editor.blockItem.instagram.displayList")}</option>
                   </select>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-gray-700">Show Username</label>
+                  <label className="text-xs font-medium text-gray-700">{t("dashboard.editor.blockItem.instagram.showUsername")}</label>
                   <button
                     onClick={() => handleFieldChange("instagramShowText", block.instagramShowText === false ? true : false)}
                     className={`w-10 h-5 rounded-full relative transition-colors ${block.instagramShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
@@ -1693,27 +1714,27 @@ const BlockItem = memo(({
                 {block.instagramShowText !== false && (
                   <>
                     <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.textPosition")}</label>
                       <div className="flex bg-gray-100 p-1 rounded-lg">
                         <button
                           onClick={() => handleFieldChange("instagramTextPosition", "top")}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${block.instagramTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
                             }`}
                         >
-                          Top
+                          {t("dashboard.editor.blockItem.position.top")}
                         </button>
                         <button
                           onClick={() => handleFieldChange("instagramTextPosition", "bottom")}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.instagramTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
                             }`}
                         >
-                          Bottom
+                          {t("dashboard.editor.blockItem.position.bottom")}
                         </button>
                       </div>
                     </div>
                     <div>
                       <ColorPicker
-                        label="Text Color"
+                        label={t("dashboard.editor.blockItem.common.textColor")}
                         value={block.instagramTextColor || "#000000"}
                         onChange={(val) => handleFieldChange("instagramTextColor", val)}
                       />
@@ -1726,28 +1747,28 @@ const BlockItem = memo(({
             {block.type === "youtube" && (
               <div className="pt-3 space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">YouTube Channel URL</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.youtube.channelUrl")}</label>
                   <input
                     value={block.youtubeUrl || ""}
                     onChange={(event) => handleFieldChange("youtubeUrl", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="https://youtube.com/@..."
+                    placeholder={t("dashboard.editor.blockItem.youtube.channelPlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Display Type</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.displayType")}</label>
                   <select
                     value={block.youtubeDisplayType || "grid"}
                     onChange={(event) => handleFieldChange("youtubeDisplayType", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                   >
-                    <option value="grid">Grid (2 Columns)</option>
-                    <option value="list">List (Vertical)</option>
+                    <option value="grid">{t("dashboard.editor.blockItem.youtube.displayGrid")}</option>
+                    <option value="list">{t("dashboard.editor.blockItem.youtube.displayList")}</option>
                   </select>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-gray-700">Show Channel Name</label>
+                  <label className="text-xs font-medium text-gray-700">{t("dashboard.editor.blockItem.youtube.showChannelName")}</label>
                   <button
                     onClick={() => handleFieldChange("youtubeShowText", block.youtubeShowText === false ? true : false)}
                     className={`w-10 h-5 rounded-full relative transition-colors ${block.youtubeShowText !== false ? 'bg-blue-500' : 'bg-gray-300'}`}
@@ -1759,27 +1780,27 @@ const BlockItem = memo(({
                 {block.youtubeShowText !== false && (
                   <>
                     <div>
-                      <label className="text-xs font-medium text-gray-700 mb-1 block">Text Position</label>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.textPosition")}</label>
                       <div className="flex bg-gray-100 p-1 rounded-lg">
                         <button
                           onClick={() => handleFieldChange("youtubeTextPosition", "top")}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${block.youtubeTextPosition === "top" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
                             }`}
                         >
-                          Top
+                          {t("dashboard.editor.blockItem.position.top")}
                         </button>
                         <button
                           onClick={() => handleFieldChange("youtubeTextPosition", "bottom")}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.youtubeTextPosition || "bottom") === "bottom" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"
                             }`}
                         >
-                          Bottom
+                          {t("dashboard.editor.blockItem.position.bottom")}
                         </button>
                       </div>
                     </div>
                     <div>
                       <ColorPicker
-                        label="Text Color"
+                        label={t("dashboard.editor.blockItem.common.textColor")}
                         value={block.youtubeTextColor || "#ff0000"}
                         onChange={(val) => handleFieldChange("youtubeTextColor", val)}
                       />
@@ -1792,17 +1813,17 @@ const BlockItem = memo(({
             {block.type === "tour" && (
               <div className="pt-3 space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Section Title</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.tour.sectionTitle")}</label>
                   <input
                     value={block.tourTitle || ""}
                     onChange={(event) => handleFieldChange("tourTitle", event.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="TOURS"
+                    placeholder={t("dashboard.editor.blockItem.tour.sectionPlaceholder")}
                   />
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-xs font-medium text-gray-700 block">Tour Dates</label>
+                  <label className="text-xs font-medium text-gray-700 block">{t("dashboard.editor.blockItem.tour.tourDates")}</label>
 
                   {(block.tours || []).map((tour, index) => (
                     <div key={tour.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200 relative group">
@@ -1819,7 +1840,7 @@ const BlockItem = memo(({
 
                       <div className="grid grid-cols-2 gap-2 mb-2">
                         <div>
-                          <label className="text-[10px] text-gray-500 uppercase font-bold">Date</label>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.tour.date")}</label>
                           <input
                             value={tour.date}
                             onChange={(e) => {
@@ -1828,11 +1849,11 @@ const BlockItem = memo(({
                               handleFieldChange("tours", newTours);
                             }}
                             className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
-                            placeholder="AUG 1"
+                            placeholder={t("dashboard.editor.blockItem.tour.datePlaceholder")}
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-gray-500 uppercase font-bold">Location</label>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.tour.location")}</label>
                           <input
                             value={tour.location}
                             onChange={(e) => {
@@ -1841,14 +1862,14 @@ const BlockItem = memo(({
                               handleFieldChange("tours", newTours);
                             }}
                             className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
-                            placeholder="City, Country"
+                            placeholder={t("dashboard.editor.blockItem.tour.locationPlaceholder")}
                           />
                         </div>
                       </div>
 
                       <div className="mb-2">
                         <ImageUpload
-                          label="Tour Image"
+                          label={t("dashboard.editor.blockItem.tour.image")}
                           value={tour.image || ""}
                           onChange={(url) => {
                             const newTours = [...(block.tours || [])];
@@ -1859,7 +1880,7 @@ const BlockItem = memo(({
                       </div>
 
                       <div className="mb-2">
-                        <label className="text-[10px] text-gray-500 uppercase font-bold">Ticket Link</label>
+                        <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.tour.ticketLink")}</label>
                         <input
                           value={tour.ticketUrl || ""}
                           onChange={(e) => {
@@ -1884,7 +1905,7 @@ const BlockItem = memo(({
                             }}
                             className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
-                          <span className="text-xs text-gray-600">Selling Fast</span>
+                          <span className="text-xs text-gray-600">{t("dashboard.editor.blockItem.tour.sellingFast")}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -1897,7 +1918,7 @@ const BlockItem = memo(({
                             }}
                             className="rounded border-gray-300 text-primary focus:ring-primary"
                           />
-                          <span className="text-xs text-gray-600">Sold Out</span>
+                          <span className="text-xs text-gray-600">{t("dashboard.editor.blockItem.tour.soldOut")}</span>
                         </label>
                       </div>
                     </div>
@@ -1908,8 +1929,8 @@ const BlockItem = memo(({
                       const newTours = [...(block.tours || [])];
                       newTours.push({
                         id: makeId(),
-                        date: "TBA",
-                        location: "City",
+                        date: t("dashboard.editor.blockItem.tour.defaultDate"),
+                        location: t("dashboard.editor.blockItem.tour.defaultLocation"),
                         image: "",
                         ticketUrl: ""
                       });
@@ -1918,7 +1939,7 @@ const BlockItem = memo(({
                     className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
                   >
                     <PlusIcon />
-                    Add Tour Date
+                    {t("dashboard.editor.blockItem.tour.addTourDate")}
                   </button>
                 </div>
               </div>
@@ -1927,7 +1948,7 @@ const BlockItem = memo(({
             {block.type === "qrcode" && (
               <div className="space-y-4 pt-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Layout</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.common.layout")}</label>
                   <div className="flex bg-gray-100 p-1 rounded-lg">
                     {(['single', 'multiple', 'grid'] as const).map((layout) => (
                       <button
@@ -1938,7 +1959,7 @@ const BlockItem = memo(({
                           : 'text-gray-500 hover:text-gray-700'
                           }`}
                       >
-                        {layout.charAt(0).toUpperCase() + layout.slice(1)}
+                        {t(`dashboard.editor.blockItem.qr.layout.${layout}`)}
                       </button>
                     ))}
                   </div>
@@ -1946,7 +1967,7 @@ const BlockItem = memo(({
 
                 {(block.qrCodeLayout === 'single' || !block.qrCodeLayout) ? (
                   <div>
-                    <label className="text-xs font-medium text-gray-700 mb-1 block">Select QR Code</label>
+                    <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.qr.selectQr")}</label>
                     <div className="flex gap-2 items-center">
                       <div className="relative flex-1">
                         <select
@@ -1954,7 +1975,7 @@ const BlockItem = memo(({
                           onChange={(event) => handleFieldChange("qrCodeValue", event.target.value)}
                           className="w-full appearance-none rounded-lg border border-border bg-white px-3 py-2 pr-8 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         >
-                          <option value="">Select a QR Code</option>
+                          <option value="">{t("dashboard.editor.blockItem.qr.selectQrOption")}</option>
                           {availableQrCodes.map((qr) => (
                             <option key={qr.id} value={qr.value}>
                               {qr.value}
@@ -1966,18 +1987,18 @@ const BlockItem = memo(({
                       <button
                         onClick={onCreateQrCode}
                         className="flex items-center justify-center w-9 h-9 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
-                        title="Create new QR Code"
+                        title={t("dashboard.editor.blockItem.qr.createNew")}
                       >
                         <PlusIcon width={16} height={16} />
                       </button>
                     </div>
                     {!block.qrCodeValue && (
-                      <p className="text-[10px] text-text-muted mt-1">Select an existing QR code or create a new one.</p>
+                      <p className="text-[10px] text-text-muted mt-1">{t("dashboard.editor.blockItem.qr.helper")}</p>
                     )}
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <label className="text-xs font-medium text-gray-700 block">QR Codes</label>
+                    <label className="text-xs font-medium text-gray-700 block">{t("dashboard.editor.blockItem.qr.qrCodes")}</label>
                     {(block.qrCodeItems || []).map((item, idx) => (
                       <div key={item.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2 relative group">
                         <button
@@ -1998,7 +2019,7 @@ const BlockItem = memo(({
                             handleFieldChange("qrCodeItems", newItems);
                           }}
                           className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs focus:border-primary outline-none"
-                          placeholder="Label"
+                          placeholder={t("dashboard.editor.blockItem.common.label")}
                         />
                         <div className="flex gap-2 items-center">
                           <div className="relative flex-1">
@@ -2011,7 +2032,7 @@ const BlockItem = memo(({
                               }}
                               className="w-full appearance-none rounded border border-gray-200 bg-white px-2 py-1.5 pr-6 text-xs focus:border-primary outline-none"
                             >
-                              <option value="">Select QR Code</option>
+                              <option value="">{t("dashboard.editor.blockItem.qr.selectQrOption")}</option>
                               {availableQrCodes.map((qr) => (
                                 <option key={qr.id} value={qr.value}>
                                   {qr.value}
@@ -2023,7 +2044,7 @@ const BlockItem = memo(({
                           <button
                             onClick={onCreateQrCode}
                             className="flex items-center justify-center w-7 h-7 bg-white border border-gray-200 rounded text-gray-500 hover:text-primary hover:border-primary transition-colors"
-                            title="Create new QR Code"
+                            title={t("dashboard.editor.blockItem.qr.createNew")}
                           >
                             <PlusIcon width={14} height={14} />
                           </button>
@@ -2033,25 +2054,25 @@ const BlockItem = memo(({
                     <button
                       onClick={() => {
                         const newItems = [...(block.qrCodeItems || [])];
-                        newItems.push({ id: makeId(), label: "New QR Code", value: "" });
+                        newItems.push({ id: makeId(), label: t("dashboard.editor.blockItem.qr.newLabel"), value: "" });
                         handleFieldChange("qrCodeItems", newItems);
                       }}
                       className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
                     >
                       <PlusIcon />
-                      Add QR Code Item
+                      {t("dashboard.editor.blockItem.qr.addItem")}
                     </button>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <ColorPicker
-                    label="Foreground"
+                    label={t("dashboard.editor.blockItem.qr.foreground")}
                     value={block.qrCodeColor || "#000000"}
                     onChange={(val) => handleFieldChange("qrCodeColor", val)}
                   />
                   <ColorPicker
-                    label="Background"
+                    label={t("dashboard.editor.blockItem.common.background")}
                     value={block.qrCodeBgColor || "#FFFFFF"}
                     onChange={(val) => handleFieldChange("qrCodeBgColor", val)}
                   />
@@ -2060,7 +2081,7 @@ const BlockItem = memo(({
             )}
 
             {block.type === "divider" && (
-              <p className="text-xs text-text-muted pt-3">Simple dividing line.</p>
+              <p className="text-xs text-text-muted pt-3">{t("dashboard.editor.blockItem.divider.helper")}</p>
             )}
 
             {block.type === "marketing" && (
@@ -2073,7 +2094,7 @@ const BlockItem = memo(({
 
             {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar'].includes(block.type) && (
               <div className="pt-2 border-t border-gray-50 mt-3">
-                <label className="text-xs font-medium text-gray-700 mb-2 block">Alignment</label>
+                <label className="text-xs font-medium text-gray-700 mb-2 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">
                   {(['left', 'center', 'right'] as const).map((align) => (
                     <button
@@ -2084,7 +2105,7 @@ const BlockItem = memo(({
                         : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                      {align.charAt(0).toUpperCase() + align.slice(1)}
+                      {t(`dashboard.editor.blockItem.align.${align}`)}
                     </button>
                   ))}
                 </div>

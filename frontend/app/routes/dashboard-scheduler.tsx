@@ -4,8 +4,10 @@ import { api } from "../services/api";
 import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, addDays } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Ban, Save, Loader2, PauseCircle, PlayCircle, ChevronLeft, ChevronRight, Check, X, ShieldAlert, Plus, RefreshCw, CalendarCheck } from "lucide-react";
 import { AuthorizationGuard } from "../contexts/guard.context";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardScheduler() {
+    const { t } = useTranslation();
     const { bio } = useContext(BioContext);
     const [activeTab, setActiveTab] = useState<'today' | 'bookings' | 'availability'>('today');
     const [settings, setSettings] = useState<any>(null);
@@ -98,7 +100,7 @@ export default function DashboardScheduler() {
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         } catch (error) {
-            alert("Failed to save settings");
+            alert(t("dashboard.scheduler.errors.saveSettings"));
         } finally {
             setSaving(false);
         }
@@ -111,7 +113,7 @@ export default function DashboardScheduler() {
 
     // --- Availability Logic ---
 
-    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
     const updateAvailability = (day: string, type: 'start' | 'end' | 'active', val?: string) => {
         const current = settings.availability[day]?.[0] || ""; // Format: "09:00-17:00"
@@ -178,8 +180,8 @@ export default function DashboardScheduler() {
                 </div>
 
                 <div className="grid grid-cols-7 mb-4">
-                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-                        <div key={d} className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider">{d}</div>
+                    {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(d => (
+                        <div key={d} className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider">{t(`dashboard.scheduler.weekdaysShort.${d}`)}</div>
                     ))}
                 </div>
 
@@ -216,7 +218,7 @@ export default function DashboardScheduler() {
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-xs text-gray-400 justify-center">
                     <div className="w-3 h-3 rounded-full bg-red-50 border border-red-500"></div>
-                    <span>Blocked Date</span>
+                    <span>{t("dashboard.scheduler.blockedDate")}</span>
                 </div>
             </div>
         );
@@ -230,8 +232,8 @@ export default function DashboardScheduler() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Booking Scheduler</h1>
-                        <p className="text-gray-500 mt-2">Configure your weekly availability and manage blocked dates.</p>
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t("dashboard.scheduler.title")}</h1>
+                        <p className="text-gray-500 mt-2">{t("dashboard.scheduler.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {settings && (
@@ -242,7 +244,7 @@ export default function DashboardScheduler() {
                                     : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'}`}
                             >
                                 {settings.updatesPaused ? <PauseCircle className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
-                                {settings.updatesPaused ? 'Scheduler Paused' : 'Scheduler Active'}
+                                {settings.updatesPaused ? t("dashboard.scheduler.status.paused") : t("dashboard.scheduler.status.active")}
                             </button>
                         )}
                         {activeTab === 'availability' && (
@@ -255,17 +257,17 @@ export default function DashboardScheduler() {
                                 {saved ? (
                                     <>
                                         <Check className="w-4 h-4" />
-                                        Saved!
+                                        {t("dashboard.scheduler.save.saved")}
                                     </>
                                 ) : saving ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Saving...
+                                        {t("dashboard.scheduler.save.saving")}
                                     </>
                                 ) : (
                                     <>
                                         <Save className="w-4 h-4" />
-                                        Save Changes
+                                        {t("dashboard.scheduler.save.action")}
                                     </>
                                 )}
                             </button>
@@ -281,21 +283,21 @@ export default function DashboardScheduler() {
                             className={`py-6 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === 'today' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             <CalendarCheck className="w-4 h-4" />
-                            Today's Schedule
+                            {t("dashboard.scheduler.tabs.today")}
                         </button>
                         <button
                             onClick={() => { setActiveTab('bookings'); setCurrentPage(1); }}
                             className={`py-6 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === 'bookings' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             <CalendarIcon className="w-4 h-4" />
-                            All Appointments
+                            {t("dashboard.scheduler.tabs.bookings")}
                         </button>
                         <button
                             onClick={() => setActiveTab('availability')}
                             className={`py-6 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === 'availability' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             <Clock className="w-4 h-4" />
-                            Availability & Settings
+                            {t("dashboard.scheduler.tabs.availability")}
                         </button>
                     </div>
 
@@ -319,7 +321,7 @@ export default function DashboardScheduler() {
                                                         : 'text-gray-500 hover:text-gray-700'
                                                         }`}
                                                 >
-                                                    {status}
+                                                    {t(`dashboard.scheduler.status.${status}`)}
                                                 </button>
                                             ))}
                                         </div>
@@ -343,7 +345,7 @@ export default function DashboardScheduler() {
                                                     <button
                                                         onClick={() => setFilterDate("")}
                                                         className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
-                                                        title="Clear Date"
+                                                        title={t("dashboard.scheduler.clearDate")}
                                                     >
                                                         <X className="w-4 h-4" />
                                                     </button>
@@ -360,8 +362,8 @@ export default function DashboardScheduler() {
                                             <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center mb-4">
                                                 <CalendarIcon className="w-6 h-6 text-gray-300" />
                                             </div>
-                                            <h3 className="font-bold text-gray-900 text-lg mb-1">{activeTab === 'today' ? "No bookings for today" : "No bookings found"}</h3>
-                                            <p className="max-w-xs text-center text-sm">{activeTab === 'today' ? "You have no appointments scheduled for today." : "Try changing the filter or share your booking link."}</p>
+                                            <h3 className="font-bold text-gray-900 text-lg mb-1">{activeTab === 'today' ? t("dashboard.scheduler.empty.todayTitle") : t("dashboard.scheduler.empty.title")}</h3>
+                                            <p className="max-w-xs text-center text-sm">{activeTab === 'today' ? t("dashboard.scheduler.empty.todayBody") : t("dashboard.scheduler.empty.body")}</p>
                                         </div>
                                     ) : (
                                         bookings.map((booking: any) => {
@@ -383,7 +385,7 @@ export default function DashboardScheduler() {
                                                         <div>
                                                             <div className="flex flex-wrap items-center gap-3 mb-1.5">
                                                                 <h3 className={`font-bold text-base ${isCancelled ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{booking.customerName}</h3>
-                                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wide ${statusColors[booking.status] || 'bg-gray-100 text-gray-600'}`}>{booking.status}</span>
+                                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wide ${statusColors[booking.status] || 'bg-gray-100 text-gray-600'}`}>{t(`dashboard.scheduler.status.${booking.status}`)}</span>
                                                             </div>
                                                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500">
                                                                 <span className="flex items-center gap-1.5 font-medium"><Clock className="w-3.5 h-3.5" /> {format(parseISO(booking.bookingDate), 'h:mm a')}</span>
@@ -406,21 +408,21 @@ export default function DashboardScheduler() {
                                                                 }}
                                                                 className="px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
                                                             >
-                                                                Reschedule
+                                                                {t("dashboard.scheduler.actions.reschedule")}
                                                             </button>
                                                             <button
                                                                 onClick={async () => {
-                                                                    if (!confirm('Cancel this booking?')) return;
+                                                                    if (!confirm(t("dashboard.scheduler.actions.confirmCancel"))) return;
                                                                     try {
                                                                         await api.post(`/public/bookings/cancel/${booking.confirmationToken}`, { reason: 'Cancelled by owner' });
                                                                         fetchData();
                                                                     } catch (err) {
-                                                                        alert('Failed to cancel');
+                                                                        alert(t("dashboard.scheduler.errors.cancel"));
                                                                     }
                                                                 }}
                                                                 className="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors"
                                                             >
-                                                                Cancel
+                                                                {t("dashboard.scheduler.actions.cancel")}
                                                             </button>
                                                         </div>
                                                     )}
@@ -438,17 +440,17 @@ export default function DashboardScheduler() {
                                             disabled={currentPage === 1}
                                             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
-                                            <ChevronLeft className="w-4 h-4" /> Previous
+                                            <ChevronLeft className="w-4 h-4" /> {t("dashboard.scheduler.pagination.previous")}
                                         </button>
                                         <span className="text-xs font-bold text-gray-400">
-                                            Page <span className="text-gray-900 text-sm mx-1">{currentPage}</span> of {totalPages}
+                                            {t("dashboard.scheduler.pagination.pageOf", { page: currentPage, totalPages })}
                                         </span>
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
                                             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
-                                            Next <ChevronRight className="w-4 h-4" />
+                                            {t("dashboard.scheduler.pagination.next")} <ChevronRight className="w-4 h-4" />
                                         </button>
                                     </div>
                                 )}
@@ -461,7 +463,7 @@ export default function DashboardScheduler() {
                                     <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                                         <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg">
                                             <Clock className="w-5 h-5 text-indigo-500" />
-                                            Weekly Schedule
+                                            {t("dashboard.scheduler.weeklySchedule.title")}
                                         </h3>
                                         <div className="space-y-4">
                                             {settings && days.map(day => {
@@ -478,7 +480,7 @@ export default function DashboardScheduler() {
                                                             >
                                                                 <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${isActive ? 'translate-x-5' : 'translate-x-0'}`} />
                                                             </button>
-                                                            <span className="font-bold capitalize text-gray-700 w-16">{day}</span>
+                                                            <span className="font-bold capitalize text-gray-700 w-16">{t(`dashboard.scheduler.days.${day}`)}</span>
                                                         </div>
 
                                                         {isActive ? (
@@ -502,7 +504,7 @@ export default function DashboardScheduler() {
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <span className="text-sm font-medium text-gray-400 italic px-4">Unavailable</span>
+                                                            <span className="text-sm font-medium text-gray-400 italic px-4">{t("dashboard.scheduler.weeklySchedule.unavailable")}</span>
                                                         )}
                                                     </div>
                                                 );
@@ -526,15 +528,15 @@ export default function DashboardScheduler() {
                                             {bio?.integrations?.some((i: any) => i.name === 'google-calendar') && (
                                                 <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-1">
                                                     <Check className="w-3 h-3" />
-                                                    Active
+                                                    {t("dashboard.scheduler.googleCalendar.active")}
                                                 </span>
                                             )}
                                         </div>
 
                                         <p className={`text-sm mb-6 ${bio?.integrations?.some((i: any) => i.name === 'google-calendar') ? 'text-green-800' : 'text-gray-500'}`}>
                                             {bio?.integrations?.some((i: any) => i.name === 'google-calendar')
-                                                ? "Your bookings are automatically syncing with your Google Calendar."
-                                                : "Connect your calendar to automatically create events with Google Meet links for every booking."}
+                                                ? t("dashboard.scheduler.googleCalendar.connected")
+                                                : t("dashboard.scheduler.googleCalendar.disconnected")}
                                         </p>
 
                                         <button
@@ -547,31 +549,31 @@ export default function DashboardScheduler() {
                                                 }`}
                                         >
                                             <RefreshCw className="w-4 h-4" />
-                                            {bio?.integrations?.some((i: any) => i.name === 'google-calendar') ? 'Reconnect Calendar' : 'Connect Google Calendar'}
+                                            {bio?.integrations?.some((i: any) => i.name === 'google-calendar') ? t("dashboard.scheduler.googleCalendar.reconnect") : t("dashboard.scheduler.googleCalendar.connect")}
                                         </button>
                                     </section>
 
                                     <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                                         <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg">
                                             <ShieldAlert className="w-5 h-5 text-red-500" />
-                                            Blocked Dates
+                                            {t("dashboard.scheduler.blockedDates.title")}
                                         </h3>
-                                        <p className="text-sm text-gray-500 mb-4">Select dates to block off from your calendar.</p>
+                                        <p className="text-sm text-gray-500 mb-4">{t("dashboard.scheduler.blockedDates.subtitle")}</p>
                                         {renderCalendar()}
                                     </section>
 
                                     <section className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                                        <h3 className="font-bold text-amber-900 mb-3 text-lg">Meeting Duration</h3>
+                                        <h3 className="font-bold text-amber-900 mb-3 text-lg">{t("dashboard.scheduler.meetingDuration.title")}</h3>
                                         <div className="relative">
                                             <select
                                                 value={settings?.durationMinutes || 30}
                                                 onChange={(e) => setSettings({ ...settings, durationMinutes: parseInt(e.target.value) })}
                                                 className="w-full bg-white border border-amber-200 text-amber-900 font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-amber-500/20 appearance-none"
                                             >
-                                                <option value="15">15 Minutes</option>
-                                                <option value="30">30 Minutes</option>
-                                                <option value="45">45 Minutes</option>
-                                                <option value="60">60 Minutes</option>
+                                                <option value="15">{t("dashboard.scheduler.meetingDuration.minutes", { count: 15 })}</option>
+                                                <option value="30">{t("dashboard.scheduler.meetingDuration.minutes", { count: 30 })}</option>
+                                                <option value="45">{t("dashboard.scheduler.meetingDuration.minutes", { count: 45 })}</option>
+                                                <option value="60">{t("dashboard.scheduler.meetingDuration.minutes", { count: 60 })}</option>
                                             </select>
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-amber-700">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
@@ -590,7 +592,7 @@ export default function DashboardScheduler() {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-bold text-gray-900">Reschedule Booking</h3>
+                            <h3 className="text-xl font-bold text-gray-900">{t("dashboard.scheduler.reschedule.title")}</h3>
                             <button onClick={() => setRescheduleModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
@@ -598,12 +600,12 @@ export default function DashboardScheduler() {
 
                         <div className="bg-gray-50 rounded-xl p-3 mb-4">
                             <p className="text-sm text-gray-600">
-                                Rescheduling for <strong>{rescheduleBooking.customerName}</strong>
+                                {t("dashboard.scheduler.reschedule.for", { name: rescheduleBooking.customerName })}
                             </p>
                             <p className="text-xs text-gray-500">{rescheduleBooking.customerEmail}</p>
                         </div>
 
-                        <p className="text-gray-600 text-sm mb-4">Select a new date and time. The customer will receive an email to confirm.</p>
+                        <p className="text-gray-600 text-sm mb-4">{t("dashboard.scheduler.reschedule.helper")}</p>
 
                         {/* Calendar */}
                         <div className="mb-4 border border-gray-100 rounded-2xl p-4">
@@ -617,7 +619,7 @@ export default function DashboardScheduler() {
                                 </button>
                             </div>
                             <div className="grid grid-cols-7 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="text-center">{d}</div>)}
+                                {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(d => <div key={d} className="text-center">{t(`dashboard.scheduler.weekdaysShort.${d}`)}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-1">
                                 {(() => {
@@ -665,14 +667,14 @@ export default function DashboardScheduler() {
                         {rescheduleDate && (
                             <div className="mb-4">
                                 <p className="text-sm font-bold text-gray-700 mb-3">
-                                    Available times for {format(rescheduleDate, 'MMMM d')}:
+                                    {t("dashboard.scheduler.reschedule.availableTimes", { date: format(rescheduleDate, 'MMMM d') })}
                                 </p>
                                 {rescheduleSlotsLoading ? (
                                     <div className="flex justify-center py-6">
                                         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                                     </div>
                                 ) : rescheduleSlots.length === 0 ? (
-                                    <p className="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-xl">No available slots for this date.</p>
+                                    <p className="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-xl">{t("dashboard.scheduler.reschedule.noSlots")}</p>
                                 ) : (
                                     <div className="grid grid-cols-3 gap-2">
                                         {rescheduleSlots.map(slot => (
@@ -697,7 +699,7 @@ export default function DashboardScheduler() {
                                 onClick={() => setRescheduleModalOpen(false)}
                                 className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.scheduler.reschedule.cancel")}
                             </button>
                             <button
                                 onClick={async () => {
@@ -711,7 +713,7 @@ export default function DashboardScheduler() {
                                         setRescheduleModalOpen(false);
                                         fetchData();
                                     } catch (err: any) {
-                                        alert(err.response?.data?.message || 'Failed to reschedule');
+                                        alert(err.response?.data?.message || t("dashboard.scheduler.errors.reschedule"));
                                     } finally {
                                         setRescheduleLoading(false);
                                     }
@@ -720,9 +722,9 @@ export default function DashboardScheduler() {
                                 className="flex-1 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {rescheduleLoading ? (
-                                    <><Loader2 className="w-4 h-4 animate-spin" /> Rescheduling...</>
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.scheduler.reschedule.loading")}</>
                                 ) : (
-                                    "Confirm & Send Email"
+                                    t("dashboard.scheduler.reschedule.confirm")
                                 )}
                             </button>
                         </div>

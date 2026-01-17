@@ -1,7 +1,9 @@
 
 import { useContext, useEffect, useId, useRef, useState, type JSX } from "react";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import AuthContext from "~/contexts/auth.context";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "~/constants/languages";
 
 type DropdownSectionItem = {
   title: string;
@@ -138,10 +140,104 @@ function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+type LanguageSelectProps = {
+  value: string;
+  onChange: (value: string) => void;
+  buttonClassName: string;
+  menuClassName?: string;
+};
+
+function LanguageSelect({ value, onChange, buttonClassName, menuClassName }: LanguageSelectProps) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const buttonId = useId();
+  const menuId = useId();
+
+  const currentLabel = LANGUAGES.find((language) => language.code === value)?.label ?? value;
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: PointerEvent) {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      if (event.target instanceof Node && !wrapper.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={wrapperRef} className="relative min-w-[8.5rem] sm:min-w-[9.5rem]">
+      <IconGlobe className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+      <button
+        type="button"
+        id={buttonId}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpen((prev) => !prev)}
+        className={`${buttonClassName} flex items-center justify-between gap-2 text-left`}
+      >
+        <span className="truncate">{currentLabel}</span>
+      </button>
+      <ChevronDown
+        className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted transition-transform ${open ? "rotate-180" : ""}`}
+      />
+      {open && (
+        <div
+          id={menuId}
+          role="listbox"
+          aria-labelledby={buttonId}
+          className={`absolute mt-2 w-full rounded-lg border border-border/60 bg-surface overflow-hidden ${menuClassName ?? ""}`}
+        >
+          {LANGUAGES.map((language) => {
+            const isActive = language.code === value;
+            return (
+              <button
+                key={language.code}
+                type="button"
+                role="option"
+                aria-selected={isActive}
+                onClick={() => {
+                  onChange(language.code);
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-surface-muted/60 text-text-main"
+                    : "text-text-main/80 hover:text-text-main hover:bg-surface-muted/60"
+                }`}
+              >
+                {language.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 import { getPublicSitePosts, type SitePost } from "~/services/site-blog.service";
 import { format } from "date-fns";
 
 function ProductsDropdown() {
+  const { t } = useTranslation();
   const buttonId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
@@ -236,7 +332,7 @@ function ProductsDropdown() {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
       >
-        Blog
+        {t("nav.blog")}
         <ChevronDown
           className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
             }`}
@@ -393,6 +489,7 @@ function IconLogOut(props: React.SVGProps<SVGSVGElement>) {
 }
 
 function UserDropdown({ user, logout }: { user: { fullname: string; email: string; plan?: 'free' | 'standard' | 'pro' }; logout: () => void }) {
+  const { t } = useTranslation();
   const buttonId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
@@ -526,7 +623,7 @@ function UserDropdown({ user, logout }: { user: { fullname: string; email: strin
                 className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
               >
                 <IconLogOut className="w-4 h-4" />
-                Sign out
+                {t("nav.signOut")}
               </button>
             </div>
           </div>
@@ -542,6 +639,9 @@ import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
+  const { i18n, t } = useTranslation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const [announcement, setAnnouncement] = useState<{
     text: string;
     link: string;
@@ -554,6 +654,28 @@ export default function Navbar() {
     textAlign?: "left" | "center";
   } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
+  const isBlogRoute = pathnameNoLang.startsWith("/site-blog") || pathnameNoLang.startsWith("/blog");
+
+  const onChangeLang = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    i18n.changeLanguage(event.target.value);
+  };
+
+  const buildLocalizedPath = (lang: string) => {
+    if (/^\/(en|pt)(\/|$)/.test(pathname)) {
+      return pathname.replace(/^\/(en|pt)(?=\/|$)/, `/${lang}`);
+    }
+    return pathname === "/" ? `/${lang}` : `/${lang}${pathname}`;
+  };
+
+  const withLang = (to: string) => {
+    if (to.startsWith("http")) return to;
+    if (/^\/(en|pt)(\/|$)/.test(to)) return to;
+    const currentLang = i18n.resolvedLanguage || i18n.language || "en";
+    return to === "/" ? `/${currentLang}` : `/${currentLang}${to}`;
+  };
+
+  const currentPathWithSearch = `${pathname}${search || ""}`;
 
   useEffect(() => {
     // Fetch announcement
@@ -636,7 +758,9 @@ export default function Navbar() {
             </div>
             {announcement.textAlign !== 'center' && (
               <Link to={announcement.link} className="flex items-center gap-1 hover:opacity-80 transition-colors whitespace-nowrap shrink-0">
-                <span className="hidden sm:inline">Get Started</span> <span className="sm:hidden">View</span> <span style={{ color: announcement.textColor === '#ffffff' ? '#d0f224' : undefined }}>→</span>
+                <span className="hidden sm:inline">{t("nav.getStarted")}</span>
+                <span className="sm:hidden">{t("nav.view")}</span>
+                <span style={{ color: announcement.textColor === '#ffffff' ? '#d0f224' : undefined }}>→</span>
               </Link>
             )}
           </div>
@@ -647,10 +771,10 @@ export default function Navbar() {
         <div className="flex justify-between items-start">
           {/* Logo Section */}
           <div className="flex flex-col items-start z-50 relative">
-            <Link to='/' className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 md:mb-4">Portyo</Link>
+            <Link to={withLang('/')} className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 md:mb-4">Portyo</Link>
             <div className="hidden md:block w-32 h-px bg-text-main/20 mb-3"></div>
-            <Link to="/sign-up" className="hidden md:flex text-sm font-medium text-text-main hover:text-primary transition-colors items-center gap-2 group">
-              Launch your page
+            <Link to={withLang('/sign-up')} className="hidden md:flex text-sm font-medium text-text-main hover:text-primary transition-colors items-center gap-2 group">
+              {t("nav.launch")}
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
@@ -662,11 +786,23 @@ export default function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-6 pt-2">
+            {!isBlogRoute && (
+              <div className="flex items-center gap-2">
+                <LanguageSelect
+                  value={i18n.resolvedLanguage || i18n.language}
+                  onChange={(value) => {
+                    i18n.changeLanguage(value);
+                    navigate(buildLocalizedPath(value), { replace: true });
+                  }}
+                  buttonClassName="w-full min-w-[120px] rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-1.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+            )}
             {!user ? (
               <>
-                <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">Sign in</Link>
-                <Link to="/sign-up" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
-                  Start For Free
+                <Link to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)} className="text-sm font-medium hover:text-primary transition-colors">{t("nav.signIn")}</Link>
+                <Link to={withLang('/sign-up')} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
+                  {t("nav.startFree")}
                 </Link>
               </>
             ) : (
@@ -688,27 +824,27 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-surface z-40 md:hidden pt-24 px-6 pb-6 flex flex-col gap-6 overflow-y-auto animate-in fade-in slide-in-from-top-5 duration-200">
             <div className="flex flex-col gap-4">
-              <div className="text-sm font-bold text-text-muted uppercase tracking-wider">Menu</div>
+              <div className="text-sm font-bold text-text-muted uppercase tracking-wider">{t("nav.menu")}</div>
               <Link
-                to="/site-blog"
+                to={withLang('/site-blog')}
                 className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Blog
+                {t("nav.blog")}
               </Link>
               <Link
-                to="/manifesto"
+                to={withLang('/manifesto')}
                 className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Manifesto
+                {t("nav.manifesto")}
               </Link>
               <Link
-                to="/pricing"
+                to={withLang('/pricing')}
                 className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Pricing
+                {t("nav.pricing")}
               </Link>
             </div>
 
@@ -716,30 +852,47 @@ export default function Navbar() {
 
             <div className="flex flex-col gap-4">
               <Link
-                to="/sign-up"
+                to={withLang('/sign-up')}
                 className="text-lg font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Launch your page →
+                {t("nav.launch")} →
               </Link>
             </div>
+
+            {!isBlogRoute && (
+              <div className="flex flex-col gap-3">
+                <label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  {t("nav.language")}
+                </label>
+                <LanguageSelect
+                  value={i18n.resolvedLanguage || i18n.language}
+                  onChange={(value) => {
+                    i18n.changeLanguage(value);
+                    navigate(buildLocalizedPath(value), { replace: true });
+                  }}
+                  buttonClassName="w-full rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-2.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
+                  menuClassName="w-full"
+                />
+              </div>
+            )}
 
             <div className="mt-auto flex flex-col gap-3">
               {!user ? (
                 <>
                   <Link
-                    to="/login"
+                    to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
                     className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sign in
+                    {t("nav.signIn")}
                   </Link>
                   <Link
-                    to="/sign-up"
+                    to={withLang('/sign-up')}
                     className="w-full py-4 text-center font-bold text-primary-foreground bg-primary rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Start For Free
+                    {t("nav.startFree")}
                   </Link>
                 </>
               ) : (
@@ -754,11 +907,11 @@ export default function Navbar() {
                     </div>
                   </div>
                   <Link
-                    to="/dashboard"
+                    to={withLang('/dashboard')}
                     className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Go to Dashboard
+                    {t("nav.goToDashboard")}
                   </Link>
                   <button
                     onClick={() => {
@@ -767,7 +920,7 @@ export default function Navbar() {
                     }}
                     className="w-full py-4 text-center font-bold text-red-600 border border-red-100 bg-red-50/50 rounded-xl hover:bg-red-50 transition-colors"
                   >
-                    Sign out
+                    {t("nav.signOut")}
                   </button>
                 </div>
               )}

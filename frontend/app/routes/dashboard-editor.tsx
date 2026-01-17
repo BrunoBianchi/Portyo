@@ -6,7 +6,7 @@ import AuthContext from "~/contexts/auth.context";
 import BlockItem from "~/components/dashboard/editor/block-item";
 import { ColorPicker } from "~/components/dashboard/editor/ColorPicker";
 import { BlogPostPopup } from "~/components/bio/blog-post-popup";
-import { palette } from "~/data/editor-palette";
+import { getPalette, type PaletteItem } from "~/data/editor-palette";
 import { blocksToHtml } from "~/services/html-generator";
 import { api } from "~/services/api";
 import QRCode from "react-qr-code";
@@ -41,6 +41,7 @@ import {
 } from "~/components/shared/icons";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { PortyoAI } from "~/components/dashboard/portyo-ai";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
   return [
@@ -54,18 +55,18 @@ const makeId = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2, 9);
 
-const defaultBlocks = (): BioBlock[] => [
+const defaultBlocks = (t: (key: string) => string): BioBlock[] => [
   {
     id: makeId(),
     type: "heading",
-    title: "Introduce yourself",
-    body: "In one line, tell people why they should connect with you.",
+    title: t("dashboard.editor.defaults.headingTitle"),
+    body: t("dashboard.editor.defaults.headingBody"),
     align: "center",
   },
   {
     id: makeId(),
     type: "button",
-    title: "Main link",
+    title: t("dashboard.editor.defaults.buttonTitle"),
     href: "https://",
     align: "center",
     accent: "#111827",
@@ -77,11 +78,12 @@ const defaultBlocks = (): BioBlock[] => [
 
 
 const EventBlockPreview = ({ block }: { block: BioBlock }) => {
-  const title = block.eventTitle || "Live Webinar";
+  const { t } = useTranslation();
+  const title = block.eventTitle || t("dashboard.editor.event.defaultTitle");
   const date = block.eventDate || new Date(Date.now() + 86400000 * 7).toISOString();
   const bgColor = block.eventColor || "#111827";
   const textColor = block.eventTextColor || "#ffffff";
-  const btnText = block.eventButtonText || "Register Now";
+  const btnText = block.eventButtonText || t("dashboard.editor.event.defaultButton");
   const btnUrl = block.eventButtonUrl || "#";
 
   // Simple countdown logic for preview
@@ -119,10 +121,15 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
         <h3 className="mb-4 text-xl font-bold tracking-tight">{title}</h3>
 
         {isExpired ? (
-          <div className="text-lg font-bold py-4 mb-4">Event Started</div>
+          <div className="text-lg font-bold py-4 mb-4">{t("dashboard.editor.event.started")}</div>
         ) : (
           <div className="flex justify-center gap-2 mb-6 flex-wrap">
-            {['Days', 'Hours', 'Mins', 'Secs'].map((label, i) => {
+            {[
+              t("dashboard.editor.event.days"),
+              t("dashboard.editor.event.hours"),
+              t("dashboard.editor.event.mins"),
+              t("dashboard.editor.event.secs")
+            ].map((label, i) => {
               const val = i === 0 ? timeLeft.d : i === 1 ? timeLeft.h : i === 2 ? timeLeft.m : timeLeft.s;
               return (
                 <div key={label} className="bg-white/10 p-2 rounded-xl min-w-[55px] backdrop-blur-sm flex-1 max-w-[80px]">
@@ -149,6 +156,7 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) => {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<any>(null);
@@ -182,15 +190,15 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
   const tagText = block.blogTagTextColor || '#4b5563';
 
   const displayPosts = posts.length > 0 ? posts : Array.from({ length: block.blogPostCount || 3 }).map((_, i) => ({
-    title: i === 0 ? "Senior Developer" : `Blog Post Title ${i + 1}`,
-    subtitle: i === 0 ? "Tech4Humans ÔÇó S+úo Paulo, SP - Remote" : "Category ÔÇó Location",
+    title: i === 0 ? t("dashboard.editor.blog.placeholderTitlePrimary") : t("dashboard.editor.blog.placeholderTitle", { index: i + 1 }),
+    subtitle: i === 0 ? t("dashboard.editor.blog.placeholderSubtitlePrimary") : t("dashboard.editor.blog.placeholderSubtitle"),
     createdAt: new Date().toISOString(),
-    content: "FullStack Developer at Tech4Humans, working on projects for large insurance companies. I had the chance to participate in the development of new features...",
-    tags: ["FullStack Dev", "Soft Skills", "Hard Skills"],
-    category: "Lifestyle",
-    readTime: "5 min read",
+    content: t("dashboard.editor.blog.placeholderContent"),
+    tags: [t("dashboard.editor.blog.placeholderTag1"), t("dashboard.editor.blog.placeholderTag2"), t("dashboard.editor.blog.placeholderTag3")],
+    category: t("dashboard.editor.blog.category"),
+    readTime: t("dashboard.editor.blog.readTime"),
     image: "/base-img/card_base_image.png",
-    author: "By You"
+    author: t("dashboard.editor.blog.author")
   }));
 
   return (
@@ -201,7 +209,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
             ...selectedPost,
             date: new Date(selectedPost.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             image: "/base-img/card_base_image.png",
-            author: "By You"
+            author: t("dashboard.editor.blog.author")
           }}
           onClose={() => setSelectedPost(null)}
           config={{
@@ -241,9 +249,9 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
               const date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
               const description = post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...' : '';
               const image = "/base-img/card_base_image.png";
-              const category = "Blog";
-              const readTime = "5 min read";
-              const author = "By You";
+              const category = t("dashboard.editor.blog.category");
+              const readTime = t("dashboard.editor.blog.readTime");
+              const author = t("dashboard.editor.blog.author");
 
               return (
                 <article
@@ -289,7 +297,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
                       <h3 className="font-bold text-sm mb-1.5" style={{ color: titleColor }}>{post.title}</h3>
                       <div className="flex justify-between items-center">
                         <span className="text-[11px]" style={{ color: textColor }}>{readTime}</span>
-                        <span className="text-[11px] font-medium" style={{ color: dateColor }}>Read more &rarr;</span>
+                        <span className="text-[11px] font-medium" style={{ color: dateColor }}>{t("dashboard.editor.blog.readMore")}</span>
                       </div>
                     </>
                   )}
@@ -304,8 +312,9 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
 };
 
 const TourBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   const tours = block.tours || [];
-  const title = block.tourTitle || "TOURS";
+  const title = block.tourTitle || t("dashboard.editor.tour.title");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -328,7 +337,7 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
 
       {tours.length === 0 ? (
         <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
-          No tour dates added yet
+          {t("dashboard.editor.tour.empty")}
         </div>
       ) : (
         <div className="relative">
@@ -379,11 +388,11 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
                   <div className="flex justify-start">
                     {tour.soldOut ? (
                       <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">
-                        Sold Out
+                        {t("dashboard.editor.tour.soldOut")}
                       </span>
                     ) : tour.sellingFast ? (
                       <span className="bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide border border-white/20">
-                        Selling fast
+                        {t("dashboard.editor.tour.sellingFast")}
                       </span>
                     ) : null}
                   </div>
@@ -406,6 +415,7 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   const url = block.spotifyUrl;
   const isCompact = block.spotifyCompact;
 
@@ -413,7 +423,7 @@ const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
     return (
       <div className="w-full py-4">
         <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
-          Add a Spotify link to display the player
+          {t("dashboard.editor.spotify.empty")}
         </div>
       </div>
     );
@@ -449,7 +459,7 @@ const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
     return (
       <div className="w-full py-4">
         <div className="text-center text-red-500 text-xs py-8 bg-red-50 rounded-lg border border-dashed border-red-300">
-          Invalid Spotify URL
+          {t("dashboard.editor.spotify.invalidUrl")}
         </div>
       </div>
     );
@@ -474,6 +484,7 @@ const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   const username = block.instagramUsername || "instagram";
   const displayType = block.instagramDisplayType || "grid";
   const showText = block.instagramShowText !== false;
@@ -553,7 +564,7 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
             {img ? (
               <img
                 src={img}
-                alt="Instagram post"
+                alt={t("dashboard.editor.instagram.postAlt")}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -575,6 +586,7 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   const url = block.youtubeUrl || "https://youtube.com/@youtube";
   const displayType = block.youtubeDisplayType || "grid";
   const showText = block.youtubeShowText !== false;
@@ -626,7 +638,7 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
     <div className={`text-center ${textPosition === 'top' ? 'mb-2' : 'mt-2'}`}>
       <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: textColor }}>
         <YouTubeIcon width={14} height={14} />
-        YouTube Channel
+        {t("dashboard.editor.youtube.channel")}
       </a>
     </div>
   ) : null;
@@ -640,7 +652,7 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
             {img ? (
               <img
                 src={img}
-                alt="YouTube video"
+                alt={t("dashboard.editor.youtube.videoAlt")}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -662,12 +674,13 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   const layout = block.qrCodeLayout || "single";
   const fgColor = block.qrCodeColor || "#000000";
   const bgColor = block.qrCodeBgColor || "#FFFFFF";
 
   if (layout === "single") {
-    const value = block.qrCodeValue || "https://example.com";
+    const value = block.qrCodeValue || t("dashboard.editor.qr.defaultUrl");
     return (
       <div key={block.id} className="flex justify-center py-4">
         <div className="p-4 rounded-xl shadow-sm" style={{ backgroundColor: bgColor }}>
@@ -690,7 +703,7 @@ const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
     return (
       <div className="w-full py-4">
         <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
-          Add QR Codes to display
+          {t("dashboard.editor.qr.empty")}
         </div>
       </div>
     );
@@ -701,7 +714,7 @@ const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
       {items.map((item) => (
         <div key={item.id} className="flex flex-col items-center gap-2 p-4 rounded-xl shadow-sm" style={{ backgroundColor: bgColor }}>
           <QRCode
-            value={item.value || "https://example.com"}
+            value={item.value || t("dashboard.editor.qr.defaultUrl")}
             size={layout === 'grid' ? 100 : 120}
             fgColor={fgColor}
             bgColor={bgColor}
@@ -718,6 +731,7 @@ const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
 };
 
 const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
+  const { t } = useTranslation();
   // TODO: Fetch slot data if marketingSlotId exists
   // For now, show placeholder
   const hasActiveSlot = false; // Will be true when connected to backend
@@ -731,10 +745,10 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
             <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-3">
               <span className="text-white text-xl">📢</span>
             </div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2">Active Advertisement</h3>
-            <p className="text-sm text-gray-600 mb-4">Company ad will appear here</p>
+            <h3 className="font-bold text-lg text-gray-900 mb-2">{t("dashboard.editor.marketing.activeTitle")}</h3>
+            <p className="text-sm text-gray-600 mb-4">{t("dashboard.editor.marketing.activeSubtitle")}</p>
             <button className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
-              View Details
+              {t("dashboard.editor.marketing.viewDetails")}
             </button>
           </div>
         ) : (
@@ -746,10 +760,10 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
                 <polyline points="17 6 23 6 23 12" />
               </svg>
             </div>
-            <h3 className="font-bold text-base text-gray-700 mb-1">Marketing Slot</h3>
+            <h3 className="font-bold text-base text-gray-700 mb-1">{t("dashboard.editor.marketing.slotTitle")}</h3>
             <p className="text-xs text-gray-500 mb-4">
-              Configure this slot in the Marketing dashboard<br />
-              Companies can submit advertising proposals
+              {t("dashboard.editor.marketing.slotHintLine1")}<br />
+              {t("dashboard.editor.marketing.slotHintLine2")}
             </p>
             <a
               href="/dashboard/marketing"
@@ -761,7 +775,7 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
                 <line x1="12" y1="8" x2="12" y2="16" />
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
-              Create Slot
+              {t("dashboard.editor.marketing.createSlot")}
             </a>
           </div>
         )}
@@ -773,6 +787,7 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
 export default function DashboardEditor() {
   const { bio, bios, selectBio, updateBio, getBios } = useContext(BioContext);
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [blocks, setBlocks] = useState<BioBlock[]>([]);
   const [marketingSlotStatusById, setMarketingSlotStatusById] = useState<Record<string, string>>({});
   const [dragItem, setDragItem] = useState<{ source: "palette" | "canvas"; type?: BioBlock["type"]; id?: string } | null>(null);
@@ -896,13 +911,15 @@ export default function DashboardEditor() {
     );
   }, []);
 
+  const paletteItems = useMemo<PaletteItem[]>(() => getPalette(t), [t]);
+
   const filteredPalette = useMemo(() => {
-    if (!searchQuery) return palette;
-    return palette.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery]);
+    if (!searchQuery) return paletteItems;
+    return paletteItems.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [searchQuery, paletteItems]);
 
   const groupedPalette = useMemo(() => {
-    const groups: Record<string, typeof palette> = {};
+    const groups: Record<string, PaletteItem[]> = {};
     filteredPalette.forEach((item) => {
       if (!groups[item.category]) groups[item.category] = [];
       groups[item.category].push(item);
@@ -1072,7 +1089,7 @@ export default function DashboardEditor() {
     if (bio) {
       // Filter out PRO-only blocks if user is not PRO
       const PRO_BLOCK_TYPES = ['calendar', 'tour'];
-      const originalBlocks = (bio.blocks as BioBlock[] | null) ?? defaultBlocks();
+      const originalBlocks = (bio.blocks as BioBlock[] | null) ?? defaultBlocks(t);
       let loadedBlocks = originalBlocks;
       let needsSave = false;
       const updates: Record<string, any> = {};
@@ -1204,7 +1221,7 @@ export default function DashboardEditor() {
         const successMsg = document.getElementById('subscribe-success');
         if (successMsg) {
           successMsg.style.display = 'block';
-          successMsg.textContent = 'Thanks for subscribing!';
+          successMsg.textContent = t("dashboard.editor.subscribeThanks");
         }
         if (emailInput) emailInput.value = '';
         setTimeout(() => {
@@ -1222,7 +1239,7 @@ export default function DashboardEditor() {
       const next = [...prev];
 
       if (dragItem.source === "palette" && dragItem.type) {
-        const paletteItem = palette.find(p => p.type === dragItem.type);
+        const paletteItem = paletteItems.find((p) => p.type === dragItem.type);
         if (paletteItem?.isPro && user?.plan !== 'pro') {
           return prev;
         }
@@ -1232,8 +1249,8 @@ export default function DashboardEditor() {
         const newBlock: BioBlock = {
           id: makeId(),
           type: dragItem.type,
-          title: dragItem.type === "button" ? "New button" : dragItem.type === "heading" ? "New heading" : dragItem.type === "video" ? "New video" : "New block",
-          body: dragItem.type === "text" ? "Describe something here." : undefined,
+          title: dragItem.type === "button" ? t("dashboard.editor.defaults.newButton") : dragItem.type === "heading" ? t("dashboard.editor.defaults.newHeading") : dragItem.type === "video" ? t("dashboard.editor.defaults.newVideo") : t("dashboard.editor.defaults.newBlock"),
+          body: dragItem.type === "text" ? t("dashboard.editor.defaults.textBody") : undefined,
           href: dragItem.type === "button" ? "https://" : undefined,
           accent: dragItem.type === "button" ? "#111827" : undefined,
           mediaUrl: dragItem.type === "image" ? "https://placehold.co/1200x600" : dragItem.type === "video" ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : undefined,
@@ -1246,30 +1263,30 @@ export default function DashboardEditor() {
           blogCardStyle: dragItem.type === "blog" ? "featured" : undefined,
           blogPostCount: dragItem.type === "blog" ? 3 : undefined,
           products: dragItem.type === "product" ? [
-            { id: makeId(), title: "Product 1", price: "$19.99", image: "https://placehold.co/300x300", url: "#" },
-            { id: makeId(), title: "Product 2", price: "$29.99", image: "https://placehold.co/300x300", url: "#" },
-            { id: makeId(), title: "Product 3", price: "$39.99", image: "https://placehold.co/300x300", url: "#" }
+            { id: makeId(), title: t("dashboard.editor.defaults.product", { index: 1 }), price: "$19.99", image: "https://placehold.co/300x300", url: "#" },
+            { id: makeId(), title: t("dashboard.editor.defaults.product", { index: 2 }), price: "$29.99", image: "https://placehold.co/300x300", url: "#" },
+            { id: makeId(), title: t("dashboard.editor.defaults.product", { index: 3 }), price: "$39.99", image: "https://placehold.co/300x300", url: "#" }
           ] : undefined,
           productLayout: dragItem.type === "product" ? "carousel" : undefined,
           productBackgroundColor: dragItem.type === "product" ? "#ffffff" : undefined,
           productTextColor: dragItem.type === "product" ? "#1f2937" : undefined,
           productAccentColor: dragItem.type === "product" ? "#2563eb" : undefined,
-          productButtonText: dragItem.type === "product" ? "View Product" : undefined,
-          calendarTitle: dragItem.type === "calendar" ? "Book a Call" : undefined,
+          productButtonText: dragItem.type === "product" ? t("dashboard.editor.defaults.viewProduct") : undefined,
+          calendarTitle: dragItem.type === "calendar" ? t("dashboard.editor.defaults.bookCall") : undefined,
           calendarUrl: dragItem.type === "calendar" ? "https://calendly.com" : undefined,
           calendarColor: dragItem.type === "calendar" ? "#ffffff" : undefined,
           calendarTextColor: dragItem.type === "calendar" ? "#1f2937" : undefined,
           calendarAccentColor: dragItem.type === "calendar" ? "#2563eb" : undefined,
-          mapTitle: dragItem.type === "map" ? "Our Office" : undefined,
-          mapAddress: dragItem.type === "map" ? "123 Main St, City" : undefined,
-          featuredTitle: dragItem.type === "featured" ? "Glow lipstick" : undefined,
+          mapTitle: dragItem.type === "map" ? t("dashboard.editor.defaults.mapTitle") : undefined,
+          mapAddress: dragItem.type === "map" ? t("dashboard.editor.defaults.mapAddress") : undefined,
+          featuredTitle: dragItem.type === "featured" ? t("dashboard.editor.defaults.featuredTitle") : undefined,
           featuredPrice: dragItem.type === "featured" ? "$19.99" : undefined,
           featuredImage: dragItem.type === "featured" ? "https://placehold.co/300x300" : undefined,
-          eventTitle: dragItem.type === "event" ? "Live Webinar" : undefined,
+          eventTitle: dragItem.type === "event" ? t("dashboard.editor.event.defaultTitle") : undefined,
           eventDate: dragItem.type === "event" ? new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0] + "T18:00" : undefined,
           eventColor: dragItem.type === "event" ? "#111827" : undefined,
           eventTextColor: dragItem.type === "event" ? "#ffffff" : undefined,
-          eventButtonText: dragItem.type === "event" ? "Register Now" : undefined,
+          eventButtonText: dragItem.type === "event" ? t("dashboard.editor.event.defaultButton") : undefined,
           eventButtonUrl: dragItem.type === "event" ? "#" : undefined,
           featuredUrl: dragItem.type === "featured" ? "#" : undefined,
           youtubeUrl: dragItem.type === "youtube" ? "https://youtube.com/@youtube" : undefined,
@@ -1279,11 +1296,11 @@ export default function DashboardEditor() {
           youtubeTextColor: dragItem.type === "youtube" ? "#ff0000" : undefined,
           featuredColor: dragItem.type === "featured" ? "#1f4d36" : undefined,
           featuredTextColor: dragItem.type === "featured" ? "#ffffff" : undefined,
-          affiliateTitle: dragItem.type === "affiliate" ? "Copy my coupon code" : undefined,
+          affiliateTitle: dragItem.type === "affiliate" ? t("dashboard.editor.defaults.affiliateTitle") : undefined,
           affiliateCode: dragItem.type === "affiliate" ? "ILoveMatcha" : undefined,
           affiliateImage: dragItem.type === "affiliate" ? "https://placehold.co/300x300" : undefined,
           affiliateUrl: dragItem.type === "affiliate" ? "#" : undefined,
-          portfolioTitle: dragItem.type === "portfolio" ? "Portfólio" : undefined,
+          portfolioTitle: dragItem.type === "portfolio" ? t("dashboard.editor.defaults.portfolioTitle") : undefined,
         };
         let targetIndex = typeof index === "number" ? index : next.length;
         const lockedIndices = next
@@ -1309,7 +1326,7 @@ export default function DashboardEditor() {
       return next;
     });
     setDragItem(null);
-  }, [dragItem, isMarketingLockedBlock]);
+  }, [dragItem, isMarketingLockedBlock, paletteItems, t, user, takeSnapshot]);
 
   const handleSave = useCallback(async () => {
     if (!bio) return;
@@ -1471,8 +1488,8 @@ export default function DashboardEditor() {
           <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <SearchIcon className="text-gray-400 w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">No Bio Selected</h3>
-          <p className="text-sm text-gray-500 mb-6">Create or select a bio to start editing.</p>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.editor.noBioTitle")}</h3>
+          <p className="text-sm text-gray-500 mb-6">{t("dashboard.editor.noBioBody")}</p>
         </div>
       </div>
     );
@@ -1508,7 +1525,7 @@ export default function DashboardEditor() {
         <div className="flex-shrink-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Editor</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t("dashboard.editor.top.editor")}</p>
           </div>
           <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">{bio.sufix}</h1>
         </div>
@@ -1550,13 +1567,13 @@ export default function DashboardEditor() {
               onClick={handleUndo}
               disabled={undoStack.length === 0}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
-              title="Undo last change"
+              title={t("dashboard.editor.top.undoTitle")}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 14 4 9l5-5" />
                 <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
               </svg>
-              Undo
+              {t("dashboard.editor.top.undo")}
             </button>
             <div className="w-px h-4 bg-gray-200 mx-1"></div>
             <button
@@ -1564,7 +1581,7 @@ export default function DashboardEditor() {
 
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
             >
-              Share
+              {t("dashboard.editor.top.share")}
             </button>
             <div className="w-px h-4 bg-gray-200 mx-1"></div>
             <a
@@ -1573,7 +1590,7 @@ export default function DashboardEditor() {
               rel="noreferrer"
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
             >
-              Open page
+              {t("dashboard.editor.top.openPage")}
               <ExternalLinkIcon width={12} height={12} />
             </a>
           </div>
@@ -1586,14 +1603,14 @@ export default function DashboardEditor() {
             {isSaving ? (
               <>
                 <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                <span className="hidden sm:inline">Saving...</span>
+                <span className="hidden sm:inline">{t("dashboard.editor.top.saving")}</span>
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="hidden sm:inline">Save bio</span>
+                <span className="hidden sm:inline">{t("dashboard.editor.top.saveBio")}</span>
               </>
             )}
           </button>
@@ -1612,13 +1629,13 @@ export default function DashboardEditor() {
                 onClick={() => setActiveTab("blocks")}
                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "blocks" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
               >
-                Blocks
+                {t("dashboard.editor.tabs.blocks")}
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "settings" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
               >
-                Settings
+                {t("dashboard.editor.tabs.settings")}
               </button>
             </div>
 
@@ -1631,7 +1648,7 @@ export default function DashboardEditor() {
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Search blocks..."
+                      placeholder={t("dashboard.editor.searchPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
@@ -1641,7 +1658,7 @@ export default function DashboardEditor() {
                   {/* Palette Groups */}
                   <div className="space-y-6 pb-8">
                     {Object.keys(groupedPalette).length === 0 ? (
-                      <div className="text-center py-10 text-gray-400 text-xs font-medium">No blocks found</div>
+                      <div className="text-center py-10 text-gray-400 text-xs font-medium">{t("dashboard.editor.noBlocks")}</div>
                     ) : (
                       Object.entries(groupedPalette).map(([category, items]) => (
                         <div key={category}>
@@ -1649,7 +1666,7 @@ export default function DashboardEditor() {
                             className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                             onClick={() => toggleCategory(category)}
                           >
-                            {category}
+                            {t(`dashboard.editor.categories.${category}`)}
                             <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedCategories.includes(category) ? 'rotate-0' : '-rotate-90'}`} />
                           </button>
 
@@ -1701,13 +1718,13 @@ export default function DashboardEditor() {
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("font")}
                     >
-                      Typography
+                      {t("dashboard.editor.settings.typography")}
                       <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("font") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
                     {expandedSettings.includes("font") && (
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">Font Family</label>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.fontFamily")}</label>
                           <div className="relative">
                             <select
                               value={font}
@@ -1790,7 +1807,7 @@ export default function DashboardEditor() {
                                     }
                                   } catch (err) {
                                     console.error("Font upload failed", err);
-                                    alert("Failed to upload font. Please try a valid font file (ttf, otf, woff, woff2).");
+                                    alert(t("dashboard.editor.settings.fontUploadError"));
                                   } finally {
                                     setIsSaving(false);
                                   }
@@ -1806,10 +1823,10 @@ export default function DashboardEditor() {
                                 <polyline points="17 8 12 3 7 8"></polyline>
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
                               </svg>
-                              Upload Custom Font
+                              {t("dashboard.editor.settings.uploadFont")}
                             </label>
                             <p className="text-[10px] text-gray-400 mt-1.5 text-center px-1">
-                              Supports .ttf, .otf, .woff, .woff2 (max 10MB)
+                              {t("dashboard.editor.settings.fontSupport")}
                             </p>
                           </div>
                         </div>
@@ -1823,7 +1840,7 @@ export default function DashboardEditor() {
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("background")}
                     >
-                      Background
+                      {t("dashboard.editor.settings.background")}
                       <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("background") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
                     {expandedSettings.includes("background") && (
@@ -1835,15 +1852,14 @@ export default function DashboardEditor() {
                               onClick={() => setBgType(type as any)}
                               className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${bgType === type ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                             >
-                              {type.replace('-', ' ')}
+                              {t(`dashboard.editor.settings.backgroundTypes.${type}`)}
                             </button>
                           ))}
                         </div>
-
                         {bgType === 'color' && (
                           <div>
                             <ColorPicker
-                              label="Overlay Color"
+                              label={t("dashboard.editor.settings.overlayColor")}
                               value={bgColor}
                               onChange={(val) => {
                                 setBgColor(val);
@@ -1855,14 +1871,14 @@ export default function DashboardEditor() {
                       </div>
                     )}
                   </div>
-
+                  
                   {/* Card Settings */}
                   <div>
                     <button
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("card")}
                     >
-                      Card Style
+                      {t("dashboard.editor.settings.cardStyle")}
                       <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("card") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
                     {expandedSettings.includes("card") && (
@@ -1870,12 +1886,12 @@ export default function DashboardEditor() {
 
                         {/* Style Selector */}
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">Card Type</label>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.cardType")}</label>
                           <div className="flex bg-gray-100 p-1 rounded-lg">
                             {[
-                              { value: 'none', label: 'None' },
-                              { value: 'solid', label: 'Solid' },
-                              { value: 'frosted', label: 'Frosted' }
+                              { value: 'none', label: t("dashboard.editor.settings.cardTypes.none") },
+                              { value: 'solid', label: t("dashboard.editor.settings.cardTypes.solid") },
+                              { value: 'frosted', label: t("dashboard.editor.settings.cardTypes.frosted") }
                             ].map((type) => (
                               <button
                                 key={type.value}
@@ -1894,7 +1910,7 @@ export default function DashboardEditor() {
                             {/* Background Color */}
                             <div>
                               <ColorPicker
-                                label="Card Color"
+                                label={t("dashboard.editor.settings.cardColor")}
                                 value={cardBackgroundColor}
                                 onChange={(val) => setCardBackgroundColor(val)}
                               />
@@ -1903,7 +1919,7 @@ export default function DashboardEditor() {
                             {/* Opacity */}
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Opacity</label>
+                                <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.opacity")}</label>
                                 <span className="text-xs text-gray-500 font-mono">{cardOpacity}%</span>
                               </div>
                               <input
@@ -1920,7 +1936,7 @@ export default function DashboardEditor() {
                             {cardStyle === 'frosted' && (
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <label className="text-xs font-medium text-gray-900">Blur</label>
+                                  <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.blur")}</label>
                                   <span className="text-xs text-gray-500 font-mono">{cardBlur}px</span>
                                 </div>
                                 <input
@@ -1946,7 +1962,7 @@ export default function DashboardEditor() {
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("profile")}
                     >
-                      Profile
+                      {t("dashboard.editor.settings.profile")}
                       <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("profile") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
                     {expandedSettings.includes("profile") && (
@@ -1956,7 +1972,7 @@ export default function DashboardEditor() {
 
                         {/* Image Style Selector */}
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">Image Shape</label>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.imageShape")}</label>
                           <div className="grid grid-cols-3 gap-2">
                             {['circle', 'rounded', 'square', 'amoeba', 'star', 'hexagon'].map((style) => (
                               <button
@@ -1964,7 +1980,7 @@ export default function DashboardEditor() {
                                 onClick={() => setImageStyle(style)}
                                 className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${imageStyle === style ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                               >
-                                {style}
+                                {t(`dashboard.editor.settings.imageShapes.${style}`)}
                               </button>
                             ))}
                           </div>
@@ -1972,14 +1988,14 @@ export default function DashboardEditor() {
 
                         <div className="mt-4">
                           <ColorPicker
-                            label="Username Color"
+                            label={t("dashboard.editor.settings.usernameColor")}
                             value={usernameColor}
                             onChange={(val) => setUsernameColor(val)}
                           />
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-gray-100">
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">Verification Status</label>
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.verificationStatus")}</label>
                           <button
                             onClick={() => {
                               if (bio?.id) updateBio(bio.id, { verified: !bio.verified });
@@ -1992,11 +2008,11 @@ export default function DashboardEditor() {
                             {bio?.verified ? (
                               <>
                                 <BadgeCheck size={16} fill="#3b82f6" className="text-white" />
-                                <span>Verified</span>
+                                <span>{t("dashboard.editor.settings.verified")}</span>
                               </>
                             ) : (
                               <>
-                                <span>Get Verified</span>
+                                <span>{t("dashboard.editor.settings.getVerified")}</span>
                                 <BadgeCheck size={16} className="text-blue-400" />
                               </>
                             )}
@@ -2013,15 +2029,15 @@ export default function DashboardEditor() {
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("features")}
                     >
-                      Features
+                      {t("dashboard.editor.settings.features")}
                       <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("features") ? 'rotate-0' : '-rotate-90'}`} />
                     </button>
                     {expandedSettings.includes("features") && (
                       <div className="space-y-3">
                         <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">Email Signup</span>
-                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">STANDARD / PRO</span>}
+                            <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.emailSignup")}</span>
+                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${enableSubscribeButton ? 'bg-green-500' : 'bg-gray-300'}`}>
                             <input
@@ -2044,8 +2060,8 @@ export default function DashboardEditor() {
 
                         <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">Remove Branding</span>
-                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">STANDARD / PRO</span>}
+                            <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.removeBranding")}</span>
+                            {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-green-500' : 'bg-gray-300'}`}>
                             <input
@@ -2078,8 +2094,8 @@ export default function DashboardEditor() {
           {/* Middle Column: Drag & Drop (Col Span 5 - ADJUSTED) */}
           <div className="col-span-12 lg:col-span-5 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
-              <h2 className="font-bold text-gray-900 text-lg">Layout</h2>
-              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Drag to reorder</span>
+              <h2 className="font-bold text-gray-900 text-lg">{t("dashboard.editor.layout.title")}</h2>
+              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{t("dashboard.editor.layout.dragToReorder")}</span>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
@@ -2095,8 +2111,8 @@ export default function DashboardEditor() {
                       <div className="scale-150"><img src="/favicon.ico" className="w-6 h-6 opacity-50 grayscale" alt="" /></div>
                       {/* Using a placeholder icon since I can't easily import a specific one without checking imports */}
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-1">Your bio is empty</h3>
-                    <p className="text-sm text-gray-500 max-w-xs">Drag blocks from the left sidebar to start building your page.</p>
+                    <h3 className="font-bold text-lg text-gray-900 mb-1">{t("dashboard.editor.empty.title")}</h3>
+                    <p className="text-sm text-gray-500 max-w-xs">{t("dashboard.editor.empty.body")}</p>
                   </div>
                 )}
 
@@ -2146,30 +2162,30 @@ export default function DashboardEditor() {
                 ref={iframeRef}
                 srcDoc={debouncedHtml || ""}
                 className="w-full h-full scrollbar-hide border-none"
-                title="Bio Preview"
+                title={t("dashboard.editor.preview.title")}
                 sandbox="allow-same-origin allow-scripts"
               />
             </div>
 
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-gray-500 uppercase tracking-widest z-10 pointer-events-none">
-              <span>Live Preview</span>
+              <span>{t("dashboard.editor.preview.live")}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
             </div>
           </div>
 
         </div>
-      </div >
+      </div>
 
       {/* Mobile Preview FAB */}
-      < div className="lg:hidden fixed bottom-6 right-6 z-50" >
+      <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setShowMobilePreview(true)}
           className="bg-gray-900 text-white p-4 rounded-full shadow-xl hover:bg-gray-800 transition-all active:scale-95 flex items-center justify-center border border-white/20"
-          aria-label="Preview Bio"
+          aria-label={t("dashboard.editor.preview.aria")}
         >
           <Eye className="w-6 h-6" />
         </button>
-      </div >
+      </div>
 
       {/* Mobile Preview Modal */}
       {
@@ -2178,7 +2194,7 @@ export default function DashboardEditor() {
             <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shadow-sm">
               <h3 className="font-bold text-lg flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                Live Preview
+                {t("dashboard.editor.preview.live")}
               </h3>
               <button
                 onClick={() => setShowMobilePreview(false)}
@@ -2192,7 +2208,7 @@ export default function DashboardEditor() {
                 <iframe
                   srcDoc={debouncedHtml || ""}
                   className="w-full h-full scrollbar-hide border-none bg-white"
-                  title="Mobile Preview"
+                  title={t("dashboard.editor.preview.mobileTitle")}
                   sandbox="allow-same-origin allow-scripts"
                 />
               </div>
@@ -2215,23 +2231,23 @@ export default function DashboardEditor() {
         showCreateQrModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Create New QR Code</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t("dashboard.editor.qrModal.title")}</h3>
               <form onSubmit={handleCreateQrCode}>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.qrModal.destination")}</label>
                   <input
                     type="url"
                     required
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                    placeholder="https://example.com"
+                    placeholder={t("dashboard.editor.qrModal.placeholder")}
                     value={newQrValue}
                     onChange={e => setNewQrValue(e.target.value)}
                   />
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+                  <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{t("dashboard.editor.qrModal.cancel")}</button>
                   <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
-                    {isCreatingQr ? 'Creating...' : 'Create QR'}
+                    {isCreatingQr ? t("dashboard.editor.qrModal.creating") : t("dashboard.editor.qrModal.create")}
                   </button>
                 </div>
               </form>
@@ -2249,7 +2265,7 @@ export default function DashboardEditor() {
         onChange={handleImageUpload}
       />
 
-    </div >
+    </div>
   );
 }
 
