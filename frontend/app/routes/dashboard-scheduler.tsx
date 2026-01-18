@@ -5,6 +5,7 @@ import { format, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eac
 import { Calendar as CalendarIcon, Clock, Ban, Save, Loader2, PauseCircle, PlayCircle, ChevronLeft, ChevronRight, Check, X, ShieldAlert, Plus, RefreshCw, CalendarCheck } from "lucide-react";
 import { AuthorizationGuard } from "../contexts/guard.context";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export default function DashboardScheduler() {
     const { t } = useTranslation();
@@ -38,11 +39,87 @@ export default function DashboardScheduler() {
     const [rescheduleSlotsLoading, setRescheduleSlotsLoading] = useState(false);
     const [rescheduleMonth, setRescheduleMonth] = useState(new Date());
 
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+
     useEffect(() => {
         if (bio?.id) {
             fetchData();
         }
     }, [bio?.id, currentPage, filterStatus, activeTab, filterDate]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:scheduler-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const schedulerTourSteps: Step[] = [
+        {
+            target: "[data-tour=\"scheduler-header\"]",
+            content: t("dashboard.tours.scheduler.steps.header"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"scheduler-status\"]",
+            content: t("dashboard.tours.scheduler.steps.status"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"scheduler-tabs\"]",
+            content: t("dashboard.tours.scheduler.steps.tabs"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"scheduler-filters\"]",
+            content: t("dashboard.tours.scheduler.steps.filters"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"scheduler-bookings\"]",
+            content: t("dashboard.tours.scheduler.steps.bookings"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"scheduler-availability\"]",
+            content: t("dashboard.tours.scheduler.steps.availability"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"scheduler-blocked\"]",
+            content: t("dashboard.tours.scheduler.steps.blocked"),
+            placement: "top",
+        },
+    ];
+
+    const handleSchedulerTourCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:scheduler-tour-done", "true");
+            }
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -229,13 +306,47 @@ export default function DashboardScheduler() {
     return (
         <AuthorizationGuard minPlan="standard">
             <div className="p-8 max-w-6xl mx-auto font-sans">
+                <Joyride
+                    steps={schedulerTourSteps}
+                    run={tourRun}
+                    stepIndex={tourStepIndex}
+                    continuous
+                    showSkipButton
+                    spotlightClicks
+                    scrollToFirstStep
+                    callback={handleSchedulerTourCallback}
+                    styles={{
+                        options: {
+                            arrowColor: "#ffffff",
+                            backgroundColor: "#ffffff",
+                            overlayColor: "rgba(0, 0, 0, 0.45)",
+                            primaryColor: tourPrimaryColor,
+                            textColor: "#171717",
+                            zIndex: 10000,
+                        },
+                        buttonNext: {
+                            color: "#171717",
+                            fontWeight: 700,
+                        },
+                        buttonBack: {
+                            color: "#5b5b5b",
+                        },
+                        buttonSkip: {
+                            color: "#5b5b5b",
+                        },
+                        tooltipContent: {
+                            fontSize: "14px",
+                            lineHeight: "1.4",
+                        },
+                    }}
+                />
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="scheduler-header">
                     <div>
                         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t("dashboard.scheduler.title")}</h1>
                         <p className="text-gray-500 mt-2">{t("dashboard.scheduler.subtitle")}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3" data-tour="scheduler-status">
                         {settings && (
                             <button
                                 onClick={togglePause}
@@ -277,7 +388,7 @@ export default function DashboardScheduler() {
 
                 {/* Tabs */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px] flex flex-col">
-                    <div className="border-b px-6 flex gap-8">
+                    <div className="border-b px-6 flex gap-8" data-tour="scheduler-tabs">
                         <button
                             onClick={() => { setActiveTab('today'); setCurrentPage(1); }}
                             className={`py-6 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === 'today' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
@@ -307,7 +418,7 @@ export default function DashboardScheduler() {
 
                                 {/* Filter Tabs */}
                                 {(activeTab === 'bookings' || activeTab === 'today') && (
-                                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center" data-tour="scheduler-filters">
                                         <div className="flex gap-2 p-1 bg-gray-100 rounded-xl w-fit flex-wrap">
                                             {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map(status => (
                                                 <button
@@ -356,7 +467,7 @@ export default function DashboardScheduler() {
                                 )}
 
                                 {/* Booking List */}
-                                <div className="space-y-4 min-h-[400px]">
+                                <div className="space-y-4 min-h-[400px]" data-tour="scheduler-bookings">
                                     {bookings.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                                             <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center mb-4">
@@ -460,7 +571,7 @@ export default function DashboardScheduler() {
                             <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Left Column: Weekly Schedule */}
                                 <div className="lg:col-span-2 space-y-8">
-                                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm" data-tour="scheduler-availability">
                                         <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg">
                                             <Clock className="w-5 h-5 text-indigo-500" />
                                             {t("dashboard.scheduler.weeklySchedule.title")}
@@ -553,7 +664,7 @@ export default function DashboardScheduler() {
                                         </button>
                                     </section>
 
-                                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm" data-tour="scheduler-blocked">
                                         <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg">
                                             <ShieldAlert className="w-5 h-5 text-red-500" />
                                             {t("dashboard.scheduler.blockedDates.title")}

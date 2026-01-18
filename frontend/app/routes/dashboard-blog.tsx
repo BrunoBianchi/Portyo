@@ -1,9 +1,10 @@
 import type { MetaFunction } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Search, FileText, MoreHorizontal, Calendar, Eye, Filter, Edit2, Trash2 } from "lucide-react";
 import { NewPostModal } from "~/components/dashboard/new-post-modal";
 import { useBlog } from "~/contexts/blog.context";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export const meta: MetaFunction = () => {
     return [
@@ -18,6 +19,71 @@ export default function DashboardBlog() {
     const { posts, loading, deletePost } = useBlog();
     const [editingPost, setEditingPost] = useState<any>(null);
     const [postToDelete, setPostToDelete] = useState<any>(null);
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:blog-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const blogTourSteps: Step[] = [
+        {
+            target: "[data-tour=\"blog-header\"]",
+            content: t("dashboard.tours.blog.steps.header"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"blog-new\"]",
+            content: t("dashboard.tours.blog.steps.newPost"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"blog-toolbar\"]",
+            content: t("dashboard.tours.blog.steps.toolbar"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"blog-table\"]",
+            content: t("dashboard.tours.blog.steps.table"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"blog-row\"]",
+            content: t("dashboard.tours.blog.steps.row"),
+            placement: "top",
+        },
+    ];
+
+    const handleBlogTourCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:blog-tour-done", "true");
+            }
+        }
+    };
 
     const handleEdit = (post: any) => {
         setEditingPost(post);
@@ -42,6 +108,40 @@ export default function DashboardBlog() {
 
     return (
         <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
+            <Joyride
+                steps={blogTourSteps}
+                run={tourRun}
+                stepIndex={tourStepIndex}
+                continuous
+                showSkipButton
+                spotlightClicks
+                scrollToFirstStep
+                callback={handleBlogTourCallback}
+                styles={{
+                    options: {
+                        arrowColor: "#ffffff",
+                        backgroundColor: "#ffffff",
+                        overlayColor: "rgba(0, 0, 0, 0.45)",
+                        primaryColor: tourPrimaryColor,
+                        textColor: "#171717",
+                        zIndex: 10000,
+                    },
+                    buttonNext: {
+                        color: "#171717",
+                        fontWeight: 700,
+                    },
+                    buttonBack: {
+                        color: "#5b5b5b",
+                    },
+                    buttonSkip: {
+                        color: "#5b5b5b",
+                    },
+                    tooltipContent: {
+                        fontSize: "14px",
+                        lineHeight: "1.4",
+                    },
+                }}
+            />
             <NewPostModal
                 isOpen={isNewPostModalOpen}
                 onClose={handleCloseModal}
@@ -75,7 +175,7 @@ export default function DashboardBlog() {
             )}
 
             {/* Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6" data-tour="blog-header">
                 <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold uppercase tracking-wider mb-3">
                         <FileText className="w-3 h-3" />
@@ -85,6 +185,7 @@ export default function DashboardBlog() {
                     <p className="text-lg text-text-muted">{t("dashboard.blog.subtitle")}</p>
                 </div>
                 <button
+                    data-tour="blog-new"
                     onClick={() => {
                         setEditingPost(null);
                         setIsNewPostModalOpen(true);
@@ -97,9 +198,9 @@ export default function DashboardBlog() {
 
 
             {/* Main Content Card */}
-            <div className="card overflow-hidden">
+            <div className="card overflow-hidden" data-tour="blog-table">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-border flex flex-col md:flex-row gap-4 items-center justify-between bg-surface-alt/30">
+                <div className="p-4 border-b border-border flex flex-col md:flex-row gap-4 items-center justify-between bg-surface-alt/30" data-tour="blog-toolbar">
                     <div className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
@@ -130,8 +231,12 @@ export default function DashboardBlog() {
 
                 {/* List */}
                 <div className="divide-y divide-border">
-                    {posts.map((post: any) => (
-                        <div key={post.id} className="flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center hover:bg-surface-alt/50 transition-colors group relative">
+                    {posts.map((post: any, index: number) => (
+                        <div
+                            key={post.id}
+                            data-tour={index === 0 ? "blog-row" : undefined}
+                            className="flex flex-col md:grid md:grid-cols-12 gap-4 px-6 py-4 items-start md:items-center hover:bg-surface-alt/50 transition-colors group relative"
+                        >
                             {/* Post Info */}
                             <div className="w-full md:col-span-6 flex items-start md:items-center gap-4">
                                 <div className="w-20 h-16 md:w-16 md:h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-border">

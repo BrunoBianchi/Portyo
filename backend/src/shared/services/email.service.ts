@@ -59,6 +59,14 @@ export const getEmailsFromBio = async(bioId:string) => {
     })
 }
 
+export const countEmailsForBio = async (bioId: string) => {
+    return await repository
+        .createQueryBuilder("email")
+        .leftJoin("email.bios", "bio")
+        .where("bio.id = :bioId", { bioId })
+        .getCount();
+};
+
 export const removeEmails = async(emails:string[],bio:string) => {
     const bioEntity = await findBioById(bio);
     if (!bioEntity) throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);

@@ -99,6 +99,14 @@ export const formService = {
         form.submissions += 1;
         await formRepository.save(form);
 
+        const totalSubmissionsRaw = await formRepository
+            .createQueryBuilder("form")
+            .select("SUM(form.submissions)", "total")
+            .where("form.bioId = :bioId", { bioId: form.bioId })
+            .getRawOne();
+
+        const totalSubmissions = parseInt(totalSubmissionsRaw?.total || "0", 10) || 0;
+
         // Parse answers to find email and map variables
         let subscriberEmail = null;
         const variables: Record<string, any> = {};
@@ -128,6 +136,11 @@ export const formService = {
             email: subscriberEmail,
             ...variables
         }).catch(err => console.error("Failed to trigger automation", err));
+
+        triggerAutomation(form.bioId, 'form_submit_milestone', {
+            milestoneCount: totalSubmissions,
+            bioName: form.bio?.sufix || undefined
+        }).catch(err => console.error("Failed to trigger form milestone automation", err));
 
         return answer;
     },

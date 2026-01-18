@@ -44,7 +44,8 @@ import {
   GitBranch,
   Timer,
   Globe,
-  MessageSquare
+  MessageSquare,
+  BadgePercent
 } from "lucide-react";
 import { useBio } from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
@@ -55,11 +56,14 @@ import {
   activateAutomation,
   deactivateAutomation,
   getAutomationById,
+  getAutomationsByBio,
   type Automation,
   type AutomationNode as ServiceAutomationNode,
   type AutomationEdge as ServiceAutomationEdge
 } from "~/services/automation.service";
 import { api } from "~/services/api";
+import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -70,7 +74,7 @@ export function meta({ }: Route.MetaArgs) {
 
 // --- Node Configuration ---
 
-type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'sms' | 'webhook' | 'tag' | 'split_test' | 'notification' | 'math_operation' | 'wait' | 'discord';
+type NodeType = 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'sms' | 'webhook' | 'tag' | 'split_test' | 'notification' | 'math_operation' | 'wait' | 'discord' | 'stripe_discount';
 
 interface NodeData {
   title: string;
@@ -97,6 +101,7 @@ const NODE_CONFIG: Record<NodeType, NodeData> = {
   math_operation: { title: "Math", icon: Calculator, color: "bg-indigo-600" },
   wait: { title: "Wait", icon: Timer, color: "bg-slate-500" },
   discord: { title: "Discord", icon: MessageSquare, color: "bg-blue-600" },
+  stripe_discount: { title: "Stripe Discount", icon: BadgePercent, color: "bg-emerald-600" },
 };
 
 // --- Custom Node Component ---
@@ -115,7 +120,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
   };
 
   return (
-    <div className={`w-[280px] bg-white rounded-2xl shadow-sm border transition-all duration-200 group relative
+    <div data-tour="automation-builder-node" className={`w-[280px] bg-white rounded-2xl shadow-sm border transition-all duration-200 group relative
       ${selected
         ? 'border-primary ring-2 ring-primary/20 shadow-lg'
         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -198,7 +203,17 @@ const CustomNode = ({ id, data, type, selected }: any) => {
             <span>{data.operand1 || '?'} {data.mathOperator || '+'} {data.operand2 || '?'} = {'{{'}{data.resultVarName || 'res'}{'}}'}</span>
           </div>
         )}
-        {!['trigger', 'action', 'condition', 'wait', 'webhook', 'discord', 'math_operation'].includes(type) && (
+        {type === 'stripe_discount' && (
+          <div className="flex items-center gap-2">
+            <BadgePercent className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="truncate">
+              {data.discountType === 'amount'
+                ? `${data.amountOff || 0} ${data.currency || ''}`
+                : `${data.percentOff || 0}%`} {data.durationType || 'once'}
+            </span>
+          </div>
+        )}
+        {!['trigger', 'action', 'condition', 'wait', 'webhook', 'discord', 'math_operation', 'stripe_discount'].includes(type) && (
           <span className="italic opacity-60">Ready to configure...</span>
         )}
       </div>
@@ -257,6 +272,7 @@ const nodeTypes = {
   math_operation: CustomNode,
   wait: CustomNode,
   discord: CustomNode,
+  stripe_discount: CustomNode,
 };
 
 // --- Main Component ---
@@ -273,6 +289,7 @@ const initialEdges: Edge[] = [
 export default function DashboardAutomation() {
   const { bio } = useBio();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const params = useParams();
   const navigate = useNavigate();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -287,9 +304,13 @@ export default function DashboardAutomation() {
   const [isSaving, setIsSaving] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [automationName, setAutomationName] = useState("My Automation");
+  const [automationName, setAutomationName] = useState(t("dashboard.automationBuilder.defaultName"));
   const [templates, setTemplates] = useState<any[]>([]);
   const [forms, setForms] = useState<any[]>([]);
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+  const [isFirstAutomation, setIsFirstAutomation] = useState(false);
 
   useEffect(() => {
     // Only load templates if user is PRO
@@ -318,6 +339,14 @@ export default function DashboardAutomation() {
       if (!data.content) data.content = 'Thank you for subscribing!';
     }
 
+    if (node.type === 'stripe_discount') {
+      if (!data.discountType) data.discountType = 'percent';
+      if (!data.percentOff) data.percentOff = 10;
+      if (!data.durationType) data.durationType = 'once';
+      if (!data.promotionCodePrefix) data.promotionCodePrefix = 'PORTYO';
+      if (!data.expiresInUnit) data.expiresInUnit = 'days';
+    }
+
     return { ...node, data };
   };
 
@@ -334,11 +363,93 @@ export default function DashboardAutomation() {
         setEdges(data.edges);
       } catch (error) {
         console.error("Failed to load automation:", error);
-        setStatusMessage({ type: 'error', message: 'Failed to find automation' });
+        setStatusMessage({ type: 'error', message: t("dashboard.automationBuilder.errors.notFound") });
       }
     };
     loadAutomation();
   }, [params.id]);
+
+  // Validate first automation via API
+  useEffect(() => {
+    const validateFirstAutomation = async () => {
+      if (!bio?.id || !currentAutomation?.id) return;
+      try {
+        const data = await getAutomationsByBio(bio.id);
+        setIsFirstAutomation(data.length === 1 && data[0]?.id === currentAutomation.id);
+      } catch (error) {
+        console.error("Failed to validate first automation:", error);
+      }
+    };
+
+    validateFirstAutomation();
+  }, [bio?.id, currentAutomation?.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+    if (primaryFromTheme) {
+      setTourPrimaryColor(primaryFromTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isFirstAutomation) return;
+
+    const hasSeenTour = window.localStorage.getItem("portyo:automation-builder-tour-done");
+    if (!hasSeenTour) {
+      setTourRun(true);
+    }
+  }, [isFirstAutomation]);
+
+  const automationBuilderSteps: Step[] = [
+    {
+      target: '[data-tour="automation-builder-header"]',
+      content: t("dashboard.tours.automationBuilder.steps.header"),
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="automation-builder-canvas"]',
+      content: t("dashboard.tours.automationBuilder.steps.canvas"),
+      placement: "top",
+    },
+    {
+      target: '[data-tour="automation-builder-palette"]',
+      content: t("dashboard.tours.automationBuilder.steps.palette"),
+      placement: "right",
+    },
+    {
+      target: '[data-tour="automation-builder-node"]',
+      content: t("dashboard.tours.automationBuilder.steps.node"),
+      placement: "right",
+    },
+    {
+      target: '[data-tour="automation-builder-actions"]',
+      content: t("dashboard.tours.automationBuilder.steps.actions"),
+      placement: "bottom",
+    },
+  ];
+
+  const handleAutomationBuilderTourCallback = (data: CallBackProps) => {
+    const { status, type, index, action } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+      const delta = action === ACTIONS.PREV ? -1 : 1;
+      setTourStepIndex(index + delta);
+      return;
+    }
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+      setTourRun(false);
+      setTourStepIndex(0);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("portyo:automation-builder-tour-done", "true");
+      }
+    }
+  };
 
   // Clear status message after 3 seconds
   useEffect(() => {
@@ -351,7 +462,7 @@ export default function DashboardAutomation() {
   // Save Draft handler
   const handleSaveDraft = async () => {
     if (!bio?.id) {
-      setStatusMessage({ type: 'error', message: 'No bio selected' });
+      setStatusMessage({ type: 'error', message: t("dashboard.automationBuilder.errors.noBio") });
       return;
     }
 
@@ -385,10 +496,10 @@ export default function DashboardAutomation() {
       }
 
       setCurrentAutomation(savedAutomation);
-      setStatusMessage({ type: 'success', message: 'Automation saved successfully!' });
+      setStatusMessage({ type: 'success', message: t("dashboard.automationBuilder.messages.saved") });
     } catch (error: any) {
       console.error("Failed to save automation:", error);
-      setStatusMessage({ type: 'error', message: error.response?.data?.message || 'Failed to save automation' });
+      setStatusMessage({ type: 'error', message: error.response?.data?.message || t("dashboard.automationBuilder.errors.save") });
     } finally {
       setIsSaving(false);
     }
@@ -408,16 +519,16 @@ export default function DashboardAutomation() {
 
       if (currentAutomation.isActive) {
         updatedAutomation = await deactivateAutomation(currentAutomation.id);
-        setStatusMessage({ type: 'success', message: 'Automation deactivated!' });
+        setStatusMessage({ type: 'success', message: t("dashboard.automationBuilder.messages.deactivated") });
       } else {
         updatedAutomation = await activateAutomation(currentAutomation.id);
-        setStatusMessage({ type: 'success', message: 'Automation activated!' });
+        setStatusMessage({ type: 'success', message: t("dashboard.automationBuilder.messages.activated") });
       }
 
       setCurrentAutomation(updatedAutomation);
     } catch (error: any) {
       console.error("Failed to toggle automation:", error);
-      setStatusMessage({ type: 'error', message: error.response?.data?.message || 'Failed to toggle automation' });
+      setStatusMessage({ type: 'error', message: error.response?.data?.message || t("dashboard.automationBuilder.errors.toggle") });
     } finally {
       setIsActivating(false);
     }
@@ -456,7 +567,7 @@ export default function DashboardAutomation() {
       const formId = sourceNode.data.elementId;
 
       if (!formId) {
-        setStatusMessage({ type: 'error', message: "Please select a form before connecting." });
+        setStatusMessage({ type: 'error', message: t("dashboard.automationBuilder.errors.selectFormBeforeConnect") });
         return;
       }
 
@@ -587,9 +698,70 @@ export default function DashboardAutomation() {
 
   const showLeadSelectionOptions = selectedNode?.type === 'action' && selectedNode?.id && isConnectedToBlogPostTrigger(selectedNode.id);
 
+  const isConnectedToStripeDiscountNode = useCallback((nodeId: string): boolean => {
+    const findConnectedDiscount = (currentNodeId: string, visited: Set<string> = new Set()): boolean => {
+      if (visited.has(currentNodeId)) return false;
+      visited.add(currentNodeId);
+
+      const currentNode = nodes.find(n => n.id === currentNodeId);
+      if (!currentNode) return false;
+
+      if (currentNode.type === 'stripe_discount') {
+        return true;
+      }
+
+      const incomingEdges = edges.filter(e => e.target === currentNodeId);
+      for (const edge of incomingEdges) {
+        if (findConnectedDiscount(edge.source, visited)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    return findConnectedDiscount(nodeId);
+  }, [nodes, edges]);
+
+  const showLeadSelectionOptionsForAction = selectedNode?.type === 'action' && selectedNode?.id && (showLeadSelectionOptions || isConnectedToStripeDiscountNode(selectedNode.id));
+
   return (
     <AuthorizationGuard minPlan="standard">
       <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50 flex-1 overflow-hidden">
+        <Joyride
+          steps={automationBuilderSteps}
+          run={tourRun}
+          stepIndex={tourStepIndex}
+          continuous
+          showSkipButton
+          spotlightClicks
+          scrollToFirstStep
+          callback={handleAutomationBuilderTourCallback}
+          styles={{
+            options: {
+              arrowColor: "#ffffff",
+              backgroundColor: "#ffffff",
+              overlayColor: "rgba(0, 0, 0, 0.45)",
+              primaryColor: tourPrimaryColor,
+              textColor: "#171717",
+              zIndex: 10000,
+            },
+            buttonNext: {
+              color: "#171717",
+              fontWeight: 700,
+            },
+            buttonBack: {
+              color: "#5b5b5b",
+            },
+            buttonSkip: {
+              color: "#5b5b5b",
+            },
+            tooltipContent: {
+              fontSize: "14px",
+              lineHeight: "1.4",
+            },
+          }}
+        />
         {/* Status Message Toast */}
         {statusMessage && (
           <div className={`absolute top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top duration-300 ${statusMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
@@ -600,7 +772,7 @@ export default function DashboardAutomation() {
         )}
 
         {/* Header Bar */}
-        <div className="h-auto md:h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 py-4 md:py-0 z-40 relative gap-4">
+        <div data-tour="automation-builder-header" className="h-auto md:h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 py-4 md:py-0 z-40 relative gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/dashboard/automation")}
@@ -614,11 +786,11 @@ export default function DashboardAutomation() {
               value={automationName}
               onChange={(e) => setAutomationName(e.target.value)}
               className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-full md:w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
-              placeholder="Automation Name"
+              placeholder={t("dashboard.automationBuilder.namePlaceholder")}
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 px-2 md:px-0">
+          <div data-tour="automation-builder-actions" className="flex items-center justify-end gap-3 px-2 md:px-0">
             {/* Status Indicator */}
             {currentAutomation && (
               <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${currentAutomation.isActive
@@ -626,7 +798,7 @@ export default function DashboardAutomation() {
                 : 'bg-gray-100 text-gray-500 border border-gray-200'
                 }`}>
                 <span className={`w-2 h-2 rounded-full ${currentAutomation.isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-                {currentAutomation.isActive ? 'Active' : 'Draft'}
+                {currentAutomation.isActive ? t("dashboard.automationBuilder.status.active") : t("dashboard.automationBuilder.status.draft")}
               </div>
             )}
 
@@ -638,7 +810,7 @@ export default function DashboardAutomation() {
               className="px-4 py-2 hover:bg-white hover:shadow-sm text-gray-600 rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-gray-200"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save Draft'}</span>
+              <span className="hidden sm:inline">{isSaving ? t("dashboard.automationBuilder.saving") : t("dashboard.automationBuilder.saveDraft")}</span>
             </button>
 
             <button
@@ -656,12 +828,12 @@ export default function DashboardAutomation() {
               ) : (
                 <Play className="w-4 h-4" />
               )}
-              <span>{isActivating ? 'Processing...' : currentAutomation?.isActive ? 'Deactivate' : 'Activate'}</span>
+              <span>{isActivating ? t("dashboard.automationBuilder.processing") : currentAutomation?.isActive ? t("dashboard.automationBuilder.deactivate") : t("dashboard.automationBuilder.activate")}</span>
             </button>
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
+        <div data-tour="automation-builder-canvas" className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
           <ReactFlowProvider>
             <ReactFlow
               nodes={nodes}
@@ -685,18 +857,19 @@ export default function DashboardAutomation() {
               <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4 !bottom-24 md:!bottom-4" />
 
               <Panel position="top-left" className="!m-0 !top-auto !bottom-0 !left-0 !right-0 md:!top-4 md:!bottom-auto md:!left-0 md:!right-auto md:!m-4 w-full md:w-auto z-10">
-                <div className="bg-white/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-xl border-t md:border border-gray-200/50 p-4 md:p-2 flex flex-row md:flex-col gap-3 md:gap-1 w-full md:w-14 items-center overflow-x-auto md:overflow-visible md:rounded-2xl no-scrollbar">
+                <div data-tour="automation-builder-palette" className="bg-white/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-xl border-t md:border border-gray-200/50 p-4 md:p-2 flex flex-row md:flex-col gap-3 md:gap-1 w-full md:w-14 items-center overflow-x-auto md:overflow-visible md:rounded-2xl no-scrollbar">
                   {[
-                    { type: 'trigger', label: 'Trigger', icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
-                    { type: 'action', label: 'Email', icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
-                    { type: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-pink-600 bg-pink-50 hover:bg-pink-100' },
-                    { type: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-red-600 bg-red-50 hover:bg-red-100' },
-                    { type: 'delay', label: 'Delay', icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
-                    { type: 'condition', label: 'Condition', icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
-                    { type: 'integration', label: 'Integration', icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
-                    { type: 'page_event', label: 'Page Event', icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
-                    { type: 'update_element', label: 'Update Element', icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
-                    { type: 'math_operation', label: 'Math', icon: Calculator, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                    { type: 'trigger', label: t("dashboard.automationBuilder.palette.trigger"), icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
+                    { type: 'action', label: t("dashboard.automationBuilder.palette.email"), icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
+                    { type: 'instagram', label: t("dashboard.automationBuilder.palette.instagram"), icon: Instagram, color: 'text-pink-600 bg-pink-50 hover:bg-pink-100' },
+                    { type: 'youtube', label: t("dashboard.automationBuilder.palette.youtube"), icon: Youtube, color: 'text-red-600 bg-red-50 hover:bg-red-100' },
+                    { type: 'delay', label: t("dashboard.automationBuilder.palette.delay"), icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
+                    { type: 'condition', label: t("dashboard.automationBuilder.palette.condition"), icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
+                    { type: 'integration', label: t("dashboard.automationBuilder.palette.integration"), icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                    { type: 'page_event', label: t("dashboard.automationBuilder.palette.pageEvent"), icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
+                    { type: 'update_element', label: t("dashboard.automationBuilder.palette.updateElement"), icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
+                    { type: 'math_operation', label: t("dashboard.automationBuilder.palette.math"), icon: Calculator, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
+                    { type: 'stripe_discount', label: t("dashboard.automationBuilder.palette.stripeDiscount"), icon: BadgePercent, color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' },
                   ].map((item) => (
                     <div
                       key={item.type}
@@ -707,7 +880,7 @@ export default function DashboardAutomation() {
                         event.dataTransfer.effectAllowed = 'move';
                       }}
                       draggable
-                      title={`Add ${item.label}`}
+                      title={t("dashboard.automationBuilder.addStep", { label: item.label })}
                       onClick={() => {
                         // For touch devices where drag might be tricky, add to center of view
                         if (window.innerWidth < 768) {
@@ -741,7 +914,7 @@ export default function DashboardAutomation() {
             <div className="absolute inset-0 md:inset-auto md:right-6 md:top-6 md:bottom-6 w-full md:w-[340px] bg-white/95 backdrop-blur-xl border-l md:border border-gray-200/60 md:rounded-2xl shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom md:slide-in-from-right duration-300">
               {/* Header */}
               <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 md:rounded-t-2xl">
-                <h2 className="font-bold text-lg text-gray-900">Configuration</h2>
+                <h2 className="font-bold text-lg text-gray-900">{t("dashboard.automationBuilder.config.title")}</h2>
                 <button
                   onClick={() => setSelectedNodeId(null)}
                   className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
@@ -755,7 +928,7 @@ export default function DashboardAutomation() {
 
                 {/* Common: Label */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Step Name</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.config.stepName")}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
@@ -768,33 +941,37 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'trigger' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Event Type</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.trigger.eventType")}</label>
                       <div className="relative">
                         <select
                           className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                           value={selectedNode.data.eventType || 'newsletter_subscribe'}
                           onChange={(e) => updateNodeData('eventType', e.target.value)}
                         >
-                          <optgroup label="📅 Appointments">
-                            <option value="booking_created">New Booking</option>
+                          <optgroup label={t("dashboard.automationBuilder.trigger.groups.appointments")}>
+                            <option value="booking_created">{t("dashboard.automationBuilder.trigger.events.bookingCreated")}</option>
                           </optgroup>
-                          <optgroup label="👁️ Page Events">
-                            <option value="bio_visit">Bio Page Visit</option>
-                            <option value="qr_scanned">QR Code Scanned</option>
-                            <option value="visit_milestone">Visit Milestone Reached</option>
-                            <option value="link_click">Link Click</option>
+                          <optgroup label={t("dashboard.automationBuilder.trigger.groups.pageEvents")}>
+                            <option value="bio_visit">{t("dashboard.automationBuilder.trigger.events.bioVisit")}</option>
+                            <option value="qr_scanned">{t("dashboard.automationBuilder.trigger.events.qrScanned")}</option>
+                            <option value="visit_milestone">{t("dashboard.automationBuilder.trigger.events.visitMilestone")}</option>
+                            <option value="view_milestone">{t("dashboard.automationBuilder.trigger.events.viewMilestone")}</option>
+                            <option value="click_milestone">{t("dashboard.automationBuilder.trigger.events.clickMilestone")}</option>
+                            <option value="link_click">{t("dashboard.automationBuilder.trigger.events.linkClick")}</option>
                           </optgroup>
-                          <optgroup label="📧 Subscriber Events">
-                            <option value="newsletter_subscribe">New Subscriber</option>
-                            <option value="subscriber_unsubscribe">Unsubscribed</option>
+                          <optgroup label={t("dashboard.automationBuilder.trigger.groups.subscriberEvents")}>
+                            <option value="newsletter_subscribe">{t("dashboard.automationBuilder.trigger.events.newsletterSubscribe")}</option>
+                            <option value="subscriber_unsubscribe">{t("dashboard.automationBuilder.trigger.events.subscriberUnsubscribe")}</option>
+                            <option value="lead_milestone">{t("dashboard.automationBuilder.trigger.events.leadMilestone")}</option>
                           </optgroup>
-                          <optgroup label="📝 Content">
-                            <option value="form_submit">Form Submit</option>
-                            <option value="blog_post_published">Blog Post Published</option>
+                          <optgroup label={t("dashboard.automationBuilder.trigger.groups.content")}>
+                            <option value="form_submit">{t("dashboard.automationBuilder.trigger.events.formSubmit")}</option>
+                            <option value="form_submit_milestone">{t("dashboard.automationBuilder.trigger.events.formSubmitMilestone")}</option>
+                            <option value="blog_post_published">{t("dashboard.automationBuilder.trigger.events.blogPostPublished")}</option>
                           </optgroup>
-                          <optgroup label="⚡ Other">
-                            <option value="webhook_received">Incoming Webhook</option>
-                            <option value="custom_event">Custom Event</option>
+                          <optgroup label={t("dashboard.automationBuilder.trigger.groups.other")}>
+                            <option value="webhook_received">{t("dashboard.automationBuilder.trigger.events.webhookReceived")}</option>
+                            <option value="custom_event">{t("dashboard.automationBuilder.trigger.events.customEvent")}</option>
                           </optgroup>
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
@@ -805,35 +982,39 @@ export default function DashboardAutomation() {
 
                     {/* Trigger Configuration Extras */}
                     {/* Milestone Selector */}
-                    {selectedNode.data.eventType === 'visit_milestone' && (
+                    {['visit_milestone', 'view_milestone', 'click_milestone', 'form_submit_milestone', 'lead_milestone'].includes(selectedNode.data.eventType) && (
                       <div className="space-y-2 p-4 bg-amber-50 rounded-xl border border-amber-200/50">
-                        <label className="block text-xs font-bold text-amber-700 uppercase tracking-wider">Milestone (Views)</label>
-                        <select
+                        <label className="block text-xs font-bold text-amber-700 uppercase tracking-wider">
+                          {selectedNode.data.eventType === 'click_milestone'
+                            ? t("dashboard.automationBuilder.trigger.milestone.clicks")
+                            : selectedNode.data.eventType === 'form_submit_milestone'
+                              ? t("dashboard.automationBuilder.trigger.milestone.formSubmissions")
+                              : selectedNode.data.eventType === 'lead_milestone'
+                                ? t("dashboard.automationBuilder.trigger.milestone.leads")
+                                : t("dashboard.automationBuilder.trigger.milestone.views")}
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
                           className="w-full px-4 py-2 bg-white border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                          value={selectedNode.data.milestoneCount || '100'}
-                          onChange={(e) => updateNodeData('milestoneCount', parseInt(e.target.value))}
-                        >
-                          <option value="10">10 Views</option>
-                          <option value="50">50 Views</option>
-                          <option value="100">100 Views</option>
-                          <option value="500">500 Views</option>
-                          <option value="1000">1,000 Views (Kilo)</option>
-                          <option value="5000">5,000 Views</option>
-                          <option value="10000">10,000 Views (Mega)</option>
-                        </select>
+                          value={selectedNode.data.milestoneCount || 100}
+                          onChange={(e) => updateNodeData('milestoneCount', parseInt(e.target.value) || 1)}
+                          placeholder={t("dashboard.automationBuilder.trigger.milestone.placeholder")}
+                        />
+                        <p className="text-[11px] text-amber-700/80">{t("dashboard.automationBuilder.trigger.milestone.hint")}</p>
                       </div>
                     )}
 
                     {/* Form Selector (Existing) */}
                     {selectedNode.data.eventType === 'form_submit' && (
                       <div className="space-y-2 p-4 bg-orange-50 rounded-xl border border-orange-200/50">
-                        <label className="block text-xs font-bold text-orange-700 uppercase tracking-wider">Select Form</label>
+                        <label className="block text-xs font-bold text-orange-700 uppercase tracking-wider">{t("dashboard.automationBuilder.trigger.selectForm")}</label>
                         <select
                           className="w-full px-4 py-2 bg-white border border-orange-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
                           value={selectedNode.data.elementId || ''}
                           onChange={(e) => updateNodeData('elementId', e.target.value)}
                         >
-                          <option value="">Select a form...</option>
+                          <option value="">{t("dashboard.automationBuilder.trigger.selectFormPlaceholder")}</option>
                           {forms
                             .filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && field.required))
                             .map(f => (
@@ -841,7 +1022,7 @@ export default function DashboardAutomation() {
                             ))}
                         </select>
                         <p className="text-xs text-orange-600">
-                          Only forms with a <strong>Required Email</strong> field are listed here.
+                          {t("dashboard.automationBuilder.trigger.selectFormHint")}
                         </p>
 
                         {/* Warnings for problematic forms */}
@@ -849,20 +1030,20 @@ export default function DashboardAutomation() {
                           <>
                             {forms.filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && field.required)).length === 0 && (
                               <p className="text-xs text-red-500 font-bold mt-1">
-                                No compatible forms found. Please ensure you have a form with a REQUIRED email field.
+                                {t("dashboard.automationBuilder.trigger.noCompatibleForms")}
                               </p>
                             )}
 
                             {forms.filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && !field.required)).length > 0 && (
                               <div className="mt-2 p-2 bg-red-50 rounded border border-red-100">
                                 <p className="text-xs text-red-600 font-semibold mb-1">
-                                  Forms missing required email:
+                                  {t("dashboard.automationBuilder.trigger.formsMissingRequired")}
                                 </p>
                                 <ul className="list-disc list-inside text-[10px] text-red-500">
                                   {forms
                                     .filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && !field.required))
                                     .map(f => (
-                                      <li key={f.id}>{f.title} (Make email required)</li>
+                                      <li key={f.id}>{t("dashboard.automationBuilder.trigger.missingRequiredItem", { title: f.title })}</li>
                                     ))}
                                 </ul>
                               </div>
@@ -883,21 +1064,21 @@ export default function DashboardAutomation() {
                           <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
                             <Mail className="w-3 h-3 text-white" />
                           </div>
-                          <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider">Load from Template</label>
+                          <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider">{t("dashboard.automationBuilder.action.loadTemplate")}</label>
                         </div>
                         <select
                           className="w-full px-4 py-2 bg-white border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
                           onChange={(e) => {
                             const template = templates.find(t => t.id === e.target.value);
                             if (template && template.html) {
-                              if (confirm("This will overwrite existing content. Continue?")) {
+                              if (confirm(t("dashboard.automationBuilder.action.confirmOverwrite"))) {
                                 updateNodeData('content', template.html);
                               }
                             }
                           }}
                           value=""
                         >
-                          <option value="">Select a template...</option>
+                          <option value="">{t("dashboard.automationBuilder.action.selectTemplate")}</option>
                           {templates.map(t => (
                             <option key={t.id} value={t.id}>{t.name}</option>
                           ))}
@@ -906,125 +1087,34 @@ export default function DashboardAutomation() {
                     )}
 
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Subject</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailSubject")}</label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-                        placeholder="Welcome {{ownerFirstName}}'s newsletter!"
+                        placeholder={t("dashboard.automationBuilder.action.subjectPlaceholder")}
                         value={selectedNode.data.subject || ''}
                         onChange={(e) => updateNodeData('subject', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Email Content</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailContent")}</label>
                       <textarea
                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[120px] resize-y"
-                        placeholder="Hi there! Thanks for subscribing to {{bioName}}..."
+                        placeholder={t("dashboard.automationBuilder.action.contentPlaceholder")}
                         value={selectedNode.data.content || ''}
                         onChange={(e) => updateNodeData('content', e.target.value)}
                       ></textarea>
                     </div>
 
-                    {/* Template Variables Documentation */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 text-blue-700">
-                        <Code className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Template Variables</span>
-                      </div>
-                      <p className="text-xs text-blue-600">Use these variables in subject or content. They'll be replaced with real values.</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Subscriber</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Your Bio</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Owner (You)</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Date/Time</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
-                        </div>
-                        {showLeadSelectionOptions && (
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-700">Blog Post</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postTitle}}"}</code>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postUrl}}"}</code>
-                          </div>
-                        )}
-
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Analytics</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{milestoneCount}}"}</code>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">Appointments</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bookingDate}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{customerName}}"}</code>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-gray-700">QR Code</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{qrValue}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{country}}"}</code>
-                        </div>
-
-                        {/* Form Variables - Show when connected to Form Trigger */}
-                        {(() => {
-                          const triggerNode = nodes.find(n => n.type === 'trigger' && n.data.eventType === 'form_submit');
-                          const formId = triggerNode?.data.elementId;
-                          const form = forms.find(f => f.id === formId);
-
-                          if (form) {
-                            return (
-                              <div className="space-y-1 col-span-2 mt-2 pt-2 border-t border-blue-200">
-                                <p className="font-semibold text-gray-700">Form: {form.title}</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {form.fields.map((field: any) => {
-                                    const safeLabel = field.label.replace(/[^a-zA-Z0-9]/g, '_');
-                                    return (
-                                      <code key={field.id} className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{" + safeLabel + "}}"}</code>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-
-                      </div>
-                      <details className="text-xs">
-                        <summary className="text-blue-600 cursor-pointer hover:text-blue-800 font-medium">More variables...</summary>
-                        <div className="mt-2 grid grid-cols-2 gap-1 text-blue-600">
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
-                        </div>
-                      </details>
-                    </div>
-
                     {/* Lead Selection Options - Only for Blog Post Trigger */}
-                    {showLeadSelectionOptions && (
+                    {showLeadSelectionOptionsForAction && (
                       <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 rounded-xl p-4 space-y-4">
                         <div className="flex items-center gap-2 text-green-700">
                           <Mail className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Lead Recipients</span>
+                          <span className="text-xs font-bold uppercase tracking-wider">{t("dashboard.automationBuilder.action.leadRecipients.title")}</span>
                         </div>
                         <p className="text-xs text-green-600">
-                          Choose how many leads should receive this email when a new blog post is published.
+                          {t("dashboard.automationBuilder.action.leadRecipients.subtitle")}
                         </p>
 
                         <div className="space-y-3">
@@ -1040,7 +1130,7 @@ export default function DashboardAutomation() {
                               className="w-4 h-4 text-green-600 focus:ring-green-500"
                             />
                             <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
-                              Send to all leads
+                              {t("dashboard.automationBuilder.action.leadRecipients.sendAll")}
                             </span>
                           </label>
 
@@ -1059,7 +1149,7 @@ export default function DashboardAutomation() {
                             />
                             <div className="flex-1">
                               <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
-                                Send to specific quantity
+                                {t("dashboard.automationBuilder.action.leadRecipients.sendSpecific")}
                               </span>
                               {selectedNode.data.sendToAllLeads === false && (
                                 <div className="mt-2 flex items-center gap-2">
@@ -1071,7 +1161,7 @@ export default function DashboardAutomation() {
                                     value={selectedNode.data.leadCount || 10}
                                     onChange={(e) => updateNodeData('leadCount', parseInt(e.target.value) || 10)}
                                   />
-                                  <span className="text-xs text-gray-500">leads</span>
+                                  <span className="text-xs text-gray-500">{t("dashboard.automationBuilder.action.leadRecipients.leads")}</span>
                                 </div>
                               )}
                             </div>
@@ -1079,6 +1169,240 @@ export default function DashboardAutomation() {
                         </div>
                       </div>
                     )}
+
+                    {/* Template Variables Documentation */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-blue-700">
+                        <Code className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">{t("dashboard.automationBuilder.action.variables.title")}</span>
+                      </div>
+                      <p className="text-xs text-blue-600">{t("dashboard.automationBuilder.action.variables.subtitle")}</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.subscriber")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.bio")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.owner")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.dateTime")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
+                        </div>
+                        {showLeadSelectionOptions && (
+                          <div className="space-y-1">
+                            <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.blogPost")}</p>
+                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postTitle}}"}</code>
+                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postUrl}}"}</code>
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.analytics")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{milestoneCount}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.stripe")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripePromotionCode}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountPercent}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountAmount}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountCurrency}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountExpiresAt}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.appointments")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bookingDate}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{customerName}}"}</code>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.qrCode")}</p>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{qrValue}}"}</code>
+                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{country}}"}</code>
+                        </div>
+
+                        {/* Form Variables - Show when connected to Form Trigger */}
+                        {(() => {
+                          const triggerNode = nodes.find(n => n.type === 'trigger' && n.data.eventType === 'form_submit');
+                          const formId = triggerNode?.data.elementId;
+                          const form = forms.find(f => f.id === formId);
+
+                          if (form) {
+                            return (
+                              <div className="space-y-1 col-span-2 mt-2 pt-2 border-t border-blue-200">
+                                <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.form", { title: form.title })}</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {form.fields.map((field: any) => {
+                                    const safeLabel = field.label.replace(/[^a-zA-Z0-9]/g, '_');
+                                    return (
+                                      <code key={field.id} className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{" + safeLabel + "}}"}</code>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+
+                      </div>
+                      <details className="text-xs">
+                        <summary className="text-blue-600 cursor-pointer hover:text-blue-800 font-medium">{t("dashboard.automationBuilder.action.variables.more")}</summary>
+                        <div className="mt-2 grid grid-cols-2 gap-1 text-blue-600">
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
+                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stripe Discount Configuration */}
+                {(selectedNode as any).type === 'stripe_discount' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Type</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        value={selectedNode.data.discountType || 'percent'}
+                        onChange={(e) => updateNodeData('discountType', e.target.value)}
+                      >
+                        <option value="percent">Percent (%)</option>
+                        <option value="amount">Fixed Amount</option>
+                      </select>
+                    </div>
+
+                    {selectedNode.data.discountType !== 'amount' && (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Percent Off</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="100"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          value={selectedNode.data.percentOff || 10}
+                          onChange={(e) => updateNodeData('percentOff', parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                    )}
+
+                    {selectedNode.data.discountType === 'amount' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Off</label>
+                          <input
+                            type="number"
+                            min="1"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            value={selectedNode.data.amountOff || 10}
+                            onChange={(e) => updateNodeData('amountOff', parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Currency</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
+                            value={selectedNode.data.currency || 'usd'}
+                            onChange={(e) => updateNodeData('currency', e.target.value.toLowerCase())}
+                            placeholder="usd"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</label>
+                        <select
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          value={selectedNode.data.durationType || 'once'}
+                          onChange={(e) => updateNodeData('durationType', e.target.value)}
+                        >
+                          <option value="once">Once</option>
+                          <option value="repeating">Repeating</option>
+                          <option value="forever">Forever</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Repeat (Months)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          disabled={(selectedNode.data.durationType || 'once') !== 'repeating'}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm disabled:opacity-60"
+                          value={selectedNode.data.durationInMonths || 3}
+                          onChange={(e) => updateNodeData('durationInMonths', parseInt(e.target.value) || 1)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Max Redemptions</label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          value={selectedNode.data.maxRedemptions || ''}
+                          onChange={(e) => updateNodeData('maxRedemptions', e.target.value ? parseInt(e.target.value) : undefined)}
+                          placeholder="Optional"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Code Prefix</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
+                          value={selectedNode.data.promotionCodePrefix || 'PORTYO'}
+                          onChange={(e) => updateNodeData('promotionCodePrefix', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Expires In</label>
+                        <input
+                          type="number"
+                          min="1"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          value={selectedNode.data.expiresInValue || ''}
+                          onChange={(e) => updateNodeData('expiresInValue', e.target.value ? parseInt(e.target.value) : undefined)}
+                          placeholder="Optional"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</label>
+                        <select
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          value={selectedNode.data.expiresInUnit || 'days'}
+                          onChange={(e) => updateNodeData('expiresInUnit', e.target.value)}
+                        >
+                          <option value="minutes">Minutes</option>
+                          <option value="hours">Hours</option>
+                          <option value="days">Days</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-4 text-xs text-emerald-700">
+                      Use <strong>{"{{stripePromotionCode}}"}</strong> in Email content to send the discount code automatically.
+                    </div>
                   </div>
                 )}
 

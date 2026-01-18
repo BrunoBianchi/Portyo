@@ -257,6 +257,93 @@ export const archiveStripeProduct = async (bioId: string, productId: string) => 
     return product;
 };
 
+export const createStripePromotionCode = async (
+    bioId: string,
+    data: {
+        discountType: 'percent' | 'amount';
+        percentOff?: number;
+        amountOff?: number;
+        currency?: string;
+        duration?: 'once' | 'repeating' | 'forever';
+        durationInMonths?: number;
+        maxRedemptions?: number;
+        codePrefix?: string;
+        expiresInValue?: number;
+        expiresInUnit?: 'minutes' | 'hours' | 'days';
+        name?: string;
+    }
+) => {
+    const bioObject = await findBioById(bioId, ['integrations']);
+    if (!bioObject) throw new Error("Bio not found");
+
+    const stripeIntegration = bioObject.integrations?.find(i => i.name === "stripe");
+
+    if (!stripeIntegration || !stripeIntegration.account_id) {
+        throw new Error("Stripe account not connected");
+    }
+
+    const duration = data.duration || 'once';
+    const couponParams: Stripe.CouponCreateParams = {
+        duration,
+        name: data.name,
+    };
+
+    if (data.discountType === 'percent') {
+        if (!data.percentOff || data.percentOff <= 0 || data.percentOff > 100) {
+            throw new Error("Invalid percent discount");
+        }
+        couponParams.percent_off = data.percentOff;
+    } else {
+        if (!data.amountOff || data.amountOff <= 0 || !data.currency) {
+            throw new Error("Invalid amount discount");
+        }
+        couponParams.amount_off = Math.round(data.amountOff * 100);
+        couponParams.currency = data.currency;
+    }
+
+    if (duration === 'repeating') {
+        couponParams.duration_in_months = data.durationInMonths || 3;
+    }
+
+    const coupon = await stripe.coupons.create(couponParams, {
+        stripeAccount: stripeIntegration.account_id,
+    });
+
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const prefix = (data.codePrefix || 'PORTYO').toUpperCase().replace(/\s+/g, '');
+    const code = `${prefix}-${randomPart}`;
+
+    let expiresAt: number | undefined;
+    if (data.expiresInValue && data.expiresInValue > 0) {
+        const unit = data.expiresInUnit || 'days';
+        const multiplier = unit === 'minutes' ? 60 : unit === 'hours' ? 3600 : 86400;
+        expiresAt = Math.floor(Date.now() / 1000) + data.expiresInValue * multiplier;
+    }
+
+    const promo = await stripe.promotionCodes.create({
+        promotion: {
+            type: 'coupon',
+            coupon: coupon.id,
+        },
+        code,
+        max_redemptions: data.maxRedemptions,
+        expires_at: expiresAt,
+    }, {
+        stripeAccount: stripeIntegration.account_id,
+    });
+
+    return {
+        couponId: coupon.id,
+        promotionCodeId: promo.id,
+        code: promo.code,
+        expiresAt,
+        percentOff: coupon.percent_off || null,
+        amountOff: coupon.amount_off ? coupon.amount_off / 100 : null,
+        currency: coupon.currency || null,
+        duration: coupon.duration,
+    };
+};
+
 export const createProposalPaymentLink = async (proposalId: string, amount: number, slotName: string, duration: number, connectedAccountId: string) => {
     // Calculate application fee (5%)
     const unitAmount = Math.round(amount * 100); // Convert to cents

@@ -105,20 +105,26 @@ router.post("/track", async (req: Request, res: Response) => {
         if (type === 'view') {
             await bioRepository.increment({ id: bioId }, 'views', 1);
             
-            // Check for milestones
             const updatedBio = await bioRepository.findOne({ where: { id: bioId } });
             if (updatedBio) {
-                const milestones = [10, 50, 100, 500, 1000, 5000, 10000];
-                if (milestones.includes(updatedBio.views)) {
-                    const { triggerAutomation } = await import("../../../shared/services/automation.service");
-                    triggerAutomation(bioId, 'visit_milestone', {
-                        milestoneCount: updatedBio.views,
-                        bioName: updatedBio.sufix
-                    }).catch(err => console.error("Failed to trigger milestone automation", err));
-                }
+                const { triggerAutomation } = await import("../../../shared/services/automation.service");
+                const payload = {
+                    milestoneCount: updatedBio.views,
+                    bioName: updatedBio.sufix
+                };
+                triggerAutomation(bioId, 'view_milestone', payload).catch(err => console.error("Failed to trigger view milestone automation", err));
+                triggerAutomation(bioId, 'visit_milestone', payload).catch(err => console.error("Failed to trigger legacy visit milestone automation", err));
             }
         } else {
             await bioRepository.increment({ id: bioId }, 'clicks', 1);
+            const updatedBio = await bioRepository.findOne({ where: { id: bioId } });
+            if (updatedBio) {
+                const { triggerAutomation } = await import("../../../shared/services/automation.service");
+                triggerAutomation(bioId, 'click_milestone', {
+                    milestoneCount: updatedBio.clicks,
+                    bioName: updatedBio.sufix
+                }).catch(err => console.error("Failed to trigger click milestone automation", err));
+            }
         }
 
         return res.status(200).json({ success: true });

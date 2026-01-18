@@ -7,6 +7,8 @@ import { useAuth } from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { useTranslation } from "react-i18next";
 
 interface Form {
     id: string;
@@ -21,18 +23,84 @@ export default function DashboardFormsList() {
     const navigate = useNavigate();
     const { bio } = useBio();
     const { user } = useAuth();
+    const { t } = useTranslation();
     const [forms, setForms] = useState<Form[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
     const [deletingForm, setDeletingForm] = useState<Form | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
 
     useEffect(() => {
         if (bio?.id) {
             fetchForms();
         }
     }, [bio?.id]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:forms-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const formsTourSteps: Step[] = [
+        {
+            target: "[data-tour=\"forms-header\"]",
+            content: t("dashboard.tours.forms.steps.header"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"forms-create\"]",
+            content: t("dashboard.tours.forms.steps.create"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"forms-grid\"]",
+            content: t("dashboard.tours.forms.steps.grid"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"forms-card\"]",
+            content: t("dashboard.tours.forms.steps.card"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"forms-answers\"]",
+            content: t("dashboard.tours.forms.steps.answers"),
+            placement: "top",
+        },
+    ];
+
+    const handleFormsTourCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:forms-tour-done", "true");
+            }
+        }
+    };
 
     const fetchForms = async () => {
         try {
@@ -60,13 +128,13 @@ export default function DashboardFormsList() {
         try {
             setIsLoading(true);
             const response = await api.post(`/form/bios/${bio.id}/forms`, {
-                title: "Untitled Form",
+                title: t("dashboard.forms.defaultName"),
                 fields: []
             });
             navigate(`/dashboard/forms/${response.data.id}`);
         } catch (err: any) {
             console.error("Failed to create form", err);
-            setError(err.response?.data?.error || "Failed to create form");
+            setError(err.response?.data?.error || t("dashboard.forms.createError"));
             setTimeout(() => setError(null), 5000);
         } finally {
             setIsLoading(false);
@@ -88,7 +156,7 @@ export default function DashboardFormsList() {
             setDeletingForm(null);
         } catch (err) {
             console.error("Failed to delete form", err);
-            alert("Failed to delete form");
+            alert(t("dashboard.forms.deleteError"));
         } finally {
             setIsDeleting(false);
         }
@@ -98,12 +166,54 @@ export default function DashboardFormsList() {
 
     return (
         <div className="p-8 max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+            <Joyride
+                steps={formsTourSteps}
+                run={tourRun}
+                stepIndex={tourStepIndex}
+                continuous
+                showSkipButton
+                spotlightClicks
+                scrollToFirstStep
+                callback={handleFormsTourCallback}
+                locale={{
+                    back: t("dashboard.tours.common.back"),
+                    close: t("dashboard.tours.common.close"),
+                    last: t("dashboard.tours.common.last"),
+                    next: t("dashboard.tours.common.next"),
+                    skip: t("dashboard.tours.common.skip"),
+                }}
+                styles={{
+                    options: {
+                        arrowColor: "#ffffff",
+                        backgroundColor: "#ffffff",
+                        overlayColor: "rgba(0, 0, 0, 0.45)",
+                        primaryColor: tourPrimaryColor,
+                        textColor: "#171717",
+                        zIndex: 10000,
+                    },
+                    buttonNext: {
+                        color: "#171717",
+                        fontWeight: 700,
+                    },
+                    buttonBack: {
+                        color: "#5b5b5b",
+                    },
+                    buttonSkip: {
+                        color: "#5b5b5b",
+                    },
+                    tooltipContent: {
+                        fontSize: "14px",
+                        lineHeight: "1.4",
+                    },
+                }}
+            />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10" data-tour="forms-header">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Forms</h1>
-                    <p className="text-gray-500 text-medium">Create and manage your custom forms to collect data.</p>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t("dashboard.forms.title")}</h1>
+                    <p className="text-gray-500 text-medium">{t("dashboard.forms.subtitle")}</p>
                 </div>
                 <button
+                    data-tour="forms-create"
                     onClick={createNewForm}
                     className="group bg-gray-900 text-white pl-4 pr-5 py-3 rounded-full font-bold shadow-lg hover:bg-black hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-3 w-fit"
                     disabled={isLoading}
@@ -112,7 +222,7 @@ export default function DashboardFormsList() {
                         <Plus className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex flex-col items-start leading-none gap-0.5">
-                        <span className="text-sm">Create Form</span>
+                        <span className="text-sm">{t("dashboard.forms.create")}</span>
                         <span className="text-[10px] text-gray-400 font-mono">
                             {forms.length} / {
                                 (() => {
@@ -143,24 +253,25 @@ export default function DashboardFormsList() {
                     ))}
                 </div>
             ) : forms.length === 0 ? (
-                <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-12 flex flex-col items-center justify-center text-center">
+                <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-12 flex flex-col items-center justify-center text-center" data-tour="forms-grid">
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                         <FileText className="w-8 h-8 text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">No forms yet</h3>
-                    <p className="text-gray-500 mb-6 max-w-sm">Create your first form to start collecting data from your visitors.</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{t("dashboard.forms.emptyTitle")}</h3>
+                    <p className="text-gray-500 mb-6 max-w-sm">{t("dashboard.forms.emptySubtitle")}</p>
                     <button
                         onClick={createNewForm}
                         className="btn btn-primary"
                     >
-                        Create your first form
+                        {t("dashboard.forms.emptyCta")}
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {forms.map((form) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="forms-grid">
+                    {forms.map((form, index) => (
                         <Link
                             key={form.id}
+                            data-tour={index === 0 ? "forms-card" : undefined}
                             to={`/dashboard/forms/${form.id}`}
                             className="group bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex flex-col h-full"
                         >
@@ -178,23 +289,24 @@ export default function DashboardFormsList() {
                                 </div>
                             </div>
 
-                            <h3 className="font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors">{form.title || "Untitled Form"}</h3>
-                            <p className="text-sm text-gray-500 mb-6">Last updated: {new Date(form.updatedAt).toLocaleDateString()}</p>
+                            <h3 className="font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors">{form.title || t("dashboard.forms.defaultName")}</h3>
+                            <p className="text-sm text-gray-500 mb-6">{t("dashboard.forms.lastUpdated", { date: new Date(form.updatedAt).toLocaleDateString() })}</p>
 
                             <div className="mt-auto flex items-center justify-between text-sm font-medium text-gray-600">
                                 <div className="flex items-center gap-4">
-                                    <span>{form.fields.length} Fields</span>
+                                    <span>{t("dashboard.forms.fieldsCount", { count: form.fields.length })}</span>
                                     <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                    <span>{form.submissions} Submissions</span>
+                                    <span>{t("dashboard.forms.submissionsCount", { count: form.submissions })}</span>
                                 </div>
                                 <button
+                                    data-tour={index === 0 ? "forms-answers" : undefined}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         navigate(`/dashboard/forms/${form.id}/answers`);
                                     }}
                                     className="text-primary hover:underline font-bold"
                                 >
-                                    View Answers
+                                    {t("dashboard.forms.viewAnswers")}
                                 </button>
                             </div>
                         </Link>
@@ -208,23 +320,23 @@ export default function DashboardFormsList() {
                         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
                             <Trash2 className="w-6 h-6" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Form?</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.forms.deleteTitle")}</h3>
                         <p className="text-gray-500 text-sm mb-6">
-                            Are you sure you want to delete <span className="font-semibold text-gray-700">"{deletingForm.title || "Untitled Form"}"</span>? This action cannot be undone and will delete all collected answers.
+                            {t("dashboard.forms.deleteDescription", { title: deletingForm.title || t("dashboard.forms.defaultName") })}
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeletingForm(null)}
                                 className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.forms.cancel")}
                             </button>
                             <button
                                 onClick={handleConfirmDelete}
                                 disabled={isDeleting}
                                 className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                             >
-                                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+                                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.forms.delete")}
                             </button>
                         </div>
                     </div>

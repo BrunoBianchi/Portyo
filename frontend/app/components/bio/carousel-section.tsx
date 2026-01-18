@@ -129,9 +129,9 @@ export default function CarouselSection() {
         {items.map((user, index) => (
           <div
             key={`${user.username}-${index}`}
-            className="relative w-[240px] h-[320px] mx-3 rounded-2xl group cursor-pointer shrink-0 [perspective:1000px]"
+            className="relative w-[240px] h-[320px] mx-3 rounded-2xl overflow-hidden group cursor-pointer shrink-0 [perspective:1000px]"
           >
-            <div className="relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+            <div className="relative w-full h-full rounded-2xl overflow-hidden transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
               {/* Front Face */}
               <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
                 <img

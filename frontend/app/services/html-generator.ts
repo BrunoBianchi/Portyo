@@ -116,6 +116,46 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`;
   }
 
+  if (block.type === "whatsapp") {
+    const phone = (block.whatsappNumber || "").replace(/\D/g, "");
+    const message = block.whatsappMessage || "Olá! Quero falar com você.";
+    const label = block.title || "Falar no WhatsApp";
+    const style = block.whatsappStyle || "solid";
+    const shape = block.whatsappShape || "pill";
+    const accent = block.accent || "#25D366";
+    const textColor = block.textColor || "#ffffff";
+    const href = phone ? `https://wa.me/${phone}${message ? `?text=${encodeURIComponent(message)}` : ""}` : "#";
+
+    let css = "display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; padding:14px 20px; font-weight:700; font-size:15px; text-decoration:none; transition:all 240ms ease;";
+
+    if (shape === "pill") css += " border-radius:999px;";
+    else if (shape === "square") css += " border-radius:10px;";
+    else css += " border-radius:16px;";
+
+    if (style === "outline") {
+      css += ` background:transparent; border:2px solid ${accent}; color:${accent};`;
+    } else if (style === "glass") {
+      css += ` background:rgba(255,255,255,0.2); color:${textColor}; border:1px solid rgba(255,255,255,0.35); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 10px 30px rgba(0,0,0,0.08);`;
+    } else if (style === "gradient") {
+      css += ` background:linear-gradient(135deg, ${accent} 0%, #128C7E 100%); color:${textColor}; box-shadow:0 12px 25px rgba(18, 140, 126, 0.35);`;
+    } else if (style === "neon") {
+      css += ` background:rgba(0,0,0,0.05); color:${accent}; border:1px solid ${accent}; box-shadow:0 0 14px ${accent}55, inset 0 0 12px ${accent}33;`;
+    } else if (style === "minimal") {
+      css += ` background:transparent; color:${accent}; border-bottom:2px solid ${accent}55; border-radius:0; padding-left:0; padding-right:0;`;
+    } else if (style === "dark") {
+      css += ` background:#0f172a; color:#ffffff; border:1px solid rgba(255,255,255,0.08); box-shadow:0 10px 24px rgba(15, 23, 42, 0.35);`;
+    } else if (style === "soft") {
+      css += ` background:${accent}; color:${textColor}; box-shadow:0 12px 25px rgba(37, 211, 102, 0.35);`;
+    } else {
+      css += ` background:${accent}; color:${textColor}; box-shadow:0 8px 20px rgba(37, 211, 102, 0.25);`;
+    }
+
+    const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>`;
+    const targetAttr = phone ? " target=\"_blank\" rel=\"noopener noreferrer\"" : "";
+
+    return `\n${extraHtml}<section style="padding:12px 0;">\n  <a href="${escapeHtml(href)}"${targetAttr} class="${animationClass}" style="${css} ${animationStyle}">${icon}<span>${escapeHtml(label)}</span></a>\n</section>`;
+  }
+
 
   if (block.type === "button") {
     const bg = block.accent || "#111827";

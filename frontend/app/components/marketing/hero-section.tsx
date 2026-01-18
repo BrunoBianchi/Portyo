@@ -218,7 +218,7 @@ export default function HeroSection() {
           className={`mt-10 w-full max-w-xl transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
         >
-          <ClaimUsernameInput variant="minimal" />
+          <ClaimUsernameInput />
         </div>
 
         {/* Product Hunt Badge */}

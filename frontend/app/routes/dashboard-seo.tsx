@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { ImageUpload } from "~/components/dashboard/editor/image-upload";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { InfoTooltip } from "~/components/shared/info-tooltip";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -34,6 +36,9 @@ export default function DashboardSeo() {
     const [ogImage, setOgImage] = useState("");
     const [customDomain, setCustomDomain] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
 
     useEffect(() => {
         if (bio) {
@@ -47,6 +52,63 @@ export default function DashboardSeo() {
             setCustomDomain(bio.customDomain || "");
         }
     }, [bio]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:seo-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const seoTourSteps: Step[] = [
+        {
+            target: "[data-tour=\"seo-header\"]",
+            content: t("dashboard.tours.seo.steps.header"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"seo-save\"]",
+            content: t("dashboard.tours.seo.steps.save"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"seo-basic\"]",
+            content: t("dashboard.tours.seo.steps.basic"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"seo-social\"]",
+            content: t("dashboard.tours.seo.steps.social"),
+            placement: "top",
+        },
+    ];
+
+    const handleSeoTourCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:seo-tour-done", "true");
+            }
+        }
+    };
 
     const handleSave = async () => {
         if (!bio) return;
@@ -83,12 +145,47 @@ export default function DashboardSeo() {
             </div>
         }>
             <div className="p-4 md:p-6 max-w-5xl mx-auto pb-12">
-                <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <Joyride
+                    steps={seoTourSteps}
+                    run={tourRun}
+                    stepIndex={tourStepIndex}
+                    continuous
+                    showSkipButton
+                    spotlightClicks
+                    scrollToFirstStep
+                    callback={handleSeoTourCallback}
+                    styles={{
+                        options: {
+                            arrowColor: "#ffffff",
+                            backgroundColor: "#ffffff",
+                            overlayColor: "rgba(0, 0, 0, 0.45)",
+                            primaryColor: tourPrimaryColor,
+                            textColor: "#171717",
+                            zIndex: 10000,
+                        },
+                        buttonNext: {
+                            color: "#171717",
+                            fontWeight: 700,
+                        },
+                        buttonBack: {
+                            color: "#5b5b5b",
+                        },
+                        buttonSkip: {
+                            color: "#5b5b5b",
+                        },
+                        tooltipContent: {
+                            fontSize: "14px",
+                            lineHeight: "1.4",
+                        },
+                    }}
+                />
+                <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="seo-header">
                     <div>
                         <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">{t("dashboard.seo.title")}</h1>
                         <p className="text-text-muted text-sm">{t("dashboard.seo.subtitle")}</p>
                     </div>
                     <button
+                        data-tour="seo-save"
                         onClick={handleSave}
                         disabled={isSaving}
                         className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary-hover transition-all active:scale-95 shadow-lg shadow-primary/20 hover:shadow-primary/30 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
@@ -109,13 +206,16 @@ export default function DashboardSeo() {
 
                 <div className="space-y-6">
                     {/* Basic SEO */}
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6">
+                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-basic">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
                             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
                                 <Search className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.seo.section.search.title")}</h2>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight flex items-center gap-2">
+                                    {t("dashboard.seo.section.search.title")}
+                                    <InfoTooltip content={t("tooltips.seo.whatIsSeo")} position="right" />
+                                </h2>
                                 <p className="text-text-muted text-sm">{t("dashboard.seo.section.search.subtitle")}</p>
                             </div>
                         </div>
@@ -174,7 +274,7 @@ export default function DashboardSeo() {
                     </section>
 
                     {/* Social Media */}
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6">
+                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-social">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
                             <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg">
                                 <Share2 className="w-6 h-6" />

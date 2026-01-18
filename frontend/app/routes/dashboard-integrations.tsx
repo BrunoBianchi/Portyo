@@ -19,6 +19,7 @@ import {
 } from "~/components/shared/icons";
 import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export const meta: MetaFunction = () => {
   return [
@@ -127,6 +128,9 @@ export default function DashboardIntegrations() {
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
   const baseIntegrations = useMemo(() => buildIntegrations(t), [t]);
   const [integrations, setIntegrations] = useState<Integration[]>(baseIntegrations);
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
 
@@ -142,6 +146,68 @@ export default function DashboardIntegrations() {
       })
     );
   }, [baseIntegrations]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSeenTour = window.localStorage.getItem("portyo:integrations-tour-done");
+    if (!hasSeenTour) {
+      setTourRun(true);
+    }
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+    if (primaryFromTheme) {
+      setTourPrimaryColor(primaryFromTheme);
+    }
+  }, []);
+
+  const integrationsTourSteps: Step[] = [
+    {
+      target: "[data-tour=\"integrations-header\"]",
+      content: t("dashboard.tours.integrations.steps.header"),
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour=\"integrations-filters\"]",
+      content: t("dashboard.tours.integrations.steps.filters"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"integrations-grid\"]",
+      content: t("dashboard.tours.integrations.steps.grid"),
+      placement: "top",
+    },
+    {
+      target: "[data-tour=\"integrations-card\"]",
+      content: t("dashboard.tours.integrations.steps.card"),
+      placement: "top",
+    },
+    {
+      target: "[data-tour=\"integrations-action\"]",
+      content: t("dashboard.tours.integrations.steps.action"),
+      placement: "top",
+    },
+  ];
+
+  const handleIntegrationsTourCallback = (data: CallBackProps) => {
+    const { status, type, index, action } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+      const delta = action === ACTIONS.PREV ? -1 : 1;
+      setTourStepIndex(index + delta);
+      return;
+    }
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+      setTourRun(false);
+      setTourStepIndex(0);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("portyo:integrations-tour-done", "true");
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchIntegrations = async () => {
@@ -283,13 +349,47 @@ export default function DashboardIntegrations() {
   return (
     <AuthorizationGuard>
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="mb-8">
+        <Joyride
+          steps={integrationsTourSteps}
+          run={tourRun}
+          stepIndex={tourStepIndex}
+          continuous
+          showSkipButton
+          spotlightClicks
+          scrollToFirstStep
+          callback={handleIntegrationsTourCallback}
+          styles={{
+            options: {
+              arrowColor: "#ffffff",
+              backgroundColor: "#ffffff",
+              overlayColor: "rgba(0, 0, 0, 0.45)",
+              primaryColor: tourPrimaryColor,
+              textColor: "#171717",
+              zIndex: 10000,
+            },
+            buttonNext: {
+              color: "#171717",
+              fontWeight: 700,
+            },
+            buttonBack: {
+              color: "#5b5b5b",
+            },
+            buttonSkip: {
+              color: "#5b5b5b",
+            },
+            tooltipContent: {
+              fontSize: "14px",
+              lineHeight: "1.4",
+            },
+          }}
+        />
+        <div className="mb-8" data-tour="integrations-header">
           <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.integrations.title")}</h1>
           <p className="text-gray-500 mt-1">{t("dashboard.integrations.subtitle")}</p>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide" data-tour="integrations-filters">
           {(["all", "social", "content", "marketing", "analytics"] as const).map((category) => (
             <button
               key={category}
@@ -305,10 +405,11 @@ export default function DashboardIntegrations() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredIntegrations.map((integration) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="integrations-grid">
+          {filteredIntegrations.map((integration, index) => (
             <div
               key={integration.id}
+              data-tour={index === 0 ? "integrations-card" : undefined}
               className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 flex flex-col h-full group"
             >
               <div className="flex items-start justify-between mb-4">
@@ -344,6 +445,7 @@ export default function DashboardIntegrations() {
                   </button>
                 ) : (
                   <button
+                    data-tour={index === 0 ? "integrations-action" : undefined}
                     onClick={() => {
                       if (integration.id === "stripe" && integration.status === "connected") {
                         handleStripeDashboard();

@@ -4,7 +4,7 @@ import HeroSection from "~/components/marketing/hero-section";
 const CarouselSection = lazy(() => import("~/components/bio/carousel-section"));
 const BuiltForEveryoneSection = lazy(() => import("~/components/marketing/built-for-everyone"));
 const AnalyticsSection = lazy(() => import("~/components/dashboard/analytics-section"));
-const FeaturedSection = lazy(() => import("~/components/marketing/featured-section"));
+const WhoUsesSection = lazy(() => import("~/components/marketing/who-uses-section"));
 const FeaturesSection = lazy(() => import("~/components/marketing/features-section"));
 const PricingSection = lazy(() => import("~/components/marketing/pricing-section"));
 const BlogSection = lazy(() => import("~/components/bio/blog-section"));
@@ -24,8 +24,8 @@ export default function LandingPage() {
                 <Suspense fallback={<div className="min-h-[520px] w-full" />}>
                     <AnalyticsSection />
                 </Suspense>
-                <Suspense fallback={<div className="min-h-[220px] w-full" />}>
-                    <FeaturedSection />
+                <Suspense fallback={<div className="min-h-[320px] w-full" />}>
+                    <WhoUsesSection />
                 </Suspense>
                 <Suspense fallback={<div className="min-h-[720px] w-full" />}>
                     <FeaturesSection />

@@ -24,6 +24,15 @@
     },
     "about": {
       "title": "Sobre | Portyo",
+      "automationBuilder": {
+        "steps": {
+          "header": "Este é o construtor de automações. Dê um nome e gerencie o status aqui.",
+          "canvas": "Monte o fluxo neste canvas. Conecte etapas para definir a jornada.",
+          "palette": "Arraste um gatilho ou ação desta barra para o canvas.",
+          "node": "Clique em um nó para configurar os detalhes e o comportamento.",
+          "actions": "Salve como rascunho ou ative a automação quando estiver pronto."
+        }
+      },
       "description": "Estamos capacitando criadores a construírem seu futuro."
     },
     "pricing": {
@@ -146,6 +155,168 @@
       "upgradeBody": "Tenha análises detalhadas, domínio personalizado e remova a marca Portyo da sua página.",
       "upgradeCta": "Fazer upgrade",
       "vsLastMonth": "vs mês passado"
+    },
+    "tours": {
+      "common": {
+        "back": "Voltar",
+        "close": "Fechar",
+        "last": "Concluir",
+        "next": "Próximo",
+        "skip": "Pular"
+      },
+      "overview": {
+        "steps": {
+          "welcome": "Bem-vindo à Visão geral! Aqui você vê o resumo do seu desempenho.",
+          "stats": "Esses cards mostram visualizações, cliques e CTR médio.",
+          "sales": "Acompanhe vendas, receita e tendência diária neste painel.",
+          "activity": "Atividades recentes e filtros rápidos para analisar eventos.",
+          "sidebar": "Este é o menu principal do seu dashboard para navegação.",
+          "navEditor": "Abra o editor para personalizar sua página.",
+          "navForms": "Crie formulários e capture leads aqui.",
+          "navProducts": "Gerencie produtos e vendas nesta seção.",
+          "navIntegrations": "Conecte integrações como Stripe e outros apps.",
+          "navSettings": "Acesse configurações e preferências da conta."
+        }
+      },
+      "editor": {
+        "steps": {
+          "intro": "Este é o editor. Você controla toda a estrutura da sua página.",
+          "palette": "Arraste um bloco da lista para montar sua página (drag & drop).",
+          "canvas": "Solte os blocos aqui e reordene arrastando pela alça.",
+          "block": "Clique em um card para editar conteúdo e ajustar cor e fonte.",
+          "settingsTab": "Abra Configurações para ajustar estilos globais (fontes, fundo, cards).",
+          "typography": "Troque a fonte do site ou envie uma fonte personalizada.",
+          "cardStyle": "Defina cor, opacidade e efeitos dos cards para sua marca.",
+          "preview": "Prévia ao vivo do resultado final. Suas edições aparecem aqui.",
+          "mobilePreview": "Use o preview mobile para ver no celular."
+        }
+      },
+      "leads": {
+        "steps": {
+          "header": "Gerencie seus leads e ações rápidas por aqui.",
+          "toggle": "Ative ou pause a captura de leads com este botão.",
+          "export": "Exporte todos os leads em CSV com um clique.",
+          "stats": "Métricas rápidas: total, novos do dia e taxa de conversão.",
+          "search": "Pesquise por e-mail e filtre resultados.",
+          "table": "Lista completa de leads com ações para enviar e remover.",
+          "bulk": "Selecione vários leads para enviar, exportar ou excluir em lote."
+        }
+      },
+      "products": {
+        "steps": {
+          "header": "Gerencie seus produtos e o status do catálogo aqui.",
+          "add": "Clique aqui para adicionar um novo produto.",
+          "fee": "Este banner mostra a taxa da loja e o atalho para upgrade.",
+          "search": "Pesquise produtos e filtre por status.",
+          "grid": "Seus produtos aparecem aqui.",
+          "card": "Este é um card de produto. Edite ou remova nas ações.",
+          "addPlaceholder": "Use este atalho para criar outro produto rapidamente."
+        }
+      },
+      "portfolio": {
+        "steps": {
+          "header": "Gerencie seu portfólio e destaque projetos aqui.",
+          "add": "Adicione um novo projeto ao portfólio.",
+          "filters": "Filtre projetos por categoria.",
+          "grid": "Seus projetos do portfólio aparecem aqui.",
+          "card": "Este é um card de projeto. Edite ou exclua nas ações.",
+          "addPlaceholder": "Use este atalho para criar outro projeto rapidamente."
+        }
+      },
+      "blog": {
+        "steps": {
+          "header": "Gerencie o conteúdo do seu blog aqui.",
+          "newPost": "Crie um novo post com este botão.",
+          "toolbar": "Pesquise e filtre seus posts aqui.",
+          "table": "A lista de posts aparece aqui.",
+          "row": "Este é um post. Use as ações para editar ou excluir."
+        }
+      },
+      "qrcode": {
+        "steps": {
+          "header": "Gerencie e compartilhe seus códigos QR aqui.",
+          "create": "Crie um novo QR code adicionando uma URL de destino.",
+          "list": "Seus QR codes salvos aparecem aqui. Selecione para pré-visualizar.",
+          "preview": "Pré-visualize o QR code selecionado e copie o link.",
+          "appearance": "Personalize cores e aparência do QR code.",
+          "download": "Baixe o QR code em PNG."
+        }
+      },
+      "marketing": {
+        "steps": {
+          "header": "Gerencie slots de marketing e propostas aqui.",
+          "create": "Crie um novo slot de publicidade para sua página.",
+          "stripe": "Conecte o Stripe para receber pagamentos dos anunciantes.",
+          "grid": "Seus slots de marketing aparecem aqui.",
+          "card": "Este é um card de slot com status e preços.",
+          "proposals": "Veja propostas e gerencie aplicações aqui."
+        }
+      },
+      "scheduler": {
+        "steps": {
+          "header": "Gerencie agendamentos e disponibilidade aqui.",
+          "status": "Pause ou retome os agendamentos neste controle.",
+          "tabs": "Alterne entre Hoje, Agendamentos e Disponibilidade.",
+          "filters": "Filtre agendamentos por status ou data.",
+          "bookings": "A lista de agendamentos aparece aqui.",
+          "availability": "Defina sua disponibilidade semanal aqui.",
+          "blocked": "Bloqueie datas específicas no calendário."
+        }
+      },
+      "templates": {
+        "steps": {
+          "header": "Gerencie seus modelos de e-mail aqui.",
+          "create": "Crie um novo modelo de e-mail.",
+          "search": "Pesquise modelos pelo nome.",
+          "grid": "Seus modelos aparecem aqui.",
+          "card": "Este é um card de modelo. Edite ou exclua por aqui."
+        }
+      },
+      "integrations": {
+        "steps": {
+          "header": "Conecte e gerencie suas integrações aqui.",
+          "filters": "Filtre integrações por categoria.",
+          "grid": "Suas integrações aparecem aqui.",
+          "card": "Este é um card de integração com status e descrição.",
+          "action": "Use este botão para conectar ou gerenciar a integração."
+        }
+      },
+      "automation": {
+        "steps": {
+          "header": "Gerencie suas automações aqui.",
+          "create": "Crie um novo fluxo de automação.",
+          "usage": "Acompanhe o uso de e-mails nas automações.",
+          "list": "Sua lista de automações aparece aqui.",
+          "card": "Este é um card de automação com status e métricas.",
+          "actions": "Use estes botões para ativar, editar ou excluir."
+        }
+      },
+      "forms": {
+        "steps": {
+          "header": "Gerencie seus formulários aqui.",
+          "create": "Crie um novo formulário para coletar dados.",
+          "grid": "Seus formulários aparecem aqui.",
+          "card": "Este é um card de formulário com detalhes básicos.",
+          "answers": "Veja as respostas enviadas deste formulário."
+        }
+      },
+      "seo": {
+        "steps": {
+          "header": "Gerencie suas configurações de SEO aqui.",
+          "save": "Salve suas alterações de SEO aqui.",
+          "basic": "Edite título, descrição, palavras‑chave e favicon.",
+          "social": "Personalize o título, descrição e imagem para redes sociais."
+        }
+      },
+      "analytics": {
+        "steps": {
+          "header": "Gerencie as configurações de análises aqui.",
+          "save": "Salve suas configurações de análises.",
+          "overview": "Veja o resumo do Google Analytics aqui.",
+          "codes": "Adicione IDs de rastreamento como Google Analytics e Pixel.",
+          "indexing": "Controle a indexação do seu site nos buscadores."
+        }
+      }
     },
     "leads": {
       "title": "Audiência",
@@ -514,7 +685,9 @@
         "mapAddress": "Rua Principal 123, Cidade",
         "featuredTitle": "Batom Glow",
         "affiliateTitle": "Copie meu cupom",
-        "portfolioTitle": "Portfólio"
+        "portfolioTitle": "Portfólio",
+        "whatsappTitle": "Falar no WhatsApp",
+        "whatsappMessage": "Olá! Gostaria de falar com você."
       },
       "event": {
         "defaultTitle": "Webinar ao vivo",
@@ -662,6 +835,30 @@
           "secondaryShadow": "Secundária / Sombra",
           "sensitiveContent": "Conteúdo sensível",
           "mark18": "Marcar como conteúdo +18"
+        },
+        "whatsapp": {
+          "helper": "Crie um botão de contato que abre o WhatsApp com mensagem pré-preenchida.",
+          "label": "Texto do botão",
+          "labelPlaceholder": "Falar no WhatsApp",
+          "number": "Número do WhatsApp",
+          "numberPlaceholder": "ex.: 5511999999999",
+          "message": "Mensagem padrão",
+          "messagePlaceholder": "Olá! Gostaria de falar com você.",
+          "style": "Estilo",
+          "previewTitle": "Pré-visualização",
+          "htmlLabel": "HTML gerado",
+          "defaultLabel": "Falar no WhatsApp",
+          "defaultMessage": "Olá! Gostaria de falar com você.",
+          "styles": {
+            "solid": "Sólido",
+            "outline": "Contorno",
+            "gradient": "Gradiente",
+            "glass": "Vidro",
+            "neon": "Neon",
+            "minimal": "Minimal",
+            "soft": "Suave",
+            "dark": "Escuro"
+          }
         },
         "buttonStyles": {
           "solid": "Sólido",
@@ -822,7 +1019,8 @@
           "noFormSelected": "Nenhum formulário selecionado",
           "portfolioFallback": "Portfólio",
           "slotConnected": "Slot conectado",
-          "noSlotSelected": "Nenhum slot selecionado"
+          "noSlotSelected": "Nenhum slot selecionado",
+          "noWhatsappNumber": "Sem número do WhatsApp"
         },
         "form": {
           "helper": "Selecione um formulário para exibir na sua bio.",
@@ -859,6 +1057,7 @@
           "image": "Imagem",
           "video": "Vídeo",
           "socials": "Redes sociais",
+          "whatsapp": "WhatsApp",
           "divider": "Divisor",
           "qrcode": "QR code",
           "spotify": "Spotify",
@@ -981,7 +1180,8 @@
         "youtubeFeed": "Feed do YouTube",
         "divider": "Divisor",
         "form": "Formulário",
-        "portfolio": "Portfólio"
+        "portfolio": "Portfólio",
+        "whatsapp": "WhatsApp"
       },
       "layout": {
         "title": "Layout",
@@ -1088,9 +1288,19 @@
   "home": {
     "hero": {
       "title": {
-        "pre": "Converta seus seguidores em",
-        "highlight": "clientes",
+        "pre": "Converta seus seguidores",
+        "highlight": "em clientes",
         "post": "com um único link"
+      },
+      "convert": {
+        "word1": "Converta",
+        "word2": "seus",
+        "word3": "seguidores",
+        "word4": "em",
+        "word5": "clientes",
+        "word6": "com",
+        "word7": "um único",
+        "word8": "link"
       },
       "subtitle": "Gere bios poderosas que geram receita com nossa plataforma tudo-em-um. Cresça sua audiência e ganhe enquanto dorme!",
       "ctaPlaceholder": "seunome",
@@ -1108,6 +1318,9 @@
     },
     "featured": {
       "title": "Em destaque em"
+    },
+    "allInOne": {
+      "label": "Tudo em um único link"
     },
     "analytics": {
       "title": "Transforme cada interação em oportunidade",
@@ -1322,6 +1535,132 @@
       ]
     }
   },
+  "aboutPage": {
+    "hero": {
+      "pre": "Capacitando criadores a",
+      "highlight": "construir seu futuro."
+    },
+    "subtitle": "Estamos em uma missão de dar a cada criador e empreendedor as ferramentas necessárias para transformar sua paixão em um negócio próspero.",
+    "story": {
+      "p1": "A Portyo nasceu de uma observação simples: criadores estavam gastando tempo demais conciliando várias ferramentas, em vez de fazer o que fazem de melhor — criar.",
+      "p2": "Construímos uma plataforma tudo‑em‑um que reúne tudo o que você precisa: um link‑in‑bio bonito, analytics poderosos, captura de e‑mails, agendamentos e e‑commerce.",
+      "p3": "Hoje, milhares de criadores confiam na Portyo para impulsionar sua presença online. E estamos apenas começando."
+    },
+    "values": {
+      "creatorFirst": {
+        "title": "Criador em primeiro lugar",
+        "body": "Tudo o que construímos começa pensando em você. O seu sucesso é o nosso sucesso."
+      },
+      "innovation": {
+        "title": "Inovação",
+        "body": "Ultrapassamos limites para entregar ferramentas de ponta que fazem a diferença."
+      },
+      "community": {
+        "title": "Comunidade",
+        "body": "Acreditamos no poder da conexão e na construção de relações genuínas."
+      },
+      "growth": {
+        "title": "Crescimento",
+        "body": "Comprometidos em ajudar você a crescer sua audiência e receita de forma sustentável."
+      }
+    },
+    "cta": {
+      "title": "Pronto para entrar no movimento?",
+      "button": "Começar"
+    }
+  },
+  "termsPage": {
+    "title": "Termos de Serviço",
+    "updated": "Última atualização: 15 de janeiro de 2026",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceitação dos Termos",
+        "body": "Ao acessar ou usar a Portyo (\"o Serviço\"), você concorda em ficar vinculado a estes Termos de Serviço. Se você discordar de qualquer parte dos termos, não poderá acessar o Serviço."
+      },
+      "accounts": {
+        "title": "2. Contas e Assinaturas",
+        "body": "Se você criar uma conta no Serviço, é responsável por manter a segurança da sua conta e é totalmente responsável por todas as atividades realizadas nela. Você deve nos notificar imediatamente sobre qualquer uso não autorizado da sua conta ou outras violações de segurança."
+      },
+      "userContent": {
+        "title": "3. Conteúdo do Usuário",
+        "body": "Não possuímos quaisquer dados, informações ou materiais que você enviar ao Serviço. Você tem responsabilidade exclusiva pela exatidão, qualidade, integridade, legalidade, confiabilidade, adequação e titularidade de propriedade intelectual ou direito de uso de todo o Conteúdo enviado. Reservamo-nos o direito de recusar ou remover qualquer Conteúdo a nosso critério exclusivo."
+      },
+      "billing": {
+        "title": "4. Cobrança e Pagamentos",
+        "body": "Usamos a Stripe para processamento de pagamentos. Ao selecionar um plano pago, você concorda em pagar as taxas de assinatura indicadas para esse serviço. Os pagamentos serão cobrados antecipadamente no dia em que você fizer o upgrade e cobrirão o uso do serviço pelo período de assinatura mensal ou anual indicado."
+      },
+      "termination": {
+        "title": "5. Rescisão",
+        "body": "Podemos encerrar ou suspender o acesso ao nosso Serviço imediatamente, sem aviso prévio ou responsabilidade, por qualquer motivo, incluindo, sem limitação, se você violar os Termos."
+      },
+      "changes": {
+        "title": "6. Alterações nos Termos",
+        "body": "Reservamo-nos o direito, a nosso exclusivo critério, de modificar ou substituir estes Termos a qualquer momento. Se uma revisão for material, tentaremos fornecer aviso com pelo menos 30 dias de antecedência antes de quaisquer novos termos entrarem em vigor."
+      },
+      "contact": {
+        "title": "7. Fale Conosco",
+        "bodyPrefix": "Se tiver dúvidas sobre estes Termos, entre em contato em:"
+      }
+    }
+  },
+  "privacyPage": {
+    "title": "Política de Privacidade",
+    "updated": "Última atualização: 15 de janeiro de 2026",
+    "sections": {
+      "introduction": {
+        "title": "1. Introdução",
+        "body": "Bem-vindo à Portyo (\"nós\", \"nosso\" ou \"nossa\"). Estamos comprometidos em proteger suas informações pessoais e seu direito à privacidade. Esta Política de Privacidade explica como coletamos, usamos, divulgamos e protegemos suas informações quando você visita nosso site e utiliza nossos serviços."
+      },
+      "collection": {
+        "title": "2. Informações que coletamos",
+        "intro": "Coletamos informações que você nos fornece ao se registrar, especificamente:",
+        "items": {
+          "personal": {
+            "label": "Dados pessoais:",
+            "body": "Nome, endereço de e-mail e informações de perfil que você escolhe exibir na sua bio."
+          },
+          "payment": {
+            "label": "Dados de pagamento:",
+            "body": "As informações financeiras são processadas diretamente pelo nosso processador de pagamentos, Stripe. Não armazenamos números completos de cartão de crédito em nossos servidores."
+          },
+          "usage": {
+            "label": "Dados de uso:",
+            "body": "Informações sobre como você interage com nossos serviços, como visualizações de página e cliques em botões, para melhorar nosso produto."
+          }
+        }
+      },
+      "usage": {
+        "title": "3. Como usamos suas informações",
+        "intro": "Usamos as informações que coletamos para:",
+        "items": {
+          "provide": "Fornecer, operar e manter nosso site.",
+          "process": "Processar suas transações e gerenciar sua assinatura.",
+          "improve": "Melhorar, personalizar e expandir nosso site.",
+          "communicate": "Comunicar com você sobre atualizações, alertas de segurança e suporte."
+        }
+      },
+      "sharing": {
+        "title": "4. Compartilhamento das suas informações",
+        "body": "Não vendemos suas informações pessoais. Podemos compartilhar informações com prestadores de serviços terceiros (como Stripe para pagamentos ou Google Analytics para métricas) estritamente para operar nosso negócio e fornecer nossos serviços a você."
+      },
+      "security": {
+        "title": "5. Segurança dos dados",
+        "body": "Utilizamos medidas administrativas, técnicas e físicas para ajudar a proteger suas informações pessoais. No entanto, lembre-se de que nenhum método de transmissão pela internet é 100% seguro."
+      },
+      "rights": {
+        "title": "6. Seus direitos",
+        "body": "Dependendo da sua localização, você pode ter direitos sobre seus dados pessoais, incluindo o direito de acessar, corrigir ou excluir as informações que mantemos. Você pode gerenciar as configurações da sua conta diretamente no painel da Portyo."
+      },
+      "contact": {
+        "title": "7. Fale Conosco",
+        "bodyPrefix": "Se tiver dúvidas ou comentários sobre esta política, você pode nos contatar em:"
+      }
+    }
+  },
+  "pricingPage": {
+    "title": "Preços simples e transparentes",
+    "subtitle": "Sem contratos, sem taxas surpresa."
+  },
   "footer": {
     "tagline": "Transforme sua bio no seu negócio. A plataforma tudo-em-um para criadores crescerem, monetizarem e dominarem sua audiência.",
     "cta": "Começar grátis",
@@ -1367,6 +1706,44 @@
       "sideHustlers": "autônomos",
       "architects": "arquitetos",
       "bankers": "banqueiros"
+    }
+  },
+  "tooltips": {
+    "editor": {
+      "cardOpacity": "Controla a transparência do fundo do card. 0% = totalmente transparente, 100% = totalmente sólido.",
+      "cardBlur": "Intensidade do desfoque para o efeito de vidro fosco. Valores maiores criam um desfoque mais forte atrás do card.",
+      "customFont": "Envie um arquivo de fonte .ttf ou .woff2 para usar sua própria tipografia de marca.",
+      "backgroundPatterns": "Escolha um padrão decorativo para o fundo da sua página. Cada padrão se adapta às cores selecionadas."
+    },
+    "marketing": {
+      "acceptOtherPrices": "Quando ativado, anunciantes podem propor preços fora da sua faixa min-max. Você ainda pode rejeitar qualquer proposta.",
+      "priceRange": "Defina seus preços mínimo e máximo aceitáveis. Isso ajuda os anunciantes a conhecerem suas expectativas.",
+      "platformFee": "O Portyo cobra uma taxa de 5% em todas as propostas aceitas. Isso cobre processamento de pagamentos e manutenção."
+    },
+    "analytics": {
+      "googleAnalyticsId": "Encontre seu ID do GA em Google Analytics → Admin → Fluxos de dados → Seu fluxo → ID de medição (começa com G-).",
+      "facebookPixelId": "Encontre seu ID do Pixel em Gerenciador de Eventos Meta → Fontes de dados → Seu Pixel → Configurações.",
+      "noIndex": "Quando ativado, buscadores como Google não mostrarão sua página nos resultados. Bom para páginas privadas."
+    },
+    "seo": {
+      "whatIsSeo": "SEO ajuda sua página a aparecer nas buscas do Google. Melhor SEO = mais pessoas te encontrando.",
+      "metaTitle": "O título mostrado nos resultados de busca e abas do navegador. Mantenha abaixo de 60 caracteres.",
+      "metaDescription": "Um resumo breve mostrado abaixo do título nos resultados de busca. Mire em 120-160 caracteres.",
+      "ogImage": "A imagem mostrada quando seu link é compartilhado nas redes sociais. Tamanho recomendado: 1200x630 pixels.",
+      "keywords": "Palavras que ajudam buscadores a entender o conteúdo da sua página. Separe com vírgulas."
+    },
+    "products": {
+      "digitalProduct": "Produtos digitais são entregues instantaneamente via link de download. Produtos físicos requerem envio.",
+      "stockQuantity": "Deixe vazio para estoque ilimitado. Defina um número para limitar unidades disponíveis."
+    },
+    "scheduler": {
+      "availability": "Defina seu horário de trabalho para cada dia. Clientes só podem agendar nesses horários.",
+      "blockedDates": "Bloqueie datas específicas quando você estiver indisponível (feriados, férias, etc.).",
+      "bufferTime": "Tempo entre agendamentos para pausas ou preparação."
+    },
+    "integrations": {
+      "upgradeRequired": "Esta integração requer um plano pago. Faça upgrade para desbloquear.",
+      "comingSoon": "Estamos trabalhando nesta integração. Estará disponível em uma atualização futura."
     }
   }
 }

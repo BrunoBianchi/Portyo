@@ -20,7 +20,8 @@ import {
   DividerIcon,
   QrCodeIcon,
   FormIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  WhatsAppIcon
 } from "~/components/shared/icons";
 
 export type PaletteItem = { type: BioBlock["type"] | string; label: string; icon: React.ReactNode; category: string; isPro?: boolean };
@@ -73,6 +74,12 @@ export const getPalette = (t: (key: string) => string): PaletteItem[] => [
     label: t("dashboard.editor.palette.socials"),
     category: "Social",
     icon: <SocialsIcon width="24" height="24" />
+  },
+  {
+    type: "whatsapp",
+    label: t("dashboard.editor.palette.whatsapp"),
+    category: "Social",
+    icon: <WhatsAppIcon width="24" height="24" />
   },
   {
     type: "video",

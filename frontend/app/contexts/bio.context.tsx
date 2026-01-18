@@ -3,7 +3,7 @@ import { api } from "~/services/api";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp";
     title?: string;
     body?: string;
     // Form specific
@@ -34,6 +34,11 @@ export type BioBlock = {
     isNsfw?: boolean;
     animation?: "none" | "bounce" | "pulse" | "shake" | "wobble";
     animationTrigger?: "loop" | "once" | "hover";
+    // WhatsApp specific
+    whatsappNumber?: string;
+    whatsappMessage?: string;
+    whatsappStyle?: "solid" | "outline" | "glass" | "gradient" | "neon" | "minimal" | "soft" | "dark";
+    whatsappShape?: "pill" | "rounded" | "square";
     // Socials specific
     socials?: {
         instagram?: string;

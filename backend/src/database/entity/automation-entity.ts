@@ -4,11 +4,11 @@ import { BioEntity } from "./bio-entity";
 
 export interface AutomationNode {
     id: string;
-    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'math_operation' | 'wait' | 'webhook' | 'discord';
+    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'math_operation' | 'wait' | 'webhook' | 'discord' | 'stripe_discount';
     position: { x: number; y: number };
     data: {
         label: string;
-        eventType?: 'email_signup' | 'form_submit' | 'booking_created' | 'qr_scanned' | 'visit_milestone';
+        eventType?: 'email_signup' | 'newsletter_subscribe' | 'subscriber_unsubscribe' | 'form_submit' | 'booking_created' | 'qr_scanned' | 'visit_milestone' | 'view_milestone' | 'click_milestone' | 'form_submit_milestone' | 'lead_milestone' | 'bio_visit' | 'link_click' | 'blog_post_published' | 'custom_event' | 'webhook_received';
         subject?: string;
         content?: string;
         duration?: string;
@@ -46,6 +46,17 @@ export interface AutomationNode {
         discordMessage?: string;
         // Milestone Fields
         milestoneCount?: number;
+        // Stripe Discount Fields
+        discountType?: 'percent' | 'amount';
+        percentOff?: number;
+        amountOff?: number;
+        currency?: string;
+        durationType?: 'once' | 'repeating' | 'forever';
+        durationInMonths?: number;
+        maxRedemptions?: number;
+        promotionCodePrefix?: string;
+        expiresInValue?: number;
+        expiresInUnit?: 'minutes' | 'hours' | 'days';
     };
 }
 

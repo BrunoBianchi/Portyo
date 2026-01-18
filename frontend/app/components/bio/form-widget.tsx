@@ -59,10 +59,32 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
         setFormData(prev => ({ ...prev, [fieldId]: value }));
     };
 
+    const toggleMultiChoice = (fieldId: string, option: string) => {
+        setFormData(prev => {
+            const current = Array.isArray(prev[fieldId]) ? prev[fieldId] : [];
+            if (current.includes(option)) {
+                return { ...prev, [fieldId]: current.filter((item: string) => item !== option) };
+            }
+            return { ...prev, [fieldId]: [...current, option] };
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
         setError("");
+
+        const requiredMultiChoiceMissing = (form.fields || []).some((field: FormField) => {
+            if (field.type !== 'multichoice' || !field.required) return false;
+            const value = formData[field.id];
+            return !Array.isArray(value) || value.length === 0;
+        });
+
+        if (requiredMultiChoiceMissing) {
+            setError("Please select at least one option for required fields.");
+            setSubmitting(false);
+            return;
+        }
 
         try {
             await api.post(`/public/forms/${formId}/submit`, {
@@ -204,6 +226,22 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                     className="w-5 h-5 rounded-md border-gray-300 text-black focus:ring-black focus:ring-offset-2 transition-all cursor-pointer"
                                 />
                                 <span className="text-sm opacity-70">Tick to confirm</span>
+                            </div>
+                        )}
+
+                        {field.type === 'multichoice' && (
+                            <div className="space-y-2">
+                                {getOptions(field.options).map((opt: any, i: number) => (
+                                    <label key={i} className="flex items-center gap-2 text-sm opacity-80 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={Array.isArray(formData[field.id]) && formData[field.id].includes(opt.value)}
+                                            onChange={() => toggleMultiChoice(field.id, opt.value)}
+                                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black focus:ring-offset-2 transition-all cursor-pointer"
+                                        />
+                                        <span>{opt.label}</span>
+                                    </label>
+                                ))}
                             </div>
                         )}
 

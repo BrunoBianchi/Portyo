@@ -153,7 +153,7 @@ export const InitializateServer = () => {
     }
   };
 
-  schedule.scheduleJob("*0 * * * *", runNudgeJob);
+  schedule.scheduleJob("0 */1 * * *", runNudgeJob);
   setTimeout(runNudgeJob, 30 * 1000);
 
   const shutdown = () => {

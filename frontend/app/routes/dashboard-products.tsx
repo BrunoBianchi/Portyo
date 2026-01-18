@@ -9,6 +9,7 @@ import AuthContext from "~/contexts/auth.context";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,6 +38,9 @@ export default function DashboardProducts() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
 
   // Create State
   const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
@@ -238,6 +242,78 @@ export default function DashboardProducts() {
     fetchProducts();
   }, [bio?.id]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSeenTour = window.localStorage.getItem("portyo:products-tour-done");
+    if (!hasSeenTour) {
+      setTourRun(true);
+    }
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+    if (primaryFromTheme) {
+      setTourPrimaryColor(primaryFromTheme);
+    }
+  }, []);
+
+  const productsTourSteps: Step[] = [
+    {
+      target: "[data-tour=\"products-header\"]",
+      content: t("dashboard.tours.products.steps.header"),
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour=\"products-add\"]",
+      content: t("dashboard.tours.products.steps.add"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"products-fee\"]",
+      content: t("dashboard.tours.products.steps.fee"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"products-search\"]",
+      content: t("dashboard.tours.products.steps.search"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"products-grid\"]",
+      content: t("dashboard.tours.products.steps.grid"),
+      placement: "top",
+    },
+    {
+      target: "[data-tour=\"products-card\"]",
+      content: t("dashboard.tours.products.steps.card"),
+      placement: "top",
+    },
+    {
+      target: "[data-tour=\"products-add-placeholder\"]",
+      content: t("dashboard.tours.products.steps.addPlaceholder"),
+      placement: "top",
+    },
+  ];
+
+  const handleProductsTourCallback = (data: CallBackProps) => {
+    const { status, type, index, action } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+      const delta = action === ACTIONS.PREV ? -1 : 1;
+      setTourStepIndex(index + delta);
+      return;
+    }
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+      setTourRun(false);
+      setTourStepIndex(0);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("portyo:products-tour-done", "true");
+      }
+    }
+  };
+
   const handleCreateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -257,13 +333,48 @@ export default function DashboardProducts() {
   return (
     <AuthorizationGuard>
       <div className="p-6 max-w-7xl mx-auto">
+        <Joyride
+          steps={productsTourSteps}
+          run={tourRun}
+          stepIndex={tourStepIndex}
+          continuous
+          showSkipButton
+          spotlightClicks
+          scrollToFirstStep
+          callback={handleProductsTourCallback}
+          styles={{
+            options: {
+              arrowColor: "#ffffff",
+              backgroundColor: "#ffffff",
+              overlayColor: "rgba(0, 0, 0, 0.45)",
+              primaryColor: tourPrimaryColor,
+              textColor: "#171717",
+              zIndex: 10000,
+            },
+            buttonNext: {
+              color: "#171717",
+              fontWeight: 700,
+            },
+            buttonBack: {
+              color: "#5b5b5b",
+            },
+            buttonSkip: {
+              color: "#5b5b5b",
+            },
+            tooltipContent: {
+              fontSize: "14px",
+              lineHeight: "1.4",
+            },
+          }}
+        />
         {/* ... (Header and Banner code unchanged) ... */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="products-header">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.products.title")}</h1>
             <p className="text-gray-500 mt-1">{t("dashboard.products.subtitle")}</p>
           </div>
           <button
+            data-tour="products-add"
             onClick={() => setIsCreateProductModalOpen(true)}
             className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg shadow-gray-200"
           >
@@ -273,7 +384,7 @@ export default function DashboardProducts() {
 
         {/* ... (Store Fee Banner and Search) ... */}
         {storeFee > 0 && (
-          <div className="mb-8 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between">
+          <div className="mb-8 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between" data-tour="products-fee">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                 <DollarSign className="w-5 h-5" />
@@ -292,7 +403,7 @@ export default function DashboardProducts() {
           </div>
         )}
 
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm mb-8 flex items-center gap-4">
+        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm mb-8 flex items-center gap-4" data-tour="products-search">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -314,9 +425,13 @@ export default function DashboardProducts() {
           </div>
         ) : (
           /* Products Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
-            {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20" data-tour="products-grid">
+            {products.map((product, index) => (
+              <div
+                key={product.id}
+                data-tour={index === 0 ? "products-card" : undefined}
+                className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden relative"
+              >
                 {/* ... (Product Card content unchanged) ... */}
                 <div className="p-2">
                   <div className="aspect-square relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
@@ -388,6 +503,7 @@ export default function DashboardProducts() {
 
             {/* Add New Placeholder */}
             <button
+              data-tour="products-add-placeholder"
               onClick={() => setIsCreateProductModalOpen(true)}
               className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-6 hover:border-black/20 hover:bg-gray-50/50 transition-all group h-full min-h-[320px]"
             >

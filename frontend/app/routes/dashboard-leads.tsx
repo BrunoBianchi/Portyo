@@ -7,6 +7,7 @@ import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -29,6 +30,9 @@ export default function DashboardLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
 
   /* State Updates */
   const [deleteModal, setDeleteModal] = useState<{
@@ -60,6 +64,78 @@ export default function DashboardLeads() {
         });
     }
   }, [bio?.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSeenTour = window.localStorage.getItem("portyo:leads-tour-done");
+    if (!hasSeenTour) {
+      setTourRun(true);
+    }
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+    if (primaryFromTheme) {
+      setTourPrimaryColor(primaryFromTheme);
+    }
+  }, []);
+
+  const leadsTourSteps: Step[] = [
+    {
+      target: "[data-tour=\"leads-header\"]",
+      content: t("dashboard.tours.leads.steps.header"),
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour=\"leads-toggle\"]",
+      content: t("dashboard.tours.leads.steps.toggle"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"leads-export\"]",
+      content: t("dashboard.tours.leads.steps.export"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"leads-stats\"]",
+      content: t("dashboard.tours.leads.steps.stats"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"leads-search\"]",
+      content: t("dashboard.tours.leads.steps.search"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"leads-table\"]",
+      content: t("dashboard.tours.leads.steps.table"),
+      placement: "top",
+    },
+    {
+      target: "[data-tour=\"leads-bulk-actions\"]",
+      content: t("dashboard.tours.leads.steps.bulk"),
+      placement: "top",
+    },
+  ];
+
+  const handleLeadsTourCallback = (data: CallBackProps) => {
+    const { status, type, index, action } = data;
+
+    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
+      const delta = action === ACTIONS.PREV ? -1 : 1;
+      setTourStepIndex(index + delta);
+      return;
+    }
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
+      setTourRun(false);
+      setTourStepIndex(0);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("portyo:leads-tour-done", "true");
+      }
+    }
+  };
 
   /* Handlers */
   const filteredLeads = leads.filter(
@@ -178,6 +254,40 @@ export default function DashboardLeads() {
   return (
     <AuthorizationGuard minPlan="standard">
       <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
+        <Joyride
+          steps={leadsTourSteps}
+          run={tourRun}
+          stepIndex={tourStepIndex}
+          continuous
+          showSkipButton
+          spotlightClicks
+          scrollToFirstStep
+          callback={handleLeadsTourCallback}
+          styles={{
+            options: {
+              arrowColor: "#ffffff",
+              backgroundColor: "#ffffff",
+              overlayColor: "rgba(0, 0, 0, 0.45)",
+              primaryColor: tourPrimaryColor,
+              textColor: "#171717",
+              zIndex: 10000,
+            },
+            buttonNext: {
+              color: "#171717",
+              fontWeight: 700,
+            },
+            buttonBack: {
+              color: "#5b5b5b",
+            },
+            buttonSkip: {
+              color: "#5b5b5b",
+            },
+            tooltipContent: {
+              fontSize: "14px",
+              lineHeight: "1.4",
+            },
+          }}
+        />
         <div className="max-w-7xl mx-auto space-y-8">
 
           <DeleteConfirmationModal
@@ -196,13 +306,14 @@ export default function DashboardLeads() {
           />
 
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="leads-header">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">{t("dashboard.leads.title")}</h1>
               <p className="text-gray-500 mt-2 text-lg">{t("dashboard.leads.subtitle")}</p>
             </div>
             <div className="flex items-center gap-3">
               <button
+                data-tour="leads-toggle"
                 onClick={() => {
                   if (bio) {
                     updateBio(bio.id, { enableSubscribeButton: !bio.enableSubscribeButton });
@@ -217,6 +328,7 @@ export default function DashboardLeads() {
                 {bio?.enableSubscribeButton ? t("dashboard.leads.acceptingLeads") : t("dashboard.leads.leadsDisabled")}
               </button>
               <button
+                data-tour="leads-export"
                 onClick={handleExport}
                 disabled={leads.length === 0}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm disabled:opacity-50"
@@ -228,7 +340,7 @@ export default function DashboardLeads() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-tour="leads-stats">
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -271,7 +383,7 @@ export default function DashboardLeads() {
           </div>
 
           {/* Search Bar */}
-          <div className="relative">
+          <div className="relative" data-tour="leads-search">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -286,7 +398,7 @@ export default function DashboardLeads() {
           </div>
 
           {/* Leads Table */}
-          <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden" data-tour="leads-table">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -405,7 +517,10 @@ export default function DashboardLeads() {
 
         {/* Floating Bulk Actions Bar */}
         {selectedLeads.length > 0 && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white shadow-2xl rounded-2xl px-2 py-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300 border border-gray-800">
+          <div
+            data-tour="leads-bulk-actions"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white shadow-2xl rounded-2xl px-2 py-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300 border border-gray-800"
+          >
             <div className="pl-4 pr-3 py-2 border-r border-gray-700 flex items-center gap-2">
               <span className="flex items-center justify-center bg-white text-gray-900 w-5 h-5 rounded-full text-xs font-bold">
                 {selectedLeads.length}

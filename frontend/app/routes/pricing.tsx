@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { MetaFunction } from "react-router";
 import { Check } from "lucide-react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
 
 export const meta: MetaFunction = ({ params }) => {
@@ -13,7 +14,8 @@ export const meta: MetaFunction = ({ params }) => {
 };
 
 export default function Pricing() {
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+    const { t } = useTranslation();
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
 
     const plans = [
         {
@@ -37,9 +39,9 @@ export default function Pricing() {
         {
             name: "Standard",
             description: "For growing creators",
-            price: billingCycle === 'yearly' ? "$4.12" : "$5.50",
+            price: billingCycle === 'annually' ? "$4.12" : "$5.50",
             period: "/mo",
-            billed: billingCycle === 'yearly' ? "Billed $49.50 yearly" : "Billed monthly",
+            billed: billingCycle === 'annually' ? "Billed $49.50 yearly" : "Billed monthly",
             features: [
                 "Up to 2 bios",
                 "Create 3 Forms",
@@ -61,9 +63,9 @@ export default function Pricing() {
         {
             name: "Pro",
             description: "For serious business",
-            price: billingCycle === 'yearly' ? "$11.25" : "$15.00",
+            price: billingCycle === 'annually' ? "$11.25" : "$15.00",
             period: "/mo",
-            billed: billingCycle === 'yearly' ? "Billed $135 yearly" : "Billed monthly",
+            billed: billingCycle === 'annually' ? "Billed $135 yearly" : "Billed monthly",
             features: [
                 "Everything in Standard",
                 "Up to 5 bios",
@@ -84,11 +86,34 @@ export default function Pricing() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#fdfaf5] py-20 px-4 font-sans">
+        <div className="min-h-screen  py-20 px-4 font-sans">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">Simple, transparent pricing</h1>
-                    <p className="text-xl text-gray-600">No contracts, no surprise fees.</p>
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">{t("pricingPage.title")}</h1>
+                    <p className="text-xl text-gray-600">{t("pricingPage.subtitle")}</p>
+                </div>
+
+                <div className="flex justify-center mb-12">
+                    <div className="bg-white p-1.5 rounded-full shadow-sm inline-flex">
+                        <button
+                            onClick={() => setBillingCycle('monthly')}
+                            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'monthly'
+                                ? 'bg-transparent text-text-main'
+                                : 'text-gray-700 hover:text-text-main'
+                                }`}
+                        >
+                            {t("home.pricing.billing.monthly")}
+                        </button>
+                        <button
+                            onClick={() => setBillingCycle('annually')}
+                            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'annually'
+                                ? 'bg-text-main text-white shadow-md'
+                                : 'text-gray-700 hover:text-text-main'
+                                }`}
+                        >
+                            {t("home.pricing.billing.annually")}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8 items-start">

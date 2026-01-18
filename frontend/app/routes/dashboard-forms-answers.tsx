@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, Download, Search, FileText, Calendar, Clock, Monitor, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "~/contexts/auth.context";
+import { useTranslation } from "react-i18next";
 import { api } from "~/services/api";
 
 interface FormAnswer {
@@ -23,6 +24,7 @@ export default function DashboardFormsAnswers() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const [answers, setAnswers] = useState<FormAnswer[]>([]);
     const [form, setForm] = useState<FormDefinition | null>(null);
@@ -55,17 +57,18 @@ export default function DashboardFormsAnswers() {
         if (!form || !answers.length) return;
 
         // Headers
-        const headers = ["Submitted At", "IP Address", ...form.fields.map(f => f.label)];
+        const headers = [t("dashboard.formsAnswers.submittedAt"), t("dashboard.formsAnswers.ipAddress"), ...form.fields.map(f => f.label)];
 
         // Rows
         const rows = answers.map(answer => {
             const fieldValues = form.fields.map(f => {
                 const val = answer.answers[f.id];
-                return val ? `"${String(val).replace(/"/g, '""')}"` : "";
+                const normalized = Array.isArray(val) ? val.join("; ") : val;
+                return normalized ? `"${String(normalized).replace(/"/g, '""')}"` : "";
             });
             return [
                 new Date(answer.createdAt).toLocaleString(),
-                answer.ipAddress || "Unknown",
+                answer.ipAddress || t("dashboard.formsAnswers.unknown"),
                 ...fieldValues
             ];
         });
@@ -127,10 +130,10 @@ export default function DashboardFormsAnswers() {
                             <span className="text-gray-300">/</span>
                             <span className="hover:text-gray-900 transition-colors max-w-[150px] truncate">{form.title}</span>
                             <span className="text-gray-300">/</span>
-                            <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider">Submissions</span>
+                            <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider">{t("dashboard.formsAnswers.submissions")}</span>
                         </div>
                         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                            {answers.length} <span className="text-lg md:text-xl font-medium text-gray-400 font-sans">{answers.length === 1 ? 'Submission' : 'Submissions'}</span>
+                            {answers.length} <span className="text-lg md:text-xl font-medium text-gray-400 font-sans">{answers.length === 1 ? t("dashboard.formsAnswers.submission") : t("dashboard.formsAnswers.submissions")}</span>
                         </h1>
                     </div>
                 </div>
@@ -140,7 +143,7 @@ export default function DashboardFormsAnswers() {
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
-                            placeholder="Search answers..."
+                            placeholder={t("dashboard.formsAnswers.searchPlaceholder")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-full sm:w-64 transition-all shadow-sm"
@@ -154,14 +157,14 @@ export default function DashboardFormsAnswers() {
                             className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 rounded-xl font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                         >
                             <Download className="w-4 h-4" />
-                            <span className="whitespace-nowrap">Export CSV</span>
+                            <span className="whitespace-nowrap">{t("dashboard.formsAnswers.exportCsv")}</span>
                         </button>
                         <Link
                             to={`/dashboard/forms/${id}`}
                             className="flex-1 sm:flex-none px-4 py-2.5 bg-gray-900 text-white hover:bg-black hover:shadow-lg hover:shadow-gray-900/20 rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
                         >
                             <FileText className="w-4 h-4" />
-                            <span className="whitespace-nowrap">Edit Form</span>
+                            <span className="whitespace-nowrap">{t("dashboard.formsAnswers.editForm")}</span>
                         </Link>
                     </div>
                 </div>
@@ -173,8 +176,8 @@ export default function DashboardFormsAnswers() {
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                         <FileText className="w-8 h-8 text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">No submissions yet</h3>
-                    <p className="text-gray-500 max-w-sm">Share your form to start collecting responses.</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{t("dashboard.formsAnswers.emptyTitle")}</h3>
+                    <p className="text-gray-500 max-w-sm">{t("dashboard.formsAnswers.emptySubtitle")}</p>
                 </div>
             ) : (
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -182,7 +185,7 @@ export default function DashboardFormsAnswers() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
-                                    <th className="px-6 py-4 w-64 min-w-[200px]">Submission Info</th>
+                                    <th className="px-6 py-4 w-64 min-w-[200px]">{t("dashboard.formsAnswers.submissionInfo")}</th>
                                     {form.fields.map(field => (
                                         <th key={field.id} className="px-6 py-4 min-w-[200px]">
                                             {field.label}
@@ -215,9 +218,11 @@ export default function DashboardFormsAnswers() {
                                             <td key={field.id} className="px-6 py-4 text-sm text-gray-700 align-top">
                                                 <div className="max-h-32 overflow-y-auto custom-scrollbar">
                                                     {answer.answers[field.id] !== undefined ? (
-                                                        String(answer.answers[field.id])
+                                                        Array.isArray(answer.answers[field.id])
+                                                            ? answer.answers[field.id].join(", ")
+                                                            : String(answer.answers[field.id])
                                                     ) : (
-                                                        <span className="text-gray-300 italic">-</span>
+                                                        <span className="text-gray-300 italic">{t("dashboard.formsAnswers.emptyValue")}</span>
                                                     )}
                                                 </div>
                                             </td>

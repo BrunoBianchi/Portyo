@@ -116,19 +116,19 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     }, []);
 
     const navItems = [
-        { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard },
-        { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool },
+        { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
+        { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
         { name: t("dashboard.nav.leads"), path: "/dashboard/leads", icon: Users, isPro: true },
-        { name: t("dashboard.nav.products"), path: "/dashboard/products", icon: ShoppingBag },
+        { name: t("dashboard.nav.products"), path: "/dashboard/products", icon: ShoppingBag, tourId: "dashboard-nav-products" },
         { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
         { name: t("dashboard.nav.blog"), path: "/dashboard/blog", icon: FileText },
         { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
         { name: t("dashboard.nav.marketing"), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
         { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
         { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
-        { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle },
+        { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
         { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
-        { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: FileText },
+        { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: FileText, tourId: "dashboard-nav-forms" },
         { name: t("dashboard.nav.seoSettings"), path: "/dashboard/seo", icon: Settings, isPro: true },
         { name: t("dashboard.nav.analytics"), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
     ];
@@ -234,12 +234,15 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 </div>, document.body
             )}
 
-            <aside className={`
+            <aside
+                data-tour="dashboard-sidebar"
+                className={`
                 w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-white
                 transition-transform duration-300 ease-out border-r border-gray-100
                 ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
                 md:translate-x-0 md:shadow-none
-            `}>
+            `}
+            >
                 {/* Logo Area */}
                 <div className="p-4 pb-2 flex items-center justify-between">
                     <Link to={withLang("/")} className="flex items-center gap-3 group">
@@ -346,6 +349,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 <Link
                                     key={item.path}
                                     to={withLang(item.path)}
+                                    data-tour={item.tourId}
                                     onClick={(e) => {
                                         if (isLocked) {
                                             e.preventDefault();
@@ -419,6 +423,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
                     <Link
                         to={withLang("/dashboard/settings")}
+                        data-tour="dashboard-nav-settings"
                         className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group cursor-pointer"
                     >
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">

@@ -7,6 +7,7 @@ import { env } from "../../config/env";
 import { PLAN_LIMITS, PlanType } from "../constants/plan-limits";
 import axios from "axios";
 import { BillingService } from "../../services/billing.service";
+import { createStripePromotionCode } from "./stripe.service";
 import { checkEmailLimit, incrementEmailCount } from "./email-limit.service";
 import { getEmailsFromBio } from "./email.service";
 import FormData from "form-data";
@@ -154,6 +155,14 @@ export const triggerAutomation = async (
                 if (eventType === 'form_submit') {
                     // elementId in the node stores the specific Form ID to listen to
                     if (node.data.elementId && node.data.elementId !== eventData.formId) {
+                        return false;
+                    }
+                }
+
+                // For milestone triggers, ensure milestone count matches when configured
+                const isMilestoneEvent = ['visit_milestone', 'view_milestone', 'click_milestone', 'form_submit_milestone', 'lead_milestone'].includes(eventType);
+                if (isMilestoneEvent && node.data.milestoneCount) {
+                    if (!eventData.milestoneCount || node.data.milestoneCount !== eventData.milestoneCount) {
                         return false;
                     }
                 }
@@ -364,6 +373,9 @@ const processNode = async (
         case "discord":
             return await processDiscordNode(node, context);
 
+        case "stripe_discount":
+            return await processStripeDiscountAction(node, context, automation);
+
         default:
             logger.warn(`Unknown node type: ${node.type}`);
             return context;
@@ -376,7 +388,7 @@ const processEmailAction = async (node: AutomationNode, context: any): Promise<a
     const { subject, content, sendToAllLeads, leadCount } = node.data;
     const userId = context.userId;
     const bioId = context.bioId;
-    const isBlogPostTrigger = context.triggerType === 'blog_post_published';
+    const isLeadBroadcastTrigger = context.triggerType === 'blog_post_published' || context.leadBroadcast === true;
 
     // Check if Mailgun is configured
     if (!mg || !env.MAILGUN_API_SECRET) {
@@ -385,7 +397,7 @@ const processEmailAction = async (node: AutomationNode, context: any): Promise<a
     }
 
     // For blog post triggers, send to leads based on configuration
-    if (isBlogPostTrigger && bioId) {
+    if (isLeadBroadcastTrigger && bioId) {
         logger.info(`[Automation] Blog post trigger detected - fetching leads for bio ${bioId}`);
         
         try {
@@ -442,7 +454,7 @@ const processEmailAction = async (node: AutomationNode, context: any): Promise<a
                 }
             }
 
-            logger.info(`[Automation] Blog post emails completed: ${successCount} sent, ${failCount} failed`);
+            logger.info(`[Automation] Lead broadcast completed: ${successCount} sent, ${failCount} failed`);
             return { 
                 ...context, 
                 emailSent: successCount > 0, 
@@ -727,6 +739,64 @@ const processWebhookNode = async (node: AutomationNode, context: any): Promise<a
     } catch (error: any) {
         logger.error(`[Automation] Webhook failed: ${error.message}`);
         return { ...context, webhookError: error.message };
+    }
+};
+
+const processStripeDiscountAction = async (
+    node: AutomationNode,
+    context: any,
+    automation: AutomationEntity
+): Promise<any> => {
+    try {
+        const {
+            discountType,
+            percentOff,
+            amountOff,
+            currency,
+            durationType,
+            durationInMonths,
+            maxRedemptions,
+            promotionCodePrefix,
+            expiresInValue,
+            expiresInUnit,
+            label
+        } = node.data;
+
+        if (!discountType) {
+            logger.warn("[Automation] Stripe discount node missing discountType");
+            return context;
+        }
+
+        const result = await createStripePromotionCode(automation.bioId, {
+            discountType,
+            percentOff,
+            amountOff,
+            currency,
+            duration: durationType || 'once',
+            durationInMonths,
+            maxRedemptions,
+            codePrefix: promotionCodePrefix,
+            expiresInValue,
+            expiresInUnit,
+            name: label || 'Automation Discount'
+        });
+
+        logger.info(`[Automation] Stripe promotion code created: ${result.code}`);
+
+        return {
+            ...context,
+            stripeCouponId: result.couponId,
+            stripePromotionCodeId: result.promotionCodeId,
+            stripePromotionCode: result.code,
+            stripeDiscountPercent: result.percentOff ?? "",
+            stripeDiscountAmount: result.amountOff ?? "",
+            stripeDiscountCurrency: result.currency ?? "",
+            stripeDiscountExpiresAt: result.expiresAt ? new Date(result.expiresAt * 1000).toISOString() : "",
+            leadBroadcast: true,
+        };
+    } catch (error: any) {
+        logger.error(`[Automation] Stripe discount failed: ${error.message}`);
+        return { ...context, stripeDiscountError: error.message };
     }
 };
 

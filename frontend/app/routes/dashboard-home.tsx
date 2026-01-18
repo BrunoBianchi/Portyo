@@ -88,7 +88,10 @@ export default function DashboardHome() {
     return (
         <AuthorizationGuard>
             <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <header
+                    data-tour="dashboard-overview-header"
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+                >
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold uppercase tracking-wider mb-3">
                             <Sparkles className="w-3 h-3" />
@@ -122,7 +125,10 @@ export default function DashboardHome() {
                 </header>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div
+                    data-tour="dashboard-overview-stats"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                >
                     <div className="card p-6 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <BarChart3 className="w-24 h-24 text-primary-foreground" />
@@ -187,7 +193,7 @@ export default function DashboardHome() {
                 {/* Sales & Revenue Analytics Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Main Sales Card */}
-                    <div className="card p-6">
+                    <div className="card p-6" data-tour="dashboard-overview-sales">
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center shrink-0">
@@ -311,7 +317,7 @@ export default function DashboardHome() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 card p-8 h-fit">
+                    <div className="lg:col-span-2 card p-8 h-fit" data-tour="dashboard-overview-activity">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-text-main">{t("dashboard.overview.recentActivity")}</h2>
                             <div className="flex items-center gap-2">

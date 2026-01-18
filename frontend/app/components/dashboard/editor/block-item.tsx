@@ -22,7 +22,8 @@ import {
   PlusIcon,
   QrCodeIcon,
   FormIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  WhatsAppIcon
 } from "~/components/shared/icons";
 import { ColorPicker } from "./ColorPicker";
 import { FormInput, FormTextarea } from "./FormInput";
@@ -53,6 +54,7 @@ const makeId = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2, 9);
 
+
 // Block type accent colors for visual differentiation
 const getBlockTypeAccent = (type: string): { bg: string; text: string; border: string } => {
   const accents: Record<string, { bg: string; text: string; border: string }> = {
@@ -77,6 +79,7 @@ const getBlockTypeAccent = (type: string): { bg: string; text: string; border: s
     form: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
     portfolio: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
     marketing: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
+    whatsapp: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
   };
   return accents[type] || { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" };
 };
@@ -112,6 +115,11 @@ const getBlockPreview = (block: BioBlock, t: TFunction): string => {
       return block.marketingId
         ? t("dashboard.editor.blockItem.preview.slotConnected")
         : t("dashboard.editor.blockItem.preview.noSlotSelected");
+    case 'whatsapp':
+      if (!block.whatsappNumber) return t("dashboard.editor.blockItem.preview.noWhatsappNumber");
+      return block.whatsappNumber.trim().startsWith("+")
+        ? block.whatsappNumber
+        : `+${block.whatsappNumber}`;
     default:
       return '';
   }
@@ -404,8 +412,118 @@ const BlockItem = memo(({
   const isMarketingLocked = block.type === 'marketing' && !!isLocked;
   const blockTypeLabel = getBlockTypeLabel(block.type, t);
 
+  const whatsappNumber = (block.whatsappNumber || "").replace(/\D/g, "");
+  const whatsappMessage = block.whatsappMessage || t("dashboard.editor.blockItem.whatsapp.defaultMessage");
+  const whatsappLabel = block.title || t("dashboard.editor.blockItem.whatsapp.defaultLabel");
+  const whatsappStyle = block.whatsappStyle || "solid";
+  const whatsappShape = block.whatsappShape || "pill";
+  const whatsappAccent = block.accent || "#25D366";
+  const whatsappText = block.textColor || "#ffffff";
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}${whatsappMessage ? `?text=${encodeURIComponent(whatsappMessage)}` : ""}`
+    : "#";
+
+  const whatsappPreviewStyle = (() => {
+    const base: React.CSSProperties = {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      width: "100%",
+      minHeight: "48px",
+      padding: "12px 18px",
+      fontWeight: 700,
+      fontSize: "14px",
+      textDecoration: "none",
+      transition: "all 240ms ease",
+    };
+
+    if (whatsappShape === "pill") base.borderRadius = "999px";
+    else if (whatsappShape === "square") base.borderRadius = "10px";
+    else base.borderRadius = "16px";
+
+    if (whatsappStyle === "outline") {
+      return {
+        ...base,
+        background: "transparent",
+        border: `2px solid ${whatsappAccent}`,
+        color: whatsappAccent,
+      };
+    }
+
+    if (whatsappStyle === "glass") {
+      return {
+        ...base,
+        background: "rgba(255,255,255,0.2)",
+        color: whatsappText,
+        border: "1px solid rgba(255,255,255,0.35)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+      };
+    }
+
+    if (whatsappStyle === "gradient") {
+      return {
+        ...base,
+        background: `linear-gradient(135deg, ${whatsappAccent} 0%, #128C7E 100%)`,
+        color: whatsappText,
+        boxShadow: "0 12px 25px rgba(18, 140, 126, 0.35)",
+      };
+    }
+
+    if (whatsappStyle === "neon") {
+      return {
+        ...base,
+        background: "rgba(0,0,0,0.05)",
+        color: whatsappAccent,
+        border: `1px solid ${whatsappAccent}`,
+        boxShadow: `0 0 14px ${whatsappAccent}55, inset 0 0 12px ${whatsappAccent}33`,
+      };
+    }
+
+    if (whatsappStyle === "minimal") {
+      return {
+        ...base,
+        background: "transparent",
+        color: whatsappAccent,
+        borderBottom: `2px solid ${whatsappAccent}55`,
+        borderRadius: "0",
+        paddingLeft: "0",
+        paddingRight: "0",
+      };
+    }
+
+    if (whatsappStyle === "dark") {
+      return {
+        ...base,
+        background: "#0f172a",
+        color: "#ffffff",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 10px 24px rgba(15, 23, 42, 0.35)",
+      };
+    }
+
+    if (whatsappStyle === "soft") {
+      return {
+        ...base,
+        background: whatsappAccent,
+        color: whatsappText,
+        boxShadow: "0 12px 25px rgba(37, 211, 102, 0.35)",
+      };
+    }
+
+    return {
+      ...base,
+      background: whatsappAccent,
+      color: whatsappText,
+      boxShadow: "0 8px 20px rgba(37, 211, 102, 0.25)",
+    };
+  })();
+
+
   return (
-    <div className="group">
+    <div className="group" data-tour="editor-block-item">
       <div
         className={`rounded-xl mb-2 overflow-hidden transition-all duration-300 ${isDragging
           ? "border-2 border-dashed border-primary/40 bg-primary/5 opacity-100"
@@ -457,8 +575,9 @@ const BlockItem = memo(({
                 {block.type === 'qrcode' && <QrCodeIcon />}
                 {block.type === 'form' && <FormIcon />}
                 {block.type === 'marketing' && <TrendingUpIcon />}
+                {block.type === 'whatsapp' && <WhatsAppIcon />}
                 {/* Add other icons as needed, defaulting to a generic one if missing */}
-                {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode', 'form', 'marketing'].includes(block.type) && (
+                {!['heading', 'text', 'button', 'image', 'socials', 'video', 'divider', 'qrcode', 'form', 'marketing', 'whatsapp'].includes(block.type) && (
                   <DefaultIcon />
                 )}
               </div>
@@ -1039,6 +1158,102 @@ const BlockItem = memo(({
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {block.type === "whatsapp" && (
+              <div className="space-y-4 pt-4">
+                <p className="text-xs text-gray-500">{t("dashboard.editor.blockItem.whatsapp.helper")}</p>
+
+                <div className="space-y-3">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                    {t("dashboard.editor.blockItem.sections.content")}
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.label")}</label>
+                      <input
+                        value={block.title || ""}
+                        onChange={(event) => handleFieldChange("title", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                        placeholder={t("dashboard.editor.blockItem.whatsapp.labelPlaceholder")}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.number")}</label>
+                      <input
+                        value={block.whatsappNumber || ""}
+                        onChange={(event) => handleFieldChange("whatsappNumber", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all bg-gray-50 focus:bg-white font-mono"
+                        placeholder={t("dashboard.editor.blockItem.whatsapp.numberPlaceholder")}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.message")}</label>
+                      <textarea
+                        value={block.whatsappMessage || ""}
+                        onChange={(event) => handleFieldChange("whatsappMessage", event.target.value)}
+                        rows={3}
+                        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                        placeholder={t("dashboard.editor.blockItem.whatsapp.messagePlaceholder")}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                    {t("dashboard.editor.blockItem.sections.design")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.style")}</label>
+                      <select
+                        value={block.whatsappStyle || "solid"}
+                        onChange={(event) => handleFieldChange("whatsappStyle", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-gray-50 focus:bg-white"
+                      >
+                        <option value="solid">{t("dashboard.editor.blockItem.whatsapp.styles.solid")}</option>
+                        <option value="outline">{t("dashboard.editor.blockItem.whatsapp.styles.outline")}</option>
+                        <option value="gradient">{t("dashboard.editor.blockItem.whatsapp.styles.gradient")}</option>
+                        <option value="glass">{t("dashboard.editor.blockItem.whatsapp.styles.glass")}</option>
+                        <option value="neon">{t("dashboard.editor.blockItem.whatsapp.styles.neon")}</option>
+                        <option value="minimal">{t("dashboard.editor.blockItem.whatsapp.styles.minimal")}</option>
+                        <option value="soft">{t("dashboard.editor.blockItem.whatsapp.styles.soft")}</option>
+                        <option value="dark">{t("dashboard.editor.blockItem.whatsapp.styles.dark")}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t("dashboard.editor.blockItem.common.shape")}</label>
+                      <select
+                        value={block.whatsappShape || "pill"}
+                        onChange={(event) => handleFieldChange("whatsappShape", event.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-gray-50 focus:bg-white"
+                      >
+                        <option value="pill">{t("dashboard.editor.blockItem.shapes.pill")}</option>
+                        <option value="rounded">{t("dashboard.editor.blockItem.shapes.rounded")}</option>
+                        <option value="square">{t("dashboard.editor.blockItem.shapes.square")}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-semibold text-gray-700 block">{t("dashboard.editor.blockItem.sections.colors")}</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <ColorPicker
+                      label={t("dashboard.editor.blockItem.common.background")}
+                      value={block.accent || "#25D366"}
+                      onChange={(val) => handleFieldChange("accent", val)}
+                    />
+                    <ColorPicker
+                      label={t("dashboard.editor.blockItem.common.text")}
+                      value={block.textColor || "#ffffff"}
+                      onChange={(val) => handleFieldChange("textColor", val)}
+                    />
+                  </div>
+                </div>
+
               </div>
             )}
 
@@ -2092,7 +2307,7 @@ const BlockItem = memo(({
               <PortfolioBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} />
             )}
 
-            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar'].includes(block.type) && (
+            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar', 'whatsapp'].includes(block.type) && (
               <div className="pt-2 border-t border-gray-50 mt-3">
                 <label className="text-xs font-medium text-gray-700 mb-2 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">

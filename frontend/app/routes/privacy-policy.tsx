@@ -1,5 +1,5 @@
 import type { MetaFunction } from "react-router";
-import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
 
 export const meta: MetaFunction = ({ params }) => {
@@ -11,73 +11,71 @@ export const meta: MetaFunction = ({ params }) => {
 };
 
 export default function PrivacyPolicy() {
+    const { t } = useTranslation();
+
     return (
         <div className="min-h-screen bg-surface-alt flex flex-col font-sans text-text-main selection:bg-primary selection:text-black">
 
             <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-24 md:py-32">
                 <header className="mb-16">
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Privacy Policy</h1>
-                    <p className="text-lg text-text-muted">Last updated: January 15, 2026</p>
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{t("privacyPage.title")}</h1>
+                    <p className="text-lg text-text-muted">{t("privacyPage.updated")}</p>
                 </header>
 
                 <div className="prose prose-lg prose-neutral max-w-none text-text-secondary space-y-12">
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">1. Introduction</h2>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.introduction.title")}</h2>
                         <p>
-                            Welcome to Portyo ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy.
-                            This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website
-                            and use our services.
+                            {t("privacyPage.sections.introduction.body")}
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">2. Information We Collect</h2>
-                        <p className="mb-4">We collect information that you strictly provide to us when you register for an account, specifically:</p>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.collection.title")}</h2>
+                        <p className="mb-4">{t("privacyPage.sections.collection.intro")}</p>
                         <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>Personal Data:</strong> Name, email address, and profile information you choose to display on your bio page.</li>
-                            <li><strong>Payment Data:</strong> Financial information is processed directly by our payment processor, Stripe. We do not store full credit card numbers on our servers.</li>
-                            <li><strong>Usage Data:</strong> Information about how you interact with our services, such as page views and button clicks, to improve our product.</li>
+                            <li><strong>{t("privacyPage.sections.collection.items.personal.label")}</strong> {t("privacyPage.sections.collection.items.personal.body")}</li>
+                            <li><strong>{t("privacyPage.sections.collection.items.payment.label")}</strong> {t("privacyPage.sections.collection.items.payment.body")}</li>
+                            <li><strong>{t("privacyPage.sections.collection.items.usage.label")}</strong> {t("privacyPage.sections.collection.items.usage.body")}</li>
                         </ul>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">3. How We Use Your Information</h2>
-                        <p>We use the information we collect to:</p>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.usage.title")}</h2>
+                        <p>{t("privacyPage.sections.usage.intro")}</p>
                         <ul className="list-disc pl-6 space-y-2 mt-4">
-                            <li>Provide, operate, and maintain our website.</li>
-                            <li>Process your transactions and manage your subscription.</li>
-                            <li>Improve, personalize, and expand our website.</li>
-                            <li>Communicate with you regarding updates, security alerts, and support.</li>
+                            <li>{t("privacyPage.sections.usage.items.provide")}</li>
+                            <li>{t("privacyPage.sections.usage.items.process")}</li>
+                            <li>{t("privacyPage.sections.usage.items.improve")}</li>
+                            <li>{t("privacyPage.sections.usage.items.communicate")}</li>
                         </ul>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">4. Sharing Your Information</h2>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.sharing.title")}</h2>
                         <p>
-                            We do not sell your personal information. We may share information with third-party service providers (such as Stripe for payments or Google Analytics for usage tracking) strictly for the purpose of operating our business and providing our services to you.
+                            {t("privacyPage.sections.sharing.body")}
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">5. Data Security</h2>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.security.title")}</h2>
                         <p>
-                            We use administrative, technical, and physical security measures to help protect your personal information.
-                            However, please remember that no method of transmission over the internet is 100% secure.
+                            {t("privacyPage.sections.security.body")}
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">6. Your Rights</h2>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.rights.title")}</h2>
                         <p>
-                            Depending on your location, you may have rights regarding your personal data, including the right to access, correct, or delete
-                            the personal information we hold about you. You can manage your account settings directly within the Portyo dashboard.
+                            {t("privacyPage.sections.rights.body")}
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-2xl font-bold text-text-main mb-4">7. Contact Us</h2>
+                        <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.contact.title")}</h2>
                         <p>
-                            If you have questions or comments about this policy, you may contact us at: <a href="mailto:support@portyo.me" className="text-primary hover:underline">support@portyo.me</a>
+                            {t("privacyPage.sections.contact.bodyPrefix")} <a href="mailto:support@portyo.me" className="text-primary hover:underline">support@portyo.me</a>
                         </p>
                     </section>
                 </div>

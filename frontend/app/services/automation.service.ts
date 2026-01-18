@@ -2,7 +2,7 @@ import { api } from "./api";
 
 export interface AutomationNode {
     id: string;
-    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element';
+    type: 'trigger' | 'action' | 'condition' | 'delay' | 'instagram' | 'youtube' | 'integration' | 'page_event' | 'update_element' | 'math_operation' | 'wait' | 'webhook' | 'discord' | 'stripe_discount';
     position: { x: number; y: number };
     data: {
         label: string;
@@ -21,6 +21,17 @@ export interface AutomationNode {
         message?: string;
         comment?: string;
         platform?: string;
+        milestoneCount?: number;
+        discountType?: 'percent' | 'amount';
+        percentOff?: number;
+        amountOff?: number;
+        currency?: string;
+        durationType?: 'once' | 'repeating' | 'forever';
+        durationInMonths?: number;
+        maxRedemptions?: number;
+        promotionCodePrefix?: string;
+        expiresInValue?: number;
+        expiresInUnit?: 'minutes' | 'hours' | 'days';
     };
 }
 

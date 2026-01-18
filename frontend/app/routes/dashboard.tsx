@@ -1,12 +1,14 @@
 import AuthorizationGuard from "~/contexts/guard.context";
 import { Sidebar } from "~/components/dashboard/sidebar";
 import type { Route } from "../+types/root";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BioProvider } from "~/contexts/bio.context";
 import { BlogProvider } from "~/contexts/blog.context";
 import { SiteBlogProvider } from "~/contexts/site-blog.context";
 import { Outlet } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
+import Joyride, { type CallBackProps, EVENTS, STATUS, ACTIONS, type Step } from "react-joyride";
+import { useTranslation } from "react-i18next";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -17,11 +19,137 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Dashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:dashboard-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const steps: Step[] = [
+        {
+            target: "[data-tour=\"dashboard-overview-header\"]",
+            content: t("dashboard.tours.overview.steps.welcome"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"dashboard-overview-stats\"]",
+            content: t("dashboard.tours.overview.steps.stats"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"dashboard-overview-sales\"]",
+            content: t("dashboard.tours.overview.steps.sales"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"dashboard-overview-activity\"]",
+            content: t("dashboard.tours.overview.steps.activity"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"dashboard-sidebar\"]",
+            content: t("dashboard.tours.overview.steps.sidebar"),
+            placement: "right",
+        },
+        {
+            target: "[data-tour=\"dashboard-nav-editor\"]",
+            content: t("dashboard.tours.overview.steps.navEditor"),
+            placement: "right",
+        },
+        {
+            target: "[data-tour=\"dashboard-nav-forms\"]",
+            content: t("dashboard.tours.overview.steps.navForms"),
+            placement: "right",
+        },
+        {
+            target: "[data-tour=\"dashboard-nav-products\"]",
+            content: t("dashboard.tours.overview.steps.navProducts"),
+            placement: "right",
+        },
+        {
+            target: "[data-tour=\"dashboard-nav-integrations\"]",
+            content: t("dashboard.tours.overview.steps.navIntegrations"),
+            placement: "right",
+        },
+        {
+            target: "[data-tour=\"dashboard-nav-settings\"]",
+            content: t("dashboard.tours.overview.steps.navSettings"),
+            placement: "top",
+        },
+    ];
+
+    const handleJoyrideCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:dashboard-tour-done", "true");
+            }
+        }
+    };
+
     return (
         <AuthorizationGuard>
             <BioProvider>
                 <BlogProvider>
                     <SiteBlogProvider>
+                        <Joyride
+                            steps={steps}
+                            run={tourRun}
+                            stepIndex={tourStepIndex}
+                            continuous
+                            showSkipButton
+                            spotlightClicks
+                            scrollToFirstStep
+                            callback={handleJoyrideCallback}
+                            styles={{
+                                options: {
+                                    arrowColor: "#ffffff",
+                                    backgroundColor: "#ffffff",
+                                    overlayColor: "rgba(0, 0, 0, 0.45)",
+                                    primaryColor: tourPrimaryColor,
+                                    textColor: "#171717",
+                                    zIndex: 10000,
+                                },
+                                buttonNext: {
+                                    color: "#171717",
+                                    fontWeight: 700,
+                                },
+                                buttonBack: {
+                                    color: "#5b5b5b",
+                                },
+                                buttonSkip: {
+                                    color: "#5b5b5b",
+                                },
+                                tooltipContent: {
+                                    fontSize: "14px",
+                                    lineHeight: "1.4",
+                                },
+                            }}
+                        />
                         <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
                             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 

@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { useTranslation } from "react-i18next";
 
 interface Category {
     id: string;
@@ -37,6 +39,7 @@ interface PortfolioItem {
 
 export default function PortfolioDashboard() {
     const { bio } = useContext(BioContext);
+    const { t } = useTranslation();
     const [items, setItems] = useState<PortfolioItem[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -67,11 +70,82 @@ export default function PortfolioDashboard() {
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+    const [tourRun, setTourRun] = useState(false);
+    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+
     useEffect(() => {
         if (bio?.id) {
             fetchData();
         }
     }, [bio?.id]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hasSeenTour = window.localStorage.getItem("portyo:portfolio-tour-done");
+        if (!hasSeenTour) {
+            setTourRun(true);
+        }
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+        if (primaryFromTheme) {
+            setTourPrimaryColor(primaryFromTheme);
+        }
+    }, []);
+
+    const portfolioTourSteps: Step[] = [
+        {
+            target: "[data-tour=\"portfolio-header\"]",
+            content: t("dashboard.tours.portfolio.steps.header"),
+            placement: "bottom",
+            disableBeacon: true,
+        },
+        {
+            target: "[data-tour=\"portfolio-add\"]",
+            content: t("dashboard.tours.portfolio.steps.add"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"portfolio-filters\"]",
+            content: t("dashboard.tours.portfolio.steps.filters"),
+            placement: "bottom",
+        },
+        {
+            target: "[data-tour=\"portfolio-grid\"]",
+            content: t("dashboard.tours.portfolio.steps.grid"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"portfolio-card\"]",
+            content: t("dashboard.tours.portfolio.steps.card"),
+            placement: "top",
+        },
+        {
+            target: "[data-tour=\"portfolio-add-placeholder\"]",
+            content: t("dashboard.tours.portfolio.steps.addPlaceholder"),
+            placement: "top",
+        },
+    ];
+
+    const handlePortfolioTourCallback = (data: CallBackProps) => {
+        const { status, type, index, action } = data;
+
+        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
+            const delta = action === ACTIONS.PREV ? -1 : 1;
+            setTourStepIndex(index + delta);
+            return;
+        }
+
+        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+            setTourRun(false);
+            setTourStepIndex(0);
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("portyo:portfolio-tour-done", "true");
+            }
+        }
+    };
 
     const fetchData = async () => {
         if (!bio?.id) return;
@@ -134,7 +208,7 @@ export default function PortfolioDashboard() {
             }));
         } catch (error) {
             console.error("Failed to upload images:", error);
-            alert("Failed to upload images");
+            alert(t("dashboard.portfolio.uploadError"));
         } finally {
             setUploadingImage(false);
             if (fileInputRef.current) {
@@ -208,7 +282,7 @@ export default function PortfolioDashboard() {
             closeModal();
         } catch (error) {
             console.error("Failed to save portfolio item:", error);
-            alert("Failed to save project");
+            alert(t("dashboard.portfolio.saveError"));
         } finally {
             setSaving(false);
         }
@@ -224,7 +298,7 @@ export default function PortfolioDashboard() {
             setDeleteConfirm(null);
         } catch (error) {
             console.error("Failed to delete portfolio item:", error);
-            alert("Failed to delete project");
+            alert(t("dashboard.portfolio.deleteError"));
         } finally {
             setSaving(false);
         }
@@ -243,7 +317,7 @@ export default function PortfolioDashboard() {
             setIsCategoryModalOpen(false);
         } catch (error) {
             console.error("Failed to create category:", error);
-            alert("Failed to create category");
+            alert(t("dashboard.portfolio.categoryCreateError"));
         } finally {
             setSavingCategory(false);
         }
@@ -251,7 +325,7 @@ export default function PortfolioDashboard() {
 
     const handleDeleteCategory = async (categoryId: string) => {
         if (!bio?.id) return;
-        if (!confirm('Delete this category? Projects in this category will remain but become uncategorized.')) return;
+        if (!confirm(t("dashboard.portfolio.categoryDeleteConfirm"))) return;
 
         try {
             await api.delete(`/portfolio/categories/${bio.id}/${categoryId}`);
@@ -268,29 +342,71 @@ export default function PortfolioDashboard() {
     if (!bio) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <p className="text-gray-500">Select a page first</p>
+                <p className="text-gray-500">{t("dashboard.portfolio.selectPage")}</p>
             </div>
         );
     }
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
+            <Joyride
+                steps={portfolioTourSteps}
+                run={tourRun}
+                stepIndex={tourStepIndex}
+                continuous
+                showSkipButton
+                spotlightClicks
+                scrollToFirstStep
+                callback={handlePortfolioTourCallback}
+                locale={{
+                    back: t("dashboard.tours.common.back"),
+                    close: t("dashboard.tours.common.close"),
+                    last: t("dashboard.tours.common.last"),
+                    next: t("dashboard.tours.common.next"),
+                    skip: t("dashboard.tours.common.skip"),
+                }}
+                styles={{
+                    options: {
+                        arrowColor: "#ffffff",
+                        backgroundColor: "#ffffff",
+                        overlayColor: "rgba(0, 0, 0, 0.45)",
+                        primaryColor: tourPrimaryColor,
+                        textColor: "#171717",
+                        zIndex: 10000,
+                    },
+                    buttonNext: {
+                        color: "#171717",
+                        fontWeight: 700,
+                    },
+                    buttonBack: {
+                        color: "#5b5b5b",
+                    },
+                    buttonSkip: {
+                        color: "#5b5b5b",
+                    },
+                    tooltipContent: {
+                        fontSize: "14px",
+                        lineHeight: "1.4",
+                    },
+                }}
+            />
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="portfolio-header">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Portfolio</h1>
-                    <p className="text-gray-500 mt-1">Showcase your projects and work.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.portfolio.title")}</h1>
+                    <p className="text-gray-500 mt-1">{t("dashboard.portfolio.subtitle")}</p>
                 </div>
                 <button
+                    data-tour="portfolio-add"
                     onClick={openCreateModal}
                     className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg shadow-gray-200"
                 >
-                    <Plus className="w-5 h-5" /> Add Project
+                    <Plus className="w-5 h-5" /> {t("dashboard.portfolio.addProject")}
                 </button>
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="flex items-center gap-2 mb-6 flex-wrap">
+            <div className="flex items-center gap-2 mb-6 flex-wrap" data-tour="portfolio-filters">
                 <button
                     onClick={() => setActiveFilter(null)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${activeFilter === null
@@ -298,7 +414,7 @@ export default function PortfolioDashboard() {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                 >
-                    All
+                    {t("dashboard.portfolio.filterAll")}
                 </button>
                 {categories.map(category => (
                     <button
@@ -326,7 +442,7 @@ export default function PortfolioDashboard() {
                     className="px-3 py-2 rounded-full text-sm font-medium bg-gray-50 text-gray-500 hover:bg-gray-100 transition-all border-2 border-dashed border-gray-200 flex items-center gap-1.5"
                 >
                     <FolderPlus className="w-4 h-4" />
-                    Add Category
+                    {t("dashboard.portfolio.addCategory")}
                 </button>
             </div>
 
@@ -336,16 +452,16 @@ export default function PortfolioDashboard() {
                     <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                 </div>
             ) : filteredItems.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-12 text-center">
+                <div className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-12 text-center" data-tour="portfolio-grid">
                     <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100">
                         <ImageIcon className="w-6 h-6" />
                     </div>
                     <div>
                         <p className="font-bold text-gray-900 text-base mb-0.5">
-                            {activeFilter ? 'No projects in this category' : 'No projects yet'}
+                            {activeFilter ? t("dashboard.portfolio.emptyCategoryTitle") : t("dashboard.portfolio.emptyTitle")}
                         </p>
                         <p className="text-xs text-gray-500">
-                            {activeFilter ? 'Add projects to this category' : 'Add your first project to the portfolio'}
+                            {activeFilter ? t("dashboard.portfolio.emptyCategorySubtitle") : t("dashboard.portfolio.emptySubtitle")}
                         </p>
                     </div>
                     <button
@@ -353,14 +469,15 @@ export default function PortfolioDashboard() {
                         className="mt-2 px-5 py-2.5 bg-black text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors"
                     >
                         <Plus className="w-4 h-4 inline mr-1.5" />
-                        Add Project
+                        {t("dashboard.portfolio.addProject")}
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredItems.map((item) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" data-tour="portfolio-grid">
+                    {filteredItems.map((item, index) => (
                         <div
                             key={item.id}
+                            data-tour={index === 0 ? "portfolio-card" : undefined}
                             className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden"
                         >
                             <div className="p-2">
@@ -381,7 +498,7 @@ export default function PortfolioDashboard() {
                                         <div className="absolute top-3 left-3">
                                             <span className="pl-2 pr-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-xl bg-white/80 border border-gray-100 shadow-sm flex items-center gap-1.5 text-gray-600">
                                                 <ImageIcon className="w-3 h-3" />
-                                                {item.images.length} photos
+                                                {t("dashboard.portfolio.photos", { count: item.images.length })}
                                             </span>
                                         </div>
                                     )}
@@ -397,7 +514,7 @@ export default function PortfolioDashboard() {
                                             {item.category.name}
                                         </p>
                                     ) : (
-                                        <p className="text-xs text-gray-400 font-medium">Uncategorized</p>
+                                        <p className="text-xs text-gray-400 font-medium">{t("dashboard.portfolio.uncategorized")}</p>
                                     )}
                                 </div>
 
@@ -412,7 +529,7 @@ export default function PortfolioDashboard() {
                                         onClick={() => openEditModal(item)}
                                         className="h-9 px-4 bg-black text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1.5"
                                     >
-                                        Edit
+                                        {t("dashboard.portfolio.edit")}
                                     </button>
                                 </div>
                             </div>
@@ -421,6 +538,7 @@ export default function PortfolioDashboard() {
 
                     {/* Add New Placeholder */}
                     <button
+                        data-tour="portfolio-add-placeholder"
                         onClick={openCreateModal}
                         className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-6 hover:border-black/20 hover:bg-gray-50/50 transition-all group h-full min-h-[280px]"
                     >
@@ -428,8 +546,8 @@ export default function PortfolioDashboard() {
                             <Plus className="w-6 h-6" />
                         </div>
                         <div className="text-center">
-                            <p className="font-bold text-gray-900 text-base mb-0.5">Add New Project</p>
-                            <p className="text-xs text-gray-500">Showcase your work</p>
+                            <p className="font-bold text-gray-900 text-base mb-0.5">{t("dashboard.portfolio.addNewProject")}</p>
+                            <p className="text-xs text-gray-500">{t("dashboard.portfolio.showcaseWork")}</p>
                         </div>
                     </button>
                 </div>
@@ -441,7 +559,7 @@ export default function PortfolioDashboard() {
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-gray-900">
-                                {editingItem ? 'Edit Project' : 'New Project'}
+                                {editingItem ? t("dashboard.portfolio.editProject") : t("dashboard.portfolio.newProject")}
                             </h3>
                             <button
                                 onClick={closeModal}
@@ -455,13 +573,13 @@ export default function PortfolioDashboard() {
                             {/* Title */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Title *
+                                    {t("dashboard.portfolio.titleLabel")}
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    placeholder="Project name"
+                                    placeholder={t("dashboard.portfolio.titlePlaceholder")}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                 />
                             </div>
@@ -469,14 +587,14 @@ export default function PortfolioDashboard() {
                             {/* Category */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Category
+                                    {t("dashboard.portfolio.categoryLabel")}
                                 </label>
                                 <select
                                     value={formData.categoryId}
                                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
                                 >
-                                    <option value="">No category</option>
+                                    <option value="">{t("dashboard.portfolio.noCategory")}</option>
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
@@ -486,7 +604,7 @@ export default function PortfolioDashboard() {
                             {/* Images */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Images
+                                    {t("dashboard.portfolio.imagesLabel")}
                                 </label>
 
                                 {/* Image Preview Grid with Drag & Drop */}
@@ -525,7 +643,7 @@ export default function PortfolioDashboard() {
                                                 {/* Cover Badge */}
                                                 {index === 0 && (
                                                     <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-[10px] rounded font-bold">
-                                                        Cover
+                                                        {t("dashboard.portfolio.cover")}
                                                     </span>
                                                 )}
 
@@ -538,7 +656,7 @@ export default function PortfolioDashboard() {
                                                         }}
                                                         className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[10px] rounded font-medium opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-black/80"
                                                     >
-                                                        Set as Cover
+                                                        {t("dashboard.portfolio.setAsCover")}
                                                     </button>
                                                 )}
                                             </div>
@@ -563,27 +681,27 @@ export default function PortfolioDashboard() {
                                     {uploadingImage ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin" />
-                                            Uploading...
+                                            {t("dashboard.portfolio.uploading")}
                                         </>
                                     ) : (
                                         <>
                                             <Upload className="w-5 h-5" />
-                                            Upload Images
+                                            {t("dashboard.portfolio.uploadImages")}
                                         </>
                                     )}
                                 </button>
-                                <p className="text-xs text-gray-400 mt-2">Drag images to reorder. First image is the cover.</p>
+                                <p className="text-xs text-gray-400 mt-2">{t("dashboard.portfolio.reorderHint")}</p>
                             </div>
 
                             {/* Description */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Description
+                                    {t("dashboard.portfolio.descriptionLabel")}
                                 </label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Describe your project..."
+                                    placeholder={t("dashboard.portfolio.descriptionPlaceholder")}
                                     rows={4}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all"
                                 />
@@ -595,7 +713,7 @@ export default function PortfolioDashboard() {
                                 onClick={closeModal}
                                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.portfolio.cancel")}
                             </button>
                             <button
                                 onClick={handleSave}
@@ -607,7 +725,7 @@ export default function PortfolioDashboard() {
                                 ) : (
                                     <>
                                         <Save className="w-4 h-4" />
-                                        Save
+                                        {t("dashboard.portfolio.saveProject")}
                                     </>
                                 )}
                             </button>
@@ -621,7 +739,7 @@ export default function PortfolioDashboard() {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">New Category</h3>
+                            <h3 className="text-lg font-bold text-gray-900">{t("dashboard.portfolio.newCategory")}</h3>
                             <button
                                 onClick={() => setIsCategoryModalOpen(false)}
                                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
@@ -634,7 +752,7 @@ export default function PortfolioDashboard() {
                             type="text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="Category name"
+                            placeholder={t("dashboard.portfolio.categoryPlaceholder")}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none mb-4"
                             onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
                         />
@@ -644,14 +762,14 @@ export default function PortfolioDashboard() {
                                 onClick={() => setIsCategoryModalOpen(false)}
                                 className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.portfolio.cancel")}
                             </button>
                             <button
                                 onClick={handleCreateCategory}
                                 disabled={savingCategory || !newCategoryName.trim()}
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-hover transition-colors disabled:opacity-50"
                             >
-                                {savingCategory ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Create'}
+                                {savingCategory ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t("dashboard.portfolio.create")}
                             </button>
                         </div>
                     </div>
@@ -665,23 +783,23 @@ export default function PortfolioDashboard() {
                         <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
                             <Trash2 className="w-7 h-7 text-red-500" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Delete Project</h3>
+                        <h3 className="text-lg font-bold text-gray-900 text-center mb-2">{t("dashboard.portfolio.deleteTitle")}</h3>
                         <p className="text-gray-600 text-center mb-6">
-                            Are you sure you want to delete "{deleteConfirm.title}"? This action cannot be undone.
+                            {t("dashboard.portfolio.deleteConfirm", { title: deleteConfirm.title })}
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeleteConfirm(null)}
                                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                             >
-                                Cancel
+                                {t("dashboard.portfolio.cancel")}
                             </button>
                             <button
                                 onClick={handleDelete}
                                 disabled={saving}
                                 className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors disabled:opacity-50 shadow-md"
                             >
-                                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Delete'}
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : t("dashboard.portfolio.delete")}
                             </button>
                         </div>
                     </div>

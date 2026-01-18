@@ -147,6 +147,177 @@
       "upgradeCta": "Upgrade Plan",
       "vsLastMonth": "vs last month"
     },
+    "tours": {
+      "common": {
+        "back": "Back",
+        "close": "Close",
+        "last": "Finish",
+        "next": "Next",
+        "skip": "Skip"
+      },
+      "overview": {
+        "steps": {
+          "welcome": "Welcome to the Overview! Here’s a quick summary of your performance.",
+          "stats": "These cards show views, clicks, and average CTR.",
+          "sales": "Track sales, revenue, and daily trends in this panel.",
+          "activity": "Recent activity and quick filters to analyze events.",
+          "sidebar": "This is your main dashboard menu for navigation.",
+          "navEditor": "Open the editor to customize your page.",
+          "navForms": "Create forms and capture leads here.",
+          "navProducts": "Manage products and sales in this section.",
+          "navIntegrations": "Connect integrations like Stripe and other apps.",
+          "navSettings": "Access your account settings and preferences."
+        }
+      },
+      "editor": {
+        "steps": {
+          "intro": "This is your editor. Control the entire page structure here.",
+          "palette": "Drag a block from the list to build your page (drag & drop).",
+          "canvas": "Drop blocks here and reorder them by dragging the handle.",
+          "block": "Click a card to edit content and adjust styles like color and font.",
+          "settingsTab": "Open Settings to adjust global styles (fonts, background, cards).",
+          "typography": "Change the site font or upload a custom font.",
+          "cardStyle": "Set card color, opacity, and effects to match your brand.",
+          "preview": "Live preview of the final result. Your edits appear here.",
+          "mobilePreview": "Use mobile preview to see how it looks on phones."
+        }
+      },
+      "leads": {
+        "steps": {
+          "header": "Manage your leads and quick actions here.",
+          "toggle": "Enable or pause lead capture with this toggle.",
+          "export": "Export all leads to CSV with one click.",
+          "stats": "Quick metrics: total, new today, and conversion rate.",
+          "search": "Search by email and filter results.",
+          "table": "Full leads list with actions to email or remove.",
+          "bulk": "Select multiple leads to send, export, or delete in bulk."
+        }
+      },
+      "products": {
+        "steps": {
+          "header": "Manage your products and catalog status here.",
+          "add": "Click here to add a new product.",
+          "fee": "This banner shows your store fee and an upgrade shortcut.",
+          "search": "Search products and filter by status.",
+          "grid": "Your products appear here.",
+          "card": "This is a product card. Edit or remove from the actions.",
+          "addPlaceholder": "Use this shortcut to create another product quickly."
+        }
+      },
+      "portfolio": {
+        "steps": {
+          "header": "Manage your portfolio and showcase projects here.",
+          "add": "Add a new project to your portfolio.",
+          "filters": "Filter projects by category.",
+          "grid": "Your portfolio projects are listed here.",
+          "card": "This is a project card. Edit or delete using the actions.",
+          "addPlaceholder": "Use this shortcut to create another project quickly."
+        }
+      },
+      "blog": {
+        "steps": {
+          "header": "Manage your blog content here.",
+          "newPost": "Create a new post with this button.",
+          "toolbar": "Search and filter your posts here.",
+          "table": "Your posts list is displayed here.",
+          "row": "This is a post row. Use actions to edit or delete."
+        }
+      },
+      "qrcode": {
+        "steps": {
+          "header": "Manage and share your QR codes here.",
+          "create": "Create a new QR code by adding a destination URL.",
+          "list": "Your saved QR codes appear here. Select one to preview.",
+          "preview": "Preview the selected QR code and copy its link.",
+          "appearance": "Customize colors and appearance of the QR code.",
+          "download": "Download the QR code as PNG."
+        }
+      },
+      "automationBuilder": {
+        "steps": {
+          "header": "This is your automation builder. Name your workflow and manage its status here.",
+          "canvas": "Build your flow on this canvas. Connect steps to define the journey.",
+          "palette": "Drag a trigger or action from this toolbar into the canvas.",
+          "node": "Click a node to configure its details and behavior.",
+          "actions": "Save drafts or activate your automation when you're ready."
+        }
+      },
+      "marketing": {
+        "steps": {
+          "header": "Manage marketing slots and proposals here.",
+          "create": "Create a new advertising slot for your page.",
+          "stripe": "Connect Stripe to receive payouts from advertisers.",
+          "grid": "Your marketing slots are listed here.",
+          "card": "This is a slot card with status and pricing.",
+          "proposals": "View proposals and manage applications here."
+        }
+      },
+      "scheduler": {
+        "steps": {
+          "header": "Manage bookings and availability here.",
+          "status": "Pause or resume bookings from this control.",
+          "tabs": "Switch between Today, Bookings, and Availability.",
+          "filters": "Filter bookings by status or date.",
+          "bookings": "Your bookings list appears here.",
+          "availability": "Set your weekly availability here.",
+          "blocked": "Block specific dates on the calendar."
+        }
+      },
+      "templates": {
+        "steps": {
+          "header": "Manage your email templates here.",
+          "create": "Create a new email template.",
+          "search": "Search templates by name.",
+          "grid": "Your templates appear here.",
+          "card": "This is a template card. Edit or delete it from here."
+        }
+      },
+      "integrations": {
+        "steps": {
+          "header": "Connect and manage your integrations here.",
+          "filters": "Filter integrations by category.",
+          "grid": "Your integrations are listed here.",
+          "card": "This is an integration card with status and description.",
+          "action": "Use this button to connect or manage the integration."
+        }
+      },
+      "automation": {
+        "steps": {
+          "header": "Manage your automations here.",
+          "create": "Create a new automation workflow.",
+          "usage": "Track your email usage for automations.",
+          "list": "Your automations list appears here.",
+          "card": "This is an automation card with status and metrics.",
+          "actions": "Use these buttons to activate, edit, or delete."
+        }
+      },
+      "forms": {
+        "steps": {
+          "header": "Manage your forms here.",
+          "create": "Create a new form to collect data.",
+          "grid": "Your forms are listed here.",
+          "card": "This is a form card with basic details.",
+          "answers": "View submitted answers for this form."
+        }
+      },
+      "seo": {
+        "steps": {
+          "header": "Manage your SEO settings here.",
+          "save": "Save your SEO changes here.",
+          "basic": "Edit page title, description, keywords, and favicon.",
+          "social": "Customize social sharing title, description, and image."
+        }
+      },
+      "analytics": {
+        "steps": {
+          "header": "Manage analytics settings here.",
+          "save": "Save your analytics settings.",
+          "overview": "View Google Analytics summary data here.",
+          "codes": "Add tracking IDs like Google Analytics and Facebook Pixel.",
+          "indexing": "Control search engine indexing for your page."
+        }
+      }
+    },
     "leads": {
       "title": "Audience",
       "subtitle": "Manage your subscribers and grow your community.",
@@ -514,7 +685,9 @@
         "mapAddress": "123 Main St, City",
         "featuredTitle": "Glow lipstick",
         "affiliateTitle": "Copy my coupon code",
-        "portfolioTitle": "Portfolio"
+        "portfolioTitle": "Portfolio",
+        "whatsappTitle": "Chat on WhatsApp",
+        "whatsappMessage": "Hi! I'd like to get in touch."
       },
       "event": {
         "defaultTitle": "Live Webinar",
@@ -662,6 +835,30 @@
           "secondaryShadow": "Secondary / Shadow",
           "sensitiveContent": "Sensitive Content",
           "mark18": "Mark as 18+ content"
+        },
+        "whatsapp": {
+          "helper": "Create a contact button that opens WhatsApp with a pre-filled message.",
+          "label": "Button label",
+          "labelPlaceholder": "Chat on WhatsApp",
+          "number": "WhatsApp number",
+          "numberPlaceholder": "e.g. 5511999999999",
+          "message": "Default message",
+          "messagePlaceholder": "Hi! I'd like to get in touch.",
+          "style": "Style",
+          "previewTitle": "Preview",
+          "htmlLabel": "Generated HTML",
+          "defaultLabel": "Chat on WhatsApp",
+          "defaultMessage": "Hi! I'd like to get in touch.",
+          "styles": {
+            "solid": "Solid",
+            "outline": "Outline",
+            "gradient": "Gradient",
+            "glass": "Glass",
+            "neon": "Neon",
+            "minimal": "Minimal",
+            "soft": "Soft",
+            "dark": "Dark"
+          }
         },
         "buttonStyles": {
           "solid": "Solid",
@@ -822,7 +1019,8 @@
           "noFormSelected": "No form selected",
           "portfolioFallback": "Portfolio",
           "slotConnected": "Slot connected",
-          "noSlotSelected": "No slot selected"
+          "noSlotSelected": "No slot selected",
+          "noWhatsappNumber": "No WhatsApp number"
         },
         "form": {
           "helper": "Select a form to display on your bio page.",
@@ -859,6 +1057,7 @@
           "image": "Image",
           "video": "Video",
           "socials": "Socials",
+          "whatsapp": "WhatsApp",
           "divider": "Divider",
           "qrcode": "QR Code",
           "spotify": "Spotify",
@@ -981,7 +1180,8 @@
         "youtubeFeed": "YouTube Feed",
         "divider": "Divider",
         "form": "Form",
-        "portfolio": "Portfolio"
+        "portfolio": "Portfolio",
+        "whatsapp": "WhatsApp"
       },
       "layout": {
         "title": "Layout",
@@ -1092,6 +1292,16 @@
         "highlight": "customers",
         "post": "with one link"
       },
+      "convert": {
+        "word1": "Convert",
+        "word2": "your",
+        "word3": "followers",
+        "word4": "into",
+        "word5": "customers",
+        "word6": "with",
+        "word7": "one",
+        "word8": "link"
+      },
       "subtitle": "Generate powerful revenue-generating Bio's with our all-in-one platform. Grow your following and earn while you sleep!",
       "ctaPlaceholder": "yourname",
       "ctaButton": "Claim Now",
@@ -1108,6 +1318,9 @@
     },
     "featured": {
       "title": "As featured in"
+    },
+    "allInOne": {
+      "label": "Everything in One Link"
     },
     "analytics": {
       "title": "Turn every interaction into opportunity",
@@ -1322,6 +1535,132 @@
       ]
     }
   },
+  "aboutPage": {
+    "hero": {
+      "pre": "Empowering creators to",
+      "highlight": "build their future."
+    },
+    "subtitle": "We're on a mission to give every creator and entrepreneur the tools they need to turn their passion into a thriving business.",
+    "story": {
+      "p1": "Portyo was born from a simple observation: creators were spending too much time juggling multiple tools, instead of doing what they do best — creating.",
+      "p2": "We built an all-in-one platform that consolidates everything you need: a beautiful link-in-bio, powerful analytics, email collection, scheduling, and e-commerce.",
+      "p3": "Today, thousands of creators trust Portyo to power their online presence. And we're just getting started."
+    },
+    "values": {
+      "creatorFirst": {
+        "title": "Creator-First",
+        "body": "Everything we build starts with you in mind. Your success is our success."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "body": "Pushing boundaries to bring you cutting-edge tools that make a difference."
+      },
+      "community": {
+        "title": "Community",
+        "body": "We believe in the power of connection and building genuine relationships."
+      },
+      "growth": {
+        "title": "Growth",
+        "body": "Committed to helping you grow your audience and revenue sustainably."
+      }
+    },
+    "cta": {
+      "title": "Ready to join the movement?",
+      "button": "Get Started"
+    }
+  },
+  "termsPage": {
+    "title": "Terms of Service",
+    "updated": "Last updated: January 15, 2026",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "body": "By accessing or using Portyo (\"the Service\"), you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the Service."
+      },
+      "accounts": {
+        "title": "2. Accounts and Memberships",
+        "body": "If you create an account on the Service, you are responsible for maintaining the security of your account and you are fully responsible for all activities that occur under the account. You must immediately notify us of any unauthorized uses of your account or any other breaches of security."
+      },
+      "userContent": {
+        "title": "3. User Content",
+        "body": "We do not own any data, information, or material that you submit to the Service. You shall have sole responsibility for the accuracy, quality, integrity, legality, reliability, appropriateness, and intellectual property ownership or right to use of all submitted Content. We reserve the right to refuse or remove any Content in our sole discretion."
+      },
+      "billing": {
+        "title": "4. Billing and Payments",
+        "body": "We use Stripe for payment processing. By selecting a paid plan, you agree to pay the subscription fees indicated for that service. Payments will be charged on a pre-pay basis on the day you sign up for an Upgrade and will cover the use of that service for a monthly or annual subscription period as indicated."
+      },
+      "termination": {
+        "title": "5. Termination",
+        "body": "We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms."
+      },
+      "changes": {
+        "title": "6. Changes to Terms",
+        "body": "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect."
+      },
+      "contact": {
+        "title": "7. Contact Us",
+        "bodyPrefix": "If you have any questions about these Terms, please contact us at:"
+      }
+    }
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: January 15, 2026",
+    "sections": {
+      "introduction": {
+        "title": "1. Introduction",
+        "body": "Welcome to Portyo (\"we,\" \"our,\" or \"us\"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services."
+      },
+      "collection": {
+        "title": "2. Information We Collect",
+        "intro": "We collect information that you strictly provide to us when you register for an account, specifically:",
+        "items": {
+          "personal": {
+            "label": "Personal Data:",
+            "body": "Name, email address, and profile information you choose to display on your bio page."
+          },
+          "payment": {
+            "label": "Payment Data:",
+            "body": "Financial information is processed directly by our payment processor, Stripe. We do not store full credit card numbers on our servers."
+          },
+          "usage": {
+            "label": "Usage Data:",
+            "body": "Information about how you interact with our services, such as page views and button clicks, to improve our product."
+          }
+        }
+      },
+      "usage": {
+        "title": "3. How We Use Your Information",
+        "intro": "We use the information we collect to:",
+        "items": {
+          "provide": "Provide, operate, and maintain our website.",
+          "process": "Process your transactions and manage your subscription.",
+          "improve": "Improve, personalize, and expand our website.",
+          "communicate": "Communicate with you regarding updates, security alerts, and support."
+        }
+      },
+      "sharing": {
+        "title": "4. Sharing Your Information",
+        "body": "We do not sell your personal information. We may share information with third-party service providers (such as Stripe for payments or Google Analytics for usage tracking) strictly for the purpose of operating our business and providing our services to you."
+      },
+      "security": {
+        "title": "5. Data Security",
+        "body": "We use administrative, technical, and physical security measures to help protect your personal information. However, please remember that no method of transmission over the internet is 100% secure."
+      },
+      "rights": {
+        "title": "6. Your Rights",
+        "body": "Depending on your location, you may have rights regarding your personal data, including the right to access, correct, or delete the personal information we hold about you. You can manage your account settings directly within the Portyo dashboard."
+      },
+      "contact": {
+        "title": "7. Contact Us",
+        "bodyPrefix": "If you have questions or comments about this policy, you may contact us at:"
+      }
+    }
+  },
+  "pricingPage": {
+    "title": "Simple, transparent pricing",
+    "subtitle": "No contracts, no surprise fees."
+  },
   "footer": {
     "tagline": "Turn your bio into your business. The all-in-one platform for creators to grow, monetize, and own their audience.",
     "cta": "Get Started for Free",
@@ -1365,9 +1704,46 @@
       "interns": "interns",
       "academics": "academics",
       "sideHustlers": "side hustlers",
-            "architects": "architects",
-
+      "architects": "architects",
       "bankers": "bankers"
+    }
+  },
+  "tooltips": {
+    "editor": {
+      "cardOpacity": "Controls how transparent the card background is. 0% = fully transparent, 100% = fully solid.",
+      "cardBlur": "Blur intensity for the frosted glass effect. Higher values create a stronger blur behind the card.",
+      "customFont": "Upload a .ttf or .woff2 font file to use your own brand typography.",
+      "backgroundPatterns": "Choose a decorative pattern for your page background. Each pattern adapts to your selected colors."
+    },
+    "marketing": {
+      "acceptOtherPrices": "When enabled, advertisers can propose prices outside your min-max range. You can still reject any proposal.",
+      "priceRange": "Set your minimum and maximum acceptable prices. This helps advertisers know your expectations.",
+      "platformFee": "Portyo charges a 5% fee on all accepted proposals. This covers payment processing and platform maintenance."
+    },
+    "analytics": {
+      "googleAnalyticsId": "Find your GA ID in Google Analytics → Admin → Data Streams → Your stream → Measurement ID (starts with G-).",
+      "facebookPixelId": "Find your Pixel ID in Meta Events Manager → Data Sources → Your Pixel → Settings.",
+      "noIndex": "When enabled, search engines like Google won't show your page in search results. Good for private pages."
+    },
+    "seo": {
+      "whatIsSeo": "SEO helps your page appear in Google searches. Better SEO = more people finding you organically.",
+      "metaTitle": "The title shown in search results and browser tabs. Keep it under 60 characters for best results.",
+      "metaDescription": "A brief summary shown below your title in search results. Aim for 120-160 characters.",
+      "ogImage": "The image shown when your link is shared on social media. Recommended size: 1200x630 pixels.",
+      "keywords": "Words that help search engines understand your page content. Separate with commas."
+    },
+    "products": {
+      "digitalProduct": "Digital products are delivered instantly via download link. Physical products require shipping.",
+      "stockQuantity": "Leave empty for unlimited stock. Set a number to limit available units."
+    },
+    "scheduler": {
+      "availability": "Define your working hours for each day. Clients can only book during these times.",
+      "blockedDates": "Block specific dates when you're unavailable (holidays, vacations, etc.).",
+      "bufferTime": "Time between appointments for breaks or preparation."
+    },
+    "integrations": {
+      "upgradeRequired": "This integration requires a paid plan. Upgrade to unlock.",
+      "comingSoon": "We're working on this integration. It will be available in a future update."
     }
   }
 }

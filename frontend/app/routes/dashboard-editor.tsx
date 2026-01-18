@@ -42,6 +42,8 @@ import {
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { PortyoAI } from "~/components/dashboard/portyo-ai";
 import { useTranslation } from "react-i18next";
+import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { InfoTooltip } from "~/components/shared/info-tooltip";
 
 export const meta: MetaFunction = () => {
   return [
@@ -819,6 +821,10 @@ export default function DashboardEditor() {
   const [customFontName, setCustomFontName] = useState(bio?.customFontName || null);
   const [showUpgrade, setShowUpgrade] = useState<string | null>(null);
 
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
@@ -829,6 +835,88 @@ export default function DashboardEditor() {
   const [newQrValue, setNewQrValue] = useState("");
   const [isCreatingQr, setIsCreatingQr] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSeenTour = window.localStorage.getItem("portyo:editor-tour-done");
+    if (!hasSeenTour) {
+      setTourRun(true);
+    }
+
+    const rootStyles = getComputedStyle(document.documentElement);
+    const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
+    if (primaryFromTheme) {
+      setTourPrimaryColor(primaryFromTheme);
+    }
+  }, []);
+
+  const editorTourSteps: Step[] = [
+    {
+      target: "[data-tour=\"editor-topbar\"]",
+      content: t("dashboard.tours.editor.steps.intro"),
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: "[data-tour=\"editor-palette\"]",
+      content: t("dashboard.tours.editor.steps.palette"),
+      placement: "right",
+    },
+    {
+      target: "[data-tour=\"editor-drag-canvas\"]",
+      content: t("dashboard.tours.editor.steps.canvas"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"editor-block-item\"]",
+      content: t("dashboard.tours.editor.steps.block"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"editor-settings-tab\"]",
+      content: t("dashboard.tours.editor.steps.settingsTab"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"editor-typography\"]",
+      content: t("dashboard.tours.editor.steps.typography"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"editor-card-style\"]",
+      content: t("dashboard.tours.editor.steps.cardStyle"),
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour=\"editor-preview\"]",
+      content: t("dashboard.tours.editor.steps.preview"),
+      placement: "left",
+    },
+    {
+      target: "[data-tour=\"editor-mobile-preview\"]",
+      content: t("dashboard.tours.editor.steps.mobilePreview"),
+      placement: "left",
+    },
+  ];
+
+  const handleEditorTourCallback = (data: CallBackProps) => {
+    const { status, type, index, action } = data;
+
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      const delta = action === ACTIONS.PREV ? -1 : 1;
+      setTourStepIndex(index + delta);
+      return;
+    }
+
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      setTourRun(false);
+      setTourStepIndex(0);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("portyo:editor-tour-done", "true");
+      }
+    }
+  };
 
   useEffect(() => {
     if (!bio?.id) return;
@@ -1249,13 +1337,18 @@ export default function DashboardEditor() {
         const newBlock: BioBlock = {
           id: makeId(),
           type: dragItem.type,
-          title: dragItem.type === "button" ? t("dashboard.editor.defaults.newButton") : dragItem.type === "heading" ? t("dashboard.editor.defaults.newHeading") : dragItem.type === "video" ? t("dashboard.editor.defaults.newVideo") : t("dashboard.editor.defaults.newBlock"),
+          title: dragItem.type === "button" ? t("dashboard.editor.defaults.newButton") : dragItem.type === "heading" ? t("dashboard.editor.defaults.newHeading") : dragItem.type === "video" ? t("dashboard.editor.defaults.newVideo") : dragItem.type === "whatsapp" ? t("dashboard.editor.defaults.whatsappTitle") : t("dashboard.editor.defaults.newBlock"),
           body: dragItem.type === "text" ? t("dashboard.editor.defaults.textBody") : undefined,
           href: dragItem.type === "button" ? "https://" : undefined,
-          accent: dragItem.type === "button" ? "#111827" : undefined,
+          accent: dragItem.type === "button" ? "#111827" : dragItem.type === "whatsapp" ? "#25D366" : undefined,
+          textColor: dragItem.type === "whatsapp" ? "#ffffff" : undefined,
           mediaUrl: dragItem.type === "image" ? "https://placehold.co/1200x600" : dragItem.type === "video" ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : undefined,
           buttonStyle: "solid",
           buttonShape: "rounded",
+          whatsappNumber: dragItem.type === "whatsapp" ? "5511999999999" : undefined,
+          whatsappMessage: dragItem.type === "whatsapp" ? t("dashboard.editor.defaults.whatsappMessage") : undefined,
+          whatsappStyle: dragItem.type === "whatsapp" ? "solid" : undefined,
+          whatsappShape: dragItem.type === "whatsapp" ? "pill" : undefined,
           socials: dragItem.type === "socials" ? { instagram: "", twitter: "", linkedin: "" } : undefined,
           socialsLayout: "row",
           socialsLabel: false,
@@ -1497,6 +1590,40 @@ export default function DashboardEditor() {
 
   return (
     <div className="min-h-screen bg-[#f9f7f2] font-sans text-gray-900 flex flex-col h-screen overflow-hidden">
+      <Joyride
+        steps={editorTourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        continuous
+        showSkipButton
+        spotlightClicks
+        scrollToFirstStep
+        callback={handleEditorTourCallback}
+        styles={{
+          options: {
+            arrowColor: "#ffffff",
+            backgroundColor: "#ffffff",
+            overlayColor: "rgba(0, 0, 0, 0.45)",
+            primaryColor: tourPrimaryColor,
+            textColor: "#171717",
+            zIndex: 10000,
+          },
+          buttonNext: {
+            color: "#171717",
+            fontWeight: 700,
+          },
+          buttonBack: {
+            color: "#5b5b5b",
+          },
+          buttonSkip: {
+            color: "#5b5b5b",
+          },
+          tooltipContent: {
+            fontSize: "14px",
+            lineHeight: "1.4",
+          },
+        }}
+      />
       <style>{`
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
@@ -1521,7 +1648,10 @@ export default function DashboardEditor() {
       `}</style>
 
       {/* Top Bar */}
-      <header className="shrink-0 px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#f9f7f2] z-40">
+      <header
+        data-tour="editor-topbar"
+        className="shrink-0 px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#f9f7f2] z-40"
+      >
         <div className="flex-shrink-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -1622,7 +1752,10 @@ export default function DashboardEditor() {
         <div className="grid grid-cols-12 gap-6 h-full">
 
           {/* Left Column: Tools & Settings (Col Span 3) */}
-          <div className="col-span-12 lg:col-span-3 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div
+            data-tour="editor-palette"
+            className="col-span-12 lg:col-span-3 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
             {/* Tabs */}
             <div className="flex border-b border-gray-100 p-3 bg-white">
               <button
@@ -1632,6 +1765,7 @@ export default function DashboardEditor() {
                 {t("dashboard.editor.tabs.blocks")}
               </button>
               <button
+                data-tour="editor-settings-tab"
                 onClick={() => setActiveTab("settings")}
                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "settings" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
               >
@@ -1713,7 +1847,7 @@ export default function DashboardEditor() {
                 /* Settings Tab content */
                 <div className="space-y-8 pb-8">
                   {/** Font Settings */}
-                  <div>
+                  <div data-tour="editor-typography">
                     <button
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("font")}
@@ -1871,9 +2005,9 @@ export default function DashboardEditor() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Card Settings */}
-                  <div>
+                  <div data-tour="editor-card-style">
                     <button
                       className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
                       onClick={() => toggleSetting("card")}
@@ -1919,7 +2053,10 @@ export default function DashboardEditor() {
                             {/* Opacity */}
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.opacity")}</label>
+                                <div className="flex items-center gap-1">
+                                  <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.opacity")}</label>
+                                  <InfoTooltip content={t("tooltips.editor.cardOpacity")} position="right" />
+                                </div>
                                 <span className="text-xs text-gray-500 font-mono">{cardOpacity}%</span>
                               </div>
                               <input
@@ -1936,7 +2073,10 @@ export default function DashboardEditor() {
                             {cardStyle === 'frosted' && (
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.blur")}</label>
+                                  <div className="flex items-center gap-1">
+                                    <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.blur")}</label>
+                                    <InfoTooltip content={t("tooltips.editor.cardBlur")} position="right" />
+                                  </div>
                                   <span className="text-xs text-gray-500 font-mono">{cardBlur}px</span>
                                 </div>
                                 <input
@@ -2092,7 +2232,10 @@ export default function DashboardEditor() {
 
           {/* Middle Column: Drag & Drop (Col Span 6 - BIGGEST) */}
           {/* Middle Column: Drag & Drop (Col Span 5 - ADJUSTED) */}
-          <div className="col-span-12 lg:col-span-5 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
+          <div
+            data-tour="editor-drag-canvas"
+            className="col-span-12 lg:col-span-5 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
+          >
             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
               <h2 className="font-bold text-gray-900 text-lg">{t("dashboard.editor.layout.title")}</h2>
               <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{t("dashboard.editor.layout.dragToReorder")}</span>
@@ -2156,7 +2299,10 @@ export default function DashboardEditor() {
 
           {/* Right Column: Preview (Col Span 3 - SIMPLIFIED) */}
           {/* Right Column: Preview (Col Span 4 - ADJUSTED) */}
-          <div className="hidden lg:flex lg:col-span-4 flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden items-center relative">
+          <div
+            data-tour="editor-preview"
+            className="hidden lg:flex lg:col-span-4 flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden items-center relative"
+          >
             <div className="w-full h-full">
               <iframe
                 ref={iframeRef}
@@ -2179,6 +2325,7 @@ export default function DashboardEditor() {
       {/* Mobile Preview FAB */}
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <button
+          data-tour="editor-mobile-preview"
           onClick={() => setShowMobilePreview(true)}
           className="bg-gray-900 text-white p-4 rounded-full shadow-xl hover:bg-gray-800 transition-all active:scale-95 flex items-center justify-center border border-white/20"
           aria-label={t("dashboard.editor.preview.aria")}

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addEmail } from "../../../shared/services/email.service";
+import { addEmail, countEmailsForBio } from "../../../shared/services/email.service";
 import { z } from "zod";
 import { activityService } from "../../../services/activity.service";
 import { ActivityType } from "../../../database/entity/activity-entity";
@@ -26,6 +26,15 @@ router.post("/subscribe/:id", async (req, res) => {
         } catch (automationError: any) {
             // Log but don't fail the subscription if automation fails
             logger.error(`Automation trigger failed: ${automationError.message}`);
+        }
+
+        try {
+            const leadCount = await countEmailsForBio(id);
+            await triggerAutomation(id, 'lead_milestone', {
+                milestoneCount: leadCount,
+            });
+        } catch (automationError: any) {
+            logger.error(`Lead milestone trigger failed: ${automationError.message}`);
         }
 
         res.status(201).json(result);
