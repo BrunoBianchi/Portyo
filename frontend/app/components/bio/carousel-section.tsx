@@ -62,6 +62,19 @@ export default function CarouselSection() {
     return trimmed.length > 32 ? `${trimmed.slice(0, 32)}…` : trimmed;
   };
 
+  const parseJsonArray = (payload: unknown) => {
+    if (Array.isArray(payload)) return payload;
+    if (typeof payload !== "string") return null;
+    const trimmed = payload.trim();
+    if (!trimmed || trimmed.startsWith("<")) return null;
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  };
+
   const [users, setUsers] = useState<CarouselBio[]>(fallbackUsers);
 
   useEffect(() => {
@@ -77,9 +90,13 @@ export default function CarouselSection() {
 
     const fetchBios = async () => {
       try {
-        const response = await api.get("/public/bios/random", { params: { limit: 8 } });
-        const data = response.data;
-        if (!Array.isArray(data) || !isActive) return;
+        const response = await api.get("/public/bios/random", {
+          params: { limit: 8 },
+          responseType: "text",
+          transformResponse: [(data) => data]
+        });
+        const data = parseJsonArray(response.data);
+        if (!data || !isActive) return;
 
         const mapped = data
           .filter((bio: any) => bio?.sufix)

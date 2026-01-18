@@ -70,8 +70,9 @@ import { env } from "../../config/env"
 
 const normalizeBio = (bio: BioEntity | null): Bio | null => {
     if (!bio) return null;
-    if (!bio.profileImage && bio.userId) {
-        bio.profileImage = `${env.BACKEND_URL}/api/images/${bio.userId}/medium.png`;
+    if (!bio.profileImage) {
+        const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173';
+        bio.profileImage = `${frontendUrl}/base-img/card_base_image.png`;
     }
     return bio as unknown as Bio;
 }
@@ -143,7 +144,7 @@ export const getRandomPublicBios = async (limit: number): Promise<Array<{ sufix:
         .getRawMany();
 
     return bios.map((row) => {
-        const profileImage = row.bio_profileImage || (row.bio_userId ? `${env.BACKEND_URL}/api/images/${row.bio_userId}/medium.png` : null);
+        const profileImage = row.bio_profileImage || `${env.FRONTEND_URL || 'http://localhost:5173'}/base-img/card_base_image.png`;
         return {
             sufix: row.bio_sufix,
             fullName: row.user_fullName,

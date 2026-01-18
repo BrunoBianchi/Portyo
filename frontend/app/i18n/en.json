@@ -1148,7 +1148,15 @@
         "body": "Let clients book you effortlessly. Syncs with Google Calendar to prevent double bookings. Set your availability and get booked.",
         "cta": "Start Booking",
         "month": "September 2025",
-        "days": ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+        "days": [
+          "Mo",
+          "Tu",
+          "We",
+          "Th",
+          "Fr",
+          "Sa",
+          "Su"
+        ],
         "eventTitle": "Discovery Call",
         "eventTime": "10:00 AM - 10:30 AM",
         "statusLabel": "Status",
@@ -1199,7 +1207,9 @@
             "Basic analytics",
             "3% store fee"
           ],
-          "more": ["Limited integrations"]
+          "more": [
+            "Limited integrations"
+          ]
         },
         "standard": {
           "badge": "Most Popular",
@@ -1311,8 +1321,7 @@
         }
       ]
     }
-  }
-  ,
+  },
   "footer": {
     "tagline": "Turn your bio into your business. The all-in-one platform for creators to grow, monetize, and own their audience.",
     "cta": "Get Started for Free",
@@ -1338,5 +1347,27 @@
       "contact": "Contact"
     },
     "copyright": "© 2025 Portyo Inc. All rights reserved."
+  },
+  "builtForEveryone": {
+    "title": "Built For",
+    "subtitle": "Everyone",
+    "labels": {
+      "creators": "creators",
+      "musicians": "musicians",
+      "engineers": "engineers",
+      "designers": "designers",
+      "founders": "founders",
+      "lawyers": "lawyers",
+      "doctors": "doctors",
+      "teachers": "teachers",
+      "students": "students",
+      "professionals": "professionals",
+      "interns": "interns",
+      "academics": "academics",
+      "sideHustlers": "side hustlers",
+            "architects": "architects",
+
+      "bankers": "bankers"
+    }
   }
 }

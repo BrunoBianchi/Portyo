@@ -34,7 +34,7 @@ const normalizeProfileImageSrc = (input: string | null | undefined, userId: stri
     return joinBaseUrl(baseUrl, `/api/images/${userId}/medium.png?v=${Date.now()}`);
   }
 
-  return joinBaseUrl(baseUrl, '/Street Life - Head (1).svg');
+  return joinBaseUrl(baseUrl, '/base-img/card_base_image.png');
 };
 
 const normalizeBackgroundImageSrc = (input: string | null | undefined, userId: string | null | undefined, baseUrl: string) => {
@@ -932,7 +932,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
         <!-- Profile Image -->
         <div style="width:120px; height:120px; ${imgStyle} overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
-               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/Street Life - Head (1).svg')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
+               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/base-img/card_base_image.png')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
                
                ${bio.isPreview ? `
                <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">
@@ -1246,6 +1246,19 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     </div>
   ` : '';
 
+  const footerHtml = `
+    <div style="margin-top:28px; padding:16px 0 8px; text-align:center; font-size:12px; color:rgba(15,23,42,0.45);">
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;">
+        <a href="${joinBaseUrl(baseUrl, '/')}" style="text-decoration:none; color:inherit;">Home</a>
+        <span style="opacity:0.4;">•</span>
+        <a href="${joinBaseUrl(baseUrl, '/privacy-policy')}" style="text-decoration:none; color:inherit;">Privacy Policy</a>
+        <span style="opacity:0.4;">•</span>
+        <a href="${joinBaseUrl(baseUrl, '/terms-of-service')}" style="text-decoration:none; color:inherit;">Terms of Service</a>
+      </div>
+      <button type="button" onclick="window.location.href='mailto:support@portyo.me?subject=Denunciar%20bio&body=${encodeURIComponent(`Link da bio: ${shareUrl}`)}'" style="margin-top:12px; border:1px solid rgba(15,23,42,0.15); background:transparent; color:rgba(15,23,42,0.55); font-size:12px; padding:6px 12px; border-radius:999px; cursor:pointer;">Denunciar bio</button>
+    </div>
+  `;
+
   return `${fontLink}<div style="${bgStyle} min-height:100vh; font-family: ${fontFamily}; position:relative;">
     <style>
       html, body { min-height: 100%; }
@@ -1344,6 +1357,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           <div style="text-align:center; padding:40px; color:#6b7280;">Loading posts...</div>
         </div>
       </div>
+
+      ${footerHtml}
 
 
     </main>

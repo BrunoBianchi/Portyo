@@ -1148,7 +1148,15 @@
         "body": "Deixe clientes agendarem com facilidade. Sincroniza com o Google Calendar para evitar conflitos. Defina sua disponibilidade e receba reservas.",
         "cta": "Começar a agendar",
         "month": "Setembro 2025",
-        "days": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+        "days": [
+          "Seg",
+          "Ter",
+          "Qua",
+          "Qui",
+          "Sex",
+          "Sáb",
+          "Dom"
+        ],
         "eventTitle": "Chamada de descoberta",
         "eventTime": "10:00 - 10:30",
         "statusLabel": "Status",
@@ -1199,7 +1207,9 @@
             "Analytics básico",
             "Taxa de loja de 3%"
           ],
-          "more": ["Integrações limitadas"]
+          "more": [
+            "Integrações limitadas"
+          ]
         },
         "standard": {
           "badge": "Mais popular",
@@ -1311,8 +1321,7 @@
         }
       ]
     }
-  }
-  ,
+  },
   "footer": {
     "tagline": "Transforme sua bio no seu negócio. A plataforma tudo-em-um para criadores crescerem, monetizarem e dominarem sua audiência.",
     "cta": "Começar grátis",
@@ -1338,5 +1347,26 @@
       "contact": "Contato"
     },
     "copyright": "© 2025 Portyo Inc. Todos os direitos reservados."
+  },
+  "builtForEveryone": {
+    "title": "Feito Para",
+    "subtitle": "Todos",
+    "labels": {
+      "creators": "criadores",
+      "musicians": "músicos",
+      "engineers": "engenheiros",
+      "designers": "designers",
+      "founders": "fundadores",
+      "lawyers": "advogados",
+      "doctors": "médicos",
+      "teachers": "professores",
+      "students": "estudantes",
+      "professionals": "profissionais",
+      "interns": "estagiários",
+      "academics": "acadêmicos",
+      "sideHustlers": "autônomos",
+      "architects": "arquitetos",
+      "bankers": "banqueiros"
+    }
   }
 }

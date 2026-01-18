@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import HeroSection from "~/components/marketing/hero-section";
 
 const CarouselSection = lazy(() => import("~/components/bio/carousel-section"));
+const BuiltForEveryoneSection = lazy(() => import("~/components/marketing/built-for-everyone"));
 const AnalyticsSection = lazy(() => import("~/components/dashboard/analytics-section"));
 const FeaturedSection = lazy(() => import("~/components/marketing/featured-section"));
 const FeaturesSection = lazy(() => import("~/components/marketing/features-section"));
@@ -11,11 +12,14 @@ const ClaimUsernameBar = lazy(() => import("~/components/marketing/claim-usernam
 
 export default function LandingPage() {
     return (
-        <main className="flex items-center justify-center pt-16 pb-16 bg-surface-alt min-h-screen">
+        <main className="flex items-center justify-center pt-0 pb-16 bg-white min-h-screen">
             <div className="flex-1 flex flex-col items-center gap-10 min-h-0 w-full">
                 <HeroSection />
                 <Suspense fallback={<div className="min-h-[420px] w-full" />}>
                     <CarouselSection />
+                </Suspense>
+                <Suspense fallback={<div className="min-h-[400px] w-full" />}>
+                    <BuiltForEveryoneSection />
                 </Suspense>
                 <Suspense fallback={<div className="min-h-[520px] w-full" />}>
                     <AnalyticsSection />

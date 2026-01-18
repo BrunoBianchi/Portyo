@@ -1,13 +1,10 @@
 import axios from "axios"
-import { AppDataSource } from "../../database/datasource"
-import { UserEntity } from "../../database/entity/user-entity"
-const repository = AppDataSource.getRepository(UserEntity)
-import { createNewUser, createUser, findUserByEmail, findUserByEmailWithoutPassword } from "./user.service"
-import { UserType } from "../types/user.type"
+import { createUser, findUserByEmail } from "./user.service"
 import { generateToken } from "./jwt.service"
 import { env } from "../../config/env"
 import { logger } from "../utils/logger"
 import { ApiError, APIErrors } from "../errors/api-error"
+import { BillingService } from "../../services/billing.service"
 
 const googleTokenUrl = "https://oauth2.googleapis.com/token"
 const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -63,32 +60,37 @@ export const parseGoogleAccessToken = async (accessToken: string) => {
     })
     const data = response.data
     
-    let user = await findUserByEmailWithoutPassword(data.email);
-    
-    if (!user) {
-        user = await createUser({
-            email: data.email,
-            provider: "gmail",
-            fullName: data.name,
-            verified:true,
-            password: ""
-        });
-    }
+  let user = await findUserByEmail(data.email);
 
-    const payload = {
-        id: user!.id,
-        email: user!.email,
-        fullname: user!.fullName,
-        verified: true,
-        provider: user!.provider,
-        createdAt: user!.createdAt,
-        plan: user!.plan
-    } 
+  if (!user) {
+    user = await createUser({
+      email: data.email,
+      provider: "gmail",
+      fullName: data.name,
+      verified: true,
+      password: ""
+    });
+  }
 
-    return {
-        token: await generateToken({ ...payload }),
-        user: payload
-    }
+  // Ensure the 7-day Standard trial exists for Gmail signups
+  await BillingService.ensureStandardTrial(user.id, 7);
+  const activePlan = await BillingService.getActivePlan(user.id);
+
+  const payload = {
+    id: user.id,
+    email: user.email,
+    fullname: user.fullName,
+    verified: true,
+    provider: user.provider,
+    createdAt: user.createdAt,
+    plan: activePlan,
+    onboardingCompleted: user.onboardingCompleted
+  } 
+
+  return {
+    token: await generateToken({ ...payload }),
+    user: payload
+  }
   } catch (error: any) {
       if (error.response?.status === 401) {
           logger.warn("Invalid Google Access Token provided");

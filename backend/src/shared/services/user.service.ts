@@ -72,7 +72,8 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         verified: savedUser.verified,
         provider: savedUser.provider,
         createdAt: savedUser.createdAt,
-        plan: activePlan
+        plan: activePlan,
+        onboardingCompleted: savedUser.onboardingCompleted
     }
     return {
         token: await generateToken({ ...payload }),

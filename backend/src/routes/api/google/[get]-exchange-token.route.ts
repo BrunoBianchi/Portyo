@@ -23,7 +23,11 @@ router.get("/exchange_authorization_token", async (req: Request, res: Response, 
         
         // Build redirect URL with token - redirect to frontend
         const frontendUrl = env.FRONTEND_URL || 'https://portyo.me';
-        const redirectUrl = `${frontendUrl}/login?token=${encodeURIComponent(data.token)}`;
+        const params = new URLSearchParams({ token: data.token });
+        if (data.user && data.user.onboardingCompleted === false) {
+            params.set("returnTo", "/onboarding");
+        }
+        const redirectUrl = `${frontendUrl}/login?${params.toString()}`;
         
         // Save session and redirect
         req.session.save((err) => {
