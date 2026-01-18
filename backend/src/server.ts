@@ -11,6 +11,8 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { logger } from "./shared/utils/logger";
+import { sendOnboardingNudges } from "./shared/services/onboarding-nudge.service";
+import schedule from "node-schedule";
 // Sessions: keep in-memory store; Redis is used only for images/bio cache.
 
 const app = express();
@@ -142,6 +144,17 @@ export const InitializateServer = () => {
     logger.info(`Server is running on port ${port}`);
     logger.info(`Environment: ${env.NODE_ENV}`);
   });
+
+  const runNudgeJob = async () => {
+    try {
+      await sendOnboardingNudges();
+    } catch (error) {
+      logger.error("Onboarding nudge job failed", error as any);
+    }
+  };
+
+  schedule.scheduleJob("*0 * * * *", runNudgeJob);
+  setTimeout(runNudgeJob, 30 * 1000);
 
   const shutdown = () => {
     logger.info("Shutting down server...");

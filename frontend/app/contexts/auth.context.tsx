@@ -25,8 +25,8 @@ interface AuthContextData {
     loading: boolean;
     login(email: string, password: string): Promise<void>;
     socialLogin(user: User, token: string): void;
-    loginWithToken(token: string): Promise<void>;
-    register(email: string, password: string, fullname: string, sufix: string): Promise<void>;
+    loginWithToken(token: string): Promise<User>;
+    register(email: string, password: string, fullname: string, sufix?: string): Promise<void>;
     logout(): void;
     // Plan checking helpers
     isPro: boolean;
@@ -93,18 +93,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [setCookie]);
 
     // Login with just a token (e.g., OAuth fallback when postMessage fails)
-    const loginWithToken = useCallback(async (token: string) => {
+    const loginWithToken = useCallback(async (token: string): Promise<User> => {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setCookie('@App:token', token, { path: '/' });
 
         const response = await api.get('/user/me');
         setUser(response.data);
         setCookie('@App:user', JSON.stringify(response.data), { path: '/' });
+        return response.data;
     }, [setCookie]);
 
-    const register = useCallback(async (email: string, password: string, fullname: string, sufix: string) => {
+    const register = useCallback(async (email: string, password: string, fullname: string, sufix?: string) => {
         const response = await api.post("/user/", {
-            sufix, fullname, email, password
+            ...(sufix ? { sufix } : {}),
+            fullname,
+            email,
+            password
         })
         const { authentification, bio } = response.data;
         setUser(authentification.user);

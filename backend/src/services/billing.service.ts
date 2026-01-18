@@ -1,6 +1,7 @@
 import { MoreThan, LessThanOrEqual } from "typeorm";
 import { AppDataSource } from "../database/datasource";
 import { BillingEntity } from "../database/entity/billing-entity";
+import { UserEntity } from "../database/entity/user-entity";
 
 export class BillingService {
     private static repository = AppDataSource.getRepository(BillingEntity);
@@ -60,7 +61,7 @@ export class BillingService {
         await this.repository.save(billing);
 
         // Update User Entity with new plan and expiration
-        const userRepo = AppDataSource.getRepository("UserEntity");
+        const userRepo = AppDataSource.getRepository(UserEntity);
         const user = await userRepo.findOneBy({ id: userId });
         if (user) {
             // If the user already has a future expiration date (e.g. extending subscription), we might want to add to it.
@@ -78,6 +79,12 @@ export class BillingService {
         }
 
         return billing;
+    }
+
+    static async ensureStandardTrial(userId: string, days: number = 7) {
+        const existingCount = await this.repository.count({ where: { userId } });
+        if (existingCount > 0) return null;
+        return this.createBilling(userId, 'standard', days, 0);
     }
 
     static async cancelSubscription(userId: string) {

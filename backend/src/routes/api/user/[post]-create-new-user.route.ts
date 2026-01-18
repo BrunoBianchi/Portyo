@@ -17,19 +17,21 @@ router.post("/", async (req, res, next) => {
         const body = z.object({
             email: z.string().email("Invalid email format"),
             fullname: z.string().min(2, "Full name is required"),
-            sufix: z.string().min(1, "Username suffix is required"),
+            sufix: z.string().min(1, "Username suffix is required").optional(),
             password: passwordSchema,
         }).parse(req.body);
 
+        const authentification = await createNewUser({
+            email: body.email,
+            fullName: body.fullname,
+            password: body.password,
+            provider: "password",
+            verified: false,
+        });
+
         const payload = {
-            authentification: await createNewUser({
-                email: body.email,
-                fullName: body.fullname,
-                password: body.password,
-                provider: "password",
-                verified: false,
-            }),
-            bio: await createNewBio(body.sufix, body.email)
+            authentification,
+            bio: body.sufix ? await createNewBio(body.sufix, body.email) : null
         };
         res.status(201).json(payload);
     } catch (error) {

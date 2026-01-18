@@ -52,6 +52,9 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "boolean", default: false })
     onboardingCompleted: boolean = false;
 
+    @Column({ type: "timestamp", nullable: true })
+    onboardingNudgeSentAt?: Date;
+
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
 

@@ -24,4 +24,14 @@ router.get("/random", async (req: Request, res: Response) => {
     }
 });
 
+router.get("/cards", async (_req: Request, res: Response) => {
+    try {
+        const bios = await getRandomPublicBios(12);
+        return res.status(200).json(bios);
+    } catch (error) {
+        console.error("Error fetching random bio cards:", error);
+        return res.status(500).json({ error: "Failed to fetch random bio cards" });
+    }
+});
+
 export default router;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { api } from "~/services/api";
 
 type CarouselBio = {
   name: string;
@@ -76,9 +77,8 @@ export default function CarouselSection() {
 
     const fetchBios = async () => {
       try {
-        const response = await fetch("/api/public/bios/random?limit=8");
-        if (!response.ok) return;
-        const data = await response.json();
+        const response = await api.get("/public/bios/random", { params: { limit: 8 } });
+        const data = response.data;
         if (!Array.isArray(data) || !isActive) return;
 
         const mapped = data

@@ -14,6 +14,23 @@ const mg = env.MAILGUN_API_SECRET ? mailgun.client({
 // App base URL
 const APP_URL = env.FRONTEND_URL || 'http://localhost:5173';
 
+const FOOTER_HTML = `
+        <div class="footer">
+            <div style="margin-bottom:12px;">
+                <a href="${APP_URL}/terms-of-service" style="color:#6b7280;text-decoration:underline;margin:0 8px;">Terms of Service</a>
+                <a href="${APP_URL}/privacy-policy" style="color:#6b7280;text-decoration:underline;margin:0 8px;">Privacy Policy</a>
+                <a href="${APP_URL}/" style="color:#6b7280;text-decoration:underline;margin:0 8px;">Home</a>
+            </div>
+            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
+        </div>
+`;
+
+const DEFAULT_FROM = env.MAILGUN_FROM_EMAIL || "no-reply@portyo.me";
+const formatFrom = (value?: string) => {
+    const from = value || DEFAULT_FROM;
+    return from.includes("<") ? from : `Portyo <${from}>`;
+};
+
 // Create reusable transporter object using the default SMTP transport
 const transporterConfig: any = {
     host: env.SMTP_HOST || 'smtp.gmail.com',
@@ -74,14 +91,7 @@ export class MailService {
             Portyo Team
         </p>
 
-        <div class="footer">
-            <div class="footer-links">
-                <a href="${APP_URL}/help" class="footer-link">Help</a>
-                <a href="${APP_URL}/terms" class="footer-link">Terms</a>
-                <a href="${APP_URL}/privacy" class="footer-link">Privacy</a>
-            </div>
-            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
-        </div>
+        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -90,7 +100,7 @@ export class MailService {
         if (mg && env.MAILGUN_DOMAIN) {
             try {
                 const msg = await mg.messages.create(env.MAILGUN_DOMAIN, {
-                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
                     to: [email],
                     subject: "Verify your Portyo account",
                     html: html
@@ -104,7 +114,7 @@ export class MailService {
         }
 
         const mailOptions = {
-            from: '"Portyo" <no-reply@portyo.me>', // Update with actual sender
+            from: formatFrom(env.MAILGUN_FROM_EMAIL),
             to: email,
             subject: 'Verify your Portyo account',
             html: html,
@@ -171,14 +181,7 @@ export class MailService {
             Portyo Team
         </p>
 
-        <div class="footer">
-            <div class="footer-links">
-                <a href="${APP_URL}/help" class="footer-link">Help</a>
-                <a href="${APP_URL}/terms" class="footer-link">Terms</a>
-                <a href="${APP_URL}/privacy" class="footer-link">Privacy</a>
-            </div>
-            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
-        </div>
+        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -187,7 +190,7 @@ export class MailService {
         if (mg && env.MAILGUN_DOMAIN) {
             try {
                 const msg = await mg.messages.create(env.MAILGUN_DOMAIN, {
-                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
                     to: [email],
                     subject: "Reset your Portyo password",
                     html: html
@@ -200,7 +203,7 @@ export class MailService {
         }
 
         const mailOptions = {
-            from: '"Portyo" <no-reply@portyo.me>',
+            from: formatFrom(env.MAILGUN_FROM_EMAIL),
             to: email,
             subject: 'Reset your Portyo password',
             html: html,
@@ -213,6 +216,88 @@ export class MailService {
         } catch (error) {
             console.error("Error sending password reset email:", error);
             throw error;
+        }
+    }
+
+    static async sendOnboardingNudgeEmail(email: string, fullname: string) {
+        const firstName = fullname.split(' ')[0] || 'there';
+        const ctaUrl = `${APP_URL}/onboarding`;
+
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your bio is waiting</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #111827; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+        .title { font-size: 26px; font-weight: 700; margin: 0 0 12px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 14px; }
+        .card { border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; background: #F9FAFB; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 22px; background-color: #ffffff; color: #111111; text-decoration: none; font-weight: 600; border-radius: 12px; border: 1px solid #111111; }
+        .button:hover { background-color: #f3f4f6; }
+        .muted { font-size: 12px; color: #9CA3AF; margin-top: 28px; }
+        .footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid #F3F4F6; font-size: 12px; color: #9CA3AF; }
+        .footer a { color: #6B7280; text-decoration: underline; margin-right: 12px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+
+        <h1 class="title">We’re a little sad we haven’t seen your bio yet.</h1>
+        <p class="text">Hi ${firstName},</p>
+        <p class="text">You created your Portyo account 12 hours ago, but your bio is still empty. That means you’re missing out on visitors, clicks, and opportunities you could already be getting.</p>
+
+        <div class="card">
+            <p class="text" style="margin:0;">Every hour without a bio is time you could be growing your audience.</p>
+        </div>
+
+        <p class="text">Take 2 minutes to publish your bio and start getting noticed.</p>
+        <a href="${ctaUrl}" class="button">Create my bio</a>
+
+        <p class="muted">If you already finished it, you can ignore this email.</p>
+
+        ${FOOTER_HTML}
+    </div>
+</body>
+</html>
+        `;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                const msg = await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
+                    to: [email],
+                    subject: "Your bio is still empty",
+                    html: html
+                });
+                console.log("Onboarding nudge sent via Mailgun:", msg);
+                return msg;
+            } catch (error) {
+                console.error("Error sending onboarding nudge via Mailgun:", error);
+            }
+        }
+
+        const mailOptions = {
+            from: formatFrom(env.MAILGUN_FROM_EMAIL),
+            to: email,
+            subject: 'Your bio is still empty',
+            html: html,
+        };
+
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Onboarding nudge sent:", info.messageId);
+            return info;
+        } catch (error) {
+            console.error("Error sending onboarding nudge:", error);
         }
     }
 
@@ -270,9 +355,7 @@ export class MailService {
             Portyo Team
         </p>
 
-        <div class="footer">
-            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
-        </div>
+        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -283,7 +366,7 @@ export class MailService {
         if (mg && env.MAILGUN_DOMAIN) {
             try {
                 return await mg.messages.create(env.MAILGUN_DOMAIN, {
-                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
                     to: [email],
                     subject,
                     html
@@ -295,7 +378,7 @@ export class MailService {
 
         try {
             return await transporter.sendMail({
-                from: '"Portyo" <no-reply@portyo.me>',
+                from: formatFrom(env.MAILGUN_FROM_EMAIL),
                 to: email,
                 subject,
                 html
@@ -349,9 +432,7 @@ export class MailService {
             Portyo Team
         </p>
 
-        <div class="footer">
-            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
-        </div>
+        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -362,7 +443,7 @@ export class MailService {
         if (mg && env.MAILGUN_DOMAIN) {
             try {
                 return await mg.messages.create(env.MAILGUN_DOMAIN, {
-                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
                     to: [email],
                     subject,
                     html
@@ -374,7 +455,7 @@ export class MailService {
 
         try {
             return await transporter.sendMail({
-                from: '"Portyo" <no-reply@portyo.me>',
+                from: formatFrom(env.MAILGUN_FROM_EMAIL),
                 to: email,
                 subject,
                 html
@@ -421,9 +502,7 @@ export class MailService {
             Portyo Team
         </p>
 
-        <div class="footer">
-            &copy; ${new Date().getFullYear()} Portyo. All rights reserved.
-        </div>
+        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -434,7 +513,7 @@ export class MailService {
         if (mg && env.MAILGUN_DOMAIN) {
             try {
                 return await mg.messages.create(env.MAILGUN_DOMAIN, {
-                    from: env.MAILGUN_FROM_EMAIL || "Portyo <noreply@portyo.me>",
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
                     to: [email],
                     subject,
                     html

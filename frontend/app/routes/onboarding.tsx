@@ -5,7 +5,7 @@ import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 
 export function meta() {
-    return [{ title: "Welcome to Portyo - Setup Your Profile" }];
+    return [{ title: "Bem-vindo ao Portyo - Configure seu perfil" }];
 }
 
 interface OnboardingAnswers {
@@ -20,49 +20,49 @@ interface OnboardingAnswers {
 }
 
 const PROFESSIONS = [
-    "Software Developer",
+    "Desenvolvedor(a) de Software",
     "Designer",
-    "Digital Marketing",
-    "Content Creator",
-    "Photographer",
-    "Musician",
-    "Consultant",
+    "Marketing Digital",
+    "Criador(a) de Conteúdo",
+    "Fotógrafo(a)",
+    "Músico(a)",
+    "Consultor(a)",
     "Freelancer",
-    "Entrepreneur",
-    "Student",
-    "Teacher",
-    "Artist",
-    "Other"
+    "Empreendedor(a)",
+    "Estudante",
+    "Professor(a)",
+    "Artista",
+    "Outro"
 ];
 
 const SKILLS = [
-    "Programming",
-    "Graphic Design",
-    "UI/UX Design",
+    "Programação",
+    "Design Gráfico",
+    "Design UI/UX",
     "Marketing",
     "SEO",
-    "Social Media",
-    "Photography",
-    "Video Editing",
-    "Writing",
-    "Sales",
-    "Project Management",
-    "Communication",
-    "Leadership",
-    "Data Analysis",
-    "Languages",
-    "Music",
-    "Illustration"
+    "Redes Sociais",
+    "Fotografia",
+    "Edição de Vídeo",
+    "Escrita",
+    "Vendas",
+    "Gestão de Projetos",
+    "Comunicação",
+    "Liderança",
+    "Análise de Dados",
+    "Idiomas",
+    "Música",
+    "Ilustração"
 ];
 
 const GOALS = [
-    "Showcase my portfolio",
-    "Centralize my links and social media",
-    "Sell products or services",
-    "Promote my freelance work",
-    "Professional networking",
-    "Create a professional contact page",
-    "Build my personal brand"
+    "Mostrar meu portfólio",
+    "Centralizar meus links e redes sociais",
+    "Vender produtos ou serviços",
+    "Divulgar meu trabalho freelancer",
+    "Networking profissional",
+    "Criar uma página profissional de contato",
+    "Construir minha marca pessoal"
 ];
 
 const STEP_CONFIG = [
@@ -70,36 +70,36 @@ const STEP_CONFIG = [
         icon: "👋",
         gradient: "from-violet-500 to-purple-600",
         shadow: "shadow-violet-500/30",
-        title: "Tell us about yourself",
-        subtitle: "A brief description that will help create your page"
+        title: "Conte sobre você",
+        subtitle: "Uma breve descrição que ajudará a criar sua página"
     },
     {
         icon: "🎓",
         gradient: "from-sky-500 to-blue-600",
         shadow: "shadow-sky-500/30",
-        title: "Your education",
-        subtitle: "Do you have a degree?"
+        title: "Sua formação",
+        subtitle: "Você tem graduação?"
     },
     {
         icon: "💼",
         gradient: "from-emerald-500 to-teal-600",
         shadow: "shadow-emerald-500/30",
-        title: "What do you do?",
-        subtitle: "Select the option that best describes you"
+        title: "O que você faz?",
+        subtitle: "Selecione a opção que melhor te descreve"
     },
     {
         icon: "⚡",
         gradient: "from-amber-500 to-orange-600",
         shadow: "shadow-amber-500/30",
-        title: "Your top skills",
-        subtitle: "Select all that apply (optional)"
+        title: "Suas principais habilidades",
+        subtitle: "Selecione todas as que se aplicam (opcional)"
     },
     {
         icon: "🎯",
         gradient: "from-rose-500 to-pink-600",
         shadow: "shadow-rose-500/30",
-        title: "What's your goal?",
-        subtitle: "What do you want to achieve with your page?"
+        title: "Qual é o seu objetivo?",
+        subtitle: "O que você quer alcançar com sua página?"
     }
 ];
 
@@ -140,7 +140,7 @@ export default function Onboarding() {
             await refreshUser();
             navigate("/dashboard");
         } catch (err) {
-            console.error("Failed to skip onboarding:", err);
+            console.error("Falha ao pular onboarding:", err);
             navigate("/dashboard");
         }
     };
@@ -166,8 +166,8 @@ export default function Onboarding() {
             await refreshUser();
             navigate("/dashboard");
         } catch (err: any) {
-            console.error("Failed to generate bio:", err);
-            setError(err.response?.data?.message || "Failed to generate your profile. Please try again.");
+            console.error("Falha ao gerar bio:", err);
+            setError(err.response?.data?.message || "Falha ao gerar seu perfil. Tente novamente.");
             setIsGenerating(false);
         }
     };
@@ -202,12 +202,12 @@ export default function Onboarding() {
                         <textarea
                             value={answers.aboutYou}
                             onChange={(e) => setAnswers({ ...answers, aboutYou: e.target.value })}
-                            placeholder="e.g., I'm a passionate full-stack developer who loves building innovative solutions..."
+                            placeholder="Ex.: Sou um(a) desenvolvedor(a) full‑stack apaixonado(a) por criar soluções inovadoras..."
                             className="w-full px-5 py-4 rounded-2xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60 min-h-[160px] resize-none leading-relaxed"
                             autoFocus
                         />
                         <p className="text-xs text-text-muted text-center">
-                            This will be used to create your bio description
+                            Isso será usado para criar a descrição da sua bio
                         </p>
                     </div>
                 );
@@ -231,8 +231,8 @@ export default function Onboarding() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                     </svg>
                                 </div>
-                                <span className="text-lg font-bold">Yes, I do</span>
-                                <p className={`text-xs mt-1 ${answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>I have a degree</p>
+                                <span className="text-lg font-bold">Sim, tenho</span>
+                                <p className={`text-xs mt-1 ${answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>Tenho graduação</p>
                             </button>
                             <button
                                 onClick={() => setAnswers({ ...answers, education: { hasGraduation: false, degree: "" } })}
@@ -249,8 +249,8 @@ export default function Onboarding() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </div>
-                                <span className="text-lg font-bold">Not yet</span>
-                                <p className={`text-xs mt-1 ${!answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>Still learning</p>
+                                <span className="text-lg font-bold">Ainda não</span>
+                                <p className={`text-xs mt-1 ${!answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>Ainda estou aprendendo</p>
                             </button>
                         </div>
 
@@ -260,7 +260,7 @@ export default function Onboarding() {
                                     type="text"
                                     value={answers.education.degree || ""}
                                     onChange={(e) => setAnswers({ ...answers, education: { ...answers.education, degree: e.target.value } })}
-                                    placeholder="What did you study? e.g., Computer Science"
+                                    placeholder="O que você estudou? Ex.: Ciência da Computação"
                                     className="w-full px-5 py-4 rounded-2xl border-2 border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60"
                                     autoFocus
                                 />
@@ -319,7 +319,7 @@ export default function Onboarding() {
                                 <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                                     {answers.skills.length}
                                 </span>
-                                skill{answers.skills.length > 1 ? 's' : ''} selected
+                                habilidade{answers.skills.length > 1 ? 's' : ''} selecionada{answers.skills.length > 1 ? 's' : ''}
                             </div>
                         )}
                     </div>
@@ -363,10 +363,10 @@ export default function Onboarding() {
                             <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary-hover rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/40 animate-pulse">
                                 <span className="text-4xl">✨</span>
                             </div>
-                            <h2 className="text-2xl font-bold mb-3">Creating your page...</h2>
+                            <h2 className="text-2xl font-bold mb-3">Criando sua página...</h2>
                             <p className="text-text-muted text-sm leading-relaxed">
-                                Our AI is crafting the perfect content for you.<br />
-                                This only takes a few seconds.
+                                Nossa IA está criando o conteúdo perfeito para você.<br />
+                                Isso leva apenas alguns segundos.
                             </p>
                         </div>
 
@@ -407,7 +407,7 @@ export default function Onboarding() {
                                 onClick={handleSkip}
                                 className="text-xs font-semibold text-text-muted hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-muted"
                             >
-                                Skip
+                                Pular
                             </button>
                         </div>
                     </div>
@@ -443,7 +443,7 @@ export default function Onboarding() {
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
-                                Back
+                                Voltar
                             </button>
                         )}
 
@@ -453,7 +453,7 @@ export default function Onboarding() {
                                 disabled={!canProceed()}
                                 className="flex-1 bg-primary text-white font-bold py-4 px-6 rounded-2xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
                             >
-                                Continue
+                                Continuar
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
@@ -464,7 +464,7 @@ export default function Onboarding() {
                                 disabled={!canProceed()}
                                 className="flex-1 bg-gradient-to-r from-primary to-primary-hover text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl hover:shadow-primary/30 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
                             >
-                                <span>✨</span> Generate my page
+                                <span>✨</span> Gerar minha página
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>

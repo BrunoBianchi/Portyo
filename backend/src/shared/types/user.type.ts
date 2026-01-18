@@ -8,4 +8,5 @@ export type UserType = BaseType & {
     verified:boolean;
     plan:string;
     onboardingCompleted:boolean;
+    onboardingNudgeSentAt?: Date;
 }

@@ -61,8 +61,9 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         }
     }
     
-    // Add 7-day Standard Trial
-    await BillingService.createBilling(savedUser.id, 'standard', 7, 0);
+    // Add 7-day Standard Trial (email signup)
+    await BillingService.ensureStandardTrial(savedUser.id, 7);
+    const activePlan = await BillingService.getActivePlan(savedUser.id);
     
     const payload = {
         id: savedUser.id,
@@ -71,7 +72,7 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         verified: savedUser.verified,
         provider: savedUser.provider,
         createdAt: savedUser.createdAt,
-        plan: 'standard' // User starts with standard trial
+        plan: activePlan
     }
     return {
         token: await generateToken({ ...payload }),

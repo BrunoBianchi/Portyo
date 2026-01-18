@@ -60,7 +60,13 @@ export default function Login() {
 
             // Try to validate and login with the token
             authContext.loginWithToken(token)
-                .then(() => navigate(getSafeRedirect()))
+                .then((freshUser) => {
+                    if (freshUser && !freshUser.onboardingCompleted) {
+                        navigate(withLang("/onboarding"));
+                    } else {
+                        navigate(getSafeRedirect());
+                    }
+                })
                 .catch((err: any) => {
                     console.error('Failed to login with OAuth token:', err);
                     setError(t("auth.login.oauthError"));

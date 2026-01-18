@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useNavigate,
   useLoaderData,
 } from "react-router";
 import { lazy, Suspense, useEffect } from "react";
@@ -58,6 +59,7 @@ export function headers() {
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const hostname = url.hostname;
+  const pathname = url.pathname;
 
   const isOnRenderDomain = hostname.endsWith('.onrender.com');
   const isPortyoDomain = hostname.endsWith('portyo.me');
@@ -65,23 +67,45 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
 
-  return { isCustomDomain, origin: url.origin };
+  const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
+  const initialLang = (langMatch?.[1] || null) as (typeof SUPPORTED_LANGUAGES)[number] | null;
+
+  return { isCustomDomain, origin: url.origin, isLocalhost, initialLang };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { pathname } = useLocation();
+  const { pathname, search, hash } = useLocation();
+  const navigate = useNavigate();
   const loaderData = useLoaderData<typeof loader>();
   const isCustomDomain = loaderData?.isCustomDomain;
   const origin = loaderData?.origin || (typeof window !== "undefined" ? window.location.origin : "");
+  const isLocalhost = loaderData?.isLocalhost;
+  const initialLang = loaderData?.initialLang || null;
   const { i18n } = useTranslation();
+
+  const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
+  const fallbackLang = isLocalhost ? "en" : "en";
+  const activeLang = (langMatch?.[1] || initialLang || fallbackLang) as (typeof SUPPORTED_LANGUAGES)[number];
+  if (typeof document === "undefined" && i18n.language !== activeLang) {
+    i18n.changeLanguage(activeLang);
+  }
 
   useEffect(() => {
     if (typeof document === "undefined") return;
+    if (i18n.language !== activeLang) {
+      i18n.changeLanguage(activeLang);
+    }
     document.documentElement.lang = i18n.resolvedLanguage || i18n.language || "en";
-  }, [i18n.language, i18n.resolvedLanguage]);
+  }, [activeLang, i18n.language, i18n.resolvedLanguage]);
 
-  const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
-  const activeLang = (langMatch?.[1] || i18n.resolvedLanguage || i18n.language || "en") as (typeof SUPPORTED_LANGUAGES)[number];
+  useEffect(() => {
+    if (isCustomDomain) return;
+    if (langMatch) return;
+    const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    const preferred = hostname === "localhost" || hostname.endsWith(".localhost") ? "en" : "en";
+    const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
+    navigate(`${nextPath}${search}${hash}`, { replace: true });
+  }, [hash, isCustomDomain, langMatch, navigate, pathname, search]);
   const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
   const isLoginPage = pathnameNoLang === "/login";
   const isDashboard = pathnameNoLang.startsWith("/dashboard");
