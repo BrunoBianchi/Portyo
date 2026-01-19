@@ -10,6 +10,7 @@ import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 export const meta: MetaFunction = () => {
   return [
@@ -41,6 +42,7 @@ export default function DashboardProducts() {
   const [tourRun, setTourRun] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+  const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
   // Create State
   const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
@@ -342,30 +344,10 @@ export default function DashboardProducts() {
           spotlightClicks
           scrollToFirstStep
           callback={handleProductsTourCallback}
-          styles={{
-            options: {
-              arrowColor: "#ffffff",
-              backgroundColor: "#ffffff",
-              overlayColor: "rgba(0, 0, 0, 0.45)",
-              primaryColor: tourPrimaryColor,
-              textColor: "#171717",
-              zIndex: 10000,
-            },
-            buttonNext: {
-              color: "#171717",
-              fontWeight: 700,
-            },
-            buttonBack: {
-              color: "#5b5b5b",
-            },
-            buttonSkip: {
-              color: "#5b5b5b",
-            },
-            tooltipContent: {
-              fontSize: "14px",
-              lineHeight: "1.4",
-            },
-          }}
+          styles={joyrideStyles}
+          scrollOffset={joyrideProps.scrollOffset}
+          spotlightPadding={joyrideProps.spotlightPadding}
+          disableScrollParentFix={joyrideProps.disableScrollParentFix}
         />
         {/* ... (Header and Banner code unchanged) ... */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="products-header">

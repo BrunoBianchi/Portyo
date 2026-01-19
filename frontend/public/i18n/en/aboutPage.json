@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "pre": "Empowering creators to",
+    "highlight": "build their future."
+  },
+  "subtitle": "We're on a mission to give every creator and entrepreneur the tools they need to turn their passion into a thriving business.",
+  "story": {
+    "p1": "Portyo was born from a simple observation: creators were spending too much time juggling multiple tools, instead of doing what they do best — creating.",
+    "p2": "We built an all-in-one platform that consolidates everything you need: a beautiful link-in-bio, powerful analytics, email collection, scheduling, and e-commerce.",
+    "p3": "Today, thousands of creators trust Portyo to power their online presence. And we're just getting started."
+  },
+  "values": {
+    "creatorFirst": {
+      "title": "Creator-First",
+      "body": "Everything we build starts with you in mind. Your success is our success."
+    },
+    "innovation": {
+      "title": "Innovation",
+      "body": "Pushing boundaries to bring you cutting-edge tools that make a difference."
+    },
+    "community": {
+      "title": "Community",
+      "body": "We believe in the power of connection and building genuine relationships."
+    },
+    "growth": {
+      "title": "Growth",
+      "body": "Committed to helping you grow your audience and revenue sustainably."
+    }
+  },
+  "cta": {
+    "title": "Ready to join the movement?",
+    "button": "Get Started"
+  }
+}

@@ -48,17 +48,31 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
         }
 
         // Generate blocks using AI
-        let generatedBlocks;
+        let generatedResult;
         try {
-            generatedBlocks = await generateBioFromOnboarding(answers);
+            generatedResult = await generateBioFromOnboarding(answers);
         } catch (aiError) {
             console.error("AI generation failed, using default blocks:", aiError);
-            generatedBlocks = getDefaultBlocks(user.fullName);
+            generatedResult = getDefaultBlocks(user.fullName);
         }
 
-        // Update bio with generated blocks
-        bio.blocks = generatedBlocks;
+        const { blocks, settings } = generatedResult;
+
+        // Update bio with generated blocks and settings
+        bio.blocks = blocks;
         bio.description = answers.aboutYou;
+
+        // Apply settings to bio entity
+        if (settings) {
+            if (settings.bgType) bio.bgType = settings.bgType;
+            if (settings.bgColor) bio.bgColor = settings.bgColor;
+            if (settings.bgSecondaryColor) bio.bgSecondaryColor = settings.bgSecondaryColor;
+            if (settings.usernameColor) bio.usernameColor = settings.usernameColor;
+            if (settings.font) bio.font = settings.font;
+            if (settings.cardStyle) bio.cardStyle = settings.cardStyle;
+            if (settings.cardBackgroundColor) bio.cardBackgroundColor = settings.cardBackgroundColor;
+        }
+
         await bioRepository.save(bio);
 
         // Mark onboarding as completed
@@ -68,7 +82,8 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Bio generated successfully",
-            blocks: generatedBlocks,
+            blocks: blocks,
+            settings: settings,
             bioId: bio.id,
         });
     } catch (error) {

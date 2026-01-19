@@ -9,6 +9,7 @@ import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 interface Form {
     id: string;
@@ -33,6 +34,7 @@ export default function DashboardFormsList() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio?.id) {
@@ -175,6 +177,9 @@ export default function DashboardFormsList() {
                 spotlightClicks
                 scrollToFirstStep
                 callback={handleFormsTourCallback}
+                scrollOffset={joyrideProps.scrollOffset}
+                spotlightPadding={joyrideProps.spotlightPadding}
+                disableScrollParentFix={joyrideProps.disableScrollParentFix}
                 locale={{
                     back: t("dashboard.tours.common.back"),
                     close: t("dashboard.tours.common.close"),
@@ -182,30 +187,7 @@ export default function DashboardFormsList() {
                     next: t("dashboard.tours.common.next"),
                     skip: t("dashboard.tours.common.skip"),
                 }}
-                styles={{
-                    options: {
-                        arrowColor: "#ffffff",
-                        backgroundColor: "#ffffff",
-                        overlayColor: "rgba(0, 0, 0, 0.45)",
-                        primaryColor: tourPrimaryColor,
-                        textColor: "#171717",
-                        zIndex: 10000,
-                    },
-                    buttonNext: {
-                        color: "#171717",
-                        fontWeight: 700,
-                    },
-                    buttonBack: {
-                        color: "#5b5b5b",
-                    },
-                    buttonSkip: {
-                        color: "#5b5b5b",
-                    },
-                    tooltipContent: {
-                        fontSize: "14px",
-                        lineHeight: "1.4",
-                    },
-                }}
+                styles={joyrideStyles}
             />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10" data-tour="forms-header">
                 <div className="space-y-1">

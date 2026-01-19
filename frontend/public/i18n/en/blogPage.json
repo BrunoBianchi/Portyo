@@ -1,0 +1,7 @@
+{
+  "title": "Research and news",
+  "subtitle": "Latest updates, ideas, and product news from Portyo.",
+  "empty": "No posts available right now.",
+  "categoryFallback": "Updates",
+  "readTime": "{{count}} min read"
+}

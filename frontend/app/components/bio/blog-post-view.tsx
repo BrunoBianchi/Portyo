@@ -3,6 +3,7 @@ import { api } from "~/services/api";
 import { format } from "date-fns";
 import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
 import { sanitizeHtml } from "~/utils/security";
+import ReactMarkdown from "react-markdown";
 
 interface BlogPost {
     id: string;
@@ -109,6 +110,7 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
     const readTime = getReadTime(post.content);
     const headerImage = getHeaderImage(post.content);
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
+    const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
 
     return (
         <article style={{ minHeight: '100vh', background: '#fff' }}>
@@ -173,8 +175,13 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
                         lineHeight: 1.8,
                         color: '#374151',
                     }}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
-                />
+                >
+                    {isHtmlContent ? (
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
+                    ) : (
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                    )}
+                </div>
 
                 <style>{`
                     .blog-post-content h1, .blog-post-content h2, .blog-post-content h3, .blog-post-content h4 {

@@ -44,6 +44,7 @@ import { PortyoAI } from "~/components/dashboard/portyo-ai";
 import { useTranslation } from "react-i18next";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 export const meta: MetaFunction = () => {
   return [
@@ -824,6 +825,7 @@ export default function DashboardEditor() {
   const [tourRun, setTourRun] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+  const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -1599,30 +1601,10 @@ export default function DashboardEditor() {
         spotlightClicks
         scrollToFirstStep
         callback={handleEditorTourCallback}
-        styles={{
-          options: {
-            arrowColor: "#ffffff",
-            backgroundColor: "#ffffff",
-            overlayColor: "rgba(0, 0, 0, 0.45)",
-            primaryColor: tourPrimaryColor,
-            textColor: "#171717",
-            zIndex: 10000,
-          },
-          buttonNext: {
-            color: "#171717",
-            fontWeight: 700,
-          },
-          buttonBack: {
-            color: "#5b5b5b",
-          },
-          buttonSkip: {
-            color: "#5b5b5b",
-          },
-          tooltipContent: {
-            fontSize: "14px",
-            lineHeight: "1.4",
-          },
-        }}
+        styles={joyrideStyles}
+        scrollOffset={joyrideProps.scrollOffset}
+        spotlightPadding={joyrideProps.spotlightPadding}
+        disableScrollParentFix={joyrideProps.disableScrollParentFix}
       />
       <style>{`
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }

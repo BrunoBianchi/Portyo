@@ -1,7 +1,6 @@
 import i18n from "i18next";
+import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
-import en from "./i18n/en.json";
-import pt from "./i18n/pt.json";
 
 const STORAGE_KEY = "portyo_lang";
 const SUPPORTED_LANGUAGES = ["en", "pt"] as const;
@@ -25,17 +24,34 @@ const getInitialLanguage = (): SupportedLanguage => {
 };
 
 i18n
+  .use(Backend)
   .use(initReactI18next)
   .init({
     fallbackLng: "en",
     lng: getInitialLanguage(),
     supportedLngs: SUPPORTED_LANGUAGES,
+    ns: [
+      "nav",
+      "meta",
+      "dashboard",
+      "auth",
+      "home",
+      "aboutPage",
+      "termsPage",
+      "privacyPage",
+      "pricingPage",
+      "blogPage",
+      "footer",
+      "builtForEveryone",
+      "tooltips",
+    ],
+    defaultNS: "nav",
+    nsSeparator: ".",
     interpolation: {
       escapeValue: false,
     },
-    resources: {
-      en: { translation: en },
-      pt: { translation: pt },
+    backend: {
+      loadPath: "/i18n/{{lng}}/{{ns}}.json",
     },
     react: {
       useSuspense: true,

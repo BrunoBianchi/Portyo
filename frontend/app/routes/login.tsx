@@ -62,7 +62,8 @@ export default function Login() {
             authContext.loginWithToken(token)
                 .then((freshUser) => {
                     if (freshUser && !freshUser.onboardingCompleted) {
-                        navigate(withLang("/onboarding"));
+                        const hasBio = !!freshUser.sufix || (freshUser.usage?.bios ?? 0) > 0;
+                        navigate(withLang(hasBio ? "/onboarding" : "/claim-bio"));
                     } else {
                         navigate(getSafeRedirect());
                     }

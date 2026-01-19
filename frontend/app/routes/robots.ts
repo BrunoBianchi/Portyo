@@ -46,8 +46,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           : `https://${host}/sitemap.xml`;
 
       const bioContent = `User-agent: *
+# Bio Configuration
 ${noIndex ? 'Disallow: /' : 'Allow: /'}
 
+# Sitemap Reference
 Sitemap: ${sitemapUrl}`;
 
       return new Response(bioContent, {
@@ -61,14 +63,26 @@ Sitemap: ${sitemapUrl}`;
 
   // Main site robots.txt
   const content = `User-agent: *
+# Public Content
 Allow: /
 Allow: /p/
 Allow: /blog/
-Allow: /blog/post/
+
+# Dashboard & Private Areas
 Disallow: /dashboard/
 Disallow: /api/
+
+# Authentication Routes
+Disallow: /login
+Disallow: /sign-up
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Management Routes
 Disallow: /bookings/manage
 
+# Sitemap Reference
 Sitemap: https://portyo.me/sitemap.xml`;
 
   return new Response(content, {

@@ -1,0 +1,54 @@
+{
+  "title": "Política de Privacidade",
+  "updated": "Última atualização: 15 de janeiro de 2026",
+  "sections": {
+    "introduction": {
+      "title": "1. Introdução",
+      "body": "Bem-vindo à Portyo (\"nós\", \"nosso\" ou \"nossa\"). Estamos comprometidos em proteger suas informações pessoais e seu direito à privacidade. Esta Política de Privacidade explica como coletamos, usamos, divulgamos e protegemos suas informações quando você visita nosso site e utiliza nossos serviços."
+    },
+    "collection": {
+      "title": "2. Informações que coletamos",
+      "intro": "Coletamos informações que você nos fornece ao se registrar, especificamente:",
+      "items": {
+        "personal": {
+          "label": "Dados pessoais:",
+          "body": "Nome, endereço de e-mail e informações de perfil que você escolhe exibir na sua bio."
+        },
+        "payment": {
+          "label": "Dados de pagamento:",
+          "body": "As informações financeiras são processadas diretamente pelo nosso processador de pagamentos, Stripe. Não armazenamos números completos de cartão de crédito em nossos servidores."
+        },
+        "usage": {
+          "label": "Dados de uso:",
+          "body": "Informações sobre como você interage com nossos serviços, como visualizações de página e cliques em botões, para melhorar nosso produto."
+        }
+      }
+    },
+    "usage": {
+      "title": "3. Como usamos suas informações",
+      "intro": "Usamos as informações que coletamos para:",
+      "items": {
+        "provide": "Fornecer, operar e manter nosso site.",
+        "process": "Processar suas transações e gerenciar sua assinatura.",
+        "improve": "Melhorar, personalizar e expandir nosso site.",
+        "communicate": "Comunicar com você sobre atualizações, alertas de segurança e suporte."
+      }
+    },
+    "sharing": {
+      "title": "4. Compartilhamento das suas informações",
+      "body": "Não vendemos suas informações pessoais. Podemos compartilhar informações com prestadores de serviços terceiros (como Stripe para pagamentos ou Google Analytics para métricas) estritamente para operar nosso negócio e fornecer nossos serviços a você."
+    },
+    "security": {
+      "title": "5. Segurança dos dados",
+      "body": "Utilizamos medidas administrativas, técnicas e físicas para ajudar a proteger suas informações pessoais. No entanto, lembre-se de que nenhum método de transmissão pela internet é 100% seguro."
+    },
+    "rights": {
+      "title": "6. Seus direitos",
+      "body": "Dependendo da sua localização, você pode ter direitos sobre seus dados pessoais, incluindo o direito de acessar, corrigir ou excluir as informações que mantemos. Você pode gerenciar as configurações da sua conta diretamente no painel da Portyo."
+    },
+    "contact": {
+      "title": "7. Fale Conosco",
+      "bodyPrefix": "Se tiver dúvidas ou comentários sobre esta política, você pode nos contatar em:"
+    }
+  }
+}

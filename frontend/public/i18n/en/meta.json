@@ -1,0 +1,51 @@
+{
+  "root": {
+    "title": "Portyo - Link in Bio",
+    "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform."
+  },
+  "home": {
+    "title": "Portyo - Link in Bio",
+    "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform."
+  },
+  "about": {
+    "title": "About | Portyo",
+    "description": "We are empowering creators to build their future."
+  },
+  "pricing": {
+    "title": "Pricing | Portyo",
+    "description": "Choose the perfect plan for your needs."
+  },
+  "contact": {
+    "title": "Contact | Portyo",
+    "description": "Get in touch with the Portyo team."
+  },
+  "legal": {
+    "title": "Legal | Portyo",
+    "description": "Privacy Policy, Terms of Service, and Cookie Policy for Portyo."
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy | Portyo",
+    "description": "Privacy Policy for Portyo."
+  },
+  "termsOfService": {
+    "title": "Terms of Service | Portyo",
+    "description": "Terms of Service for Portyo."
+  },
+  "login": {
+    "title": "Login - Portyo"
+  },
+  "signUp": {
+    "title": "Sign Up - Portyo"
+  },
+  "verifyEmail": {
+    "title": "Verify Email - Portyo"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password | Portyo",
+    "description": "Reset your Portyo password"
+  },
+  "resetPassword": {
+    "title": "Reset Password | Portyo",
+    "description": "Create a new password for your Portyo account"
+  }
+}

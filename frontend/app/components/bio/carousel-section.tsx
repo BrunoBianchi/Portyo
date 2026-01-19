@@ -127,8 +127,10 @@ export default function CarouselSection() {
     <section className="w-full overflow-hidden py-10 bg-surface-alt top-[-102px] relative">
       <div className="flex w-max animate-scroll hover:[animation-play-state:paused]">
         {items.map((user, index) => (
-          <div
+          <a
             key={`${user.username}-${index}`}
+            href={`/p/${user.username}`}
+            aria-label={`Abrir portyo.me/${user.username}`}
             className="relative w-[240px] h-[320px] mx-3 rounded-2xl overflow-hidden group cursor-pointer shrink-0 [perspective:1000px]"
           >
             <div className="relative w-full h-full rounded-2xl overflow-hidden transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
@@ -153,27 +155,19 @@ export default function CarouselSection() {
               <div className="absolute inset-0 w-full h-full rounded-2xl [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden bg-black">
                 {/* Blurred Background Image */}
                 <div
-                  className="absolute inset-0 w-full h-full bg-cover bg-center blur-sm opacity-50"
+                  className="absolute inset-0 w-full h-full bg-cover bg-center blur-md opacity-60 scale-110"
                   style={{ backgroundImage: `url(${needsOptimization(user.image) ? buildOptimizedImageUrl(user.image, 240, 320) : user.image})` }}
                 ></div>
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
-                  <a
-                    href={`/p/${user.username}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white font-bold text-sm mb-2 hover:underline"
-                  >
-                    portyo.me/p/{user.username}
-                  </a>
-                  <p className="text-gray-200 text-sm leading-relaxed">
-                    {user.description}
-                  </p>
+                <div className="absolute inset-0 flex items-center justify-center p-6 text-center z-20 bg-black/70 backdrop-blur-md [transform:translateZ(1px)]">
+                  <span className="text-white font-extrabold text-lg px-5 py-2.5 rounded-full bg-white/20 border border-white/40 shadow-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                    portyo.me/{user.username}
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>

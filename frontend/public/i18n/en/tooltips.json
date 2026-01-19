@@ -1,0 +1,38 @@
+{
+  "editor": {
+    "cardOpacity": "Controls how transparent the card background is. 0% = fully transparent, 100% = fully solid.",
+    "cardBlur": "Blur intensity for the frosted glass effect. Higher values create a stronger blur behind the card.",
+    "customFont": "Upload a .ttf or .woff2 font file to use your own brand typography.",
+    "backgroundPatterns": "Choose a decorative pattern for your page background. Each pattern adapts to your selected colors."
+  },
+  "marketing": {
+    "acceptOtherPrices": "When enabled, advertisers can propose prices outside your min-max range. You can still reject any proposal.",
+    "priceRange": "Set your minimum and maximum acceptable prices. This helps advertisers know your expectations.",
+    "platformFee": "Portyo charges a 5% fee on all accepted proposals. This covers payment processing and platform maintenance."
+  },
+  "analytics": {
+    "googleAnalyticsId": "Find your GA ID in Google Analytics → Admin → Data Streams → Your stream → Measurement ID (starts with G-).",
+    "facebookPixelId": "Find your Pixel ID in Meta Events Manager → Data Sources → Your Pixel → Settings.",
+    "noIndex": "When enabled, search engines like Google won't show your page in search results. Good for private pages."
+  },
+  "seo": {
+    "whatIsSeo": "SEO helps your page appear in Google searches. Better SEO = more people finding you organically.",
+    "metaTitle": "The title shown in search results and browser tabs. Keep it under 60 characters for best results.",
+    "metaDescription": "A brief summary shown below your title in search results. Aim for 120-160 characters.",
+    "ogImage": "The image shown when your link is shared on social media. Recommended size: 1200x630 pixels.",
+    "keywords": "Words that help search engines understand your page content. Separate with commas."
+  },
+  "products": {
+    "digitalProduct": "Digital products are delivered instantly via download link. Physical products require shipping.",
+    "stockQuantity": "Leave empty for unlimited stock. Set a number to limit available units."
+  },
+  "scheduler": {
+    "availability": "Define your working hours for each day. Clients can only book during these times.",
+    "blockedDates": "Block specific dates when you're unavailable (holidays, vacations, etc.).",
+    "bufferTime": "Time between appointments for breaks or preparation."
+  },
+  "integrations": {
+    "upgradeRequired": "This integration requires a paid plan. Upgrade to unlock.",
+    "comingSoon": "We're working on this integration. It will be available in a future update."
+  }
+}

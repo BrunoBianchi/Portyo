@@ -101,7 +101,8 @@ export default function Signup() {
             if (data.token && data.user) {
                 socialLogin(data.user, data.token);
                 if (!data.user.onboardingCompleted) {
-                    navigate(withLang("/onboarding"));
+                    const hasBio = !!data.user.sufix || (data.user.usage?.bios ?? 0) > 0;
+                    navigate(withLang(hasBio ? "/onboarding" : "/claim-bio"));
                 } else {
                     navigate(withLang("/dashboard"));
                 }
@@ -284,6 +285,7 @@ export default function Signup() {
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

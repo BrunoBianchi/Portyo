@@ -20,6 +20,7 @@ import {
 import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 export const meta: MetaFunction = () => {
   return [
@@ -131,6 +132,7 @@ export default function DashboardIntegrations() {
   const [tourRun, setTourRun] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+  const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
 
@@ -358,30 +360,10 @@ export default function DashboardIntegrations() {
           spotlightClicks
           scrollToFirstStep
           callback={handleIntegrationsTourCallback}
-          styles={{
-            options: {
-              arrowColor: "#ffffff",
-              backgroundColor: "#ffffff",
-              overlayColor: "rgba(0, 0, 0, 0.45)",
-              primaryColor: tourPrimaryColor,
-              textColor: "#171717",
-              zIndex: 10000,
-            },
-            buttonNext: {
-              color: "#171717",
-              fontWeight: 700,
-            },
-            buttonBack: {
-              color: "#5b5b5b",
-            },
-            buttonSkip: {
-              color: "#5b5b5b",
-            },
-            tooltipContent: {
-              fontSize: "14px",
-              lineHeight: "1.4",
-            },
-          }}
+          styles={joyrideStyles}
+          scrollOffset={joyrideProps.scrollOffset}
+          spotlightPadding={joyrideProps.spotlightPadding}
+          disableScrollParentFix={joyrideProps.disableScrollParentFix}
         />
         <div className="mb-8" data-tour="integrations-header">
           <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.integrations.title")}</h1>

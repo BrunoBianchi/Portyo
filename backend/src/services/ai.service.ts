@@ -28,32 +28,62 @@ const generateBlockId = (): string => {
 };
 
 const SYSTEM_PROMPT = `You are an expert at creating professional portfolio/bio pages. 
-Based on the user information provided, you must generate content blocks for a bio page.
+Based on the user information provided, you must generate content blocks and page settings for a bio page.
 
 IMPORTANT: You MUST respond ONLY with valid JSON, no additional text before or after.
 
-Available block types:
-1. "heading" - Title with fields: title (string), body (optional string for subtitle)
-2. "text" - Text paragraph with field: body (string)
-3. "button" - Link/button with fields: title (string), href (string URL), buttonStyle (string: "solid", "outline", "gradient")
-4. "socials" - Social media links with field: socials (object with instagram, linkedin, github, twitter, email, website)
+=== AVAILABLE BLOCK TYPES ===
+1. "heading" - Title. Fields: title (string), body (string), align ("left"|"center"|"right"), fontSize (e.g. "32px"), fontWeight ("700")
+2. "text" - Paragraph. Fields: body (string), align ("left"|"center"|"right")
+3. "button" - Link. Fields: title, href, buttonStyle ("solid"|"outline"|"white"|"glass"|"gradient"|"soft-shadow"|"neumorphism"), align, accent (hex), buttonShape ("pill"|"rounded"|"square")
+4. "image" - Fields: mediaUrl (URL), align, imageStyle ("default"|"circle"|"rounded")
+5. "socials" - Fields: socials ({instagram, linkedin, github, twitter, email, website, youtube, tiktok, whatsapp}), socialsLayout ("row"|"column")
+6. "divider" - Fields: dividerStyle ("line"|"dots"|"space")
+7. "video" - Fields: mediaUrl (YouTube/Vimeo URL)
+8. "blog" - Fields: blogLayout ("carousel"|"list"|"grid"), blogCardStyle ("featured"|"minimal")
+9. "product" - Fields: products ([{id, title, price, image, url}]), productLayout ("grid"|"list")
+10. "calendar" - Fields: calendarTitle, calendarUrl
+11. "map" - Fields: mapAddress, mapTitle
+12. "featured" - Fields: featuredTitle, featuredDescription, featuredPrice, featuredUrl, featuredImage
+13. "affiliate" - Fields: affiliateTitle, affiliateCode, affiliateImage
+14. "event" - Fields: eventTitle, eventDate, eventButtonText, eventButtonUrl
+15. "instagram" - Fields: instagramUsername (no @)
+16. "youtube" - Fields: youtubeUrl
+17. "spotify" - Fields: spotifyUrl
+18. "qrcode" - Fields: qrCodeValue, qrCodeColor
+19. "button_grid" - Fields: gridItems ([{id, title, url, icon}]). good for skills/links.
+20. "form" - Fields: formTitle, formFields (["name", "email", "message"])
+21. "portfolio" - Fields: portfolioTitle, portfolioItems ([{id, title, imageUrl, description, url}])
+22. "marketing" - Fields: marketingTitle, marketingDescription
+23. "whatsapp" - Fields: whatsappNumber, whatsappMessage 
 
-Generation rules:
-- Start with a welcoming heading using the user's description/profession
-- Add a professional introduction text based on the provided information
-- If the user mentioned skills, highlight them in the content
-- If they have a degree, mention it in the introduction
-- Base the page tone on the user's stated goal
-- Limit to 5-7 blocks maximum
-- Keep texts concise and professional
-- Use English language
+=== PAGE SETTINGS ===
+Generate a "settings" object with:
+- bgType: "color" | "gradient" | "dots" | "grid" | "waves" | "mesh" | "particles" | "noise" | "abstract"
+- bgColor: hex color for background (e.g., "#0f172a")
+- bgSecondaryColor: hex color (e.g., "#334155")
+- font: "Inter" | "Roboto" | "Open Sans" | "Merriweather" | "Oswald" | "Raleway" | "Poppins" | "Playfair Display" | "Montserrat" | "Lato"
+- usernameColor: hex color for main texts/headers
+- cardStyle: "none" | "flat" | "shadow" | "outline" | "glass"
+- cardBackgroundColor: hex color (if cardStyle != none)
 
-Respond ONLY with a JSON array of blocks, example:
-[
-  {"type": "heading", "title": "John Smith", "body": "Full Stack Developer"},
-  {"type": "text", "body": "Passionate technology professional..."},
-  {"type": "button", "title": "Get in touch", "href": "mailto:email@example.com", "buttonStyle": "solid"}
-]`;
+=== GENERATION RULES ===
+- Analyze the user's profession, skills, and code.
+- Create a WELCOMING Heading with their name/role.
+- Write a PROFESSIONAL Introduction.
+- If they have SKILLS, use a "button_grid" or "text" block to list them.
+- If they have a PORTFOLIO/PROJECTS, use "portfolio" or "featured" blocks.
+- If they want CONTACT, use "form" or "button" (mailto).
+- CHOOSE A THEME (colors/fonts) that fits their persona (e.g., Developer = Dark/Techy, Designer = Clean/Creative, Lawyer = Serif/Trustworthy).
+- Ensure "usernameColor" is visible against "bgColor".
+- Limit to 5-8 blocks.
+- Use English data/text.
+
+=== JSON RESPONSE FORMAT ===
+{
+  "settings": { ... },
+  "blocks": [ { "type": "...", "id": "...", ... }, ... ]
+}`;
 
 const buildUserPrompt = (answers: OnboardingAnswers): string => {
     let prompt = `Create bio/portfolio blocks for a person with the following characteristics:\n\n`;
@@ -74,12 +104,12 @@ const buildUserPrompt = (answers: OnboardingAnswers): string => {
     
     prompt += `**Goal with Portyo:** ${answers.goals}\n\n`;
     
-    prompt += `Generate the appropriate content blocks for this person. Remember to respond ONLY with the JSON, no additional text.`;
+    prompt += `Generate the appropriate content blocks and settings for this person. Remember to respond ONLY with the JSON, no additional text.`;
     
     return prompt;
 };
 
-export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<BioBlock[]> => {
+export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<{ blocks: BioBlock[], settings: any }> => {
     try {
         const completion = await groq.chat.completions.create({
             messages: [
@@ -113,12 +143,21 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
             throw new Error("Invalid JSON response from AI");
         }
 
-        // Handle both array and object with blocks property
-        let blocks: any[];
-        if (Array.isArray(parsedResponse)) {
-            blocks = parsedResponse;
-        } else if (parsedResponse.blocks && Array.isArray(parsedResponse.blocks)) {
+        let blocks: any[] = [];
+        let settings: any = {};
+
+        // Handle new format with "blocks" and "settings"
+        if (parsedResponse.blocks && Array.isArray(parsedResponse.blocks)) {
             blocks = parsedResponse.blocks;
+            settings = parsedResponse.settings || {};
+        } else if (Array.isArray(parsedResponse)) {
+            // Fallback for array only response (old prompt style)
+            blocks = parsedResponse;
+            settings = {
+                bgType: "color",
+                bgColor: "#f8fafc",
+                font: "Inter",
+            };
         } else {
             console.error("Unexpected response format:", parsedResponse);
             throw new Error("Unexpected response format from AI");
@@ -128,9 +167,13 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
         const blocksWithIds: BioBlock[] = blocks.map((block: any) => ({
             ...block,
             id: generateBlockId(),
+            // Ensure ID on grid items too if button_grid
+            ...(block.type === 'button_grid' && block.gridItems ? {
+                gridItems: block.gridItems.map((item: any) => ({ ...item, id: generateBlockId() }))
+            } : {})
         }));
 
-        return blocksWithIds;
+        return { blocks: blocksWithIds, settings };
     } catch (error) {
         console.error("Error generating bio from AI:", error);
         throw error;
@@ -138,27 +181,34 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
 };
 
 // Default blocks if AI generation fails
-export const getDefaultBlocks = (name: string): BioBlock[] => {
-    return [
-        {
-            id: generateBlockId(),
-            type: "heading",
-            title: name || "Welcome to my profile",
-            body: "Professional in development",
-        },
-        {
-            id: generateBlockId(),
-            type: "text",
-            body: "This is my portfolio page. I'll be adding more information about my professional journey soon.",
-        },
-        {
-            id: generateBlockId(),
-            type: "button",
-            title: "Get in touch",
-            href: "mailto:contact@example.com",
-            buttonStyle: "solid",
-        },
-    ];
+export const getDefaultBlocks = (name: string): { blocks: BioBlock[], settings: any } => {
+    return {
+        blocks: [
+            {
+                id: generateBlockId(),
+                type: "heading",
+                title: name || "Welcome to my profile",
+                body: "Professional in development",
+            },
+            {
+                id: generateBlockId(),
+                type: "text",
+                body: "This is my portfolio page. I'll be adding more information about my professional journey soon.",
+            },
+            {
+                id: generateBlockId(),
+                type: "button",
+                title: "Get in touch",
+                href: "mailto:contact@example.com",
+                buttonStyle: "solid",
+            },
+        ],
+        settings: {
+            bgType: "color",
+            bgColor: "#f8fafc",
+            font: "Inter",
+        }
+    };
 };
 
 export interface AIGenerationResult {

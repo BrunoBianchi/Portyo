@@ -1,0 +1,38 @@
+{
+  "editor": {
+    "cardOpacity": "Controla a transparência do fundo do card. 0% = totalmente transparente, 100% = totalmente sólido.",
+    "cardBlur": "Intensidade do desfoque para o efeito de vidro fosco. Valores maiores criam um desfoque mais forte atrás do card.",
+    "customFont": "Envie um arquivo de fonte .ttf ou .woff2 para usar sua própria tipografia de marca.",
+    "backgroundPatterns": "Escolha um padrão decorativo para o fundo da sua página. Cada padrão se adapta às cores selecionadas."
+  },
+  "marketing": {
+    "acceptOtherPrices": "Quando ativado, anunciantes podem propor preços fora da sua faixa min-max. Você ainda pode rejeitar qualquer proposta.",
+    "priceRange": "Defina seus preços mínimo e máximo aceitáveis. Isso ajuda os anunciantes a conhecerem suas expectativas.",
+    "platformFee": "O Portyo cobra uma taxa de 5% em todas as propostas aceitas. Isso cobre processamento de pagamentos e manutenção."
+  },
+  "analytics": {
+    "googleAnalyticsId": "Encontre seu ID do GA em Google Analytics → Admin → Fluxos de dados → Seu fluxo → ID de medição (começa com G-).",
+    "facebookPixelId": "Encontre seu ID do Pixel em Gerenciador de Eventos Meta → Fontes de dados → Seu Pixel → Configurações.",
+    "noIndex": "Quando ativado, buscadores como Google não mostrarão sua página nos resultados. Bom para páginas privadas."
+  },
+  "seo": {
+    "whatIsSeo": "SEO ajuda sua página a aparecer nas buscas do Google. Melhor SEO = mais pessoas te encontrando.",
+    "metaTitle": "O título mostrado nos resultados de busca e abas do navegador. Mantenha abaixo de 60 caracteres.",
+    "metaDescription": "Um resumo breve mostrado abaixo do título nos resultados de busca. Mire em 120-160 caracteres.",
+    "ogImage": "A imagem mostrada quando seu link é compartilhado nas redes sociais. Tamanho recomendado: 1200x630 pixels.",
+    "keywords": "Palavras que ajudam buscadores a entender o conteúdo da sua página. Separe com vírgulas."
+  },
+  "products": {
+    "digitalProduct": "Produtos digitais são entregues instantaneamente via link de download. Produtos físicos requerem envio.",
+    "stockQuantity": "Deixe vazio para estoque ilimitado. Defina um número para limitar unidades disponíveis."
+  },
+  "scheduler": {
+    "availability": "Defina seu horário de trabalho para cada dia. Clientes só podem agendar nesses horários.",
+    "blockedDates": "Bloqueie datas específicas quando você estiver indisponível (feriados, férias, etc.).",
+    "bufferTime": "Tempo entre agendamentos para pausas ou preparação."
+  },
+  "integrations": {
+    "upgradeRequired": "Esta integração requer um plano pago. Faça upgrade para desbloquear.",
+    "comingSoon": "Estamos trabalhando nesta integração. Estará disponível em uma atualização futura."
+  }
+}

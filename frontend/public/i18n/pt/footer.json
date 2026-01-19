@@ -1,0 +1,26 @@
+{
+  "tagline": "Transforme sua bio no seu negócio. A plataforma tudo-em-um para criadores crescerem, monetizarem e dominarem sua audiência.",
+  "cta": "Começar grátis",
+  "product": {
+    "title": "Produto",
+    "features": "Recursos",
+    "pricing": "Preços",
+    "analytics": "Analytics",
+    "themes": "Temas"
+  },
+  "resources": {
+    "title": "Recursos",
+    "blog": "Blog",
+    "community": "Comunidade",
+    "help": "Central de ajuda",
+    "creators": "Criadores"
+  },
+  "company": {
+    "title": "Empresa",
+    "about": "Sobre",
+    "privacy": "Política de privacidade",
+    "terms": "Termos de serviço",
+    "contact": "Contato"
+  },
+  "copyright": "© 2025 Portyo Inc. Todos os direitos reservados."
+}

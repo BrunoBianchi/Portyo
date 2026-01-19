@@ -12,7 +12,7 @@ const ClaimUsernameBar = lazy(() => import("~/components/marketing/claim-usernam
 
 export default function LandingPage() {
     return (
-        <main className="flex items-center justify-center pt-0 pb-16 bg-white min-h-screen">
+        <main className="flex items-center justify-center pt-0 bg-white min-h-screen">
             <div className="flex-1 flex flex-col items-center gap-10 min-h-0 w-full">
                 <HeroSection />
                 <Suspense fallback={<div className="min-h-[420px] w-full" />}>

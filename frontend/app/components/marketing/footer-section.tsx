@@ -51,7 +51,7 @@ export default function Footer() {
             <div className="flex flex-col gap-4">
               <h3 className="font-bold text-lg">{t("footer.resources.title")}</h3>
               <ul className="flex flex-col gap-3 text-gray-300">
-                <li><Link to={withLang("/site-blog")} className="hover:text-white transition-colors">{t("footer.resources.blog")}</Link></li>
+                <li><Link to={withLang("/blog")} className="hover:text-white transition-colors">{t("footer.resources.blog")}</Link></li>
                 <li><Link to="#" className="hover:text-white transition-colors">{t("footer.resources.community")}</Link></li>
                 <li><Link to="#" className="hover:text-white transition-colors">{t("footer.resources.help")}</Link></li>
                 <li><Link to="#" className="hover:text-white transition-colors">{t("footer.resources.creators")}</Link></li>

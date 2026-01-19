@@ -62,7 +62,7 @@ const envSchema = z.object({
 
   // AI
   GROQ_API_KEY: z.string().optional(),
-  GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
+  GROQ_MODEL: z.string().default("moonshotai/kimi-k2-instruct-0905"),
 
   // Instagram
   INSTAGRAM_CLIENT_ID: z.string().optional(),

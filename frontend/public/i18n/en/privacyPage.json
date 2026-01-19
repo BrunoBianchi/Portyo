@@ -1,0 +1,54 @@
+{
+  "title": "Privacy Policy",
+  "updated": "Last updated: January 15, 2026",
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "body": "Welcome to Portyo (\"we,\" \"our,\" or \"us\"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services."
+    },
+    "collection": {
+      "title": "2. Information We Collect",
+      "intro": "We collect information that you strictly provide to us when you register for an account, specifically:",
+      "items": {
+        "personal": {
+          "label": "Personal Data:",
+          "body": "Name, email address, and profile information you choose to display on your bio page."
+        },
+        "payment": {
+          "label": "Payment Data:",
+          "body": "Financial information is processed directly by our payment processor, Stripe. We do not store full credit card numbers on our servers."
+        },
+        "usage": {
+          "label": "Usage Data:",
+          "body": "Information about how you interact with our services, such as page views and button clicks, to improve our product."
+        }
+      }
+    },
+    "usage": {
+      "title": "3. How We Use Your Information",
+      "intro": "We use the information we collect to:",
+      "items": {
+        "provide": "Provide, operate, and maintain our website.",
+        "process": "Process your transactions and manage your subscription.",
+        "improve": "Improve, personalize, and expand our website.",
+        "communicate": "Communicate with you regarding updates, security alerts, and support."
+      }
+    },
+    "sharing": {
+      "title": "4. Sharing Your Information",
+      "body": "We do not sell your personal information. We may share information with third-party service providers (such as Stripe for payments or Google Analytics for usage tracking) strictly for the purpose of operating our business and providing our services to you."
+    },
+    "security": {
+      "title": "5. Data Security",
+      "body": "We use administrative, technical, and physical security measures to help protect your personal information. However, please remember that no method of transmission over the internet is 100% secure."
+    },
+    "rights": {
+      "title": "6. Your Rights",
+      "body": "Depending on your location, you may have rights regarding your personal data, including the right to access, correct, or delete the personal information we hold about you. You can manage your account settings directly within the Portyo dashboard."
+    },
+    "contact": {
+      "title": "7. Contact Us",
+      "bodyPrefix": "If you have questions or comments about this policy, you may contact us at:"
+    }
+  }
+}

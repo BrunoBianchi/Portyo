@@ -4,6 +4,7 @@ const baseRoutes: RouteConfig = [
     { path: '/', file: "routes/home.tsx", id: "home" },
     { path: '/login', file: "routes/login.tsx" },
     { path: '/sign-up', file: "routes/sign-up.tsx" },
+    { path: '/claim-bio', file: "routes/claim-bio.tsx" },
     { path: '/verify-email', file: "routes/verify-email.tsx" },
     { path: '/forgot-password', file: "routes/forgot-password.tsx" },
     { path: '/reset-password', file: "routes/reset-password.tsx" },
@@ -53,9 +54,9 @@ const baseRoutes: RouteConfig = [
     },
     { path: "redirect-qrcode/:id", file: "routes/redirect-qrcode.$id.tsx" },
     { path: "bookings/manage", file: "routes/booking-manage.tsx" },
-    { path: "blog", file: "routes/home.tsx", id: "home-blog" },
-    { path: "blog/:postId", file: "routes/blog.$postId.tsx" },
-    { path: "site-blog/:id", file: "routes/site-blog.$id.tsx" },
+    { path: "blog", file: "routes/blog.tsx" },
+    { path: "blog/:id", file: "routes/site-blog.$id.tsx" },
+    { path: "blog/post/:postId", file: "routes/blog.$postId.tsx" },
     { path: "shop", file: "routes/home.tsx", id: "home-shop" },
     { path: "payment-success", file: "routes/payment-success.tsx" },
     { path: "p/:username", file: "routes/p.$username.tsx" },
@@ -94,7 +95,11 @@ const nonLocalizedRoutes: RouteConfig = [
     { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },
     { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
     { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
-    { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" }
+    { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
+    { path: '/blog', file: "routes/blog.tsx" },
+    { path: '/blog/:id', file: "routes/site-blog.$id.tsx" },
+    { path: '/blog/post/:postId', file: "routes/blog.$postId.tsx" },
+    { path: '/claim-bio', file: "routes/claim-bio.tsx" }
 ];
 
 export default [

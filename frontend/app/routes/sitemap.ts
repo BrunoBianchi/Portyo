@@ -4,6 +4,7 @@ import type { LoaderFunctionArgs } from "react-router";
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const host = url.host;
+  const origin = `${url.protocol}//${host}`;
   const hostname = host.split(':')[0];
   const isOnRenderDomain = hostname.endsWith('.onrender.com');
   const isPortyoDomain = hostname.endsWith('portyo.me');
@@ -21,6 +22,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   };
 
   let urls: string[] = [];
+  const addUrl = (loc: string, lastmod?: string, changefreq: string = 'weekly', priority: number = 0.8) => {
+      urls.push(toUrl(loc, lastmod, changefreq, priority));
+  };
 
     // Determine if this is a bio request
   const { username } = params as { username?: string };
@@ -32,29 +36,103 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const bioIdentifier = username || customDomainBioIdentifier;
+  const siteBase = isPortyoDomain ? `https://portyo.me` : origin;
+  const localePaths = (paths: string[]) => [
+      ...paths.map(p => `/en${p}`),
+      ...paths.map(p => `/pt${p}`)
+  ];
 
-  if (bioIdentifier) {
+    if (bioIdentifier) {
       // User Specific Sitemap
      const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
      const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
      const baseUrl = username ? `https://portyo.me/p/${username}` : `https://${host}`;
 
      // Always add root
-      urls.push(toUrl(baseUrl, undefined, 'weekly', 1.0));
+      addUrl(baseUrl, undefined, 'weekly', 1.0);
 
-     // Fetch bio details to check for blog/shop tabs enabled (pseudo-check for now, or just assume standard sub-pages)
-     // For now, we add common sub-pages if they are generally available
-     urls.push(toUrl(`${baseUrl}/shop`, undefined, 'weekly', 0.8));
-     urls.push(toUrl(`${baseUrl}/blog`, undefined, 'weekly', 0.8));
+      try {
+        // 1. Fetch Bio Details to get ID
+        const bioFetchUrl = username 
+           ? `${apiUrl}/public/bio/${username}`
+           : `${apiUrl}/public/bio/domain/${bioIdentifier}`;
+         
+        const bioRes = await fetch(bioFetchUrl);
+        if(bioRes.ok) {
+          const bioData = await bioRes.json();
+          const bioId = bioData.id;
+          
+          if (bioId) {
+             // 2. Fetch Blog Posts & Products (Parallel)
+             const [postsRes, productsRes] = await Promise.all([
+                fetch(`${apiUrl}/public/blog/${bioId}`),
+                fetch(`${apiUrl}/public/products/${bioId}`)
+             ]);
+ 
+             // Add standard tabs
+             addUrl(`${baseUrl}/shop`, undefined, 'weekly', 0.8);
+             addUrl(`${baseUrl}/blog`, undefined, 'weekly', 0.8);
+             
+             // Add Posts
+             if(postsRes.ok) {
+               const posts = await postsRes.json();
+               if(Array.isArray(posts)) {
+                  posts.forEach((post: any) => {
+                     // Check if post is published? The public API should filter that.
+                     // The API endpoint is likely filtering. 
+                     const postUrl = `${baseUrl}/blog/post/${post.id}`;
+                     addUrl(postUrl, post.updatedAt, 'monthly', 0.7);
+                  });
+               }
+             }
 
-     // TODO: Fetch public blog posts for this user and add them recursively
-  } else {
+             // Note: Products typically load on /shop or as modal, so we just link /shop
+          }
+        }
+      } catch(e) {
+        console.error("Error generating user sitemap", e);
+      }
+    } else {
       // Global Sitemap
-      urls.push(toUrl('https://portyo.me/', undefined, 'daily', 1.0));
-      urls.push(toUrl('https://portyo.me/login', undefined, 'monthly', 0.5));
-      urls.push(toUrl('https://portyo.me/sign-up', undefined, 'monthly', 0.8));
+      const publicPaths = [
+        '/',
+        '/about',
+        '/pricing',
+        '/terms',
+        '/privacy',
+        '/blog',
+        '/login',
+        '/sign-up',
+        '/verify-email',
+        '/forgot-password',
+        '/reset-password',
+        '/claim-bio'
+      ];
 
-      // Dynamic User Bios
+      addUrl(siteBase + '/', undefined, 'daily', 1.0);
+      localePaths(publicPaths.filter(p => p !== '/')).forEach((path) => {
+        addUrl(`${siteBase}${path}`, undefined, 'weekly', 0.8);
+      });
+
+        // Site Blog Posts
+        try {
+          const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+          const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+          const res = await fetch(`${apiUrl}/public/site-blog`);
+          if (res.ok) {
+            const posts: { id: string | number; updatedAt?: string }[] = await res.json();
+            posts.forEach((post) => {
+              const lastmod = post.updatedAt;
+              addUrl(`${siteBase}/en/blog/${post.id}`, lastmod, 'weekly', 0.7);
+              addUrl(`${siteBase}/pt/blog/${post.id}`, lastmod, 'weekly', 0.7);
+              addUrl(`${siteBase}/blog/${post.id}`, lastmod, 'weekly', 0.7);
+            });
+          }
+        } catch (e) {
+          console.error("Failed to fetch site posts for sitemap", e);
+        }
+
+        // Dynamic User Bios
       try {
           const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
           const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
@@ -63,7 +141,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
               const bios: { sufix: string, updatedAt: string }[] = await res.json();
               bios.forEach(bio => {
                   if (bio.sufix) {
-                      urls.push(toUrl(`https://portyo.me/p/${bio.sufix}`, bio.updatedAt, 'weekly', 0.6));
+                addUrl(`${siteBase}/p/${bio.sufix}`, bio.updatedAt, 'weekly', 0.6);
                   }
               });
           }

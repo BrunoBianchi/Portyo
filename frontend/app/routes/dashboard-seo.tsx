@@ -16,6 +16,7 @@ import { ImageUpload } from "~/components/dashboard/editor/image-upload";
 import { useTranslation } from "react-i18next";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -39,6 +40,7 @@ export default function DashboardSeo() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
+    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio) {
@@ -154,30 +156,10 @@ export default function DashboardSeo() {
                     spotlightClicks
                     scrollToFirstStep
                     callback={handleSeoTourCallback}
-                    styles={{
-                        options: {
-                            arrowColor: "#ffffff",
-                            backgroundColor: "#ffffff",
-                            overlayColor: "rgba(0, 0, 0, 0.45)",
-                            primaryColor: tourPrimaryColor,
-                            textColor: "#171717",
-                            zIndex: 10000,
-                        },
-                        buttonNext: {
-                            color: "#171717",
-                            fontWeight: 700,
-                        },
-                        buttonBack: {
-                            color: "#5b5b5b",
-                        },
-                        buttonSkip: {
-                            color: "#5b5b5b",
-                        },
-                        tooltipContent: {
-                            fontSize: "14px",
-                            lineHeight: "1.4",
-                        },
-                    }}
+                    styles={joyrideStyles}
+                    scrollOffset={joyrideProps.scrollOffset}
+                    spotlightPadding={joyrideProps.spotlightPadding}
+                    disableScrollParentFix={joyrideProps.disableScrollParentFix}
                 />
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="seo-header">
                     <div>

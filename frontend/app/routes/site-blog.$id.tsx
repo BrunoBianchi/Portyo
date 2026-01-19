@@ -5,6 +5,8 @@ import { getPublicSitePost, type SitePost } from "~/services/site-blog.service";
 import { format } from "date-fns";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import { sanitizeHtml } from "~/utils/security";
 
 export default function SiteBlogPostPage() {
     const { id } = useParams();
@@ -69,11 +71,11 @@ export default function SiteBlogPostPage() {
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">404</h1>
                 <p className="text-gray-600 mb-6 font-serif italic">Post not found</p>
                 <Link
-                    to="/"
+                    to="/blog"
                     className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:underline transition-all"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    Return Home
+                    Back to Blog
                 </Link>
             </div>
         );
@@ -83,6 +85,7 @@ export default function SiteBlogPostPage() {
     const authorImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=000&color=fff`;
     const readTime = getReadTime(post.content);
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
+    const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
 
 
 
@@ -92,11 +95,11 @@ export default function SiteBlogPostPage() {
             <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link
-                        to={`/`}
+                        to={`/blog`}
                         className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        <span className="font-medium">Back to Home</span>
+                        <span className="font-medium">Back to Blog</span>
                     </Link>
 
                     <button
@@ -152,8 +155,12 @@ export default function SiteBlogPostPage() {
                 )}
 
                 {/* Content */}
-                <div className="prose prose-lg prose-gray max-w-none editorial-content font-sans">
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                <div className="blog-markdown font-sans">
+                    {isHtmlContent ? (
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
+                    ) : (
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                    )}
                 </div>
 
                 {/* Footer Section */}
@@ -168,6 +175,57 @@ export default function SiteBlogPostPage() {
                     </div>
                 </div>
             </motion.div>
+
+            <style>{`
+                .blog-markdown {
+                    font-size: 1.05rem;
+                    line-height: 1.9;
+                    color: #111827;
+                }
+                .blog-markdown > * + * { margin-top: 1.25rem; }
+                .blog-markdown h1 { font-size: 2.25rem; line-height: 1.2; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; }
+                .blog-markdown h2 { font-size: 1.75rem; line-height: 1.3; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; }
+                .blog-markdown h3 { font-size: 1.4rem; line-height: 1.35; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.5rem; }
+                .blog-markdown h4 { font-size: 1.15rem; line-height: 1.4; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+                .blog-markdown p { margin: 0 0 1rem; white-space: pre-wrap; }
+                .blog-markdown a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
+                .blog-markdown a:hover { color: #1e40af; }
+                .blog-markdown ul, .blog-markdown ol { margin: 0 0 1rem; padding-left: 1.5rem; }
+                .blog-markdown li { margin: 0.4rem 0; }
+                .blog-markdown blockquote {
+                    border-left: 4px solid #e5e7eb;
+                    background: #f9fafb;
+                    color: #374151;
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.75rem;
+                    margin: 1.5rem 0;
+                }
+                .blog-markdown code {
+                    background: #f3f4f6;
+                    padding: 0.15rem 0.4rem;
+                    border-radius: 0.4rem;
+                    font-size: 0.95em;
+                }
+                .blog-markdown pre {
+                    background: #0b1020;
+                    color: #e5e7eb;
+                    padding: 1rem;
+                    border-radius: 0.75rem;
+                    overflow-x: auto;
+                    margin: 1.5rem 0;
+                }
+                .blog-markdown pre code { background: none; padding: 0; color: inherit; }
+                .blog-markdown img {
+                    max-width: 100%;
+                    border-radius: 12px;
+                    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+                    margin: 1.5rem 0;
+                }
+                .blog-markdown hr { border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
+                .blog-markdown table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+                .blog-markdown th, .blog-markdown td { border: 1px solid #e5e7eb; padding: 0.6rem 0.75rem; }
+                .blog-markdown th { background: #f9fafb; text-align: left; }
+            `}</style>
         </article>
     );
 }

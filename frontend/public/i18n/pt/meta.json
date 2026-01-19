@@ -1,0 +1,60 @@
+{
+  "root": {
+    "title": "Portyo - Link in Bio",
+    "description": "Converta seguidores em clientes com um link. Gere bios poderosas que geram receita com nossa plataforma tudo-em-um."
+  },
+  "home": {
+    "title": "Portyo - Link in Bio",
+    "description": "Converta seguidores em clientes com um link. Gere bios poderosas que geram receita com nossa plataforma tudo-em-um."
+  },
+  "about": {
+    "title": "Sobre | Portyo",
+    "automationBuilder": {
+      "steps": {
+        "header": "Este é o construtor de automações. Dê um nome e gerencie o status aqui.",
+        "canvas": "Monte o fluxo neste canvas. Conecte etapas para definir a jornada.",
+        "palette": "Arraste um gatilho ou ação desta barra para o canvas.",
+        "node": "Clique em um nó para configurar os detalhes e o comportamento.",
+        "actions": "Salve como rascunho ou ative a automação quando estiver pronto."
+      }
+    },
+    "description": "Estamos capacitando criadores a construírem seu futuro."
+  },
+  "pricing": {
+    "title": "Preços | Portyo",
+    "description": "Escolha o plano ideal para suas necessidades."
+  },
+  "contact": {
+    "title": "Contato | Portyo",
+    "description": "Fale com o time da Portyo."
+  },
+  "legal": {
+    "title": "Legal | Portyo",
+    "description": "Política de Privacidade, Termos de Serviço e Política de Cookies da Portyo."
+  },
+  "privacyPolicy": {
+    "title": "Política de Privacidade | Portyo",
+    "description": "Política de Privacidade da Portyo."
+  },
+  "termsOfService": {
+    "title": "Termos de Serviço | Portyo",
+    "description": "Termos de Serviço da Portyo."
+  },
+  "login": {
+    "title": "Entrar - Portyo"
+  },
+  "signUp": {
+    "title": "Criar conta - Portyo"
+  },
+  "verifyEmail": {
+    "title": "Verificar e-mail - Portyo"
+  },
+  "forgotPassword": {
+    "title": "Esqueci a senha | Portyo",
+    "description": "Redefina sua senha da Portyo"
+  },
+  "resetPassword": {
+    "title": "Redefinir senha | Portyo",
+    "description": "Crie uma nova senha para sua conta Portyo"
+  }
+}

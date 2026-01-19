@@ -9,6 +9,7 @@ import { Outlet } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
 import Joyride, { type CallBackProps, EVENTS, STATUS, ACTIONS, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
+import { useJoyrideSettings } from "~/utils/joyride";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -23,6 +24,7 @@ export default function Dashboard() {
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
     const { t } = useTranslation();
+    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -125,30 +127,10 @@ export default function Dashboard() {
                             spotlightClicks
                             scrollToFirstStep
                             callback={handleJoyrideCallback}
-                            styles={{
-                                options: {
-                                    arrowColor: "#ffffff",
-                                    backgroundColor: "#ffffff",
-                                    overlayColor: "rgba(0, 0, 0, 0.45)",
-                                    primaryColor: tourPrimaryColor,
-                                    textColor: "#171717",
-                                    zIndex: 10000,
-                                },
-                                buttonNext: {
-                                    color: "#171717",
-                                    fontWeight: 700,
-                                },
-                                buttonBack: {
-                                    color: "#5b5b5b",
-                                },
-                                buttonSkip: {
-                                    color: "#5b5b5b",
-                                },
-                                tooltipContent: {
-                                    fontSize: "14px",
-                                    lineHeight: "1.4",
-                                },
-                            }}
+                            styles={joyrideStyles}
+                            scrollOffset={joyrideProps.scrollOffset}
+                            spotlightPadding={joyrideProps.spotlightPadding}
+                            disableScrollParentFix={joyrideProps.disableScrollParentFix}
                         />
                         <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
                             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

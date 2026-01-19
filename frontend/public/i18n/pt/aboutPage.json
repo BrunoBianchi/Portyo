@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "pre": "Capacitando criadores a",
+    "highlight": "construir seu futuro."
+  },
+  "subtitle": "Estamos em uma missão de dar a cada criador e empreendedor as ferramentas necessárias para transformar sua paixão em um negócio próspero.",
+  "story": {
+    "p1": "A Portyo nasceu de uma observação simples: criadores estavam gastando tempo demais conciliando várias ferramentas, em vez de fazer o que fazem de melhor — criar.",
+    "p2": "Construímos uma plataforma tudo‑em‑um que reúne tudo o que você precisa: um link‑in‑bio bonito, analytics poderosos, captura de e‑mails, agendamentos e e‑commerce.",
+    "p3": "Hoje, milhares de criadores confiam na Portyo para impulsionar sua presença online. E estamos apenas começando."
+  },
+  "values": {
+    "creatorFirst": {
+      "title": "Criador em primeiro lugar",
+      "body": "Tudo o que construímos começa pensando em você. O seu sucesso é o nosso sucesso."
+    },
+    "innovation": {
+      "title": "Inovação",
+      "body": "Ultrapassamos limites para entregar ferramentas de ponta que fazem a diferença."
+    },
+    "community": {
+      "title": "Comunidade",
+      "body": "Acreditamos no poder da conexão e na construção de relações genuínas."
+    },
+    "growth": {
+      "title": "Crescimento",
+      "body": "Comprometidos em ajudar você a crescer sua audiência e receita de forma sustentável."
+    }
+  },
+  "cta": {
+    "title": "Pronto para entrar no movimento?",
+    "button": "Começar"
+  }
+}

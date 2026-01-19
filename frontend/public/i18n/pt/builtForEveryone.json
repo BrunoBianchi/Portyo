@@ -1,0 +1,21 @@
+{
+  "title": "Feito Para",
+  "subtitle": "Todos",
+  "labels": {
+    "creators": "criadores",
+    "musicians": "músicos",
+    "engineers": "engenheiros",
+    "designers": "designers",
+    "founders": "fundadores",
+    "lawyers": "advogados",
+    "doctors": "médicos",
+    "teachers": "professores",
+    "students": "estudantes",
+    "professionals": "profissionais",
+    "interns": "estagiários",
+    "academics": "acadêmicos",
+    "sideHustlers": "autônomos",
+    "architects": "arquitetos",
+    "bankers": "banqueiros"
+  }
+}

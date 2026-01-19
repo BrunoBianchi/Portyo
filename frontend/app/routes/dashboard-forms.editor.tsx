@@ -298,7 +298,7 @@ export default function DashboardFormsEditor() {
 
         if (!over) return;
 
-        if (active.data.current?.isToolboxItem && over.id === "form-canvas") {
+        if (active.data.current?.isToolboxItem && over) {
             const type = active.data.current.type as FormFieldType;
             const label = active.data.current.label;
 
