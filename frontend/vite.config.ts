@@ -1,18 +1,8 @@
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import { createRequire } from "node:module";
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
-
-const require = createRequire(import.meta.url);
-let schedulerTracingPath: string | undefined;
-
-try {
-  schedulerTracingPath = require.resolve("scheduler/tracing");
-} catch {
-  schedulerTracingPath = undefined;
-}
 
 export default defineConfig({
   plugins: [
@@ -22,19 +12,8 @@ export default defineConfig({
     viteCompression({ algorithm: "gzip" }),
     viteCompression({ algorithm: "brotliCompress" }),
   ],
-  resolve: {
-    dedupe: ["react", "react-dom", "scheduler"],
-    alias: {
-      react: require.resolve("react"),
-      "react-dom": require.resolve("react-dom"),
-      "react/jsx-runtime": require.resolve("react/jsx-runtime"),
-      "react/jsx-dev-runtime": require.resolve("react/jsx-dev-runtime"),
-      scheduler: require.resolve("scheduler"),
-      ...(schedulerTracingPath ? { "scheduler/tracing": schedulerTracingPath } : {}),
-    },
-  },
   optimizeDeps: {
-    include: ["date-fns", "react", "react-dom", "scheduler"]
+    include: ["date-fns"]
   },
   server: {
     proxy: {
@@ -54,14 +33,11 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             if (id.includes("lucide-react")) return "icons";
             if (id.includes("date-fns")) return "utils";
-            if (id.includes("react-dom") || id.includes("react-router") || id.includes("react") || id.includes("scheduler")) return "vendor";
+            if (id.includes("react-dom") || id.includes("react-router") || id.includes("react")) return "vendor";
             return "libs";
           }
         },
       },
     },
-  },
-  ssr: {
-    noExternal: ["react", "react-dom", "react-router", "@react-router/node", "@react-router/serve", "scheduler"],
   }
 });
