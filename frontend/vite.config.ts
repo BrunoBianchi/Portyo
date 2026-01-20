@@ -1,8 +1,11 @@
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
+import { createRequire } from "node:module";
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
+
+const require = createRequire(import.meta.url);
 
 export default defineConfig({
   plugins: [
@@ -15,7 +18,8 @@ export default defineConfig({
   resolve: {
     dedupe: ["react", "react-dom", "scheduler"],
     alias: {
-      scheduler: "scheduler/index.js",
+      scheduler: require.resolve("scheduler"),
+      "scheduler/tracing": require.resolve("scheduler/tracing"),
     },
   },
   optimizeDeps: {
