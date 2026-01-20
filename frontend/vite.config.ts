@@ -25,6 +25,10 @@ export default defineConfig({
   resolve: {
     dedupe: ["react", "react-dom", "scheduler"],
     alias: {
+      react: require.resolve("react"),
+      "react-dom": require.resolve("react-dom"),
+      "react/jsx-runtime": require.resolve("react/jsx-runtime"),
+      "react/jsx-dev-runtime": require.resolve("react/jsx-dev-runtime"),
       scheduler: require.resolve("scheduler"),
       ...(schedulerTracingPath ? { "scheduler/tracing": schedulerTracingPath } : {}),
     },
@@ -56,9 +60,8 @@ export default defineConfig({
         },
       },
     },
-  }
-  ,
+  },
   ssr: {
-    noExternal: ["react", "react-dom", "scheduler"],
+    noExternal: ["react", "react-dom", "react-router", "@react-router/node", "@react-router/serve", "scheduler"],
   }
 });
