@@ -14,6 +14,9 @@ export default defineConfig({
   ],
   resolve: {
     dedupe: ["react", "react-dom", "scheduler"],
+    alias: {
+      scheduler: "scheduler/index.js",
+    },
   },
   optimizeDeps: {
     include: ["date-fns", "react", "react-dom", "scheduler"]
@@ -42,5 +45,9 @@ export default defineConfig({
         },
       },
     },
+  }
+  ,
+  ssr: {
+    noExternal: ["react", "react-dom", "scheduler"],
   }
 });
