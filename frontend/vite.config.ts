@@ -12,8 +12,11 @@ export default defineConfig({
     viteCompression({ algorithm: "gzip" }),
     viteCompression({ algorithm: "brotliCompress" }),
   ],
+  resolve: {
+    dedupe: ["react", "react-dom", "scheduler"],
+  },
   optimizeDeps: {
-    include: ["date-fns"]
+    include: ["date-fns", "react", "react-dom", "scheduler"]
   },
   server: {
     proxy: {
@@ -33,7 +36,7 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             if (id.includes("lucide-react")) return "icons";
             if (id.includes("date-fns")) return "utils";
-            if (id.includes("react-dom") || id.includes("react-router") || id.includes("react")) return "vendor";
+            if (id.includes("react-dom") || id.includes("react-router") || id.includes("react") || id.includes("scheduler")) return "vendor";
             return "libs";
           }
         },
