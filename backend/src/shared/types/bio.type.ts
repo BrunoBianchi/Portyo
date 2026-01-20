@@ -53,6 +53,8 @@ export type Bio = BaseType & {
     floatingElementsBlur?: number;
     enableSubscribeButton?: boolean;
     removeBranding?: boolean;
+    verified?: boolean;
+    verificationStatus?: "none" | "pending" | "verified";
     customDomain?: string;
     integrations:any[]
 }

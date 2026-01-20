@@ -41,12 +41,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...paths.map(p => `/en${p}`),
       ...paths.map(p => `/pt${p}`)
   ];
+  const supportedLangs = ["en", "pt"];
 
     if (bioIdentifier) {
       // User Specific Sitemap
      const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
      const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
-     const baseUrl = username ? `https://portyo.me/p/${username}` : `https://${host}`;
+    const baseUrl = username ? `https://portyo.me/p/${username}` : `https://${host}`;
+    const bioBasePath = username ? `/p/${username}` : "";
 
      // Always add root
       addUrl(baseUrl, undefined, 'weekly', 1.0);
@@ -82,6 +84,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
                      // The API endpoint is likely filtering. 
                      const postUrl = `${baseUrl}/blog/post/${post.id}`;
                      addUrl(postUrl, post.updatedAt, 'monthly', 0.7);
+                     supportedLangs.forEach((lang) => {
+                       const localizedBase = username
+                         ? `https://portyo.me/${lang}${bioBasePath}`
+                         : `${origin}/${lang}`;
+                       addUrl(`${localizedBase}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                     });
                   });
                }
              }
@@ -149,11 +157,37 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           const res = await fetch(`${apiUrl}/public/bios`);
           if (res.ok) {
               const bios: { sufix: string, updatedAt: string }[] = await res.json();
-              bios.forEach(bio => {
-                  if (bio.sufix) {
+              const validBios = bios.filter((bio) => bio.sufix);
+
+              validBios.forEach(bio => {
                 addUrl(`${siteBase}/p/${bio.sufix}`, bio.updatedAt, 'weekly', 0.6);
-                  }
               });
+
+              await Promise.all(
+                validBios.map(async (bio) => {
+                  try {
+                    const bioRes = await fetch(`${apiUrl}/public/bio/${bio.sufix}`);
+                    if (!bioRes.ok) return;
+                    const bioData = await bioRes.json();
+                    const bioId = bioData?.id;
+                    if (!bioId) return;
+
+                    const postsRes = await fetch(`${apiUrl}/public/blog/${bioId}`);
+                    if (!postsRes.ok) return;
+                    const posts = await postsRes.json();
+                    if (!Array.isArray(posts)) return;
+
+                    posts.forEach((post: any) => {
+                      addUrl(`${siteBase}/p/${bio.sufix}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                      supportedLangs.forEach((lang) => {
+                        addUrl(`${siteBase}/${lang}/p/${bio.sufix}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                      });
+                    });
+                  } catch (err) {
+                    console.error("Failed to fetch bio posts for sitemap", err);
+                  }
+                })
+              );
           }
       } catch (e) {
           console.error("Failed to fetch bios for sitemap", e);

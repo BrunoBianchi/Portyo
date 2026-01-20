@@ -755,6 +755,12 @@
         "featuredTitle": "Batom Glow",
         "affiliateTitle": "Copie meu cupom",
         "portfolioTitle": "Portfólio",
+        "experienceTitle": "Experiência",
+        "experienceRole": "Designer de Produto Sênior",
+        "experienceCompany": "Portyo Studio",
+        "experiencePeriod": "2022 — Presente",
+        "experienceLocation": "Remoto",
+        "experienceDescription": "Liderou iniciativas de design em produtos web e mobile.",
         "whatsappTitle": "Falar no WhatsApp",
         "whatsappMessage": "Olá! Gostaria de falar com você."
       },
@@ -1087,6 +1093,9 @@
           "formSelected": "Formulário selecionado",
           "noFormSelected": "Nenhum formulário selecionado",
           "portfolioFallback": "Portfólio",
+          "experienceCount_one": "{{count}} experiência",
+          "experienceCount_other": "{{count}} experiências",
+          "noExperience": "Sem experiências",
           "slotConnected": "Slot conectado",
           "noSlotSelected": "Nenhum slot selecionado",
           "noWhatsappNumber": "Sem número do WhatsApp"
@@ -1118,6 +1127,27 @@
           "defaultTitle": "Portfólio",
           "placeholder": "Portfólio"
         },
+        "experience": {
+          "sectionTitle": "Título da seção",
+          "sectionPlaceholder": "Experiência",
+          "items": "Experiências",
+          "role": "Cargo",
+          "company": "Empresa",
+          "period": "Período",
+          "location": "Local",
+          "description": "Descrição",
+          "rolePlaceholder": "Designer Sênior",
+          "companyPlaceholder": "Nome da empresa",
+          "periodPlaceholder": "2022 — Presente",
+          "locationPlaceholder": "Remoto",
+          "descriptionPlaceholder": "Descreva suas responsabilidades e conquistas...",
+          "defaultRole": "Designer de Produto",
+          "defaultCompany": "Acme Inc",
+          "defaultPeriod": "2020 — 2022",
+          "defaultLocation": "São Paulo, SP",
+          "defaultDescription": "Desenhou e entregou funcionalidades-chave do produto.",
+          "addExperience": "Adicionar experiência"
+        },
         "blockTypes": {
           "heading": "Título",
           "text": "Texto",
@@ -1140,7 +1170,8 @@
           "map": "Mapa",
           "form": "Formulário",
           "portfolio": "Portfólio",
-          "marketing": "Marketing"
+          "marketing": "Marketing",
+          "experience": "Experiência"
         }
       },
       "subscribeThanks": "Obrigado por se inscrever!",
@@ -1225,7 +1256,8 @@
         "Music": "Música",
         "Blog": "Blog",
         "Marketing": "Marketing",
-        "Layout": "Layout"
+        "Layout": "Layout",
+        "Professional": "Profissional"
       },
       "palette": {
         "heading": "Título",
@@ -1250,7 +1282,8 @@
         "divider": "Divisor",
         "form": "Formulário",
         "portfolio": "Portfólio",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "experience": "Experiência"
       },
       "layout": {
         "title": "Layout",

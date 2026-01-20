@@ -428,6 +428,46 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     </section>`;
   }
 
+  if (block.type === "experience") {
+    const title = block.experienceTitle || "Experiência";
+    const experiences = block.experiences || [];
+
+    const itemsHtml = experiences
+      .map((experience) => {
+        const role = escapeHtml(experience.role || "");
+        const company = escapeHtml(experience.company || "");
+        const period = escapeHtml(experience.period || "");
+        const location = escapeHtml(experience.location || "");
+        const description = experience.description
+          ? escapeHtml(experience.description).replace(/\n/g, "<br />")
+          : "";
+        const meta = [company, location].filter(Boolean).join(" • ");
+
+        return `
+          <div style="padding:16px; border:1px solid #e5e7eb; border-radius:16px; background:rgba(255,255,255,0.95); margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+              <div style="font-weight:700; color:#111827; font-size:15px;">${role}</div>
+              ${period ? `<div style=\"font-size:12px; color:#6b7280;\">${period}</div>` : ""}
+            </div>
+            ${meta ? `<div style=\"font-size:13px; color:#374151; font-weight:600; margin-top:2px;\">${meta}</div>` : ""}
+            ${description ? `<p style=\"margin:8px 0 0; color:#4b5563; font-size:13px; line-height:1.6;\">${description}</p>` : ""}
+          </div>
+        `;
+      })
+      .join("");
+
+    const emptyHtml = experiences.length === 0
+      ? `<div style="padding:16px; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af; font-size:13px; text-align:center;">Add your first experience</div>`
+      : "";
+
+    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      <div style="padding:16px 0;">
+        <h3 style="margin:0 0 12px 0; font-size:18px; font-weight:700; color:#111827;">${escapeHtml(title)}</h3>
+        ${itemsHtml || emptyHtml}
+      </div>
+    </section>`;
+  }
+
   if (block.type === "calendar") {
     const title = block.calendarTitle || "Book a Call";
     const url = block.calendarUrl || "#";
@@ -1044,7 +1084,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         <!-- Name & Handle -->
         <h1 style="font-size:28px; font-weight:800; color:${usernameColor}; margin:0 0 4px 0; text-align:center; letter-spacing:-0.5px; line-height:1.2;">
             ${escapeHtml(displayName)}
-            ${bio.verified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Verificado" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+            ${bio.verified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" aria-label="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
         </h1>
         <div style="font-size:15px; font-weight:600; color:${usernameColor}; opacity:0.6; margin-bottom:16px;">@${escapeHtml(handle)}</div>
 

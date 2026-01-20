@@ -4,7 +4,7 @@ import AuthContext from "~/contexts/auth.context";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp" | "experience";
     title?: string;
     body?: string;
     // Form specific
@@ -152,6 +152,16 @@ export type BioBlock = {
     spotifyCompact?: boolean;
     // Portfolio specific
     portfolioTitle?: string;
+    // Experience specific
+    experienceTitle?: string;
+    experiences?: {
+        id: string;
+        role: string;
+        company: string;
+        period?: string;
+        location?: string;
+        description?: string;
+    }[];
     // Marketing specific
     marketingId?: string; // Reference to backend MarketingBlockEntity
     marketingTitle?: string;
@@ -257,6 +267,7 @@ interface Bio {
     customFontUrl?: string;
     customFontName?: string;
     verified?: boolean;
+    verificationStatus?: "none" | "pending" | "verified";
     buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline" | "architect" | "material" | "brutalist" | "outline-thick";
     // Parallax settings
     enableParallax?: boolean;

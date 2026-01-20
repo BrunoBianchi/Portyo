@@ -80,6 +80,7 @@ const getBlockTypeAccent = (type: string): { bg: string; text: string; border: s
     portfolio: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
     marketing: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
     whatsapp: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
+    experience: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
   };
   return accents[type] || { bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" };
 };
@@ -111,6 +112,12 @@ const getBlockPreview = (block: BioBlock, t: TFunction): string => {
         : t("dashboard.editor.blockItem.preview.noFormSelected");
     case 'portfolio':
       return block.portfolioTitle || t("dashboard.editor.blockItem.preview.portfolioFallback");
+    case 'experience': {
+      const count = block.experiences?.length || 0;
+      return count
+        ? t("dashboard.editor.blockItem.preview.experienceCount", { count })
+        : t("dashboard.editor.blockItem.preview.noExperience");
+    }
     case 'marketing':
       return block.marketingId
         ? t("dashboard.editor.blockItem.preview.slotConnected")
@@ -2390,6 +2397,130 @@ const BlockItem = memo(({
               </div>
             )}
 
+            {block.type === "experience" && (
+              <div className="pt-3 space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">{t("dashboard.editor.blockItem.experience.sectionTitle")}</label>
+                  <input
+                    value={block.experienceTitle || ""}
+                    onChange={(event) => handleFieldChange("experienceTitle", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder={t("dashboard.editor.blockItem.experience.sectionPlaceholder")}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-medium text-gray-700 block">{t("dashboard.editor.blockItem.experience.items")}</label>
+
+                  {(block.experiences || []).map((experience, index) => (
+                    <div key={experience.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200 relative group">
+                      <button
+                        onClick={() => {
+                          const newItems = [...(block.experiences || [])];
+                          newItems.splice(index, 1);
+                          handleFieldChange("experiences", newItems);
+                        }}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <XIcon />
+                      </button>
+
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.experience.role")}</label>
+                          <input
+                            value={experience.role}
+                            onChange={(e) => {
+                              const newItems = [...(block.experiences || [])];
+                              newItems[index] = { ...experience, role: e.target.value };
+                              handleFieldChange("experiences", newItems);
+                            }}
+                            className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                            placeholder={t("dashboard.editor.blockItem.experience.rolePlaceholder")}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.experience.company")}</label>
+                          <input
+                            value={experience.company}
+                            onChange={(e) => {
+                              const newItems = [...(block.experiences || [])];
+                              newItems[index] = { ...experience, company: e.target.value };
+                              handleFieldChange("experiences", newItems);
+                            }}
+                            className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                            placeholder={t("dashboard.editor.blockItem.experience.companyPlaceholder")}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.experience.period")}</label>
+                          <input
+                            value={experience.period || ""}
+                            onChange={(e) => {
+                              const newItems = [...(block.experiences || [])];
+                              newItems[index] = { ...experience, period: e.target.value };
+                              handleFieldChange("experiences", newItems);
+                            }}
+                            className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                            placeholder={t("dashboard.editor.blockItem.experience.periodPlaceholder")}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.experience.location")}</label>
+                          <input
+                            value={experience.location || ""}
+                            onChange={(e) => {
+                              const newItems = [...(block.experiences || [])];
+                              newItems[index] = { ...experience, location: e.target.value };
+                              handleFieldChange("experiences", newItems);
+                            }}
+                            className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs"
+                            placeholder={t("dashboard.editor.blockItem.experience.locationPlaceholder")}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-gray-500 uppercase font-bold">{t("dashboard.editor.blockItem.experience.description")}</label>
+                        <textarea
+                          value={experience.description || ""}
+                          onChange={(e) => {
+                            const newItems = [...(block.experiences || [])];
+                            newItems[index] = { ...experience, description: e.target.value };
+                            handleFieldChange("experiences", newItems);
+                          }}
+                          className="w-full bg-white rounded border border-gray-200 px-2 py-1 text-xs min-h-[70px]"
+                          placeholder={t("dashboard.editor.blockItem.experience.descriptionPlaceholder")}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={() => {
+                      const newItems = [...(block.experiences || [])];
+                      newItems.push({
+                        id: makeId(),
+                        role: t("dashboard.editor.blockItem.experience.defaultRole"),
+                        company: t("dashboard.editor.blockItem.experience.defaultCompany"),
+                        period: t("dashboard.editor.blockItem.experience.defaultPeriod"),
+                        location: t("dashboard.editor.blockItem.experience.defaultLocation"),
+                        description: t("dashboard.editor.blockItem.experience.defaultDescription")
+                      });
+                      handleFieldChange("experiences", newItems);
+                    }}
+                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                  >
+                    <PlusIcon />
+                    {t("dashboard.editor.blockItem.experience.addExperience")}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {block.type === "qrcode" && (
               <div className="space-y-4 pt-3">
                 <div>
@@ -2537,7 +2668,7 @@ const BlockItem = memo(({
               <PortfolioBlockConfig block={block} onChange={handleFieldChange} bioId={bio?.id} />
             )}
 
-            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar', 'whatsapp'].includes(block.type) && (
+            {!['heading', 'text', 'button', 'socials', 'divider', 'qrcode', 'image', 'button_grid', 'video', 'map', 'event', 'form', 'portfolio', 'instagram', 'youtube', 'blog', 'product', 'featured', 'affiliate', 'spotify', 'marketing', 'calendar', 'whatsapp', 'experience'].includes(block.type) && (
               <div className="pt-2 border-t border-gray-50 mt-3">
                 <label className="text-xs font-medium text-gray-700 mb-2 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
                 <div className="flex bg-gray-100 p-1 rounded-lg">
@@ -2558,10 +2689,11 @@ const BlockItem = memo(({
             )}
 
             {/* Container Effects - Available for ALL block types */}
-            <div className="space-y-3 pt-4 mt-4 border-t border-gray-200">
-              <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
-                Container Effects
-              </div>
+            {block.type !== "experience" && (
+              <div className="space-y-3 pt-4 mt-4 border-t border-gray-200">
+                <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                  Container Effects
+                </div>
 
               {/* Block Background */}
               <ColorPicker
@@ -2705,7 +2837,8 @@ const BlockItem = memo(({
                   </div>
                 )}
               </div>
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

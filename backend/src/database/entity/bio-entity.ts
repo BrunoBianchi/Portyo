@@ -10,6 +10,7 @@ import { BookingSettingsEntity } from "./booking-settings-entity";
 import { BookingEntity } from "./booking-entity";
 import { FormEntity } from "./form-entity";
 import { PortfolioItemEntity } from "./portfolio-item-entity";
+import { BioVerificationRequestEntity } from "./bio-verification-request-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -153,6 +154,9 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "boolean", default: false })
     verified: boolean = false;
 
+    @Column({ type: "varchar", default: "none" })
+    verificationStatus: string = "none";
+
     // Parallax & Floating Effects
     @Column({ type: "boolean", default: false })
     enableParallax: boolean = false;
@@ -235,4 +239,7 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => PortfolioItemEntity, (item) => item.bio)
     portfolioItems!: PortfolioItemEntity[];
+
+    @OneToMany(() => BioVerificationRequestEntity, (request) => request.bio)
+    verificationRequests!: BioVerificationRequestEntity[];
 }

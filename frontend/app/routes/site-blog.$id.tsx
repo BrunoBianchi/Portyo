@@ -124,9 +124,9 @@ export default function SiteBlogPostPage() {
                 {/* Editorial Header */}
                 <header className="mb-12 text-center">
                     <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-gray-400 uppercase mb-6">
-                        <span>{formattedDate}</span>
+                        <span suppressHydrationWarning>{formattedDate}</span>
                         <span>•</span>
-                        <span>{readTime} min read</span>
+                        <span suppressHydrationWarning>{readTime} min read</span>
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">

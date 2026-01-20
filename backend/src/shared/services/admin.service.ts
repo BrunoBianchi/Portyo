@@ -321,6 +321,10 @@ export const updateBio = async (bioId: string, updates: Partial<BioEntity>): Pro
         }
     }
 
+    if (typeof updates.verified === "boolean" && !updates.verificationStatus) {
+        updates.verificationStatus = updates.verified ? "verified" : "none";
+    }
+
     Object.assign(bio, updates);
     return await bioRepository.save(bio);
 };

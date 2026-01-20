@@ -238,6 +238,7 @@ import { format } from "date-fns";
 
 function ProductsDropdown() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const buttonId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
@@ -299,13 +300,6 @@ function ProductsDropdown() {
     }, 120);
   }
 
-  const subMenuItems = [
-    { title: "Overview", href: "/" },
-    { title: "Modifiers", href: "/" },
-    { title: "Columns", href: "/" },
-    { title: "Layout", href: "/" },
-  ];
-
   return (
     <div
       ref={wrapperRef}
@@ -331,7 +325,14 @@ function ProductsDropdown() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(event) => {
+          if (!open) {
+            navigate(withLang("/blog"));
+            return;
+          }
+          setOpen((v) => !v);
+          event.preventDefault();
+        }}
         className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
       >
         {t("nav.blog")}
@@ -349,13 +350,13 @@ function ProductsDropdown() {
             aria-labelledby={buttonId}
             onPointerEnter={() => clearCloseTimer()}
             onPointerLeave={() => scheduleClose()}
-            className="w-[800px] rounded-2xl border border-border bg-surface shadow-lg overflow-hidden"
+            className="w-[640px] rounded-xl border border-border/70 bg-surface shadow-[0_12px_40px_rgba(15,23,42,0.08)] overflow-hidden"
           >
-            <div className="grid grid-cols-4 gap-6 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_0.8fr] gap-6 p-6">
               {/* Column 1: Latest Posts */}
               <div>
-                <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
-                  Latest Posts <span>🤩</span>
+                <div className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
+                  Latest posts
                 </div>
                 <div className="flex flex-col gap-3">
                   {latestPosts.length > 0 ? latestPosts.map(post => (
@@ -368,62 +369,27 @@ function ProductsDropdown() {
                       </div>
                     </Link>
                   )) : (
-                    <div className="text-sm text-text-muted italic">No posts yet</div>
+                    <div className="text-sm text-text-muted">No posts yet</div>
                   )}
                 </div>
               </div>
 
-              {/* Column 2: Sub Menu Title */}
-              <div>
-                <div className="text-sm font-semibold text-text-main mb-4">
-                  Sub Menu Title
+              {/* Column 2: Explore */}
+              <div className="flex flex-col gap-4">
+                <div className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  Explore
                 </div>
-                <ul className="space-y-3">
-                  {subMenuItems.map((item) => (
-                    <li key={item.title}>
-                      <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Column 3: What's new */}
-              <div>
-                <div className="text-sm font-semibold text-text-main mb-4 flex items-center gap-2">
-                  What's new <span>🎉</span>
-                </div>
-                <div className="text-sm text-text-muted">
-                  <div className="h-20 rounded-lg bg-surface-muted/50 border border-border/50"></div>
+                <div className="rounded-xl border border-border/60 bg-surface-muted/40 p-4">
+                  <p className="text-sm text-text-main font-medium mb-2">All posts, one place.</p>
+                  <p className="text-xs text-text-muted mb-4">Browse the full archive and the newest updates.</p>
+                  <Link
+                    to={withLang("/blog")}
+                    className="inline-flex items-center justify-center rounded-lg border border-border/70 bg-white px-3 py-2 text-xs font-semibold text-text-main transition-colors hover:border-border hover:bg-surface"
+                  >
+                    View all posts
+                  </Link>
                 </div>
               </div>
-
-              {/* Column 4: Sub Menu Title */}
-              <div>
-                <div className="text-sm font-semibold text-text-main mb-4">
-                  Sub Menu Title
-                </div>
-                <ul className="space-y-3">
-                  {subMenuItems.map((item) => (
-                    <li key={item.title}>
-                      <a href={item.href} className="text-sm text-text-muted hover:text-primary transition-colors">
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-border bg-surface-muted/30 p-4 flex items-center justify-between">
-              <div className="text-sm font-medium text-text-main">
-                Stay up to date!
-              </div>
-              <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black/80 transition-colors">
-                Subscribe
-              </button>
             </div>
           </div>
         </div>
@@ -841,7 +807,7 @@ export default function Navbar() {
             <div className="flex flex-col gap-4">
               <div className="text-sm font-bold text-text-muted uppercase tracking-wider">{t("nav.menu")}</div>
               <Link
-                to={withLang('/site-blog')}
+                to={withLang('/blog')}
                 className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

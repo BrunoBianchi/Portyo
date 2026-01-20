@@ -1100,6 +1100,12 @@
       "featuredTitle": "Glow lipstick",
       "affiliateTitle": "Copy my coupon code",
       "portfolioTitle": "Portfolio",
+      "experienceTitle": "Experience",
+      "experienceRole": "Senior Product Designer",
+      "experienceCompany": "Portyo Studio",
+      "experiencePeriod": "2022 — Present",
+      "experienceLocation": "Remote",
+      "experienceDescription": "Led product design initiatives across web and mobile experiences.",
       "whatsappTitle": "Chat on WhatsApp",
       "whatsappMessage": "Hi! I'd like to get in touch."
     },
@@ -1432,6 +1438,9 @@
         "formSelected": "Form selected",
         "noFormSelected": "No form selected",
         "portfolioFallback": "Portfolio",
+        "experienceCount_one": "{{count}} experience",
+        "experienceCount_other": "{{count}} experiences",
+        "noExperience": "No experience items",
         "slotConnected": "Slot connected",
         "noSlotSelected": "No slot selected",
         "noWhatsappNumber": "No WhatsApp number"
@@ -1463,6 +1472,27 @@
         "defaultTitle": "Portfolio",
         "placeholder": "Portfolio"
       },
+      "experience": {
+        "sectionTitle": "Section Title",
+        "sectionPlaceholder": "Experience",
+        "items": "Experiences",
+        "role": "Role",
+        "company": "Company",
+        "period": "Period",
+        "location": "Location",
+        "description": "Description",
+        "rolePlaceholder": "Senior Designer",
+        "companyPlaceholder": "Company name",
+        "periodPlaceholder": "2022 — Present",
+        "locationPlaceholder": "Remote",
+        "descriptionPlaceholder": "Describe your responsibilities and achievements...",
+        "defaultRole": "Product Designer",
+        "defaultCompany": "Acme Inc",
+        "defaultPeriod": "2020 — 2022",
+        "defaultLocation": "New York, NY",
+        "defaultDescription": "Designed and shipped key product features.",
+        "addExperience": "Add Experience"
+      },
       "blockTypes": {
         "heading": "Heading",
         "text": "Text",
@@ -1485,7 +1515,8 @@
         "map": "Map",
         "form": "Form",
         "portfolio": "Portfolio",
-        "marketing": "Marketing"
+        "marketing": "Marketing",
+        "experience": "Experience"
       }
     },
     "subscribeThanks": "Thanks for subscribing!",
@@ -1522,8 +1553,11 @@
       "profile": "Profile",
       "imageShape": "Image Shape",
       "usernameColor": "Username Color",
+      "profileDescription": "Profile description",
+      "profileDescriptionPlaceholder": "Write a short description to appear below your @",
       "verificationStatus": "Verification Status",
       "verified": "Verified",
+      "verificationPending": "Pending",
       "getVerified": "Get Verified",
       "features": "Features",
       "emailSignup": "Email Signup",
@@ -1586,7 +1620,8 @@
       "Music": "Music",
       "Blog": "Blog",
       "Marketing": "Marketing",
-      "Layout": "Layout"
+      "Layout": "Layout",
+      "Professional": "Professional"
     },
     "palette": {
       "heading": "Heading",
@@ -1611,7 +1646,8 @@
       "divider": "Divider",
       "form": "Form",
       "portfolio": "Portfolio",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "experience": "Experience"
     },
     "layout": {
       "title": "Layout",
@@ -1634,6 +1670,23 @@
       "cancel": "Cancel",
       "creating": "Creating...",
       "create": "Create QR"
+    },
+    "verificationModal": {
+      "title": "Request Verification",
+      "subtitle": "Tell us about your bio so we can verify it faster.",
+      "name": "Full name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+55 11 99999-9999",
+      "description": "Bio description",
+      "descriptionPlaceholder": "Explain what your bio is about and who you are.",
+      "submit": "Send request",
+      "submitting": "Sending...",
+      "cancel": "Cancel",
+      "close": "Close",
+      "error": "Could not submit your request. Please try again."
     }
   }
 }

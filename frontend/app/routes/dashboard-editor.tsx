@@ -815,6 +815,7 @@ export default function DashboardEditor() {
   const [cardBlur, setCardBlur] = useState(10); // Standard blur amount
 
   const [usernameColor, setUsernameColor] = useState("#111827");
+  const [profileDescription, setProfileDescription] = useState("");
   const [imageStyle, setImageStyle] = useState("circle");
   const [enableSubscribeButton, setEnableSubscribeButton] = useState(false);
   const [removeBranding, setRemoveBranding] = useState(false);
@@ -835,6 +836,15 @@ export default function DashboardEditor() {
   // QR Code State
   const [availableQrCodes, setAvailableQrCodes] = useState<QrCode[]>([]);
   const [showCreateQrModal, setShowCreateQrModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [isSubmittingVerification, setIsSubmittingVerification] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationForm, setVerificationForm] = useState({
+    name: user?.fullname || "",
+    email: user?.email || "",
+    phone: "",
+    description: ""
+  });
   const [creatingQrForBlockId, setCreatingQrForBlockId] = useState<string | null>(null);
   const [newQrValue, setNewQrValue] = useState("");
   const [isCreatingQr, setIsCreatingQr] = useState(false);
@@ -1069,6 +1079,7 @@ export default function DashboardEditor() {
       cardOpacity,
       cardBlur,
       usernameColor,
+      description: profileDescription,
       imageStyle,
       enableSubscribeButton,
       removeBranding,
@@ -1238,6 +1249,7 @@ export default function DashboardEditor() {
       setCardBlur(bio.cardBlur !== undefined ? bio.cardBlur : 10);
 
       setUsernameColor(bio.usernameColor || "#111827");
+      setProfileDescription(bio.description || "");
       setImageStyle(bio.imageStyle || "circle");
       setImageStyle(bio.imageStyle || "circle");
       setFont(bio.font || 'Inter');
@@ -1283,6 +1295,41 @@ export default function DashboardEditor() {
       console.error("Failed to create QR code", error);
     } finally {
       setIsCreatingQr(false);
+    }
+  };
+
+  useEffect(() => {
+    setVerificationForm({
+      name: user?.fullname || "",
+      email: user?.email || "",
+      phone: "",
+      description: ""
+    });
+  }, [user?.fullname, user?.email, bio?.id]);
+
+  const handleSubmitVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bio?.id) return;
+
+    setIsSubmittingVerification(true);
+    setVerificationError(null);
+
+    try {
+      const payload = {
+        name: verificationForm.name.trim(),
+        email: verificationForm.email.trim(),
+        phone: verificationForm.phone.trim(),
+        description: verificationForm.description.trim()
+      };
+
+      await api.post(`/bio/verification-request/${bio.id}`, payload);
+      await getBios();
+      setShowVerificationModal(false);
+    } catch (error) {
+      console.error("Failed to submit verification request", error);
+      setVerificationError(t("dashboard.editor.verificationModal.error"));
+    } finally {
+      setIsSubmittingVerification(false);
     }
   };
 
@@ -1346,7 +1393,17 @@ export default function DashboardEditor() {
         const newBlock: BioBlock = {
           id: makeId(),
           type: dragItem.type,
-          title: dragItem.type === "button" ? t("dashboard.editor.defaults.newButton") : dragItem.type === "heading" ? t("dashboard.editor.defaults.newHeading") : dragItem.type === "video" ? t("dashboard.editor.defaults.newVideo") : dragItem.type === "whatsapp" ? t("dashboard.editor.defaults.whatsappTitle") : t("dashboard.editor.defaults.newBlock"),
+          title: dragItem.type === "button"
+            ? t("dashboard.editor.defaults.newButton")
+            : dragItem.type === "heading"
+              ? t("dashboard.editor.defaults.newHeading")
+              : dragItem.type === "video"
+                ? t("dashboard.editor.defaults.newVideo")
+                : dragItem.type === "whatsapp"
+                  ? t("dashboard.editor.defaults.whatsappTitle")
+                  : dragItem.type === "experience"
+                    ? t("dashboard.editor.defaults.experienceTitle")
+                    : t("dashboard.editor.defaults.newBlock"),
           body: dragItem.type === "text" ? t("dashboard.editor.defaults.textBody") : undefined,
           href: dragItem.type === "button" ? "https://" : undefined,
           accent: dragItem.type === "button" ? "#111827" : dragItem.type === "whatsapp" ? "#25D366" : undefined,
@@ -1403,6 +1460,19 @@ export default function DashboardEditor() {
           affiliateImage: dragItem.type === "affiliate" ? "https://placehold.co/300x300" : undefined,
           affiliateUrl: dragItem.type === "affiliate" ? "#" : undefined,
           portfolioTitle: dragItem.type === "portfolio" ? t("dashboard.editor.defaults.portfolioTitle") : undefined,
+          experienceTitle: dragItem.type === "experience" ? t("dashboard.editor.defaults.experienceTitle") : undefined,
+          experiences: dragItem.type === "experience"
+            ? [
+              {
+                id: makeId(),
+                role: t("dashboard.editor.defaults.experienceRole"),
+                company: t("dashboard.editor.defaults.experienceCompany"),
+                period: t("dashboard.editor.defaults.experiencePeriod"),
+                location: t("dashboard.editor.defaults.experienceLocation"),
+                description: t("dashboard.editor.defaults.experienceDescription")
+              }
+            ]
+            : undefined,
         };
         let targetIndex = typeof index === "number" ? index : next.length;
         const lockedIndices = next
@@ -1435,8 +1505,8 @@ export default function DashboardEditor() {
     setIsSaving(true);
     setStatus("idle");
     try {
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle }, window.location.origin);
-      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle });
+      const html = blocksToHtml(blocks, user, { ...bio, description: profileDescription, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle }, window.location.origin);
+      await updateBio(bio.id, { html, blocks, description: profileDescription, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
     } catch (error) {
@@ -1465,6 +1535,7 @@ export default function DashboardEditor() {
       cardOpacity,
       cardBlur,
       usernameColor,
+      description: profileDescription,
       imageStyle,
       enableSubscribeButton,
       removeBranding,
@@ -1477,6 +1548,7 @@ export default function DashboardEditor() {
     const html = blocksToHtml(blocks, user, tempBio, window.location.origin);
     updateBio(bio.id, {
       html,
+      description: profileDescription,
       bgType: nextBgType,
       bgColor: nextBgColor,
       bgSecondaryColor: nextBgSecondary,
@@ -1587,10 +1659,64 @@ export default function DashboardEditor() {
       html,
       htmlBase64: null
     };
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, font, customFontUrl, customFontName, buttonStyle]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, profileDescription, imageStyle, enableSubscribeButton, font, customFontUrl, customFontName, buttonStyle]);
 
   const [debouncedHtml, setDebouncedHtml] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!bio?.id) return;
+    const current = bio.description || "";
+    if (profileDescription === current) return;
+
+    const timer = setTimeout(() => {
+      const html = blocksToHtml(blocks, user, {
+        ...bio,
+        description: profileDescription,
+        bgType,
+        bgColor,
+        bgSecondaryColor,
+        bgImage,
+        bgVideo,
+        cardStyle,
+        cardBackgroundColor,
+        cardOpacity,
+        cardBlur,
+        usernameColor,
+        imageStyle,
+        enableSubscribeButton,
+        removeBranding,
+        font,
+        customFontUrl: customFontUrl || undefined,
+        customFontName: customFontName || undefined,
+        buttonStyle
+      }, window.location.origin);
+
+      updateBio(bio.id, {
+        description: profileDescription,
+        html,
+        bgType,
+        bgColor,
+        bgSecondaryColor,
+        bgImage,
+        bgVideo,
+        cardStyle,
+        cardBackgroundColor,
+        cardOpacity,
+        cardBlur,
+        usernameColor,
+        imageStyle,
+        enableSubscribeButton,
+        removeBranding,
+        font,
+        customFontUrl: customFontUrl || undefined,
+        customFontName: customFontName || undefined,
+        buttonStyle
+      }).catch(console.error);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [bio, blocks, user, profileDescription, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl, customFontName, buttonStyle, updateBio]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -2128,7 +2254,7 @@ export default function DashboardEditor() {
                             <span className="text-sm font-medium text-gray-700">Enable Parallax</span>
                             <span className="text-[10px] text-gray-400">Adds depth effect on scroll</span>
                           </div>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.enableParallax ? 'bg-indigo-500' : 'bg-gray-300'}`}>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.enableParallax ? 'bg-black' : 'bg-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={bio?.enableParallax || false}
@@ -2156,7 +2282,7 @@ export default function DashboardEditor() {
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxIntensity: parseInt(e.target.value) });
                               }}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                             />
                           </div>
                         )}
@@ -2176,7 +2302,7 @@ export default function DashboardEditor() {
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxDepth: parseInt(e.target.value) });
                               }}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                             />
                           </div>
                         )}
@@ -2190,7 +2316,7 @@ export default function DashboardEditor() {
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxAxis: e.target.value as any });
                               }}
-                              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/20"
                             >
                               <option value="y">Vertical</option>
                               <option value="x">Horizontal</option>
@@ -2442,7 +2568,7 @@ export default function DashboardEditor() {
                             <span className="text-sm font-medium text-gray-700">Floating Elements</span>
                             <span className="text-[10px] text-gray-400">Decorative floating shapes</span>
                           </div>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.floatingElements ? 'bg-indigo-500' : 'bg-gray-300'}`}>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.floatingElements ? 'bg-black' : 'bg-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={bio?.floatingElements || false}
@@ -2464,7 +2590,7 @@ export default function DashboardEditor() {
                               <select
                                 value={bio?.floatingElementsType || 'circles'}
                                 onChange={(e) => updateBio(bio.id, { floatingElementsType: e.target.value })}
-                                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 outline-none focus:border-black focus:ring-1 focus:ring-black/20"
                               >
                                 <optgroup label="Shapes">
                                   <option value="circles">Circles</option>
@@ -2498,7 +2624,7 @@ export default function DashboardEditor() {
                                   placeholder="😎"
                                   value={bio?.customFloatingElementText || ''}
                                   onChange={(e) => updateBio(bio.id, { customFloatingElementText: e.target.value })}
-                                  className="w-full text-center text-xl p-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                  className="w-full text-center text-xl p-2 rounded-lg border border-gray-200 focus:border-black focus:ring-1 focus:ring-black/20"
                                 />
                               </div>
                             )}
@@ -2513,7 +2639,7 @@ export default function DashboardEditor() {
                                     placeholder="https://..."
                                     value={bio?.customFloatingElementImage || ''}
                                     onChange={(e) => updateBio(bio.id, { customFloatingElementImage: e.target.value })}
-                                    className="flex-1 text-xs p-2 rounded-lg border border-gray-200 focus:border-indigo-500"
+                                    className="flex-1 text-xs p-2 rounded-lg border border-gray-200 focus:border-black"
                                   />
                                   <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition-colors">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
@@ -2547,7 +2673,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsDensity: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                               />
                             </div>
 
@@ -2564,7 +2690,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsSize: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                               />
                             </div>
                             <div>
@@ -2580,7 +2706,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsSpeed: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                               />
                             </div>
                             <div>
@@ -2596,7 +2722,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsOpacity: parseInt(e.target.value) / 100 });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                               />
                             </div>
                             <div>
@@ -2612,7 +2738,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsBlur: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
                               />
                             </div>
                           </div>
@@ -2778,21 +2904,44 @@ export default function DashboardEditor() {
                           />
                         </div>
 
+                        <div className="mt-4">
+                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.profileDescription")}</label>
+                          <textarea
+                            rows={3}
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
+                            placeholder={t("dashboard.editor.settings.profileDescriptionPlaceholder")}
+                            value={profileDescription}
+                            onChange={(e) => setProfileDescription(e.target.value)}
+                          />
+                        </div>
+
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.verificationStatus")}</label>
                           <button
                             onClick={() => {
-                              if (bio?.id) updateBio(bio.id, { verified: !bio.verified });
+                              const status = bio?.verified ? "verified" : (bio?.verificationStatus || "none");
+                              if (status === "none") {
+                                setVerificationError(null);
+                                setShowVerificationModal(true);
+                              }
                             }}
+                            disabled={bio?.verified || bio?.verificationStatus === "pending"}
                             className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${bio?.verified
-                              ? 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
-                              : 'bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/5 hover:-translate-y-0.5'
+                              ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                              : bio?.verificationStatus === "pending"
+                                ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-default'
+                                : 'bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/5 hover:-translate-y-0.5'
                               }`}
                           >
                             {bio?.verified ? (
                               <>
                                 <BadgeCheck size={16} fill="#3b82f6" className="text-white" />
                                 <span>{t("dashboard.editor.settings.verified")}</span>
+                              </>
+                            ) : bio?.verificationStatus === "pending" ? (
+                              <>
+                                <BadgeCheck size={16} className="text-gray-400" />
+                                <span>{t("dashboard.editor.settings.verificationPending")}</span>
                               </>
                             ) : (
                               <>
@@ -2823,7 +2972,7 @@ export default function DashboardEditor() {
                             <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.emailSignup")}</span>
                             {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${enableSubscribeButton ? 'bg-green-500' : 'bg-gray-300'}`}>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${enableSubscribeButton ? 'bg-black' : 'bg-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={enableSubscribeButton}
@@ -2847,7 +2996,7 @@ export default function DashboardEditor() {
                             <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.removeBranding")}</span>
                             {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-green-500' : 'bg-gray-300'}`}>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-black' : 'bg-gray-300'}`}>
                             <input
                               type="checkbox"
                               checked={removeBranding}
@@ -3039,6 +3188,101 @@ export default function DashboardEditor() {
                   <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{t("dashboard.editor.qrModal.cancel")}</button>
                   <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
                     {isCreatingQr ? t("dashboard.editor.qrModal.creating") : t("dashboard.editor.qrModal.create")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        showVerificationModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">{t("dashboard.editor.verificationModal.title")}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{t("dashboard.editor.verificationModal.subtitle")}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowVerificationModal(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label={t("dashboard.editor.verificationModal.close")}
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitVerification} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.name")}</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                    placeholder={t("dashboard.editor.verificationModal.namePlaceholder")}
+                    value={verificationForm.name}
+                    onChange={(e) => setVerificationForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.email")}</label>
+                    <input
+                      type="email"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                      placeholder={t("dashboard.editor.verificationModal.emailPlaceholder")}
+                      value={verificationForm.email}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.phone")}</label>
+                    <input
+                      type="tel"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                      placeholder={t("dashboard.editor.verificationModal.phonePlaceholder")}
+                      value={verificationForm.phone}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.description")}</label>
+                  <textarea
+                    required
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all resize-none"
+                    placeholder={t("dashboard.editor.verificationModal.descriptionPlaceholder")}
+                    value={verificationForm.description}
+                    onChange={(e) => setVerificationForm(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+
+                {verificationError && (
+                  <div className="text-sm text-red-500">{verificationError}</div>
+                )}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowVerificationModal(false)}
+                    className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    {t("dashboard.editor.verificationModal.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingVerification}
+                    className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  >
+                    {isSubmittingVerification ? t("dashboard.editor.verificationModal.submitting") : t("dashboard.editor.verificationModal.submit")}
                   </button>
                 </div>
               </form>

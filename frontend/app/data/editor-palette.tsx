@@ -173,5 +173,11 @@ export const getPalette = (t: (key: string) => string): PaletteItem[] => [
     category: "Content",
     icon: <ImageIcon width="24" height="24" />
   },
+  {
+    type: "experience",
+    label: t("dashboard.editor.palette.experience"),
+    category: "Professional",
+    icon: <TrendingUpIcon width="24" height="24" />
+  },
 
 ];
