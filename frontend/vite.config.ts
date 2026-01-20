@@ -6,6 +6,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
 
 const require = createRequire(import.meta.url);
+let schedulerTracingPath: string | undefined;
+
+try {
+  schedulerTracingPath = require.resolve("scheduler/tracing");
+} catch {
+  schedulerTracingPath = undefined;
+}
 
 export default defineConfig({
   plugins: [
@@ -19,7 +26,7 @@ export default defineConfig({
     dedupe: ["react", "react-dom", "scheduler"],
     alias: {
       scheduler: require.resolve("scheduler"),
-      "scheduler/tracing": require.resolve("scheduler/tracing"),
+      ...(schedulerTracingPath ? { "scheduler/tracing": schedulerTracingPath } : {}),
     },
   },
   optimizeDeps: {
