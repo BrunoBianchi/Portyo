@@ -393,6 +393,7 @@ export const useBioScripts = (bio: any) => {
 
         // Floating elements (decorative)
         const floatingEnabled = !!bio.floatingElements && !prefersReducedMotion;
+        const floatingType = bio.floatingElementsType || 'circles'; // circles, squares, hearts, fire, sparkles, music, etc.
         const floatingDensity = clamp(bio.floatingElementsDensity ?? 12, 4, 40);
         const floatingSize = clamp(bio.floatingElementsSize ?? 24, 8, 80);
         const floatingSpeed = clamp(bio.floatingElementsSpeed ?? 12, 4, 40);
@@ -406,29 +407,51 @@ export const useBioScripts = (bio: any) => {
         if (!floatingEnabled) {
             existingContainer?.remove();
         } else {
-            const configKey = `${floatingDensity}-${floatingSize}-${floatingSpeed}-${floatingOpacity}-${floatingBlur}`;
+            const configKey = `emoji-${floatingType}-${floatingDensity}-${floatingSize}-${floatingSpeed}-${floatingOpacity}-${floatingBlur}`;
             if (existingContainer && existingContainer.getAttribute('data-config') !== configKey) {
                 existingContainer.remove();
             }
 
-            if (!document.getElementById('portyo-floating-style')) {
+            // Check for style tag and update if version mismatch
+            const styleId = 'portyo-floating-style';
+            const styleVersion = '2'; // Increment to force update
+            const existingStyle = document.getElementById(styleId);
+            
+            if (!existingStyle || existingStyle.getAttribute('data-version') !== styleVersion) {
+                existingStyle?.remove();
+                
                 const style = document.createElement('style');
-                style.id = 'portyo-floating-style';
+                style.id = styleId;
+                style.setAttribute('data-version', styleVersion);
                 style.textContent = `
                   @keyframes portyoFloatUp {
-                    0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+                    0% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); opacity: 0; }
                     20% { opacity: 1; }
-                    100% { transform: translate3d(0, -140vh, 0) scale(0.8); opacity: 0; }
+                    100% { transform: translate3d(var(--float-x, 0px), -120vh, 0) scale(0.6) rotate(var(--float-r, 360deg)); opacity: 0; }
                   }
                   .portyo-floating-item {
                     position: absolute;
-                    border-radius: 999px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 100%;
+                    line-height: 1;
+                    user-select: none;
+                    pointer-events: none;
                     filter: blur(var(--float-blur, 0px));
                     animation: portyoFloatUp var(--float-speed, 12s) linear infinite;
                     opacity: var(--float-opacity, 0.35);
                     will-change: transform, opacity;
+                    z-index: 10;
                   }
-                  .portyo-floating-item.square { border-radius: 12px; }
+                  .portyo-floating-item.shape-circle {
+                    border-radius: 999px;
+                    background-color: var(--float-color);
+                  }
+                  .portyo-floating-item.shape-square {
+                    border-radius: 4px;
+                    background-color: var(--float-color);
+                  }
                 `;
                 document.head.appendChild(style);
             }
@@ -436,12 +459,38 @@ export const useBioScripts = (bio: any) => {
             if (!document.getElementById('portyo-floating-elements')) {
                 const container = document.createElement('div');
                 container.id = 'portyo-floating-elements';
-                container.setAttribute('data-config', `${floatingDensity}-${floatingSize}-${floatingSpeed}-${floatingOpacity}-${floatingBlur}`);
+                container.setAttribute('data-config', configKey);
                 container.style.position = 'fixed';
                 container.style.inset = '0';
                 container.style.overflow = 'hidden';
                 container.style.pointerEvents = 'none';
                 container.style.zIndex = '2';
+
+                // Determine emoji or shape
+                let emoji = '';
+                let isGeometric = false;
+                
+                switch(floatingType) {
+                    case 'hearts': emoji = '❤️'; break;
+                    case 'fire': emoji = '🔥'; break;
+                    case 'sparkles': emoji = '✨'; break;
+                    case 'music': emoji = '🎵'; break;
+                    case 'leaves': emoji = '🍃'; break;
+                    case 'diamonds': emoji = '💎'; break;
+                    case 'stars': emoji = '⭐'; break;
+                    case 'bubbles': emoji = '🫧'; break;
+                    case 'petals': emoji = '🌸'; break;
+                    case 'confetti': emoji = '🎊'; break;
+                    case 'clouds': emoji = '☁️'; break;
+                    case 'ghosts': emoji = '👻'; break;
+                    case 'money': emoji = '💸'; break;
+                    case 'aliens': emoji = '👽'; break;
+                    case 'skulls': emoji = '💀'; break;
+                    case 'drops': emoji = '💧'; break;
+                    case 'custom-emoji': emoji = bio.customFloatingElementText || '😎'; break;
+                    case 'squares': isGeometric = true; break;
+                    case 'circles': default: isGeometric = bio.floatingElementsType === 'circles' || !bio.floatingElementsType; break;
+                }
 
                 for (let i = 0; i < floatingDensity; i += 1) {
                     const item = document.createElement('div');
@@ -449,19 +498,45 @@ export const useBioScripts = (bio: any) => {
                     const left = Math.random() * 100;
                     const delay = -(Math.random() * floatingSpeed);
                     const speed = floatingSpeed * (0.8 + Math.random() * 0.8);
-                    const hue = Math.floor(200 + Math.random() * 100);
-                    const isSquare = Math.random() > 0.7;
+                    
+                    const hue = Math.floor(Math.random() * 360);
+                    const definedColor = bio.floatingElementsColor;
+                    const color = definedColor || `hsla(${hue}, 70%, 70%, ${floatingOpacity})`;
+                    
+                    const rotation = Math.random() * 360;
+                    const sway = (Math.random() - 0.5) * 100;
 
-                    item.className = `portyo-floating-item${isSquare ? ' square' : ''}`;
+                    if (floatingType === 'custom-image' && bio.customFloatingElementImage) {
+                         item.className = 'portyo-floating-item';
+                         item.style.backgroundImage = `url(${bio.customFloatingElementImage})`;
+                         item.style.backgroundSize = 'contain';
+                         item.style.backgroundRepeat = 'no-repeat';
+                         item.style.backgroundPosition = 'center';
+                         // Remove background color for images usually, or keep it if transparent
+                         item.style.backgroundColor = 'transparent';
+                    } else if (isGeometric) {
+                        item.className = `portyo-floating-item ${floatingType === 'squares' ? 'shape-square' : 'shape-circle'}`;
+                        item.style.background = color;
+                    } else {
+                        item.className = 'portyo-floating-item';
+                        item.textContent = emoji;
+                        item.style.color = color; 
+                    }
+
                     item.style.width = `${size}px`;
                     item.style.height = `${size}px`;
+                    item.style.fontSize = `${size}px`; // ensure emoji scales
                     item.style.left = `${left}%`;
                     item.style.bottom = `${-size - Math.random() * 200}px`;
-                    item.style.background = `hsla(${hue}, 70%, 70%, ${floatingOpacity})`;
+                    
+                    item.style.setProperty('--float-color', color);
                     item.style.animationDelay = `${delay}s`;
                     item.style.setProperty('--float-speed', `${speed}s`);
                     item.style.setProperty('--float-opacity', `${floatingOpacity}`);
                     item.style.setProperty('--float-blur', `${floatingBlur}px`);
+                    item.style.setProperty('--float-x', `${sway}px`);
+                    item.style.setProperty('--float-r', `${rotation}deg`);
+                    
                     container.appendChild(item);
                 }
 

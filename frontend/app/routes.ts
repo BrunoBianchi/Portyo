@@ -58,6 +58,9 @@ const baseRoutes: RouteConfig = [
     { path: "blog", file: "routes/blog.tsx" },
     { path: "blog/:id", file: "routes/site-blog.$id.tsx" },
     { path: "blog/post/:postId", file: "routes/blog.$postId.tsx" },
+    { path: "blog", file: "routes/blog.tsx" },
+    { path: "blog/:id", file: "routes/site-blog.$id.tsx" },
+    { path: "blog/post/:postId", file: "routes/blog.$postId.tsx" },
     { path: "shop", file: "routes/home.tsx", id: "home-shop" },
     { path: "payment-success", file: "routes/payment-success.tsx" },
     { path: "p/:username", file: "routes/p.$username.tsx" },
@@ -97,9 +100,6 @@ const nonLocalizedRoutes: RouteConfig = [
     { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
     { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
     { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
-    { path: '/blog', file: "routes/blog.tsx" },
-    { path: '/blog/:id', file: "routes/site-blog.$id.tsx" },
-    { path: '/blog/post/:postId', file: "routes/blog.$postId.tsx" },
     { path: '/claim-bio', file: "routes/claim-bio.tsx" }
 ];
 

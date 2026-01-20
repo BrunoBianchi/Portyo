@@ -47,5 +47,9 @@
   "resetPassword": {
     "title": "Reset Password | Portyo",
     "description": "Create a new password for your Portyo account"
+  },
+  "themes": {
+    "title": "Themes | Portyo",
+    "description": "Browse and apply beautiful themes to your bio"
   }
 }

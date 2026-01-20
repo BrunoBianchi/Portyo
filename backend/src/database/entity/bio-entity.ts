@@ -193,6 +193,12 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "numeric", default: 0 })
     floatingElementsBlur: number = 0;
 
+    @Column({ type: "varchar", nullable: true })
+    customFloatingElementText: string | null = null;
+
+    @Column({ type: "varchar", nullable: true })
+    customFloatingElementImage: string | null = null;
+
 
 
     @ManyToOne(() => UserEntity, (user) => user.bios, { onDelete: "CASCADE" })

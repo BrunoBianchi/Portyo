@@ -74,7 +74,7 @@ export default function PortfolioDashboard() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio?.id) {
@@ -84,6 +84,7 @@ export default function PortfolioDashboard() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (isMobile) return;
 
         const hasSeenTour = window.localStorage.getItem("portyo:portfolio-tour-done");
         if (!hasSeenTour) {
@@ -95,7 +96,7 @@ export default function PortfolioDashboard() {
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, []);
+    }, [isMobile]);
 
     const portfolioTourSteps: Step[] = [
         {
@@ -353,7 +354,7 @@ export default function PortfolioDashboard() {
         <div className="p-6 max-w-7xl mx-auto">
             <Joyride
                 steps={portfolioTourSteps}
-                run={tourRun}
+                run={tourRun && !isMobile}
                 stepIndex={tourStepIndex}
                 continuous
                 showSkipButton

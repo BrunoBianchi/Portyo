@@ -8,12 +8,14 @@ import { useLocation, useNavigate } from "react-router";
 import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 import THEME_PRESETS, { type ThemePreset, type ThemeStyles } from "~/constants/theme-presets";
 
-export function meta({ }: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Themes | Portyo" },
-        { name: "description", content: "Browse and apply beautiful themes to your bio" },
+        { title: i18n.t("meta.themes.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.themes.description", { lng: lang }) },
     ];
 }
 
@@ -63,72 +65,73 @@ interface ApplyTargetModalProps {
 }
 
 function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPlan, isGuest }: PreviewModalProps) {
+    const { t } = useTranslation();
     if (!isOpen || !theme) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-            <div className="relative bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col md:flex-row">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col md:flex-row">
                 {/* Preview Section */}
-                <div className="flex-1 bg-gray-100 p-6 flex items-center justify-center min-h-[400px] relative">
+                <div className="flex-1 bg-gray-50 p-8 flex items-center justify-center min-h-[350px] relative">
                     {/* Phone Frame */}
-                    <div className="relative w-[280px] h-[560px] bg-black rounded-[3rem] p-3 shadow-2xl">
-                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-10" />
+                    <div className="relative w-[240px] h-[480px] bg-gray-900 rounded-[2.5rem] p-2.5 shadow-2xl">
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-full z-10" />
                         <div
-                            className="w-full h-full rounded-[2.5rem] overflow-hidden"
+                            className="w-full h-full rounded-[2rem] overflow-hidden"
                             style={{
                                 backgroundColor: theme.styles.bgColor
                             }}
                         >
                             {/* Mock Bio Preview */}
-                            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                            <div className="h-full flex flex-col items-center justify-center p-5 text-center">
                                 {/* Profile */}
                                 <div
-                                    className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 mb-4"
+                                    className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 mb-4"
                                     style={{ borderRadius: theme.styles.cardBorderRadius + 'px' }}
                                 />
                                 <h3
-                                    className="text-lg font-bold mb-2"
+                                    className="text-base font-bold mb-1.5"
                                     style={{
                                         color: theme.styles.usernameColor,
                                         fontFamily: theme.styles.font
                                     }}
                                 >
-                                    Your Name
+                                    {t("themes.preview.yourName")}
                                 </h3>
                                 <p
-                                    className="text-sm opacity-75 mb-6"
+                                    className="text-xs opacity-70 mb-5"
                                     style={{ color: theme.styles.usernameColor }}
                                 >
-                                    Your bio description here
+                                    {t("themes.preview.yourBio")}
                                 </p>
 
-                                {/* Sample Button */}
+                                {/* Sample Buttons */}
                                 <div
-                                    className="w-full max-w-[200px] py-3 px-4 mb-3 text-sm font-medium text-center"
+                                    className="w-full max-w-[160px] py-2.5 px-3 mb-2.5 text-xs font-medium text-center"
                                     style={{
                                         backgroundColor: theme.styles.cardBackgroundColor,
                                         borderRadius: theme.styles.cardBorderRadius + 'px',
                                         borderWidth: theme.styles.cardBorderWidth + 'px',
                                         borderColor: theme.styles.cardBorderColor,
                                         color: theme.styles.usernameColor,
-                                        boxShadow: theme.styles.cardShadow !== 'none' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
+                                        boxShadow: theme.styles.cardShadow !== 'none' ? '0 2px 8px -2px rgba(0,0,0,0.1)' : 'none'
                                     }}
                                 >
-                                    My Portfolio
+                                    {t("themes.preview.portfolio")}
                                 </div>
                                 <div
-                                    className="w-full max-w-[200px] py-3 px-4 mb-3 text-sm font-medium text-center"
+                                    className="w-full max-w-[160px] py-2.5 px-3 text-xs font-medium text-center"
                                     style={{
                                         backgroundColor: theme.styles.cardBackgroundColor,
                                         borderRadius: theme.styles.cardBorderRadius + 'px',
                                         borderWidth: theme.styles.cardBorderWidth + 'px',
                                         borderColor: theme.styles.cardBorderColor,
                                         color: theme.styles.usernameColor,
-                                        boxShadow: theme.styles.cardShadow !== 'none' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
+                                        boxShadow: theme.styles.cardShadow !== 'none' ? '0 2px 8px -2px rgba(0,0,0,0.1)' : 'none'
                                     }}
                                 >
-                                    Contact Me
+                                    {t("themes.preview.contact")}
                                 </div>
                             </div>
                         </div>
@@ -136,62 +139,88 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                 </div>
 
                 {/* Info Section */}
-                <div className="w-full md:w-[400px] p-8 flex flex-col">
+                <div className="w-full md:w-[360px] p-6 md:p-8 flex flex-col">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-5 h-5 text-gray-500" />
                     </button>
 
-                    <div className="flex items-center gap-3 mb-4">
-                        <span className="text-3xl">{theme.emoji}</span>
+                    <div className="flex items-center gap-3 mb-3">
+                        <span className="text-2xl">{theme.emoji}</span>
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-900">{theme.name}</h2>
+                            <h2 className="text-xl font-bold text-gray-900">{theme.name}</h2>
                             <p className="text-sm text-gray-500 capitalize">{theme.category}</p>
                         </div>
                     </div>
 
                     {/* Tier Badge */}
-                    <div className="mb-6">
+                    <div className="mb-5">
                         {theme.tier === "free" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-gray-100 text-gray-700 rounded-full">
-                                Free
+                            <span className="px-3 py-1 text-xs font-bold uppercase bg-gray-100 text-gray-600 rounded-full">
+                                {t("themes.badges.free")}
                             </span>
                         )}
                         {theme.tier === "standard" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-[#D7F000] text-black rounded-full">
-                                Standard
+                            <span className="px-3 py-1 text-xs font-bold uppercase bg-emerald-100 text-emerald-700 rounded-full">
+                                {t("themes.badges.standard")}
                             </span>
                         )}
                         {theme.tier === "pro" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-black text-white rounded-full">
-                                Pro
+                            <span className="px-3 py-1 text-xs font-bold uppercase bg-gray-900 text-white rounded-full">
+                                {t("themes.badges.pro")}
                             </span>
                         )}
                     </div>
 
-                    <p className="text-gray-600 mb-8 flex-1">{theme.description}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">{theme.description}</p>
 
-                    {/* Style Preview */}
-                    <div className="space-y-4 mb-8">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Theme Colors</h4>
-                        <div className="flex gap-3">
-                            <div
-                                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
-                                style={{ backgroundColor: theme.styles.bgColor }}
-                                title="Background"
-                            />
-                            <div
-                                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
-                                style={{ backgroundColor: theme.styles.cardBackgroundColor }}
-                                title="Card Background"
-                            />
-                            <div
-                                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
-                                style={{ backgroundColor: theme.styles.usernameColor }}
-                                title="Text Color"
-                            />
+                    {/* Features List */}
+                    {theme.features && theme.features.length > 0 && (
+                        <div className="mb-6">
+                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("themes.preview.features", "Features")}</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {theme.features.map((feature, i) => (
+                                    <span key={i} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-md">
+                                        {feature}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Color Preview */}
+                    <div className="space-y-3 mb-6">
+                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("themes.preview.colors")}</h4>
+                        <div className="flex gap-2">
+                            {theme.colors ? (
+                                theme.colors.map((color, i) => (
+                                    <div
+                                        key={i}
+                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        style={{ backgroundColor: color }}
+                                    />
+                                ))
+                            ) : (
+                                <>
+                                    <div
+                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        style={{ backgroundColor: theme.styles.bgColor }}
+                                        title={t("themes.preview.background")}
+                                    />
+                                    <div
+                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        style={{ backgroundColor: theme.styles.cardBackgroundColor }}
+                                        title={t("themes.preview.card")}
+                                    />
+                                    <div
+                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        style={{ backgroundColor: theme.styles.usernameColor }}
+                                        title={t("themes.preview.text")}
+                                    />
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -199,25 +228,25 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                     {isGuest ? (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all active:scale-[0.98]"
                         >
-                            Sign in to apply
+                            {t("themes.actions.signInToApply")}
                         </button>
                     ) : canAccess ? (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary-hover transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                         >
                             <Check className="w-5 h-5" />
-                            Apply Theme
+                            {t("themes.actions.applyTheme")}
                         </button>
                     ) : (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-gray-900 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
                         >
                             <Crown className="w-5 h-5" />
-                            Upgrade to {theme.tier === "pro" ? "Pro" : "Standard"}
+                            {t("themes.actions.upgradeTo", { plan: t(`themes.badges.${theme.tier}`) })}
                         </button>
                     )}
                 </div>
@@ -235,6 +264,7 @@ function ApplyTargetModal({
     onCreateNew,
     isApplying
 }: ApplyTargetModalProps) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
@@ -243,8 +273,8 @@ function ApplyTargetModal({
             <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Aplicar tema</h3>
-                        <p className="text-sm text-gray-500">Escolha em qual bio aplicar este tema</p>
+                        <h3 className="text-lg font-semibold text-gray-900">{t("themes.applyModal.title")}</h3>
+                        <p className="text-sm text-gray-500">{t("themes.applyModal.subtitle")}</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -267,7 +297,7 @@ function ApplyTargetModal({
                                 >
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">/{bioItem.sufix}</p>
-                                        <p className="text-xs text-gray-500">Aplicar neste bio</p>
+                                        <p className="text-xs text-gray-500">{t("themes.actions.applyToBio")}</p>
                                     </div>
                                     <Check className="w-4 h-4 text-gray-400" />
                                 </button>
@@ -275,7 +305,7 @@ function ApplyTargetModal({
                         </div>
                     ) : (
                         <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-500">
-                            Nenhuma bio encontrada. Crie uma nova para aplicar o tema.
+                            {t("themes.applyModal.noBios")}
                         </div>
                     )}
 
@@ -287,7 +317,7 @@ function ApplyTargetModal({
                                 disabled={isApplying}
                             >
                                 <Sparkles className="w-4 h-4" />
-                                Criar nova bio com este tema
+                                {t("themes.actions.createNewBio")}
                             </button>
                         </div>
                     )}
@@ -382,7 +412,11 @@ function ThemesPage() {
                 floatingElementsSize: theme.styles.floatingElementsSize,
                 floatingElementsSpeed: theme.styles.floatingElementsSpeed,
                 floatingElementsOpacity: theme.styles.floatingElementsOpacity,
-                floatingElementsBlur: theme.styles.floatingElementsBlur
+                floatingElementsBlur: theme.styles.floatingElementsBlur,
+                // New Properties
+                buttonStyle: theme.styles.buttonStyle as any,
+                customFontUrl: theme.styles.customFontUrl,
+                customFontName: theme.styles.customFontName
             };
 
             if (targetBioId) {
@@ -496,73 +530,73 @@ function ThemesPage() {
                 isApplying={isApplying}
             />
 
-            <div className="min-h-screen bg-transparent p-6 md:p-8">
-                <div className="max-w-7xl mx-auto space-y-8">
+            <div className="min-h-screen  p-4 md:p-8 lg:p-12">
+                <div className="max-w-7xl mx-auto space-y-10">
 
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">Theme Gallery</h1>
-                            <p className="text-gray-500 text-base md:text-lg mt-1">Browse {THEME_PRESETS.length} beautiful themes across {CATEGORIES.length - 1} categories</p>
-                        </div>
+                    {/* Header - Minimal & Elegant */}
+                    <div className="text-center max-w-2xl mx-auto">
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
+                            {t("themes.title")}
+                        </h1>
+                        <p className="text-gray-500 text-lg">
+                            {t("themes.subtitle", { count: THEME_PRESETS.length })}
+                        </p>
+                    </div>
 
-                        {/* Search */}
-                        <div className="relative w-full md:w-80">
+                    {/* Search - Centered & Clean */}
+                    <div className="max-w-md mx-auto">
+                        <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search themes..."
+                                placeholder={t("themes.searchPlaceholder")}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-white/70 backdrop-blur-xl border border-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all shadow-sm"
+                                className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all text-gray-900 placeholder:text-gray-400"
                             />
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-                        <div className="rounded-2xl bg-transparent md:flex-1 md:min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                                {displayedCategories.map((category) => (
-                                    <button
-                                        key={category.id}
-                                        onClick={() => setSelectedCategory(category.id)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${selectedCategory === category.id
-                                            ? "bg-gray-900 text-white border-gray-900"
-                                            : "bg-transparent text-gray-700 hover:border-black/20 hover:text-gray-900"
-                                            }`}
-                                    >
-                                        <span>{category.emoji}</span>
-                                        <span>{category.name}</span>
-                                    </button>
-                                ))}
-
-                                <div className="flex-1" />
-
+                    {/* Filters - Horizontal Pills */}
+                    <div className="space-y-4">
+                        {/* Categories */}
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            {displayedCategories.map((category) => (
                                 <button
-                                    onClick={() => setShowAllCategories((prev) => !prev)}
-                                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-sm font-semibold bg-transparent text-gray-600 hover:text-gray-900 border border-transparent hover:border-black/20 transition-all"
+                                    key={category.id}
+                                    onClick={() => setSelectedCategory(category.id)}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${selectedCategory === category.id
+                                        ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20"
+                                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                        }`}
                                 >
-                                    {showAllCategories ? "Mostrar menos" : "Mostrar mais"}
-                                    {showAllCategories ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    <span>{category.emoji}</span>
+                                    <span>{t(`themes.categories.${category.id}`, { defaultValue: category.name })}</span>
                                 </button>
-                            </div>
+                            ))}
+                            <button
+                                onClick={() => setShowAllCategories((prev) => !prev)}
+                                className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                            >
+                                {showAllCategories ? t("themes.filters.less") : t("themes.filters.more")}
+                                {showAllCategories ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
                         </div>
 
-                        {/* Plan Filters */}
-                        <div className="flex flex-wrap items-center gap-2 md:justify-end md:shrink-0">
+                        {/* Plan Filters - Secondary */}
+                        <div className="flex items-center justify-center gap-1 bg-gray-100 rounded-full p-1 max-w-fit mx-auto">
                             {[
-                                { id: "all", label: "Todos" },
-                                { id: "free", label: "Free" },
-                                { id: "standard", label: "Standard" },
-                                { id: "pro", label: "Pro" }
+                                { id: "all", label: t("themes.filters.plans.all") },
+                                { id: "free", label: t("themes.filters.plans.free") },
+                                { id: "standard", label: t("themes.filters.plans.standard") },
+                                { id: "pro", label: t("themes.filters.plans.pro") }
                             ].map((plan) => (
                                 <button
                                     key={plan.id}
                                     onClick={() => setSelectedPlanFilter(plan.id as "all" | "free" | "standard" | "pro")}
-                                    className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${selectedPlanFilter === plan.id
-                                        ? "bg-gray-900 text-white border-gray-900"
-                                        : "bg-transparent text-gray-600 border-black/10 hover:border-black/20 hover:text-gray-900"
+                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${selectedPlanFilter === plan.id
+                                        ? "bg-white text-gray-900 shadow-sm"
+                                        : "text-gray-500 hover:text-gray-700"
                                         }`}
                                 >
                                     {plan.label}
@@ -571,124 +605,112 @@ function ThemesPage() {
                         </div>
                     </div>
 
-                    {/* Theme Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {/* Theme Grid - Clean Cards */}
+                    <div className="grid  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {filteredThemes.map((theme) => {
                             const hasAccess = canAccessTheme(theme);
 
                             return (
                                 <div
                                     key={`${theme.category}-${theme.name}`}
-                                    className="group bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 overflow-hidden shadow-[0_8px_30px_rgba(15,23,42,0.08)] hover:shadow-[0_16px_40px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-1"
+                                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300"
                                 >
                                     {/* Preview Thumbnail */}
                                     <div
-                                        className="h-48 relative overflow-hidden"
+                                        className="aspect-[4/3] relative overflow-hidden cursor-pointer"
+                                        onClick={() => handlePreview(theme)}
                                         style={{ backgroundColor: theme.styles.bgColor }}
                                     >
                                         {/* Mini Preview */}
-                                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                                        <div className="absolute inset-0 flex items-center justify-center p-6">
                                             <div
-                                                className="w-24 h-32 rounded-lg flex flex-col items-center justify-center p-3 transform group-hover:scale-110 transition-transform duration-500"
+                                                className="w-20 h-28 flex flex-col items-center justify-center p-3 transform group-hover:scale-105 transition-transform duration-300"
                                                 style={{
                                                     backgroundColor: theme.styles.cardBackgroundColor,
                                                     borderWidth: theme.styles.cardBorderWidth + 'px',
                                                     borderColor: theme.styles.cardBorderColor,
-                                                    borderRadius: Math.min(theme.styles.cardBorderRadius, 16) + 'px'
+                                                    borderRadius: Math.min(theme.styles.cardBorderRadius, 12) + 'px',
+                                                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
                                                 }}
                                             >
                                                 <div
-                                                    className="w-8 h-8 rounded-full mb-2"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.2 }}
+                                                    className="w-7 h-7 rounded-full mb-2"
+                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.15 }}
                                                 />
                                                 <div
-                                                    className="w-16 h-2 rounded mb-1"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.3 }}
+                                                    className="w-12 h-1.5 rounded-full mb-1"
+                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.25 }}
                                                 />
                                                 <div
-                                                    className="w-12 h-2 rounded"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.2 }}
+                                                    className="w-8 h-1.5 rounded-full"
+                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.15 }}
                                                 />
                                             </div>
                                         </div>
 
-                                        {/* Lock Overlay for inaccessible themes */}
+                                        {/* Lock Badge */}
                                         {!hasAccess && (
-                                            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                <div className="bg-white/90 px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
-                                                    <Lock className="w-4 h-4 text-gray-700" />
-                                                    <span className="text-sm font-bold text-gray-900 uppercase">
-                                                        {theme.tier}
+                                            <div className="absolute top-3 right-3">
+                                                <div className="bg-black/80 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                                                    <Lock className="w-3 h-3 text-white" />
+                                                    <span className="text-[10px] font-bold text-white uppercase tracking-wide">
+                                                        {t(`themes.badges.${theme.tier}`)}
                                                     </span>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* Hover overlay with Preview button */}
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                            <button
-                                                onClick={() => handlePreview(theme)}
-                                                className="bg-white text-gray-900 px-4 py-2 rounded-full font-medium flex items-center gap-2 shadow-lg hover:bg-gray-100 transition-colors transform translate-y-4 group-hover:translate-y-0"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                Preview
-                                            </button>
+                                        {/* Preview Overlay */}
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                                <div className="bg-white/95 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 shadow-lg">
+                                                    <Eye className="w-4 h-4" />
+                                                    {t("themes.actions.preview")}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Card Info */}
                                     <div className="p-4">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg">{theme.emoji}</span>
-                                                <h3 className="font-semibold text-gray-900">{theme.name}</h3>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="text-base flex-shrink-0">{theme.emoji}</span>
+                                                <h3 className="font-semibold text-gray-900 truncate">{theme.name}</h3>
                                             </div>
 
-                                            {/* Tier Badge */}
-                                            {theme.tier === "free" && (
-                                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-gray-100 text-gray-600 rounded-full">
-                                                    Free
-                                                </span>
-                                            )}
-                                            {theme.tier === "standard" && (
-                                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-[#D7F000] text-black rounded-full">
-                                                    Standard
-                                                </span>
-                                            )}
-                                            {theme.tier === "pro" && (
-                                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-black text-white rounded-full">
-                                                    Pro
+                                            {/* Tier Badge - Minimal */}
+                                            {theme.tier !== "free" && (
+                                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full flex-shrink-0 ${theme.tier === "standard"
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : "bg-gray-900 text-white"
+                                                    }`}>
+                                                    {t(`themes.badges.${theme.tier}`)}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <p className="text-sm text-gray-500 line-clamp-2 mb-4">{theme.description}</p>
+                                        <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">{theme.description}</p>
 
-                                        {/* Apply Button */}
+                                        {/* Apply Button - Green to Black Gradient for Upgrade */}
                                         <button
                                             onClick={() => handleApply(theme)}
                                             disabled={isApplying}
-                                            className={`w-full py-2.5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${hasAccess
-                                                ? "bg-gray-900 text-white hover:bg-gray-800"
-                                                : "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90"
+                                            className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${hasAccess
+                                                ? "bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98]"
+                                                : "bg-gradient-to-r from-emerald-500 to-gray-900 text-white hover:from-emerald-600 hover:to-black active:scale-[0.98] shadow-lg shadow-emerald-500/20"
                                                 }`}
                                         >
                                             {isApplying ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                             ) : isGuest ? (
-                                                <>
-                                                    <Check className="w-4 h-4" />
-                                                    Sign in to apply
-                                                </>
+                                                <>{t("themes.actions.signInToApply")}</>
                                             ) : hasAccess ? (
-                                                <>
-                                                    <Check className="w-4 h-4" />
-                                                    {bio ? "Apply Theme" : "Create Bio with Theme"}
-                                                </>
+                                                <>{t("themes.actions.apply")}</>
                                             ) : (
                                                 <>
                                                     <Crown className="w-4 h-4" />
-                                                    Upgrade to Unlock
+                                                    {t("themes.actions.unlock")}
                                                 </>
                                             )}
                                         </button>
@@ -698,14 +720,14 @@ function ThemesPage() {
                         })}
                     </div>
 
-                    {/* Empty State */}
+                    {/* Empty State - Minimal */}
                     {filteredThemes.length === 0 && (
-                        <div className="text-center py-20  backdrop-blur-xl rounded-3xl border border-white/60">
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Palette className="w-8 h-8 text-gray-400" />
+                        <div className="text-center py-24">
+                            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                                <Palette className="w-6 h-6 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900">No themes found</h3>
-                            <p className="text-gray-500 mt-1">Try adjusting your search or category filter</p>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{t("themes.empty.title")}</h3>
+                            <p className="text-gray-500 text-sm">{t("themes.empty.subtitle")}</p>
                         </div>
                     )}
                 </div>

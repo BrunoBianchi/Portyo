@@ -118,14 +118,24 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         try {
           const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
           const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
-          const res = await fetch(`${apiUrl}/public/site-blog`);
-          if (res.ok) {
-            const posts: { id: string | number; updatedAt?: string }[] = await res.json();
+          const [resEn, resPt] = await Promise.all([
+            fetch(`${apiUrl}/public/site-blog?lang=en`),
+            fetch(`${apiUrl}/public/site-blog?lang=pt`),
+          ]);
+
+          if (resEn.ok) {
+            const posts: { id: string | number; updatedAt?: string }[] = await resEn.json();
             posts.forEach((post) => {
               const lastmod = post.updatedAt;
               addUrl(`${siteBase}/en/blog/${post.id}`, lastmod, 'weekly', 0.7);
+            });
+          }
+
+          if (resPt.ok) {
+            const posts: { id: string | number; updatedAt?: string }[] = await resPt.json();
+            posts.forEach((post) => {
+              const lastmod = post.updatedAt;
               addUrl(`${siteBase}/pt/blog/${post.id}`, lastmod, 'weekly', 0.7);
-              addUrl(`${siteBase}/blog/${post.id}`, lastmod, 'weekly', 0.7);
             });
           }
         } catch (e) {

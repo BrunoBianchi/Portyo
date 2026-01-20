@@ -1050,14 +1050,14 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                             <div style="font-size:12px; color:#6b7280; font-weight:500;">
                                                 ${date} <span style="margin:0 4px; opacity:0.5">•</span> ${readTime} min read
                                             </div>
-                                            <div style="display:flex; align-items:center; gap:12px; color:#4b5563; font-size:13px; font-weight:600;">
+                                                <div style="display:flex; align-items:center; gap:12px; color:#4b5563; font-size:13px; font-weight:600;">
                                                 <div style="display:flex; align-items:center; gap:4px;">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                                    <span>${Math.floor(Math.random() * 500) + 100}</span>
+                                                    <span>${((index * 73 + 127) % 400) + 100}</span>
                                                 </div>
                                                 <div style="display:flex; align-items:center; gap:4px;">
                                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                                                    <span>${Math.floor(Math.random() * 200) + 20}</span>
+                                                    <span>${((index * 31 + 47) % 180) + 20}</span>
                                                 </div>
                                             </div>
                                         </div>

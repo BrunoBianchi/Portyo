@@ -39,7 +39,7 @@ export default function DashboardQrCode() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio?.id) {
@@ -49,6 +49,7 @@ export default function DashboardQrCode() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (isMobile) return;
 
         const hasSeenTour = window.localStorage.getItem("portyo:qrcode-tour-done");
         if (!hasSeenTour) {
@@ -60,7 +61,7 @@ export default function DashboardQrCode() {
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, []);
+    }, [isMobile]);
 
     const qrTourSteps: Step[] = [
         {
@@ -174,7 +175,7 @@ export default function DashboardQrCode() {
             <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
                 <Joyride
                     steps={qrTourSteps}
-                    run={tourRun}
+                    run={tourRun && !isMobile}
                     stepIndex={tourStepIndex}
                     continuous
                     showSkipButton

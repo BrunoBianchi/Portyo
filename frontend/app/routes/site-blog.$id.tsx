@@ -7,9 +7,11 @@ import { ArrowLeft, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { sanitizeHtml } from "~/utils/security";
+import { useTranslation } from "react-i18next";
 
 export default function SiteBlogPostPage() {
     const { id } = useParams();
+    const { i18n } = useTranslation();
     const [post, setPost] = useState<SitePost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -21,7 +23,8 @@ export default function SiteBlogPostPage() {
             return;
         }
 
-        getPublicSitePost(id).then(fetchedPost => {
+        const lang = i18n.language === "pt" ? "pt" : "en";
+        getPublicSitePost(id, lang).then(fetchedPost => {
             if (fetchedPost) {
                 setPost(fetchedPost);
                 document.title = `${fetchedPost.title} | Portyo Blog`;
@@ -33,7 +36,7 @@ export default function SiteBlogPostPage() {
             setError("Failed to load post");
             setLoading(false);
         });
-    }, [id]);
+    }, [id, i18n.language]);
 
     const handleShare = async () => {
         const url = window.location.href;
@@ -71,7 +74,7 @@ export default function SiteBlogPostPage() {
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">404</h1>
                 <p className="text-gray-600 mb-6 font-serif italic">Post not found</p>
                 <Link
-                    to="/blog"
+                    to={`/${i18n.language === "pt" ? "pt" : "en"}/blog`}
                     className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:underline transition-all"
                 >
                     <ArrowLeft className="w-4 h-4" />
@@ -95,7 +98,7 @@ export default function SiteBlogPostPage() {
             <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link
-                        to={`/blog`}
+                        to={`/${i18n.language === "pt" ? "pt" : "en"}/blog`}
                         className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />

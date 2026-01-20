@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { BioProvider } from "~/contexts/bio.context";
 import { BlogProvider } from "~/contexts/blog.context";
 import { SiteBlogProvider } from "~/contexts/site-blog.context";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
 import Joyride, { type CallBackProps, EVENTS, STATUS, ACTIONS, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
@@ -24,10 +24,15 @@ export default function Dashboard() {
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
     const { t } = useTranslation();
-    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const location = useLocation();
+    const pathnameNoLang = location.pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
+    const isDashboardHome = pathnameNoLang === "/dashboard" || pathnameNoLang === "/dashboard/";
 
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (!isDashboardHome) return;
+        if (isMobile) return;
 
         const hasSeenTour = window.localStorage.getItem("portyo:dashboard-tour-done");
         if (!hasSeenTour) {
@@ -39,7 +44,7 @@ export default function Dashboard() {
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, []);
+    }, [isDashboardHome, isMobile]);
 
     const steps: Step[] = [
         {
@@ -120,7 +125,7 @@ export default function Dashboard() {
                     <SiteBlogProvider>
                         <Joyride
                             steps={steps}
-                            run={tourRun}
+                            run={tourRun && !isMobile && isDashboardHome}
                             stepIndex={tourStepIndex}
                             continuous
                             showSkipButton

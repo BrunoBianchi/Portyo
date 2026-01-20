@@ -17,6 +17,14 @@ interface AIGenerationResult {
         usernameColor?: string;
         font?: string;
         imageStyle?: string;
+        // New properties
+        buttonStyle?: string;
+        customFontUrl?: string;
+        customFontName?: string;
+        enableParallax?: boolean;
+        floatingElements?: boolean;
+        floatingElementsType?: string;
+        floatingElementsColor?: string;
     };
     replaceBlocks: boolean;
     globalBlockStyles?: Partial<BioBlock>;

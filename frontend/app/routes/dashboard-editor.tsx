@@ -45,6 +45,7 @@ import { useTranslation } from "react-i18next";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
 import { useJoyrideSettings } from "~/utils/joyride";
+import { ImageUpload } from "~/components/dashboard/editor/image-upload";
 
 export const meta: MetaFunction = () => {
   return [
@@ -820,12 +821,13 @@ export default function DashboardEditor() {
   const [font, setFont] = useState(bio?.font || 'Inter');
   const [customFontUrl, setCustomFontUrl] = useState(bio?.customFontUrl || null);
   const [customFontName, setCustomFontName] = useState(bio?.customFontName || null);
+  const [buttonStyle, setButtonStyle] = useState<any>((bio?.buttonStyle as any) || "solid");
   const [showUpgrade, setShowUpgrade] = useState<string | null>(null);
 
   const [tourRun, setTourRun] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-  const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+  const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
   const [shareData, setShareData] = useState<{ url: string; title: string } | null>(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -840,6 +842,7 @@ export default function DashboardEditor() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isMobile) return;
 
     const hasSeenTour = window.localStorage.getItem("portyo:editor-tour-done");
     if (!hasSeenTour) {
@@ -851,7 +854,7 @@ export default function DashboardEditor() {
     if (primaryFromTheme) {
       setTourPrimaryColor(primaryFromTheme);
     }
-  }, []);
+  }, [isMobile]);
 
   const editorTourSteps: Step[] = [
     {
@@ -1072,9 +1075,10 @@ export default function DashboardEditor() {
       font,
       customFontUrl,
       customFontName,
+      buttonStyle,
       bioId: bio?.id // Verify we are undoing for same bio
     };
-  }, [blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, bio?.id]);
+  }, [blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl, customFontName, buttonStyle, bio?.id]);
 
   // Load backend state (last saved) as "safety net" or initial checkpoint
   useEffect(() => {
@@ -1135,6 +1139,7 @@ export default function DashboardEditor() {
         setFont(previousState.font);
         setCustomFontUrl(previousState.customFontUrl);
         setCustomFontName(previousState.customFontName);
+        setButtonStyle(previousState.buttonStyle || "solid");
         setFont(previousState.font);
 
         // Should we save this restoration? Maybe not automatically, let the user decide or auto-save debounce handle it.
@@ -1234,7 +1239,9 @@ export default function DashboardEditor() {
 
       setUsernameColor(bio.usernameColor || "#111827");
       setImageStyle(bio.imageStyle || "circle");
+      setImageStyle(bio.imageStyle || "circle");
       setFont(bio.font || 'Inter');
+      setButtonStyle((bio.buttonStyle as any) || "solid");
 
       // For Free users, force these to false
       setEnableSubscribeButton(user?.plan === 'free' ? false : (bio.enableSubscribeButton || false));
@@ -1428,8 +1435,8 @@ export default function DashboardEditor() {
     setIsSaving(true);
     setStatus("idle");
     try {
-      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined }, window.location.origin);
-      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined });
+      const html = blocksToHtml(blocks, user, { ...bio, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle }, window.location.origin);
+      await updateBio(bio.id, { html, blocks, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl: customFontUrl || undefined, customFontName: customFontName || undefined, buttonStyle });
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 1500);
     } catch (error) {
@@ -1437,7 +1444,7 @@ export default function DashboardEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, updateBio, removeBranding, font]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, updateBio, removeBranding, font, customFontUrl, customFontName, buttonStyle]);
 
   const applyBackgroundUpdate = useCallback((next: { bgType?: typeof bgType; bgColor?: string; bgSecondaryColor?: string }) => {
     if (!bio) return;
@@ -1486,8 +1493,9 @@ export default function DashboardEditor() {
       font,
       customFontUrl: customFontUrl || undefined,
       customFontName: customFontName || undefined,
+      buttonStyle,
     }).catch(console.error);
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl, customFontName, updateBio]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl, customFontName, buttonStyle, updateBio]);
 
   const handleFieldChange = useCallback((id: string, key: keyof BioBlock, value: any) => {
     setBlocks((prev) => prev.map((block) => (block.id === id ? { ...block, [key]: value } : block)));
@@ -1579,7 +1587,7 @@ export default function DashboardEditor() {
       html,
       htmlBase64: null
     };
-  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, font]);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, font, customFontUrl, customFontName, buttonStyle]);
 
   const [debouncedHtml, setDebouncedHtml] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -1654,7 +1662,7 @@ export default function DashboardEditor() {
     <div className="min-h-screen bg-[#f9f7f2] font-sans text-gray-900 flex flex-col h-screen overflow-hidden">
       <Joyride
         steps={editorTourSteps}
-        run={tourRun}
+        run={tourRun && !isMobile}
         stepIndex={tourStepIndex}
         continuous
         showSkipButton
@@ -1723,6 +1731,7 @@ export default function DashboardEditor() {
                 if (settings?.usernameColor) setUsernameColor(settings.usernameColor);
                 if (settings?.font) setFont(settings.font);
                 if (settings?.imageStyle) setImageStyle(settings.imageStyle);
+                if (settings?.buttonStyle) setButtonStyle(settings.buttonStyle);
               }}
               onGlobalStylesChange={(styles) => {
                 if (!styles) return;
@@ -1920,6 +1929,27 @@ export default function DashboardEditor() {
                               <ChevronDownIcon width={14} height={14} />
                             </div>
                           </div>
+
+                          {(font === 'Custom' || bio?.customFontName) && (
+                            <div className="mt-3">
+                              <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.customFontUrl") || "Custom Font URL"}</label>
+                              <input
+                                type="text"
+                                placeholder="https://fonts.googleapis.com/css2?family=MyFont..."
+                                value={customFontUrl || ""}
+                                onChange={(e) => {
+                                  setCustomFontUrl(e.target.value);
+                                  // Automatically try to extract a name or just leave it custom
+                                  if (!customFontName && e.target.value.includes('family=')) {
+                                    const name = e.target.value.split('family=')[1].split(':')[0].split('&')[0].replace(/\+/g, ' ');
+                                    setCustomFontName(name);
+                                  }
+                                  applyBackgroundUpdate({ bgColor }); // Trigger preview update
+                                }}
+                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              />
+                            </div>
+                          )}
 
                           <div className="mt-3">
                             <input
@@ -2225,17 +2255,16 @@ export default function DashboardEditor() {
                                   </button>
                                 </div>
 
-                                <input
-                                  type="text"
-                                  placeholder="Image URL"
+                                <ImageUpload
                                   value={layer.image || ""}
-                                  onChange={(e) => {
+                                  onChange={(url) => {
                                     if (!bio?.id) return;
                                     const layers = [...(bio.parallaxLayers || [])];
-                                    layers[idx] = { ...layer, image: e.target.value };
+                                    layers[idx] = { ...layer, image: url };
                                     updateBio(bio.id, { parallaxLayers: layers });
                                   }}
-                                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                  label="Image"
+                                  className="text-xs"
                                 />
 
                                 <div className="grid grid-cols-2 gap-3">
@@ -2429,6 +2458,82 @@ export default function DashboardEditor() {
                         {/* Floating Elements Advanced */}
                         {bio?.floatingElements && (
                           <div className="space-y-4">
+                            {/* Type Selector */}
+                            <div>
+                              <label className="text-xs font-medium text-gray-900 mb-2 block">Type</label>
+                              <select
+                                value={bio?.floatingElementsType || 'circles'}
+                                onChange={(e) => updateBio(bio.id, { floatingElementsType: e.target.value })}
+                                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                              >
+                                <optgroup label="Shapes">
+                                  <option value="circles">Circles</option>
+                                  <option value="squares">Squares</option>
+                                  <option value="bubbles">Bubbles</option>
+                                </optgroup>
+                                <optgroup label="Emojis">
+                                  <option value="hearts">Hearts ❤️</option>
+                                  <option value="fire">Fire 🔥</option>
+                                  <option value="sparkles">Sparkles ✨</option>
+                                  <option value="music">Music 🎵</option>
+                                  <option value="stars">Stars ⭐</option>
+                                  <option value="leaves">Leaves 🍃</option>
+                                  <option value="money">Money 💸</option>
+                                  <option value="ghosts">Ghosts 👻</option>
+                                  <option value="custom-emoji">Custom Emoji...</option>
+                                </optgroup>
+                                <optgroup label="Images">
+                                  <option value="custom-image">Custom Image...</option>
+                                </optgroup>
+                              </select>
+                            </div>
+
+                            {/* Custom Emoji Input */}
+                            {bio?.floatingElementsType === 'custom-emoji' && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-900 mb-2 block">Emoji / Text</label>
+                                <input
+                                  type="text"
+                                  maxLength={2}
+                                  placeholder="😎"
+                                  value={bio?.customFloatingElementText || ''}
+                                  onChange={(e) => updateBio(bio.id, { customFloatingElementText: e.target.value })}
+                                  className="w-full text-center text-xl p-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                />
+                              </div>
+                            )}
+
+                            {/* Custom Image Input */}
+                            {bio?.floatingElementsType === 'custom-image' && (
+                              <div>
+                                <label className="text-xs font-medium text-gray-900 mb-2 block">Image URL</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="https://..."
+                                    value={bio?.customFloatingElementImage || ''}
+                                    onChange={(e) => updateBio(bio.id, { customFloatingElementImage: e.target.value })}
+                                    className="flex-1 text-xs p-2 rounded-lg border border-gray-200 focus:border-indigo-500"
+                                  />
+                                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition-colors">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                    <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
+                                      if (e.target.files?.[0]) {
+                                        const formData = new FormData();
+                                        formData.append('image', e.target.files[0]);
+                                        try {
+                                          const res = await api.post('/user/upload-image', formData);
+                                          updateBio(bio.id, { customFloatingElementImage: res.data.url });
+                                        } catch (err) {
+                                          console.error("Upload failed", err);
+                                        }
+                                      }
+                                    }} />
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <label className="text-xs font-medium text-gray-900">Density</label>
@@ -2445,6 +2550,7 @@ export default function DashboardEditor() {
                                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                               />
                             </div>
+
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <label className="text-xs font-medium text-gray-900">Size</label>
@@ -2601,6 +2707,35 @@ export default function DashboardEditor() {
                           </>
                         )}
 
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Button Style Settings */}
+                  <div>
+                    <button
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      onClick={() => toggleSetting("button")}
+                    >
+                      Button Style
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("button") ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                    {expandedSettings.includes("button") && (
+                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                        <div className="grid grid-cols-2 gap-2">
+                          {['solid', 'outline', 'ghost', 'soft-shadow', 'hard-shadow', '3d', 'glass', 'gradient', 'neon', 'cyberpunk'].map(style => (
+                            <button
+                              key={style}
+                              onClick={() => {
+                                setButtonStyle(style);
+                                applyBackgroundUpdate({ bgColor }); // Trigger preview update
+                              }}
+                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${buttonStyle === style ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                            >
+                              {style}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2921,7 +3056,7 @@ export default function DashboardEditor() {
         onChange={handleImageUpload}
       />
 
-    </div>
+    </div >
   );
 }
 

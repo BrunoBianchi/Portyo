@@ -11,13 +11,31 @@ export class SitePostEntity extends BaseEntity {
 title!:string;
 
 @Column({ type: "text", nullable: true })
+titleEn!: string | null;
+
+@Column({ type: "text", nullable: true })
+titlePt!: string | null;
+
+@Column({ type: "text", nullable: true })
 thumbnail!: string | null;
 
 @Column({ type: "text" })
 content!:string;
 
+@Column({ type: "text", nullable: true })
+contentEn!: string | null;
+
+@Column({ type: "text", nullable: true })
+contentPt!: string | null;
+
 @Column({ type: "text" })
 keywords!:string;
+
+@Column({ type: "text", nullable: true })
+keywordsEn!: string | null;
+
+@Column({ type: "text", nullable: true })
+keywordsPt!: string | null;
 
 @Column({ type: "int", default: 0 })
 views:number = 0;
@@ -27,6 +45,9 @@ status!:string;
 
 @Column({ type: "timestamp", nullable: true })
 scheduledAt!: Date | null;
+
+@Column({ type: "text", default: "en" })
+language!: string;
 
 @ManyToOne(() => UserEntity, (user) => user.posts)
 user!: UserEntity;

@@ -160,7 +160,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "button") {
     const bg = block.accent || "#111827";
     const color = block.textColor || "#ffffff";
-    const style = block.buttonStyle || "solid";
+    const style = block.buttonStyle || bio.buttonStyle || "solid";
     const shape = block.buttonShape || "rounded";
     const shadowColor = block.buttonShadowColor || bg;
     const textAlign = block.buttonTextAlign || "center";

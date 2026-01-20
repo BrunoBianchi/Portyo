@@ -14,7 +14,9 @@ interface BlogPost {
 }
 
 export default function BlogSection() {
-    const { t } = useTranslation(["home", "blogPage"]);
+    const { t, i18n } = useTranslation(["home", "blogPage"]);
+    const currentLang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
+    const withLang = (to: string) => (to.startsWith("/") ? `/${currentLang}${to}` : `/${currentLang}/${to}`);
 
     const cardStyles = [
         {
@@ -66,7 +68,7 @@ export default function BlogSection() {
 
     useEffect(() => {
         const fetchPosts = async () => {
-            const sitePosts = await getPublicSitePosts();
+            const sitePosts = await getPublicSitePosts(currentLang);
             if (sitePosts && sitePosts.length > 0) {
                 const mappedPosts: BlogPost[] = sitePosts.slice(0, 4).map((post) => ({
                     id: post.id,
@@ -82,7 +84,7 @@ export default function BlogSection() {
             }
         };
         fetchPosts();
-    }, []);
+    }, [currentLang]);
 
     if (posts.length === 0) return null;
 
@@ -94,7 +96,7 @@ export default function BlogSection() {
                         {t("home.blogSection.title")}
                     </h2>
                     <Link
-                        to="/blog"
+                        to={withLang("/blog")}
                         className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-6 py-3 text-sm font-bold text-text-main shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                     >
                         {t("home.blogSection.cta")}
@@ -112,7 +114,7 @@ export default function BlogSection() {
                         return (
                         <Link
                             key={post.id}
-                            to={post.id.toString().startsWith('default') ? '/blog' : `/blog/${post.id}`}
+                            to={post.id.toString().startsWith('default') ? withLang('/blog') : withLang(`/blog/${post.id}`)}
                             className="group flex h-full flex-col rounded-[16px] border border-black/10 bg-white p-4 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-22px_rgba(0,0,0,0.35)]"
                         >
                             <div

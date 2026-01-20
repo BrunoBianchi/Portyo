@@ -6,16 +6,23 @@ export interface SitePost {
     title: string;
     content: string;
     thumbnail: string | null;
+    language?: string;
     keywords: string[];
+    titleEn?: string | null;
+    titlePt?: string | null;
+    contentEn?: string | null;
+    contentPt?: string | null;
+    keywordsEn?: string | null;
+    keywordsPt?: string | null;
     status: "draft" | "published";
     scheduledAt: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
-export const getPublicSitePosts = async (): Promise<SitePost[]> => {
+export const getPublicSitePosts = async (lang: string = 'en'): Promise<SitePost[]> => {
     try {
-        const response = await api.get<SitePost[]>('/public/site-blog');
+        const response = await api.get<SitePost[]>(`/public/site-blog?lang=${lang}`);
         return response.data;
     } catch (error) {
         console.error("Failed to fetch site posts", error);
@@ -23,9 +30,9 @@ export const getPublicSitePosts = async (): Promise<SitePost[]> => {
     }
 };
 
-export const getPublicSitePost = async (id: string): Promise<SitePost | null> => {
+export const getPublicSitePost = async (id: string, lang: string = 'en'): Promise<SitePost | null> => {
     try {
-        const response = await api.get<SitePost>(`/public/site-blog/${id}`);
+        const response = await api.get<SitePost>(`/public/site-blog/${id}?lang=${lang}`);
         return response.data;
     } catch (error) {
         console.error("Failed to fetch site post", error);

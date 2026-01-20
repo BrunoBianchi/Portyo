@@ -56,5 +56,9 @@
   "resetPassword": {
     "title": "Redefinir senha | Portyo",
     "description": "Crie uma nova senha para sua conta Portyo"
+  },
+  "themes": {
+    "title": "Temas | Portyo",
+    "description": "Explore e aplique temas incríveis na sua bio"
   }
 }

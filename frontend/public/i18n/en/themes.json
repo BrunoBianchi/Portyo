@@ -1,0 +1,64 @@
+{
+  "title": "Themes",
+  "subtitle": "{{count}} designs to make your bio stand out",
+  "searchPlaceholder": "Search themes...",
+  "filters": {
+    "more": "More",
+    "less": "Less",
+    "plans": {
+      "all": "All",
+      "free": "Free",
+      "standard": "Standard",
+      "pro": "Pro"
+    }
+  },
+  "categories": {
+    "all": "All",
+    "architecture": "Architecture",
+    "programming": "Programming",
+    "onlyfans": "OnlyFans",
+    "photography": "Photography",
+    "music": "Music",
+    "fitness": "Fitness",
+    "fashion": "Fashion",
+    "art": "Art",
+    "business": "Business",
+    "gaming": "Gaming",
+    "food": "Food",
+    "travel": "Travel"
+  },
+  "preview": {
+    "yourName": "Your Name",
+    "yourBio": "Your bio description",
+    "portfolio": "My Portfolio",
+    "contact": "Contact Me",
+    "colors": "Colors",
+    "background": "Background",
+    "card": "Card",
+    "text": "Text"
+  },
+  "badges": {
+    "free": "Free",
+    "standard": "Standard",
+    "pro": "Pro"
+  },
+  "actions": {
+    "signInToApply": "Sign in to apply",
+    "applyTheme": "Apply Theme",
+    "upgradeTo": "Upgrade to {{plan}}",
+    "preview": "Preview",
+    "apply": "Apply",
+    "unlock": "Unlock",
+    "createNewBio": "Create new bio with this theme",
+    "applyToBio": "Apply to this bio"
+  },
+  "applyModal": {
+    "title": "Apply theme",
+    "subtitle": "Choose which bio to apply this theme to",
+    "noBios": "No bios found. Create a new one to apply the theme."
+  },
+  "empty": {
+    "title": "No themes found",
+    "subtitle": "Try adjusting your search or filters"
+  }
+}

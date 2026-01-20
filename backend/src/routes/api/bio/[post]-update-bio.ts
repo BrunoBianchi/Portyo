@@ -60,11 +60,15 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         parallaxAxis: z.string().optional(),
         parallaxLayers: z.array(z.any()).optional(),
         floatingElements: z.boolean().optional(),
+        floatingElementsType: z.string().optional(),
+        floatingElementsColor: z.string().optional(),
         floatingElementsDensity: z.preprocess(toNumber, z.number().optional()),
         floatingElementsSize: z.preprocess(toNumber, z.number().optional()),
         floatingElementsSpeed: z.preprocess(toNumber, z.number().optional()),
         floatingElementsOpacity: z.preprocess(toNumber, z.number().optional()),
-        floatingElementsBlur: z.preprocess(toNumber, z.number().optional())
+        floatingElementsBlur: z.preprocess(toNumber, z.number().optional()),
+        customFloatingElementText: z.string().nullable().optional(),
+        customFloatingElementImage: z.string().nullable().optional()
     }).parse(req.body);
 
     const updateOptions: UpdateBioOptions = {
@@ -120,11 +124,15 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
             parallaxAxis: schema.parallaxAxis,
             parallaxLayers: schema.parallaxLayers,
             floatingElements: schema.floatingElements,
+            floatingElementsType: schema.floatingElementsType,
+            floatingElementsColor: schema.floatingElementsColor,
             floatingElementsDensity: schema.floatingElementsDensity,
             floatingElementsSize: schema.floatingElementsSize,
             floatingElementsSpeed: schema.floatingElementsSpeed,
             floatingElementsOpacity: schema.floatingElementsOpacity,
-            floatingElementsBlur: schema.floatingElementsBlur
+            floatingElementsBlur: schema.floatingElementsBlur,
+            customFloatingElementText: schema.customFloatingElementText ?? undefined,
+            customFloatingElementImage: schema.customFloatingElementImage ?? undefined
         }
     };
 

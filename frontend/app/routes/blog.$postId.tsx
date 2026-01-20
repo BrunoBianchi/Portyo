@@ -7,6 +7,7 @@ import { ArrowLeft, Share2, Clock, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { sanitizeHtml } from "~/utils/security";
+import { useTranslation } from "react-i18next";
 
 interface BlogPost {
     id: string;
@@ -31,6 +32,7 @@ interface BlogPost {
 
 export default function BlogPostPage() {
     const { postId } = useParams();
+    const { i18n } = useTranslation();
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -126,7 +128,7 @@ export default function BlogPostPage() {
             <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link
-                        to={`/blog`}
+                        to={`/${i18n.language}/blog`}
                         className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />

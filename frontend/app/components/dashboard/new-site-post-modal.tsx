@@ -21,11 +21,15 @@ type PostMode = "upload" | "write";
 export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProps) {
     const { createPost, updatePost } = useSiteBlog();
     const [activeMode, setActiveMode] = useState<PostMode>("upload");
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState(""); // For markdown
+    const [activeLanguage, setActiveLanguage] = useState<"en" | "pt">("en");
+    const [titles, setTitles] = useState({ en: "", pt: "" });
+    const [contents, setContents] = useState({ en: "", pt: "" });
     const [file, setFile] = useState<File | null>(null);
     const [thumbnail, setThumbnail] = useState<File | string | null>(null);
-    const [tags, setTags] = useState<string[]>(["Design", "Blog"]);
+    const [tagsByLang, setTagsByLang] = useState<{ en: string[]; pt: string[] }>({
+        en: ["Design", "Blog"],
+        pt: ["Design", "Blog"],
+    });
     const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
     const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -38,10 +42,23 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
 
     useEffect(() => {
         if (post) {
-            setTitle(post.title);
-            setContent(post.content || "");
+            const fallbackTitle = post.title || "";
+            const fallbackContent = post.content || "";
+            const fallbackKeywords = post.keywords ? post.keywords.split(',') : [];
+
+            setTitles({
+                en: post.titleEn || fallbackTitle,
+                pt: post.titlePt || "",
+            });
+            setContents({
+                en: post.contentEn || fallbackContent,
+                pt: post.contentPt || "",
+            });
+            setTagsByLang({
+                en: post.keywordsEn ? post.keywordsEn.split(',') : fallbackKeywords,
+                pt: post.keywordsPt ? post.keywordsPt.split(',') : [],
+            });
             setThumbnail(post.thumbnail || null);
-            setTags(post.keywords ? post.keywords.split(',') : []);
             setActiveMode("write"); // Default to write mode for editing for now
             if (post.scheduledAt) {
                 setScheduledDate(new Date(post.scheduledAt));
@@ -49,11 +66,17 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
             } else {
                 setScheduleMode("now");
             }
+            if (post.contentPt && !post.contentEn) {
+                setActiveLanguage("pt");
+            } else {
+                setActiveLanguage("en");
+            }
         } else {
             // Reset fields if no post (create mode)
-            setTitle("");
-            setContent("");
-            setTags(["Design", "Blog"]);
+            setTitles({ en: "", pt: "" });
+            setContents({ en: "", pt: "" });
+            setTagsByLang({ en: ["Design", "Blog"], pt: ["Design", "Blog"] });
+            setActiveLanguage("en");
             setFile(null);
             setThumbnail(null);
             setScheduleMode("now");
@@ -78,11 +101,14 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
 
     const handleSchedule = async () => {
         setError(null);
-        if (!title) {
+        const activeTitle = titles[activeLanguage];
+        const activeContent = contents[activeLanguage];
+
+        if (!activeTitle) {
             setError("Title is required");
             return;
         }
-        if (activeMode === "write" && !content) {
+        if (activeMode === "write" && !activeContent) {
             setError("Content is required");
             return;
         }
@@ -102,13 +128,23 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                 thumbnailUrl = null;
             }
 
+            const fallbackTitle = titles.en || titles.pt || "";
+            const fallbackContent = contents.en || contents.pt || (activeMode === "write" ? "" : "File upload content placeholder");
+            const fallbackKeywords = (tagsByLang.en.length ? tagsByLang.en : tagsByLang.pt).join(",");
+
             const postData = {
-                title,
-                content: activeMode === "write" ? content : "File upload content placeholder",
-                keywords: tags.join(","),
+                title: fallbackTitle,
+                content: activeMode === "write" ? fallbackContent : "File upload content placeholder",
+                keywords: fallbackKeywords,
+                titleEn: titles.en || null,
+                titlePt: titles.pt || null,
+                contentEn: contents.en || null,
+                contentPt: contents.pt || null,
+                keywordsEn: tagsByLang.en.join(",") || null,
+                keywordsPt: tagsByLang.pt.join(",") || null,
                 status: scheduleMode === "now" ? "published" : "scheduled",
                 scheduledAt: scheduleMode === "later" && scheduledDate ? scheduledDate.toISOString() : null,
-                thumbnail: thumbnailUrl
+                thumbnail: thumbnailUrl,
             };
 
             if (post) {
@@ -119,9 +155,9 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
 
             onClose();
             // Reset form
-            setTitle("");
-            setContent("");
-            setTags(["Design", "Blog"]);
+            setTitles({ en: "", pt: "" });
+            setContents({ en: "", pt: "" });
+            setTagsByLang({ en: ["Design", "Blog"], pt: ["Design", "Blog"] });
             setFile(null);
             setThumbnail(null);
         } catch (error: any) {
@@ -159,13 +195,16 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
         if (!textareaRef.current) return;
         const start = textareaRef.current.selectionStart;
         const end = textareaRef.current.selectionEnd;
-        const text = content;
+        const text = contents[activeLanguage] || "";
         const before = text.substring(0, start);
         const selection = text.substring(start, end);
         const after = text.substring(end);
 
         const newText = before + prefix + selection + suffix + after;
-        setContent(newText);
+        setContents((prev) => ({
+            ...prev,
+            [activeLanguage]: newText,
+        }));
 
         // Restore focus and selection
         setTimeout(() => {
@@ -177,7 +216,10 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
     };
 
     const removeTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
+        setTagsByLang((prev) => ({
+            ...prev,
+            [activeLanguage]: prev[activeLanguage].filter((tag) => tag !== tagToRemove),
+        }));
     };
 
     if (!isOpen) return null;
@@ -210,6 +252,32 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             {error}
                         </div>
                     )}
+
+                    {/* Language Selector */}
+                    <div className="flex gap-4 mb-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="language"
+                                value="en"
+                                checked={activeLanguage === "en"}
+                                onChange={() => setActiveLanguage("en")}
+                                className="w-4 h-4 text-black focus:ring-black"
+                            />
+                            <span className="text-sm font-medium text-gray-700">English</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="language"
+                                value="pt"
+                                checked={activeLanguage === "pt"}
+                                onChange={() => setActiveLanguage("pt")}
+                                className="w-4 h-4 text-black focus:ring-black"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Portuguese</span>
+                        </label>
+                    </div>
 
                     {/* Mode Toggle */}
                     <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full">
@@ -278,8 +346,11 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             <label className="text-xs font-semibold text-gray-700 ml-1">Post Title <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={titles[activeLanguage] || ""}
+                                onChange={(e) => setTitles((prev) => ({
+                                    ...prev,
+                                    [activeLanguage]: e.target.value,
+                                }))}
                                 placeholder="e.g. The Future of Design"
                                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm placeholder:text-gray-400"
                             />
@@ -388,8 +459,11 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
 
                                 <textarea
                                     ref={textareaRef}
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
+                                    value={contents[activeLanguage] || ""}
+                                    onChange={(e) => setContents((prev) => ({
+                                        ...prev,
+                                        [activeLanguage]: e.target.value,
+                                    }))}
                                     placeholder="Write your article here..."
                                     className="w-full h-[200px] px-4 py-3 bg-transparent focus:outline-none font-mono text-sm resize-none leading-relaxed"
                                 />
@@ -404,7 +478,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             <span className="text-xs text-gray-400">12 tags remaining</span>
                         </div>
                         <div className="flex flex-wrap gap-2 p-2 bg-white border border-gray-200 rounded-lg min-h-[46px] items-center focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all">
-                            {tags.map(tag => (
+                            {tagsByLang[activeLanguage].map(tag => (
                                 <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-xs font-medium text-gray-900 border border-transparent">
                                     {tag}
                                     <button onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
@@ -417,8 +491,11 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = (e.target as HTMLInputElement).value.trim();
-                                        if (val && !tags.includes(val)) {
-                                            setTags([...tags, val]);
+                                        if (val && !tagsByLang[activeLanguage].includes(val)) {
+                                            setTagsByLang((prev) => ({
+                                                ...prev,
+                                                [activeLanguage]: [...prev[activeLanguage], val],
+                                            }));
                                             (e.target as HTMLInputElement).value = '';
                                         }
                                     }

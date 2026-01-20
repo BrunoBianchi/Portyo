@@ -43,7 +43,7 @@ export default function DashboardScheduler() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio?.id) {
@@ -53,6 +53,7 @@ export default function DashboardScheduler() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (isMobile) return;
 
         const hasSeenTour = window.localStorage.getItem("portyo:scheduler-tour-done");
         if (!hasSeenTour) {
@@ -64,7 +65,7 @@ export default function DashboardScheduler() {
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, []);
+    }, [isMobile]);
 
     const schedulerTourSteps: Step[] = [
         {
@@ -310,7 +311,7 @@ export default function DashboardScheduler() {
             <div className="p-8 max-w-6xl mx-auto font-sans">
                 <Joyride
                     steps={schedulerTourSteps}
-                    run={tourRun}
+                    run={tourRun && !isMobile}
                     stepIndex={tourStepIndex}
                     continuous
                     showSkipButton

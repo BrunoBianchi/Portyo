@@ -311,7 +311,7 @@ export default function DashboardAutomation() {
   const [tourRun, setTourRun] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-  const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+  const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
   const [isFirstAutomation, setIsFirstAutomation] = useState(false);
 
   useEffect(() => {
@@ -388,23 +388,25 @@ export default function DashboardAutomation() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isMobile) return;
 
     const rootStyles = getComputedStyle(document.documentElement);
     const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
     if (primaryFromTheme) {
       setTourPrimaryColor(primaryFromTheme);
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isMobile) return;
     if (!isFirstAutomation) return;
 
     const hasSeenTour = window.localStorage.getItem("portyo:automation-builder-tour-done");
     if (!hasSeenTour) {
       setTourRun(true);
     }
-  }, [isFirstAutomation]);
+  }, [isFirstAutomation, isMobile]);
 
   const automationBuilderSteps: Step[] = [
     {
@@ -732,7 +734,7 @@ export default function DashboardAutomation() {
       <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50 flex-1 overflow-hidden">
         <Joyride
           steps={automationBuilderSteps}
-          run={tourRun}
+          run={tourRun && !isMobile}
           stepIndex={tourStepIndex}
           continuous
           showSkipButton

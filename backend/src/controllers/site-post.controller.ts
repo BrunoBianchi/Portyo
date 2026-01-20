@@ -10,7 +10,21 @@ const userRepository = AppDataSource.getRepository(UserEntity);
 
 export const createSitePost = async (req: Request, res: Response) => {
     try {
-        const { title, content, thumbnail, keywords, status, scheduledAt } = req.body;
+        const {
+            title,
+            content,
+            thumbnail,
+            keywords,
+            status,
+            scheduledAt,
+            language,
+            titleEn,
+            titlePt,
+            contentEn,
+            contentPt,
+            keywordsEn,
+            keywordsPt,
+        } = req.body;
         const userId = req.user!.id;
 
         const user = await userRepository.findOneBy({ id: userId });
@@ -19,11 +33,18 @@ export const createSitePost = async (req: Request, res: Response) => {
         }
 
         const post = new SitePostEntity();
-        post.title = title;
-        post.content = content;
+        post.title = title || titleEn || titlePt || "";
+        post.content = content || contentEn || contentPt || "";
         post.thumbnail = thumbnail;
-        post.keywords = keywords;
+        post.keywords = keywords || keywordsEn || keywordsPt || "";
+        post.titleEn = titleEn || (language === "en" ? title : null) || null;
+        post.titlePt = titlePt || (language === "pt" ? title : null) || null;
+        post.contentEn = contentEn || (language === "en" ? content : null) || null;
+        post.contentPt = contentPt || (language === "pt" ? content : null) || null;
+        post.keywordsEn = keywordsEn || (language === "en" ? keywords : null) || null;
+        post.keywordsPt = keywordsPt || (language === "pt" ? keywords : null) || null;
         post.status = status || "draft";
+        post.language = language || "en";
         post.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
         post.user = user;
 
@@ -52,19 +73,40 @@ export const getSitePosts = async (req: Request, res: Response) => {
 export const updateSitePost = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { title, content, thumbnail, keywords, status, scheduledAt } = req.body;
+        const {
+            title,
+            content,
+            thumbnail,
+            keywords,
+            status,
+            scheduledAt,
+            language,
+            titleEn,
+            titlePt,
+            contentEn,
+            contentPt,
+            keywordsEn,
+            keywordsPt,
+        } = req.body;
 
         const post = await sitePostRepository.findOneBy({ id });
         if (!post) {
             throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
         }
 
-        if (title) post.title = title;
-        if (content) post.content = content;
+        if (title !== undefined) post.title = title;
+        if (content !== undefined) post.content = content;
         if (thumbnail !== undefined) post.thumbnail = thumbnail;
-        if (keywords) post.keywords = keywords;
+        if (keywords !== undefined) post.keywords = keywords;
         if (status) post.status = status;
+        if (language) post.language = language;
         if (scheduledAt !== undefined) post.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+        if (titleEn !== undefined) post.titleEn = titleEn;
+        if (titlePt !== undefined) post.titlePt = titlePt;
+        if (contentEn !== undefined) post.contentEn = contentEn;
+        if (contentPt !== undefined) post.contentPt = contentPt;
+        if (keywordsEn !== undefined) post.keywordsEn = keywordsEn;
+        if (keywordsPt !== undefined) post.keywordsPt = keywordsPt;
 
         await sitePostRepository.save(post);
 
@@ -93,6 +135,8 @@ export const deleteSitePost = async (req: Request, res: Response) => {
 
 export const getPublicSitePosts = async (req: Request, res: Response) => {
     try {
+        const lang = req.query.lang as string || 'en';
+        
         const posts = await sitePostRepository.find({
             where: {
                 status: "published"
@@ -106,7 +150,25 @@ export const getPublicSitePosts = async (req: Request, res: Response) => {
         const now = new Date();
         const visiblePosts = posts.filter(p => !p.scheduledAt || p.scheduledAt <= now);
 
-        return res.json(visiblePosts);
+        const localizedPosts = visiblePosts
+            .map((post) => {
+                const isPt = lang === "pt";
+                const title = isPt ? post.titlePt : post.titleEn ?? post.title;
+                const content = isPt ? post.contentPt : post.contentEn ?? post.content;
+                const keywords = isPt ? post.keywordsPt : post.keywordsEn ?? post.keywords;
+
+                if (!title || !content) return null;
+
+                return {
+                    ...post,
+                    title,
+                    content,
+                    keywords,
+                };
+            })
+            .filter(Boolean);
+
+        return res.json(localizedPosts);
     } catch (error) {
         logger.error("Error fetching public site posts", error);
         return res.status(500).json({ message: "Internal server error" });
@@ -116,6 +178,7 @@ export const getPublicSitePosts = async (req: Request, res: Response) => {
 export const getPublicSitePost = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        const lang = req.query.lang as string || 'en';
         const post = await sitePostRepository.findOne({
             where: {
                 id,
@@ -127,8 +190,25 @@ export const getPublicSitePost = async (req: Request, res: Response) => {
             throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
         }
 
-        return res.json(post);
+        const isPt = lang === "pt";
+        const title = isPt ? post.titlePt : post.titleEn ?? post.title;
+        const content = isPt ? post.contentPt : post.contentEn ?? post.content;
+        const keywords = isPt ? post.keywordsPt : post.keywordsEn ?? post.keywords;
+
+        if (!title || !content) {
+            throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
+        }
+
+        return res.json({
+            ...post,
+            title,
+            content,
+            keywords,
+        });
     } catch (error) {
+        if (error instanceof ApiError) {
+            return res.status(error.code).json({ message: error.message });
+        }
         logger.error("Error fetching public site post", error);
         return res.status(500).json({ message: "Internal server error" });
     }

@@ -58,6 +58,7 @@ await i18n
     ns: [
       "nav",
       "meta",
+      "themes",
       "dashboard",
       "auth",
       "home",

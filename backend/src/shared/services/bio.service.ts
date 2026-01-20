@@ -66,6 +66,8 @@ export interface EffectsSettings {
     floatingElementsSpeed?: number;
     floatingElementsOpacity?: number;
     floatingElementsBlur?: number;
+    customFloatingElementText?: string;
+    customFloatingElementImage?: string;
 }
 
 export interface UpdateBioOptions {
@@ -236,7 +238,8 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
         applySettings(bio, effectsSettings, [
             'enableParallax', 'parallaxIntensity', 'parallaxDepth', 'parallaxAxis', 'parallaxLayers',
             'floatingElements', 'floatingElementsType', 'floatingElementsColor', 'floatingElementsDensity', 'floatingElementsSize',
-            'floatingElementsSpeed', 'floatingElementsOpacity', 'floatingElementsBlur'
+            'floatingElementsSpeed', 'floatingElementsOpacity', 'floatingElementsBlur',
+            'customFloatingElementText', 'customFloatingElementImage'
         ]);
     }
 

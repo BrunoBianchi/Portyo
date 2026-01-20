@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { api } from "~/services/api";
+import AuthContext from "~/contexts/auth.context";
 
 export type BioBlock = {
     id: string;
@@ -256,6 +257,7 @@ interface Bio {
     customFontUrl?: string;
     customFontName?: string;
     verified?: boolean;
+    buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline" | "architect" | "material" | "brutalist" | "outline-thick";
     // Parallax settings
     enableParallax?: boolean;
     parallaxIntensity?: number;   // 0-100
@@ -276,13 +278,15 @@ interface Bio {
         positionY?: number;
     }>;
     floatingElements?: boolean;
-    floatingElementsType?: string; // circles, hearts, fire, stars, sparkles, music, leaves, snow, bubbles, confetti, diamonds, petals, emojis
+    floatingElementsType?: string; // circles, hearts, fire, stars, sparkles, music, leaves, snow, bubbles, confetti, diamonds, petals, custom-emoji, custom-image
     floatingElementsColor?: string;
     floatingElementsDensity?: number; // count
     floatingElementsSize?: number; // px
     floatingElementsSpeed?: number; // seconds
     floatingElementsOpacity?: number; // 0-1
     floatingElementsBlur?: number; // px
+    customFloatingElementText?: string;
+    customFloatingElementImage?: string;
 }
 
 interface BioData {
@@ -300,6 +304,7 @@ const BioContext = createContext<BioData>({} as BioData);
 export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [bios, setBios] = useState<Bio[]>([]);
     const [bio, setBio] = useState<Bio | null>(null);
+    const { user } = useContext(AuthContext);
 
     const getBios = async () => {
         try {
@@ -355,9 +360,15 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     useEffect(() => {
+        if (!user) {
+            setBios([]);
+            setBio(null);
+            return;
+        }
+
         getBios();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [user]);
 
     return (
         <BioContext.Provider value={{ bio, bios, createBio, getBio, getBios, updateBio, selectBio }}>

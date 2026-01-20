@@ -237,7 +237,7 @@ import { getPublicSitePosts, type SitePost } from "~/services/site-blog.service"
 import { format } from "date-fns";
 
 function ProductsDropdown() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const buttonId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
@@ -245,6 +245,8 @@ function ProductsDropdown() {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const closeTimerRef = useRef<number | null>(null);
   const [latestPosts, setLatestPosts] = useState<SitePost[]>([]);
+  const currentLang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
+  const withLang = (to: string) => (to.startsWith("/") ? `/${currentLang}${to}` : `/${currentLang}/${to}`);
 
   function closeIfFocusLeft(currentTarget: HTMLElement) {
     const active = document.activeElement;
@@ -253,10 +255,10 @@ function ProductsDropdown() {
   }
 
   useEffect(() => {
-    getPublicSitePosts().then(posts => {
+    getPublicSitePosts(currentLang).then(posts => {
       if (posts) setLatestPosts(posts.slice(0, 3));
     });
-  }, []);
+  }, [currentLang]);
 
   useEffect(() => {
     if (!open) return;
@@ -357,7 +359,7 @@ function ProductsDropdown() {
                 </div>
                 <div className="flex flex-col gap-3">
                   {latestPosts.length > 0 ? latestPosts.map(post => (
-                    <Link key={post.id} to={`/site-blog/${post.id}`} className="group block">
+                    <Link key={post.id} to={withLang(`/blog/${post.id}`)} className="group block">
                       <div className="text-sm font-medium text-text-main group-hover:text-primary transition-colors line-clamp-2">
                         {post.title}
                       </div>
@@ -656,7 +658,6 @@ export default function Navbar() {
   } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
-  const isBlogRoute = pathnameNoLang.startsWith("/site-blog") || pathnameNoLang.startsWith("/blog");
 
   const onChangeLang = (event: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(event.target.value);
@@ -800,18 +801,16 @@ export default function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-6 pt-2">
-            {!isBlogRoute && (
-              <div className="flex items-center gap-2">
-                <LanguageSelect
-                  value={i18n.resolvedLanguage || i18n.language}
-                  onChange={(value) => {
-                    i18n.changeLanguage(value);
-                    navigate(buildLocalizedPath(value), { replace: true });
-                  }}
-                  buttonClassName="w-full min-w-[120px] rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-1.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <LanguageSelect
+                value={i18n.resolvedLanguage || i18n.language}
+                onChange={(value) => {
+                  i18n.changeLanguage(value);
+                  navigate(buildLocalizedPath(value), { replace: true });
+                }}
+                buttonClassName="w-full min-w-[120px] rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-1.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
             {canShowAuthLinks ? (
               <>
                 <Link to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)} className="text-sm font-medium hover:text-primary transition-colors">{t("nav.signIn")}</Link>
@@ -883,22 +882,20 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {!isBlogRoute && (
-              <div className="flex flex-col gap-3">
-                <label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  {t("nav.language")}
-                </label>
-                <LanguageSelect
-                  value={i18n.resolvedLanguage || i18n.language}
-                  onChange={(value) => {
-                    i18n.changeLanguage(value);
-                    navigate(buildLocalizedPath(value), { replace: true });
-                  }}
-                  buttonClassName="w-full rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-2.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
-                  menuClassName="w-full"
-                />
-              </div>
-            )}
+            <div className="flex flex-col gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                {t("nav.language")}
+              </label>
+              <LanguageSelect
+                value={i18n.resolvedLanguage || i18n.language}
+                onChange={(value) => {
+                  i18n.changeLanguage(value);
+                  navigate(buildLocalizedPath(value), { replace: true });
+                }}
+                buttonClassName="w-full rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-2.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
+                menuClassName="w-full"
+              />
+            </div>
 
             <div className="mt-auto flex flex-col gap-3">
               {canShowAuthLinks ? (

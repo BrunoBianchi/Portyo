@@ -57,18 +57,19 @@ function getExcerpt(content: string, maxChars = 150): string {
 }
 
 export default function BlogIndex() {
-    const { t } = useTranslation("blogPage");
+    const { t, i18n } = useTranslation("blogPage");
     const [posts, setPosts] = useState<SitePost[]>([]);
     const [loading, setLoading] = useState(true);
     const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
     const cardRefs = useRef<(HTMLElement | null)[]>([]);
 
     useEffect(() => {
-        getPublicSitePosts().then((data) => {
+        const lang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
+        getPublicSitePosts(lang).then((data) => {
             setPosts(data || []);
             setLoading(false);
         });
-    }, []);
+    }, [i18n.language, i18n.resolvedLanguage]);
 
     // Intersection Observer for staggered entrance animations
     useEffect(() => {
@@ -131,7 +132,7 @@ export default function BlogIndex() {
                             return (
                                 <Link
                                     key={post.id}
-                                    to={`/blog/${post.id}`}
+                                    to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${post.id}`}
                                     ref={(el) => { cardRefs.current[index] = el; }}
                                     data-index={index}
                                     className={`

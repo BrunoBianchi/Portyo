@@ -42,7 +42,7 @@ export default function DashboardTemplates() {
     const [tourRun, setTourRun] = useState(false);
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
 
     useEffect(() => {
         if (bio?.id) {
@@ -52,6 +52,7 @@ export default function DashboardTemplates() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (isMobile) return;
 
         const hasSeenTour = window.localStorage.getItem("portyo:templates-tour-done");
         if (!hasSeenTour) {
@@ -63,7 +64,7 @@ export default function DashboardTemplates() {
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, []);
+    }, [isMobile]);
 
     const templatesTourSteps: Step[] = [
         {
@@ -164,7 +165,7 @@ export default function DashboardTemplates() {
             <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
                 <Joyride
                     steps={templatesTourSteps}
-                    run={tourRun}
+                    run={tourRun && !isMobile}
                     stepIndex={tourStepIndex}
                     continuous
                     showSkipButton

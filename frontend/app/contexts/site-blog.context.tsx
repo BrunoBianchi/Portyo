@@ -13,6 +13,13 @@ export type SitePost = {
     createdAt: string;
     updatedAt: string;
     thumbnail?: string | null;
+    language?: string;
+    titleEn?: string | null;
+    titlePt?: string | null;
+    contentEn?: string | null;
+    contentPt?: string | null;
+    keywordsEn?: string | null;
+    keywordsPt?: string | null;
 };
 
 interface SiteBlogContextType {
