@@ -31,9 +31,13 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            // Use precise package folder matching to avoid over-matching
+            const isReactCore = /node_modules[\/\\](react|react-dom|scheduler)[\/\\]/.test(id);
+            const isReactRouter = id.includes("react-router") || id.includes("@react-router");
+            
+            if (isReactCore || isReactRouter) return "vendor";
             if (id.includes("lucide-react")) return "icons";
             if (id.includes("date-fns")) return "utils";
-            if (id.includes("react-dom") || id.includes("react-router") || id.includes("scheduler") || id.includes("react")) return "vendor";
             return "libs";
           }
         },
