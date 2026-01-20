@@ -10,6 +10,38 @@ import { ApiError, APIErrors } from "../../../shared/errors/api-error";
 const router: Router = Router();
 
 const onboardingSchema = z.object({
+    theme: z.object({
+        name: z.string().optional(),
+        styles: z.object({
+            bgType: z.string().optional(),
+            bgColor: z.string().optional(),
+            bgSecondaryColor: z.string().optional(),
+            cardStyle: z.string().optional(),
+            cardBackgroundColor: z.string().optional(),
+            cardBorderColor: z.string().optional(),
+            cardBorderWidth: z.number().optional(),
+            cardBorderRadius: z.number().optional(),
+            cardShadow: z.string().optional(),
+            cardPadding: z.number().optional(),
+            cardOpacity: z.number().optional(),
+            cardBlur: z.number().optional(),
+            usernameColor: z.string().optional(),
+            font: z.string().optional(),
+            maxWidth: z.number().optional(),
+            imageStyle: z.string().optional(),
+            enableParallax: z.boolean().optional(),
+            parallaxIntensity: z.number().optional(),
+            parallaxDepth: z.number().optional(),
+            floatingElements: z.boolean().optional(),
+            floatingElementsType: z.string().optional(),
+            floatingElementsColor: z.string().optional(),
+            floatingElementsDensity: z.number().optional(),
+            floatingElementsSize: z.number().optional(),
+            floatingElementsSpeed: z.number().optional(),
+            floatingElementsOpacity: z.number().optional(),
+            floatingElementsBlur: z.number().optional(),
+        }).optional(),
+    }).optional().nullable(),
     aboutYou: z.string().min(1, "Por favor, descreva sobre você"),
     education: z.object({
         hasGraduation: z.boolean(),
@@ -17,7 +49,10 @@ const onboardingSchema = z.object({
     }),
     profession: z.string().min(1, "Por favor, informe sua profissão"),
     skills: z.array(z.string()),
-    goals: z.string().min(1, "Por favor, informe seu objetivo"),
+    goals: z.union([
+        z.array(z.string()).min(1, "Por favor, informe seu objetivo"),
+        z.string().min(1, "Por favor, informe seu objetivo")
+    ]),
 });
 
 router.post("/generate-bio", authMiddleware, async (req, res, next) => {
@@ -27,7 +62,15 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
             throw new ApiError(APIErrors.unauthorizedError, "User not authenticated", 401);
         }
 
-        const answers: OnboardingAnswers = onboardingSchema.parse(req.body);
+        const rawAnswers = onboardingSchema.parse(req.body);
+        const normalizedGoals = Array.isArray(rawAnswers.goals)
+            ? rawAnswers.goals
+            : [rawAnswers.goals];
+
+        const answers: OnboardingAnswers = {
+            ...rawAnswers,
+            goals: normalizedGoals,
+        };
 
         const userRepository = AppDataSource.getRepository(UserEntity);
         const bioRepository = AppDataSource.getRepository(BioEntity);
@@ -71,6 +114,26 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
             if (settings.font) bio.font = settings.font;
             if (settings.cardStyle) bio.cardStyle = settings.cardStyle;
             if (settings.cardBackgroundColor) bio.cardBackgroundColor = settings.cardBackgroundColor;
+            if (settings.cardBorderColor) bio.cardBorderColor = settings.cardBorderColor;
+            if (typeof settings.cardBorderWidth === "number") bio.cardBorderWidth = settings.cardBorderWidth;
+            if (typeof settings.cardBorderRadius === "number") bio.cardBorderRadius = settings.cardBorderRadius;
+            if (settings.cardShadow) bio.cardShadow = settings.cardShadow;
+            if (typeof settings.cardPadding === "number") bio.cardPadding = settings.cardPadding;
+            if (typeof settings.cardOpacity === "number") bio.cardOpacity = settings.cardOpacity;
+            if (typeof settings.cardBlur === "number") bio.cardBlur = settings.cardBlur;
+            if (typeof settings.maxWidth === "number") bio.maxWidth = settings.maxWidth;
+            if (settings.imageStyle) bio.imageStyle = settings.imageStyle;
+            if (typeof settings.enableParallax === "boolean") bio.enableParallax = settings.enableParallax;
+            if (typeof settings.parallaxIntensity === "number") bio.parallaxIntensity = settings.parallaxIntensity;
+            if (typeof settings.parallaxDepth === "number") bio.parallaxDepth = settings.parallaxDepth;
+            if (typeof settings.floatingElements === "boolean") bio.floatingElements = settings.floatingElements;
+            if (settings.floatingElementsType) bio.floatingElementsType = settings.floatingElementsType;
+            if (settings.floatingElementsColor) bio.floatingElementsColor = settings.floatingElementsColor;
+            if (typeof settings.floatingElementsDensity === "number") bio.floatingElementsDensity = settings.floatingElementsDensity;
+            if (typeof settings.floatingElementsSize === "number") bio.floatingElementsSize = settings.floatingElementsSize;
+            if (typeof settings.floatingElementsSpeed === "number") bio.floatingElementsSpeed = settings.floatingElementsSpeed;
+            if (typeof settings.floatingElementsOpacity === "number") bio.floatingElementsOpacity = settings.floatingElementsOpacity;
+            if (typeof settings.floatingElementsBlur === "number") bio.floatingElementsBlur = settings.floatingElementsBlur;
         }
 
         await bioRepository.save(bio);

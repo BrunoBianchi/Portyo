@@ -271,7 +271,60 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   }
 
   if (block.type === "image") {
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="max-width:100%; border-radius:24px;" />\n</section>`;
+    // Build transform CSS
+    const scale = block.imageScale ? block.imageScale / 100 : 1;
+    const rotation = block.imageRotation || 0;
+    const transforms = [];
+    if (scale !== 1) transforms.push(`scale(${scale})`);
+    if (rotation !== 0) transforms.push(`rotate(${rotation}deg)`);
+    const transformStyle = transforms.length > 0 ? `transform:${transforms.join(' ')};` : '';
+
+    // Build filter CSS
+    const filters = [];
+    if (block.imageBlur) filters.push(`blur(${block.imageBlur}px)`);
+    if (block.imageBrightness && block.imageBrightness !== 100) filters.push(`brightness(${block.imageBrightness / 100})`);
+    if (block.imageContrast && block.imageContrast !== 100) filters.push(`contrast(${block.imageContrast / 100})`);
+    if (block.imageSaturation && block.imageSaturation !== 100) filters.push(`saturate(${block.imageSaturation / 100})`);
+    if (block.imageGrayscale) filters.push('grayscale(1)');
+    if (block.imageSepia) filters.push('sepia(1)');
+    const filterStyle = filters.length > 0 ? `filter:${filters.join(' ')};` : '';
+
+    // Border styles
+    const borderRadius = block.imageBorderRadius || 24;
+    const borderWidth = block.imageBorderWidth || 0;
+    const borderColor = block.imageBorderColor || '#000000';
+    const borderStyle = borderWidth > 0 ? `border:${borderWidth}px solid ${borderColor};` : '';
+
+    // Shadow styles
+    const shadowMap: Record<string, string> = {
+      'none': '',
+      'sm': 'box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);',
+      'md': 'box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);',
+      'lg': 'box-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);',
+      'xl': 'box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);',
+      '2xl': 'box-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);',
+    };
+    const shadowStyle = shadowMap[block.imageShadow || 'none'] || '';
+
+    // Hover effect classes
+    const hoverEffect = block.imageHoverEffect || 'none';
+    const hoverId = `img-hover-${block.id}`;
+    let hoverCss = '';
+    if (hoverEffect !== 'none') {
+      if (hoverEffect === 'zoom') {
+        hoverCss = `<style>.${hoverId}:hover { transform:scale(1.1) ${rotation !== 0 ? `rotate(${rotation}deg)` : ''}; }</style>`;
+      } else if (hoverEffect === 'lift') {
+        hoverCss = `<style>.${hoverId}:hover { transform:translateY(-8px) ${scale !== 1 ? `scale(${scale})` : ''} ${rotation !== 0 ? `rotate(${rotation}deg)` : ''}; box-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25); }</style>`;
+      } else if (hoverEffect === 'glow') {
+        hoverCss = `<style>.${hoverId}:hover { box-shadow:0 0 30px rgba(99, 102, 241, 0.6), 0 0 60px rgba(99, 102, 241, 0.3); }</style>`;
+      } else if (hoverEffect === 'tilt') {
+        hoverCss = `<style>.${hoverId}:hover { transform:perspective(1000px) rotateY(-5deg) rotateX(5deg) ${scale !== 1 ? `scale(${scale})` : ''}; }</style>`;
+      }
+    }
+
+    const imgStyle = `max-width:100%; border-radius:${borderRadius}px; ${borderStyle} ${shadowStyle} ${transformStyle} ${filterStyle} transition:all 0.3s ease;`;
+    
+    return `\n${extraHtml}${hoverCss}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img class="${hoverId}" src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="${imgStyle}" />\n</section>`;
   }
 
   if (block.type === "socials") {
@@ -808,6 +861,13 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     @keyframes wobble { 0% { transform: translateX(0%); } 15% { transform: translateX(-25%) rotate(-5deg); } 30% { transform: translateX(20%) rotate(3deg); } 45% { transform: translateX(-15%) rotate(-3deg); } 60% { transform: translateX(10%) rotate(2deg); } 75% { transform: translateX(-5%) rotate(-1deg); } 100% { transform: translateX(0%); } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideLeft { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideRight { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes flipIn { from { opacity: 0; transform: perspective(400px) rotateY(90deg); } to { opacity: 1; transform: perspective(400px) rotateY(0deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(3deg); } }
     ${amoebaKeyframesContent}
   `;
 
@@ -1041,7 +1101,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     // Layer 1: Back layer, slower movement
     if (bio.isPreview) {
       extraHtml = `
-        <div id="palm-layer-1" style="
+        <div id="palm-layer-1" data-parallax-layer data-parallax-speed="0.2" style="
           position: fixed;
           top: 0;
           left: 0;
@@ -1050,11 +1110,12 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           background-image: url('/background/Design sem nome (4).svg');
           background-size: 600px 600px;
           background-repeat: repeat;
+          transform: rotate(15deg) translateZ(0);
           opacity: 0.4;
           z-index: 0;
           pointer-events: none;
         "></div>
-        <div id="palm-layer-2" style="
+        <div id="palm-layer-2" data-parallax-layer data-parallax-speed="0.5" style="
           position: fixed;
           top: 0;
           left: 0;
@@ -1063,6 +1124,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           background-image: url('/background/Design sem nome (5).svg');
           background-size: 500px 500px;
           background-repeat: repeat;
+          transform: rotate(-10deg) translateZ(0);
           opacity: 0.6;
           z-index: 1;
           pointer-events: none;
@@ -1070,7 +1132,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       `;
     } else {
       extraHtml = `
-        <div id="palm-layer-1" style="
+        <div id="palm-layer-1" data-parallax-layer data-parallax-speed="0.2" style="
           position: fixed;
           top: -50%;
           left: -50%;
@@ -1085,7 +1147,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           pointer-events: none;
           will-change: transform;
         "></div>
-        <div id="palm-layer-2" style="
+        <div id="palm-layer-2" data-parallax-layer data-parallax-speed="0.5" style="
           position: fixed;
           top: -50%;
           left: -50%;
@@ -1100,20 +1162,6 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           pointer-events: none;
           will-change: transform;
         "></div>
-        <script>
-          document.addEventListener('scroll', function() {
-            const scrolled = window.scrollY;
-            const layer1 = document.getElementById('palm-layer-1');
-            const layer2 = document.getElementById('palm-layer-2');
-            
-            if (layer1) {
-              layer1.style.transform = 'rotate(15deg) translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
-            }
-            if (layer2) {
-              layer2.style.transform = 'rotate(-10deg) translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
-            }
-          }, { passive: true });
-        </script>
       `;
     }
 
@@ -1127,7 +1175,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     // We inject the layers into the HTML structure
     if (bio.isPreview) {
       extraHtml = `
-        <div id="wheat-layer-1" style="
+        <div id="wheat-layer-1" data-parallax-layer data-parallax-speed="0.2" style="
           position: fixed;
           top: 0;
           left: 0;
@@ -1136,11 +1184,12 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           background-image: url('/background/wheat/Design sem nome (7).svg');
           background-size: 600px 600px;
           background-repeat: repeat;
+          transform: rotate(15deg) translateZ(0);
           opacity: 0.4;
           z-index: 0;
           pointer-events: none;
         "></div>
-        <div id="wheat-layer-2" style="
+        <div id="wheat-layer-2" data-parallax-layer data-parallax-speed="0.5" style="
           position: fixed;
           top: 0;
           left: 0;
@@ -1149,6 +1198,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           background-image: url('/background/wheat/Design sem nome (8).svg');
           background-size: 500px 500px;
           background-repeat: repeat;
+          transform: rotate(-10deg) translateZ(0);
           opacity: 0.6;
           z-index: 1;
           pointer-events: none;
@@ -1156,7 +1206,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       `;
     } else {
       extraHtml = `
-        <div id="wheat-layer-1" style="
+        <div id="wheat-layer-1" data-parallax-layer data-parallax-speed="0.2" style="
           position: fixed;
           top: -50%;
           left: -50%;
@@ -1171,7 +1221,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           pointer-events: none;
           will-change: transform;
         "></div>
-        <div id="wheat-layer-2" style="
+        <div id="wheat-layer-2" data-parallax-layer data-parallax-speed="0.5" style="
           position: fixed;
           top: -50%;
           left: -50%;
@@ -1186,20 +1236,6 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
           pointer-events: none;
           will-change: transform;
         "></div>
-        <script>
-          document.addEventListener('scroll', function() {
-            const scrolled = window.scrollY;
-            const layer1 = document.getElementById('wheat-layer-1');
-            const layer2 = document.getElementById('wheat-layer-2');
-            
-            if (layer1) {
-              layer1.style.transform = 'rotate(15deg) translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
-            }
-            if (layer2) {
-              layer2.style.transform = 'rotate(-10deg) translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
-            }
-          }, { passive: true });
-        </script>
       `;
     }
 
@@ -1243,6 +1279,121 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   } else if (bio.bgType === 'steel') {
     // Brushed steel metallic texture
     bgStyle = `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 1px 100%, 100% 1px;`;
+  } else if (bio.bgType === 'aurora') {
+    // Northern lights aurora effect with animation
+    bgStyle = `background: linear-gradient(135deg, ${bgColor} 0%, ${bgSecondary} 50%, ${bgColor} 100%);`;
+    extraHtml += `
+      <div style="position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;">
+        <div style="position:absolute; inset:-50%; background: radial-gradient(ellipse 80% 50% at 50% 120%, ${bgSecondary}80, transparent), radial-gradient(ellipse 60% 40% at 30% 100%, ${bgColor}60, transparent); animation: aurora 15s ease-in-out infinite alternate; will-change:transform;"></div>
+      </div>
+      <style>@keyframes aurora { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-10%) scale(1.1); } }</style>
+    `;
+  } else if (bio.bgType === 'mesh-gradient') {
+    // Modern mesh gradient with multiple color stops
+    bgStyle = `background-color: ${bgColor}; background-image: radial-gradient(at 40% 20%, ${bgSecondary} 0px, transparent 50%), radial-gradient(at 80% 0%, ${bgColor} 0px, transparent 50%), radial-gradient(at 0% 50%, ${bgSecondary} 0px, transparent 50%), radial-gradient(at 80% 50%, ${bgColor}80 0px, transparent 50%), radial-gradient(at 0% 100%, ${bgSecondary}80 0px, transparent 50%), radial-gradient(at 80% 100%, ${bgColor} 0px, transparent 50%), radial-gradient(at 0% 0%, ${bgSecondary} 0px, transparent 50%);`;
+  } else if (bio.bgType === 'gradient') {
+    // Simple linear gradient
+    bgStyle = `background: linear-gradient(135deg, ${bgColor} 0%, ${bgSecondary} 100%);`;
+  } else if (bio.bgType === 'gradient-animated') {
+    // Animated gradient background
+    bgStyle = `background: linear-gradient(-45deg, ${bgColor}, ${bgSecondary}, ${bgColor}, ${bgSecondary}); background-size: 400% 400%; animation: gradientMove 15s ease infinite;`;
+    extraHtml += `<style>@keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }</style>`;
+  } else if (bio.bgType === 'geometric') {
+    // Modern geometric pattern
+    bgStyle = `background-color: ${bgColor}; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${encodeURIComponent(bgSecondary)}' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");`;
+  } else if (bio.bgType === 'bubbles') {
+    // Floating bubbles animated effect
+    bgStyle = `background-color: ${bgColor};`;
+    extraHtml += `
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;">
+        ${[...Array(10)].map((_, i) => `<div style="position:absolute; bottom:-100px; left:${10 + i * 9}%; width:${20 + i * 5}px; height:${20 + i * 5}px; background: ${bgSecondary}40; border-radius:50%; animation: floatBubble ${5 + i * 2}s linear infinite; animation-delay:${i * 0.5}s;"></div>`).join('')}
+      </div>
+      <style>@keyframes floatBubble { 0% { transform: translateY(0) scale(1); opacity: 0.6; } 100% { transform: translateY(-120vh) scale(0.4); opacity: 0; } }</style>
+    `;
+  } else if (bio.bgType === 'confetti') {
+    // Falling confetti effect
+    bgStyle = `background-color: ${bgColor};`;
+    const colors = [bgSecondary, bgColor, '#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3'];
+    extraHtml += `
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;">
+        ${[...Array(30)].map((_, i) => `<div style="position:absolute; top:-20px; left:${Math.random() * 100}%; width:${8 + Math.random() * 8}px; height:${8 + Math.random() * 8}px; background: ${colors[i % colors.length]}; animation: fallConfetti ${3 + Math.random() * 4}s linear infinite; animation-delay:${Math.random() * 5}s; transform: rotate(${Math.random() * 360}deg);"></div>`).join('')}
+      </div>
+      <style>@keyframes fallConfetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(120vh) rotate(720deg); opacity: 0.3; } }</style>
+    `;
+  } else if (bio.bgType === 'starfield') {
+    // Twinkling starfield effect
+    bgStyle = `background: radial-gradient(ellipse at bottom, #1B2838 0%, #090A0F 100%);`;
+    extraHtml += `
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;">
+        ${[...Array(50)].map((_, i) => `<div style="position:absolute; top:${Math.random() * 100}%; left:${Math.random() * 100}%; width:${1 + Math.random() * 2}px; height:${1 + Math.random() * 2}px; background:white; border-radius:50%; animation: twinkle ${2 + Math.random() * 3}s ease-in-out infinite; animation-delay:${Math.random() * 3}s;"></div>`).join('')}
+      </div>
+      <style>@keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }</style>
+    `;
+  } else if (bio.bgType === 'rain') {
+    // Falling rain effect
+    bgStyle = `background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);`;
+    extraHtml += `
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;">
+        ${[...Array(40)].map((_, i) => `<div style="position:absolute; top:-20px; left:${Math.random() * 100}%; width:1px; height:${15 + Math.random() * 20}px; background: linear-gradient(to bottom, transparent, rgba(174, 194, 224, 0.5)); animation: rainFall ${0.5 + Math.random() * 0.5}s linear infinite; animation-delay:${Math.random() * 2}s;"></div>`).join('')}
+      </div>
+      <style>@keyframes rainFall { 0% { transform: translateY(0); } 100% { transform: translateY(120vh); } }</style>
+    `;
+  } else if (bio.bgType === 'particles-float') {
+    // Floating particles animation
+    bgStyle = `background-color: ${bgColor};`;
+    extraHtml += `
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none;">
+        ${[...Array(20)].map((_, i) => `<div style="position:absolute; top:${Math.random() * 100}%; left:${Math.random() * 100}%; width:${4 + Math.random() * 8}px; height:${4 + Math.random() * 8}px; background: ${bgSecondary}60; border-radius:50%; animation: floatParticle ${8 + Math.random() * 8}s ease-in-out infinite; animation-delay:${Math.random() * 5}s;"></div>`).join('')}
+      </div>
+      <style>@keyframes floatParticle { 0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; } 25% { transform: translate(20px, -30px) scale(1.1); opacity: 0.8; } 50% { transform: translate(-20px, -60px) scale(0.9); opacity: 0.6; } 75% { transform: translate(10px, -30px) scale(1.05); opacity: 0.7; } }</style>
+    `;
+  }
+
+  if (bio.enableParallax && Array.isArray(bio.parallaxLayers) && bio.parallaxLayers.length > 0) {
+    const layersHtml = bio.parallaxLayers.map((layer: any, index: number) => {
+      const id = layer.id || `layer-${index}`;
+      const image = layer.image || '';
+      const speed = typeof layer.speed === 'number' ? layer.speed : 0.2;
+      const axis = layer.axis || 'y';
+      const opacity = typeof layer.opacity === 'number' ? layer.opacity : 0.6;
+      const size = typeof layer.size === 'number' ? layer.size : 600;
+      const repeat = layer.repeat !== false;
+      const rotate = typeof layer.rotate === 'number' ? layer.rotate : 0;
+      const blur = typeof layer.blur === 'number' ? layer.blur : 0;
+      const zIndex = typeof layer.zIndex === 'number' ? layer.zIndex : 1;
+      const posX = typeof layer.positionX === 'number' ? layer.positionX : 0;
+      const posY = typeof layer.positionY === 'number' ? layer.positionY : 0;
+
+      if (!image) return '';
+
+      return `
+        <div id="parallax-${id}" data-parallax-layer data-parallax-speed="${speed}" data-parallax-axis="${axis}" style="
+          position: fixed;
+          top: ${posY}px;
+          left: ${posX}px;
+          width: ${repeat ? '200%' : size + 'px'};
+          height: ${repeat ? '200%' : size + 'px'};
+          background-image: url('${image}');
+          background-size: ${repeat ? size + 'px ' + size + 'px' : 'contain'};
+          background-repeat: ${repeat ? 'repeat' : 'no-repeat'};
+          background-position: center;
+          transform: rotate(${rotate}deg) translateZ(0);
+          opacity: ${opacity};
+          z-index: ${zIndex};
+          pointer-events: none;
+          filter: blur(${blur}px);
+          will-change: transform;
+        "></div>
+      `;
+    }).join('');
+
+    if (layersHtml.trim()) {
+      extraHtml += `
+        <div id="parallax-layers" style="position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;">
+          ${layersHtml}
+        </div>
+      `;
+    }
   }
 
   let videoBgHtml = (bio.bgType === 'video' && bio.bgVideo && bio.bgType !== 'palm-leaves') ? `
@@ -1255,9 +1406,180 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     <div style="position:fixed; inset:0; z-index:-1; background:rgba(0,0,0,0.2);"></div>
   ` : '';
 
-  if (bio.bgType === 'palm-leaves' || bio.bgType === 'wheat') {
-    videoBgHtml += extraHtml;
-  }
+  const backgroundHtml = `${videoBgHtml}${extraHtml}`;
+
+  const previewEffectsScript = bio.isPreview ? `
+    <script>
+      (function() {
+        try {
+          const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (prefersReducedMotion) return;
+
+          const enableParallax = ${bio.enableParallax ? 'true' : 'false'};
+          const intensity = ${typeof bio.parallaxIntensity === 'number' ? bio.parallaxIntensity : 50} / 100;
+          const depth = ${typeof bio.parallaxDepth === 'number' ? bio.parallaxDepth : 50} / 100;
+          const defaultAxis = '${bio.parallaxAxis || 'y'}';
+
+          const bgEl = document.getElementById('portyo-bg');
+          let bgBaseX = '50%';
+          let bgBaseY = '0px';
+          if (bgEl) {
+            const style = window.getComputedStyle(bgEl);
+            const pos = (style.backgroundPosition || '50% 0px').split(' ');
+            bgBaseX = pos[0] || '50%';
+            bgBaseY = pos[1] || '0px';
+          }
+
+          const layers = Array.prototype.slice.call(document.querySelectorAll('[data-parallax-layer]'));
+          layers.forEach(function(layer) {
+            if (!layer.dataset.parallaxBase) {
+              layer.dataset.parallaxBase = layer.style.transform || '';
+            }
+          });
+
+          function applyParallax() {
+            const scrolled = window.scrollY || 0;
+            if (enableParallax && bgEl) {
+              const delta = scrolled * 0.25 * intensity * (0.4 + depth);
+              const x = (defaultAxis === 'x' || defaultAxis === 'xy') ? delta : 0;
+              const y = (defaultAxis === 'y' || defaultAxis === 'xy') ? delta : 0;
+              bgEl.style.backgroundPosition = 'calc(' + bgBaseX + ' + ' + x.toFixed(2) + 'px) calc(' + bgBaseY + ' + ' + y.toFixed(2) + 'px)';
+            }
+            layers.forEach(function(layer) {
+              const base = layer.dataset.parallaxBase || '';
+              const speed = parseFloat(layer.dataset.parallaxSpeed || '0.2');
+              const axis = layer.dataset.parallaxAxis || defaultAxis;
+              const delta = scrolled * speed * intensity * (0.4 + depth);
+              const x = (axis === 'x' || axis === 'xy') ? delta : 0;
+              const y = (axis === 'y' || axis === 'xy') ? delta : 0;
+              layer.style.transform = base + ' translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0)';
+            });
+          }
+
+          if (enableParallax && (layers.length || bgEl)) {
+            applyParallax();
+            window.addEventListener('scroll', applyParallax, { passive: true });
+          }
+
+          const floatingEnabled = ${bio.floatingElements ? 'true' : 'false'};
+          if (floatingEnabled) {
+            const density = Math.max(4, Math.min(40, ${typeof bio.floatingElementsDensity === 'number' ? bio.floatingElementsDensity : 12}));
+            const size = Math.max(8, Math.min(80, ${typeof bio.floatingElementsSize === 'number' ? bio.floatingElementsSize : 24}));
+            const speed = Math.max(4, Math.min(40, ${typeof bio.floatingElementsSpeed === 'number' ? bio.floatingElementsSpeed : 12}));
+            const opacity = Math.max(0.05, Math.min(0.9, ${typeof bio.floatingElementsOpacity === 'number' ? bio.floatingElementsOpacity : 0.35}));
+            const blur = Math.max(0, Math.min(20, ${typeof bio.floatingElementsBlur === 'number' ? bio.floatingElementsBlur : 0}));
+            const particleType = '${bio.floatingElementsType || 'circles'}';
+            const particleColor = '${bio.floatingElementsColor || '#ffffff'}';
+
+            // SVG/Emoji definitions for each particle type
+            const particleShapes = {
+              hearts: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+              },
+              fire: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M12 23c-4.97 0-9-3.58-9-8 0-3.04 1.54-5.43 3.5-6.5C6.5 5.5 8 2 12 2c0 4 3 6 4.5 7.5.71.71 1.5 1.79 1.5 3 0 1.38-.88 2.63-2.22 3.33C17.68 16.8 18.5 17.57 18.5 19c0 2.21-2.69 4-6.5 4z"/></svg>';
+              },
+              stars: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+              },
+              sparkles: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M9.5 2l1.5 4.5L15.5 8l-4.5 1.5L9.5 14l-1.5-4.5L3.5 8l4.5-1.5L9.5 2zM19 11l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/></svg>';
+              },
+              music: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>';
+              },
+              leaves: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>';
+              },
+              snow: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><circle cx="12" cy="12" r="4"/></svg>';
+              },
+              bubbles: function(color, size) {
+                return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ' + color + ' 70%);"></div>';
+              },
+              confetti: function(color, size) {
+                var colors = [color, '#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#a78bfa'];
+                var c = colors[Math.floor(Math.random() * colors.length)];
+                var shapes = ['50%', '4px', '0'];
+                var r = shapes[Math.floor(Math.random() * shapes.length)];
+                return '<div style="width:' + size + 'px;height:' + (size * 0.4) + 'px;background:' + c + ';border-radius:' + r + ';transform:rotate(' + (Math.random() * 360) + 'deg);"></div>';
+              },
+              diamonds: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><path d="M12 2L2 12l10 10 10-10L12 2z"/></svg>';
+              },
+              petals: function(color, size) {
+                return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="' + color + '"><ellipse cx="12" cy="8" rx="4" ry="8" transform="rotate(45 12 12)"/></svg>';
+              },
+              circles: function(color, size) {
+                return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';"></div>';
+              }
+            };
+
+            if (!document.getElementById('portyo-floating-style')) {
+              const style = document.createElement('style');
+              style.id = 'portyo-floating-style';
+              style.textContent = '\
+                @keyframes portyoFloatUp {\n\
+                  0% { transform: translate3d(0,0,0) scale(1) rotate(0deg); opacity: 0; }\n\
+                  10% { opacity: var(--float-opacity, 0.35); }\n\
+                  90% { opacity: var(--float-opacity, 0.35); }\n\
+                  100% { transform: translate3d(var(--float-drift, 20px),-140vh,0) scale(0.6) rotate(var(--float-rotate, 180deg)); opacity: 0; }\n\
+                }\n\
+                .portyo-floating-item {\n\
+                  position: absolute;\n\
+                  filter: blur(var(--float-blur, 0px));\n\
+                  animation: portyoFloatUp var(--float-speed, 12s) linear infinite;\n\
+                  will-change: transform, opacity;\n\
+                  display: flex;\n\
+                  align-items: center;\n\
+                  justify-content: center;\n\
+                }\n\
+              ';
+              document.head.appendChild(style);
+            }
+
+            if (!document.getElementById('portyo-floating-elements')) {
+              const container = document.createElement('div');
+              container.id = 'portyo-floating-elements';
+              container.style.position = 'fixed';
+              container.style.inset = '0';
+              container.style.overflow = 'hidden';
+              container.style.pointerEvents = 'none';
+              container.style.zIndex = '2';
+
+              const getShape = particleShapes[particleType] || particleShapes.circles;
+
+              for (let i = 0; i < density; i += 1) {
+                const item = document.createElement('div');
+                const itemSize = size * (0.6 + Math.random() * 0.9);
+                const left = Math.random() * 100;
+                const delay = -(Math.random() * speed);
+                const itemSpeed = speed * (0.8 + Math.random() * 0.8);
+                const drift = (Math.random() - 0.5) * 100;
+                const rotate = Math.random() * 360;
+
+                item.className = 'portyo-floating-item';
+                item.style.left = left + '%';
+                item.style.bottom = (-itemSize - Math.random() * 200) + 'px';
+                item.style.animationDelay = delay + 's';
+                item.style.setProperty('--float-speed', itemSpeed + 's');
+                item.style.setProperty('--float-opacity', String(opacity));
+                item.style.setProperty('--float-blur', blur + 'px');
+                item.style.setProperty('--float-drift', drift + 'px');
+                item.style.setProperty('--float-rotate', rotate + 'deg');
+                item.innerHTML = getShape(particleColor, itemSize);
+                container.appendChild(item);
+              }
+
+              document.body.appendChild(container);
+            }
+          }
+        } catch (e) {
+          console.warn('Preview effects failed', e);
+        }
+      })();
+    </script>
+  ` : '';
 
 
   const containerStyle = `max-width:${maxWidth}px; margin:0 auto; padding:16px; position:relative; z-index:1; font-family:${fontFamily};`;
@@ -1299,7 +1621,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     </div>
   `;
 
-  return `${fontLink}<div style="${bgStyle} min-height:100vh; font-family: ${fontFamily}; position:relative;">
+  return `${fontLink}<div id="portyo-bg" data-bg-type="${bio.bgType || 'color'}" style="${bgStyle} min-height:100vh; font-family: ${fontFamily}; position:relative;">
     <style>
       html, body { min-height: 100%; }
       body {
@@ -1376,7 +1698,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       }
       ${animationsCss}
     </style>
-    ${videoBgHtml}
+    ${backgroundHtml}
+    ${previewEffectsScript}
 
     <main id="profile-container" style="${containerStyle} ${cardCss} position:relative; z-index:10;">
       ${headerHtml}

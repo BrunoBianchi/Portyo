@@ -103,6 +103,9 @@ router.use('/portfolio/categories', portfolioCategoryRoute)
 import marketingRoute from "./marketing/marketing.route"
 router.use('/marketing', authMiddleware, marketingRoute)
 
+import themeRoute from "./themes/theme.route"
+router.use('/themes', themeRoute)
+
 // Bio Route (likely contains wildcard /:id) should be last
 router.use('/bio', authMiddleware, bioRoute);
 

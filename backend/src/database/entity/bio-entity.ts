@@ -78,6 +78,12 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "varchar", default: "#ffffff" })
     cardBackgroundColor: string = "#ffffff";
 
+    @Column({ type: "numeric", default: 100 })
+    cardOpacity: number = 100;
+
+    @Column({ type: "numeric", default: 10 })
+    cardBlur: number = 10;
+
     @Column({ type: "varchar", default: "#e2e8f0" })
     cardBorderColor: string = "#e2e8f0";
 
@@ -146,6 +152,47 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "boolean", default: false })
     verified: boolean = false;
+
+    // Parallax & Floating Effects
+    @Column({ type: "boolean", default: false })
+    enableParallax: boolean = false;
+
+    @Column({ type: "numeric", default: 50 })
+    parallaxIntensity: number = 50;
+
+    @Column({ type: "numeric", default: 50 })
+    parallaxDepth: number = 50;
+
+    @Column({ type: "varchar", default: "y" })
+    parallaxAxis: string = "y";
+
+    @Column({ type: "jsonb", nullable: true })
+    parallaxLayers: any[] | null = null;
+
+    @Column({ type: "boolean", default: false })
+    floatingElements: boolean = false;
+
+    @Column({ type: "varchar", default: "circles" })
+    floatingElementsType: string = "circles"; // circles, hearts, fire, stars, sparkles, music, leaves, snow, bubbles, confetti, diamonds, petals, emojis
+
+    @Column({ type: "varchar", default: "#ffffff" })
+    floatingElementsColor: string = "#ffffff";
+
+    @Column({ type: "numeric", default: 12 })
+    floatingElementsDensity: number = 12;
+
+    @Column({ type: "numeric", default: 24 })
+    floatingElementsSize: number = 24;
+
+    @Column({ type: "numeric", default: 12 })
+    floatingElementsSpeed: number = 12;
+
+    @Column({ type: "numeric", default: 0.35 })
+    floatingElementsOpacity: number = 0.35;
+
+    @Column({ type: "numeric", default: 0 })
+    floatingElementsBlur: number = 0;
+
 
 
     @ManyToOne(() => UserEntity, (user) => user.bios, { onDelete: "CASCADE" })

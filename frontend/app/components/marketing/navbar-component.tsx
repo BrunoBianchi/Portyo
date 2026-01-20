@@ -642,6 +642,7 @@ export default function Navbar() {
   const { i18n, t } = useTranslation();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [announcement, setAnnouncement] = useState<{
     text: string;
     link: string;
@@ -678,6 +679,10 @@ export default function Navbar() {
   const currentPathWithSearch = `${pathname}${search || ""}`;
 
   useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
     // Fetch announcement
     const fetchAnnouncement = async () => {
       try {
@@ -709,6 +714,9 @@ export default function Navbar() {
 
   // Determine badge to show (support both legacy isNew and new badge field)
   const badgeType = announcement?.badge ?? (announcement?.isNew ? 'new' : 'none');
+
+  const canShowUser = isHydrated && !!user;
+  const canShowAuthLinks = isHydrated && !user;
 
   const getBadgeStyle = (type: string) => {
     switch (type) {
@@ -780,8 +788,14 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block pt-2">
+          <div className="hidden md:flex pt-2 items-center gap-6">
             <ProductsDropdown />
+            <Link
+              to={withLang('/themes')}
+              className="text-sm font-medium text-text-main transition-colors hover:text-primary"
+            >
+              {t("nav.themes")}
+            </Link>
           </div>
 
           {/* Desktop Auth */}
@@ -798,15 +812,17 @@ export default function Navbar() {
                 />
               </div>
             )}
-            {!user ? (
+            {canShowAuthLinks ? (
               <>
                 <Link to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)} className="text-sm font-medium hover:text-primary transition-colors">{t("nav.signIn")}</Link>
                 <Link to={withLang('/sign-up')} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
                   {t("nav.startFree")}
                 </Link>
               </>
-            ) : (
+            ) : canShowUser ? (
               <UserDropdown user={user} logout={logout} />
+            ) : (
+              <div className="h-10 w-[180px] rounded-lg bg-gray-100" aria-hidden="true" />
             )}
           </div>
 
@@ -831,6 +847,13 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t("nav.blog")}
+              </Link>
+              <Link
+                to={withLang('/themes')}
+                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {t("nav.themes")}
               </Link>
               <Link
                 to={withLang('/manifesto')}
@@ -878,7 +901,7 @@ export default function Navbar() {
             )}
 
             <div className="mt-auto flex flex-col gap-3">
-              {!user ? (
+              {canShowAuthLinks ? (
                 <>
                   <Link
                     to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
@@ -895,7 +918,7 @@ export default function Navbar() {
                     {t("nav.startFree")}
                   </Link>
                 </>
-              ) : (
+              ) : canShowUser ? (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-4 bg-surface-muted rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark font-bold">
@@ -923,6 +946,8 @@ export default function Navbar() {
                     {t("nav.signOut")}
                   </button>
                 </div>
+              ) : (
+                <div className="h-12 rounded-xl bg-gray-100" aria-hidden="true" />
               )}
             </div>
           </div>

@@ -1361,12 +1361,242 @@ const BlockItem = memo(({
             )}
 
             {block.type === "image" && (
-              <div className="pt-3">
+              <div className="pt-3 space-y-4">
+                {/* Image Upload */}
                 <ImageUpload
                   label={t("dashboard.editor.blockItem.common.image")}
                   value={block.mediaUrl || ""}
                   onChange={(url) => handleFieldChange("mediaUrl", url)}
                 />
+
+                {/* Visual Effects Section */}
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                    Visual Effects
+                  </div>
+
+                  {/* Scale */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Scale</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageScale || 100}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="200"
+                      value={block.imageScale || 100}
+                      onChange={(e) => handleFieldChange("imageScale", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
+                  </div>
+
+                  {/* Rotation */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Rotation</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageRotation || 0}°</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="-180"
+                      max="180"
+                      value={block.imageRotation || 0}
+                      onChange={(e) => handleFieldChange("imageRotation", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
+                  </div>
+
+                  {/* Border Radius */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Border Radius</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageBorderRadius || 0}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      value={block.imageBorderRadius || 0}
+                      onChange={(e) => handleFieldChange("imageBorderRadius", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
+                  </div>
+
+                  {/* Shadow */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Shadow</label>
+                    <select
+                      value={block.imageShadow || "none"}
+                      onChange={(e) => handleFieldChange("imageShadow", e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-gray-50 focus:bg-white"
+                    >
+                      <option value="none">None</option>
+                      <option value="sm">Small</option>
+                      <option value="md">Medium</option>
+                      <option value="lg">Large</option>
+                      <option value="xl">Extra Large</option>
+                      <option value="2xl">2X Large</option>
+                    </select>
+                  </div>
+
+                  {/* Border */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-medium text-gray-600">Border Width</label>
+                        <span className="text-xs text-gray-500 font-mono">{block.imageBorderWidth || 0}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        value={block.imageBorderWidth || 0}
+                        onChange={(e) => handleFieldChange("imageBorderWidth", parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <ColorPicker
+                      label="Border Color"
+                      value={block.imageBorderColor || "#000000"}
+                      onChange={(val) => handleFieldChange("imageBorderColor", val)}
+                    />
+                  </div>
+                </div>
+
+                {/* Color Filters Section */}
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                    Color Filters
+                  </div>
+
+                  {/* Brightness */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Brightness</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageBrightness || 100}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="200"
+                      value={block.imageBrightness || 100}
+                      onChange={(e) => handleFieldChange("imageBrightness", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    />
+                  </div>
+
+                  {/* Contrast */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Contrast</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageContrast || 100}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="200"
+                      value={block.imageContrast || 100}
+                      onChange={(e) => handleFieldChange("imageContrast", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                    />
+                  </div>
+
+                  {/* Saturation */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Saturation</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageSaturation || 100}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="200"
+                      value={block.imageSaturation || 100}
+                      onChange={(e) => handleFieldChange("imageSaturation", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                    />
+                  </div>
+
+                  {/* Blur */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Blur</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.imageBlur || 0}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="20"
+                      value={block.imageBlur || 0}
+                      onChange={(e) => handleFieldChange("imageBlur", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
+                  </div>
+
+                  {/* Filter Toggles */}
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex-1">
+                      <input
+                        type="checkbox"
+                        checked={block.imageGrayscale || false}
+                        onChange={(e) => handleFieldChange("imageGrayscale", e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300 text-gray-800 focus:ring-gray-500"
+                      />
+                      <span className="text-xs font-medium text-gray-700">Grayscale</span>
+                    </label>
+                    <label className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex-1">
+                      <input
+                        type="checkbox"
+                        checked={block.imageSepia || false}
+                        onChange={(e) => handleFieldChange("imageSepia", e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                      />
+                      <span className="text-xs font-medium text-gray-700">Sepia</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Animation Section */}
+                <div className="space-y-3 pt-4 border-t border-gray-100">
+                  <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                    Animation
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Hover Effect</label>
+                    <select
+                      value={block.imageHoverEffect || "none"}
+                      onChange={(e) => handleFieldChange("imageHoverEffect", e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-gray-50 focus:bg-white"
+                    >
+                      <option value="none">None</option>
+                      <option value="zoom">Zoom In</option>
+                      <option value="lift">Lift Up</option>
+                      <option value="glow">Glow</option>
+                      <option value="tilt">3D Tilt</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Entrance Animation</label>
+                    <select
+                      value={block.entranceAnimation || "none"}
+                      onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-gray-50 focus:bg-white"
+                    >
+                      <option value="none">None</option>
+                      <option value="fadeIn">Fade In</option>
+                      <option value="slideUp">Slide Up</option>
+                      <option value="slideDown">Slide Down</option>
+                      <option value="slideLeft">Slide Left</option>
+                      <option value="slideRight">Slide Right</option>
+                      <option value="zoomIn">Zoom In</option>
+                      <option value="bounceIn">Bounce In</option>
+                      <option value="flipIn">Flip In</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -2326,6 +2556,156 @@ const BlockItem = memo(({
                 </div>
               </div>
             )}
+
+            {/* Container Effects - Available for ALL block types */}
+            <div className="space-y-3 pt-4 mt-4 border-t border-gray-200">
+              <div className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                Container Effects
+              </div>
+
+              {/* Block Background */}
+              <ColorPicker
+                label="Container Background"
+                value={block.blockBackground || "transparent"}
+                onChange={(val) => handleFieldChange("blockBackground", val)}
+              />
+
+              {/* Opacity */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-gray-600">Container Opacity</label>
+                  <span className="text-xs text-gray-500 font-mono">{block.blockOpacity ?? 100}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={block.blockOpacity ?? 100}
+                  onChange={(e) => handleFieldChange("blockOpacity", parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                />
+              </div>
+
+              {/* Border Radius */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-gray-600">Border Radius</label>
+                  <span className="text-xs text-gray-500 font-mono">{block.blockBorderRadius || 0}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  value={block.blockBorderRadius || 0}
+                  onChange={(e) => handleFieldChange("blockBorderRadius", parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                />
+              </div>
+
+              {/* Shadow */}
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1.5 block">Container Shadow</label>
+                <select
+                  value={block.blockShadow || "none"}
+                  onChange={(e) => handleFieldChange("blockShadow", e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none bg-gray-50 focus:bg-white"
+                >
+                  <option value="none">None</option>
+                  <option value="sm">Small</option>
+                  <option value="md">Medium</option>
+                  <option value="lg">Large</option>
+                  <option value="xl">Extra Large</option>
+                  <option value="2xl">2X Large</option>
+                  <option value="glow">Glow Effect</option>
+                </select>
+              </div>
+
+              {block.blockShadow === "glow" && (
+                <ColorPicker
+                  label="Glow Color"
+                  value={block.blockShadowColor || "#6366f1"}
+                  onChange={(val) => handleFieldChange("blockShadowColor", val)}
+                />
+              )}
+
+              {/* Border */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-gray-600">Border Width</label>
+                    <span className="text-xs text-gray-500 font-mono">{block.blockBorderWidth || 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="8"
+                    value={block.blockBorderWidth || 0}
+                    onChange={(e) => handleFieldChange("blockBorderWidth", parseInt(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  />
+                </div>
+                <ColorPicker
+                  label="Border Color"
+                  value={block.blockBorderColor || "#e5e7eb"}
+                  onChange={(val) => handleFieldChange("blockBorderColor", val)}
+                />
+              </div>
+
+              {/* Padding */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-gray-600">Container Padding</label>
+                  <span className="text-xs text-gray-500 font-mono">{block.blockPadding || 0}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  value={block.blockPadding || 0}
+                  onChange={(e) => handleFieldChange("blockPadding", parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                />
+              </div>
+
+              {/* Entrance Animation */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Entrance Animation</label>
+                  <select
+                    value={block.entranceAnimation || "none"}
+                    onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none bg-gray-50 focus:bg-white"
+                  >
+                    <option value="none">None</option>
+                    <option value="fadeIn">Fade In</option>
+                    <option value="slideUp">Slide Up</option>
+                    <option value="slideDown">Slide Down</option>
+                    <option value="slideLeft">Slide Left</option>
+                    <option value="slideRight">Slide Right</option>
+                    <option value="zoomIn">Zoom In</option>
+                    <option value="bounceIn">Bounce In</option>
+                    <option value="flipIn">Flip In</option>
+                  </select>
+                </div>
+                {block.entranceAnimation && block.entranceAnimation !== "none" && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-gray-600">Delay</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.entranceDelay || 0}ms</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="50"
+                      value={block.entranceDelay || 0}
+                      onChange={(e) => handleFieldChange("entranceDelay", parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

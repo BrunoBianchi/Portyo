@@ -15,6 +15,7 @@ const baseRoutes: RouteConfig = [
     { path: '/privacy-policy', file: "routes/privacy-policy.tsx" },
     { path: '/terms-of-service', file: "routes/terms-of-service.tsx" },
     { path: '/pricing', file: "routes/pricing.tsx" },
+    { path: '/themes', file: "routes/dashboard-themes.tsx" },
     { path: '/robots.txt', file: "routes/robots.ts", id: "robots-txt" },
     { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
     { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },

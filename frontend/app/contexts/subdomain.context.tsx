@@ -22,6 +22,52 @@ interface Bio {
     ogImage?: string;
     noIndex?: boolean;
     customDomain?: string;
+    bgType?: string;
+    bgColor?: string;
+    bgSecondaryColor?: string;
+    bgImage?: string | null;
+    bgVideo?: string | null;
+    usernameColor?: string;
+    imageStyle?: string;
+    cardStyle?: string;
+    cardBackgroundColor?: string;
+    cardOpacity?: number;
+    cardBlur?: number;
+    cardBorderColor?: string;
+    cardBorderWidth?: number;
+    cardBorderRadius?: number;
+    cardShadow?: string;
+    cardPadding?: number;
+    maxWidth?: number;
+    font?: string;
+    customFontUrl?: string | null;
+    customFontName?: string | null;
+    enableParallax?: boolean;
+    parallaxIntensity?: number;
+    parallaxDepth?: number;
+    parallaxAxis?: "x" | "y" | "xy";
+    parallaxLayers?: Array<{
+        id: string;
+        image: string;
+        speed?: number;
+        axis?: "x" | "y" | "xy";
+        opacity?: number;
+        size?: number;
+        repeat?: boolean;
+        rotate?: number;
+        blur?: number;
+        zIndex?: number;
+        positionX?: number;
+        positionY?: number;
+    }>;
+    floatingElements?: boolean;
+    floatingElementsType?: string;
+    floatingElementsColor?: string;
+    floatingElementsDensity?: number;
+    floatingElementsSize?: number;
+    floatingElementsSpeed?: number;
+    floatingElementsOpacity?: number;
+    floatingElementsBlur?: number;
 }
 
 interface SubDomainData {

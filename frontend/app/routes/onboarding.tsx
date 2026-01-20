@@ -1,14 +1,19 @@
 import { useNavigate } from "react-router";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
+import THEME_PRESETS, { type ThemeStyles } from "~/constants/theme-presets";
 
 export function meta() {
     return [{ title: "Bem-vindo ao Portyo - Configure seu perfil" }];
 }
 
 interface OnboardingAnswers {
+    theme?: {
+        name: string;
+        styles: ThemeStyles;
+    } | null;
     aboutYou: string;
     education: {
         hasGraduation: boolean;
@@ -16,22 +21,42 @@ interface OnboardingAnswers {
     };
     profession: string;
     skills: string[];
-    goals: string;
+    goals: string[];
 }
 
 const PROFESSIONS = [
     "Desenvolvedor(a) de Software",
+    "Arquiteto(a)",
+    "Engenheiro(a)",
+    "Contador(a)",
+    "Advogado(a)",
+    "Médico(a)",
+    "Enfermeiro(a)",
+    "Socorrista",
     "Designer",
     "Marketing Digital",
     "Criador(a) de Conteúdo",
     "Fotógrafo(a)",
     "Músico(a)",
+    "Produtor(a) Musical",
     "Consultor(a)",
+    "Gestor(a) de Tráfego",
     "Freelancer",
     "Empreendedor(a)",
-    "Estudante",
+    "Vendedor(a)",
+    "Corretor(a)",
+    "Coach",
+    "Psicólogo(a)",
+    "Nutricionista",
+    "Fisioterapeuta",
+    "Personal Trainer",
     "Professor(a)",
+    "Pesquisador(a)",
+    "Estudante",
     "Artista",
+    "Streamer",
+    "Gamer",
+    "Influenciador(a)",
     "Outro"
 ];
 
@@ -57,15 +82,31 @@ const SKILLS = [
 
 const GOALS = [
     "Mostrar meu portfólio",
+    "Destacar projetos e cases",
     "Centralizar meus links e redes sociais",
+    "Apresentar meus serviços",
     "Vender produtos ou serviços",
     "Divulgar meu trabalho freelancer",
+    "Coletar contatos e leads",
+    "Receber mensagens via WhatsApp",
+    "Mostrar agenda/booking",
+    "Divulgar eventos",
+    "Compartilhar blog ou artigos",
+    "Exibir galeria de fotos",
+    "Promover minha música",
     "Networking profissional",
     "Criar uma página profissional de contato",
     "Construir minha marca pessoal"
 ];
 
 const STEP_CONFIG = [
+    {
+        icon: "🎨",
+        gradient: "from-slate-500 to-zinc-600",
+        shadow: "shadow-slate-500/30",
+        title: "Escolha um tema",
+        subtitle: "Opcional: personalize o estilo da sua página"
+    },
     {
         icon: "👋",
         gradient: "from-violet-500 to-purple-600",
@@ -112,6 +153,7 @@ export default function Onboarding() {
     const [error, setError] = useState<string | null>(null);
 
     const [answers, setAnswers] = useState<OnboardingAnswers>({
+        theme: null,
         aboutYou: "",
         education: {
             hasGraduation: false,
@@ -119,8 +161,12 @@ export default function Onboarding() {
         },
         profession: "",
         skills: [],
-        goals: ""
+        goals: []
     });
+
+    const availableThemes = useMemo(() => {
+        return THEME_PRESETS;
+    }, []);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -131,7 +177,7 @@ export default function Onboarding() {
         }
     }, [user, loading, navigate]);
 
-    const totalSteps = 5;
+    const totalSteps = 6;
     const currentConfig = STEP_CONFIG[step - 1];
 
     const handleSkip = async () => {
@@ -162,7 +208,11 @@ export default function Onboarding() {
         setError(null);
 
         try {
-            await api.post("/onboarding/generate-bio", answers);
+            const payload = {
+                ...answers,
+                goals: answers.goals.join(", ")
+            };
+            await api.post("/onboarding/generate-bio", payload);
             await refreshUser();
             navigate("/dashboard");
         } catch (err: any) {
@@ -183,13 +233,23 @@ export default function Onboarding() {
 
     const canProceed = () => {
         switch (step) {
-            case 1: return answers.aboutYou.trim().length > 0;
-            case 2: return true;
-            case 3: return answers.profession.length > 0;
-            case 4: return true;
-            case 5: return answers.goals.length > 0;
+            case 1: return true;
+            case 2: return answers.aboutYou.trim().length > 0;
+            case 3: return true;
+            case 4: return answers.profession.length > 0;
+            case 5: return true;
+            case 6: return answers.goals.length > 0;
             default: return false;
         }
+    };
+
+    const toggleGoal = (goal: string) => {
+        setAnswers(prev => ({
+            ...prev,
+            goals: prev.goals.includes(goal)
+                ? prev.goals.filter(g => g !== goal)
+                : [...prev.goals, goal]
+        }));
     };
 
     if (loading || !user) return null;
@@ -197,6 +257,46 @@ export default function Onboarding() {
     const renderStep = () => {
         switch (step) {
             case 1:
+                return (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                            {availableThemes.map((theme) => {
+                                const isSelected = answers.theme?.name === theme.name;
+                                return (
+                                    <button
+                                        key={theme.name}
+                                        onClick={() => setAnswers({ ...answers, theme: { name: theme.name, styles: theme.styles } })}
+                                        className={`p-3 rounded-2xl border transition-all text-left ${isSelected
+                                            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                                            : "border-border bg-surface hover:border-primary/40"
+                                            }`}
+                                    >
+                                        <div
+                                            className="h-20 rounded-xl mb-3 border border-white/50"
+                                            style={{
+                                                backgroundColor: theme.styles.bgColor,
+                                                backgroundImage: theme.styles.bgType === "gradient"
+                                                    ? `linear-gradient(135deg, ${theme.styles.bgColor}, ${theme.styles.bgSecondaryColor})`
+                                                    : undefined
+                                            }}
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-semibold">{theme.name}</p>
+                                                <p className="text-xs text-text-muted line-clamp-2">{theme.description}</p>
+                                            </div>
+                                            {isSelected && (
+                                                <span className="text-xs font-bold text-primary">Selecionado</span>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 2:
                 return (
                     <div className="space-y-6">
                         <textarea
@@ -212,7 +312,7 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 2:
+            case 3:
                 return (
                     <div className="space-y-8">
                         <div className="grid grid-cols-2 gap-4">
@@ -269,7 +369,7 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 3:
+            case 4:
                 return (
                     <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                         {PROFESSIONS.map((profession) => (
@@ -295,7 +395,7 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 4:
+            case 5:
                 return (
                     <div className="space-y-4">
                         <div className="flex flex-wrap gap-2 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
@@ -325,29 +425,33 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 5:
+            case 6:
                 return (
-                    <div className="space-y-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                        {GOALS.map((goal) => (
-                            <button
-                                key={goal}
-                                onClick={() => setAnswers({ ...answers, goals: goal })}
-                                className={`w-full px-5 py-4 rounded-xl font-medium text-sm transition-all text-left flex items-center gap-3 group ${answers.goals === goal
-                                    ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-lg shadow-primary/20'
-                                    : 'bg-surface border border-border hover:border-primary/40 hover:bg-surface-muted'
-                                    }`}
-                            >
-                                <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${answers.goals === goal
-                                    ? 'border-white bg-white/20'
-                                    : 'border-border group-hover:border-primary/50'
-                                    }`}>
-                                    {answers.goals === goal && (
-                                        <span className="w-2 h-2 rounded-full bg-white" />
-                                    )}
+                    <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            {GOALS.map((goal) => (
+                                <button
+                                    key={goal}
+                                    onClick={() => toggleGoal(goal)}
+                                    className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${answers.goals.includes(goal)
+                                        ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-md shadow-primary/20'
+                                        : 'bg-surface border border-border hover:border-primary/40 hover:bg-surface-muted'
+                                        }`}
+                                >
+                                    {answers.goals.includes(goal) && <span className="mr-1.5">✓</span>}
+                                    {goal}
+                                </button>
+                            ))}
+                        </div>
+
+                        {answers.goals.length > 0 && (
+                            <div className="flex items-center justify-center gap-2 text-xs text-primary font-medium">
+                                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                    {answers.goals.length}
                                 </span>
-                                {goal}
-                            </button>
-                        ))}
+                                objetivo{answers.goals.length > 1 ? 's' : ''} selecionado{answers.goals.length > 1 ? 's' : ''}
+                            </div>
+                        )}
                     </div>
                 );
         }
@@ -391,7 +495,7 @@ export default function Onboarding() {
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-3">
                             <div className="flex items-center gap-2">
-                                {[1, 2, 3, 4, 5].map((s) => (
+                                    {Array.from({ length: totalSteps }, (_, index) => index + 1).map((s) => (
                                     <div
                                         key={s}
                                         className={`w-2 h-2 rounded-full transition-all duration-300 ${s === step

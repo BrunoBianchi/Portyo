@@ -27,6 +27,7 @@ export const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        console.log(error)
         if (error.response) {
             const status = error.response.status;
             const message = error.response.data?.message || error.message;

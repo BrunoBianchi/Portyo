@@ -27,7 +27,8 @@ import {
     Bell,
     Calendar,
     LayoutTemplate,
-    Lock
+    Lock,
+    Palette
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -104,6 +105,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const navItems = [
         { name: "Overview", path: "/dashboard", icon: LayoutDashboard },
         { name: "Editor", path: "/dashboard/editor", icon: PenTool },
+        { name: "Themes", path: "/themes", icon: Palette },
         { name: "Leads", path: "/dashboard/leads", icon: Users, isPro: true },
         { name: "Products", path: "/dashboard/products", icon: ShoppingBag },
         { name: "Blog", path: "/dashboard/blog", icon: FileText },

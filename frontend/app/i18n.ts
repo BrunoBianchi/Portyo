@@ -1,5 +1,4 @@
 import i18n from "i18next";
-import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 const STORAGE_KEY = "portyo_lang";
@@ -23,7 +22,33 @@ const getInitialLanguage = (): SupportedLanguage => {
   return "en";
 };
 
-i18n
+const isServer = typeof window === "undefined";
+const backendModule = isServer
+  ? await import("i18next-fs-backend")
+  : await import("i18next-http-backend");
+const Backend = backendModule.default as any;
+
+const serverPathModule = isServer ? await import("node:path") : null;
+const serverUrlModule = isServer ? await import("node:url") : null;
+
+const serverLoadPath = isServer
+  ? (() => {
+      const { resolve } = serverPathModule!;
+      const { fileURLToPath } = serverUrlModule!;
+      const appDir = fileURLToPath(new URL(".", import.meta.url));
+      return resolve(appDir, "..", "public", "i18n", "{{lng}}", "{{ns}}.json");
+    })()
+  : undefined;
+
+const backendOptions = isServer
+  ? {
+      loadPath: serverLoadPath,
+    }
+  : {
+      loadPath: "/i18n/{{lng}}/{{ns}}.json",
+    };
+
+await i18n
   .use(Backend)
   .use(initReactI18next)
   .init({
@@ -50,9 +75,9 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    backend: {
-      loadPath: "/i18n/{{lng}}/{{ns}}.json",
-    },
+    preload: isServer ? [...SUPPORTED_LANGUAGES] : undefined,
+    initImmediate: !isServer,
+    backend: backendOptions,
     react: {
       useSuspense: true,
     },

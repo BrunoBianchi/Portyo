@@ -801,7 +801,7 @@ export default function DashboardEditor() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog", "Marketing"]);
   const [expandedSettings, setExpandedSettings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"blocks" | "settings">("blocks");
-  const [bgType, setBgType] = useState<"color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat">("color");
+  const [bgType, setBgType] = useState<"color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat" | "aurora" | "mesh-gradient" | "particles-float" | "gradient-animated" | "gradient" | "geometric" | "bubbles" | "confetti" | "starfield" | "rain">("color");
   const [bgColor, setBgColor] = useState("#f8fafc");
   const [bgSecondaryColor, setBgSecondaryColor] = useState("#e2e8f0");
   const [bgImage, setBgImage] = useState("");
@@ -1439,6 +1439,56 @@ export default function DashboardEditor() {
     }
   }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, updateBio, removeBranding, font]);
 
+  const applyBackgroundUpdate = useCallback((next: { bgType?: typeof bgType; bgColor?: string; bgSecondaryColor?: string }) => {
+    if (!bio) return;
+    const nextBgType = (next.bgType ?? bgType) as typeof bgType;
+    const nextBgColor = next.bgColor ?? bgColor;
+    const nextBgSecondary = next.bgSecondaryColor ?? bgSecondaryColor;
+
+    const tempBio = {
+      ...bio,
+      blocks,
+      bgType: nextBgType,
+      bgColor: nextBgColor,
+      bgSecondaryColor: nextBgSecondary,
+      bgImage,
+      bgVideo,
+      cardStyle,
+      cardBackgroundColor,
+      cardOpacity,
+      cardBlur,
+      usernameColor,
+      imageStyle,
+      enableSubscribeButton,
+      removeBranding,
+      font,
+      customFontUrl,
+      customFontName,
+      isPreview: true,
+    };
+
+    const html = blocksToHtml(blocks, user, tempBio, window.location.origin);
+    updateBio(bio.id, {
+      html,
+      bgType: nextBgType,
+      bgColor: nextBgColor,
+      bgSecondaryColor: nextBgSecondary,
+      bgImage,
+      bgVideo,
+      cardStyle,
+      cardBackgroundColor,
+      cardOpacity,
+      cardBlur,
+      usernameColor,
+      imageStyle,
+      enableSubscribeButton,
+      removeBranding,
+      font,
+      customFontUrl: customFontUrl || undefined,
+      customFontName: customFontName || undefined,
+    }).catch(console.error);
+  }, [bio, blocks, user, bgType, bgColor, bgSecondaryColor, bgImage, bgVideo, cardStyle, cardBackgroundColor, cardOpacity, cardBlur, usernameColor, imageStyle, enableSubscribeButton, removeBranding, font, customFontUrl, customFontName, updateBio]);
+
   const handleFieldChange = useCallback((id: string, key: keyof BioBlock, value: any) => {
     setBlocks((prev) => prev.map((block) => (block.id === id ? { ...block, [key]: value } : block)));
   }, []);
@@ -1508,6 +1558,16 @@ export default function DashboardEditor() {
       usernameColor,
       imageStyle,
       enableSubscribeButton,
+      enableParallax: bio.enableParallax,
+      parallaxIntensity: bio.parallaxIntensity,
+      parallaxDepth: bio.parallaxDepth,
+      parallaxAxis: bio.parallaxAxis,
+      floatingElements: bio.floatingElements,
+      floatingElementsDensity: bio.floatingElementsDensity,
+      floatingElementsSize: bio.floatingElementsSize,
+      floatingElementsSpeed: bio.floatingElementsSpeed,
+      floatingElementsOpacity: bio.floatingElementsOpacity,
+      floatingElementsBlur: bio.floatingElementsBlur,
       font,
       customFontUrl,
       customFontName,
@@ -1736,7 +1796,7 @@ export default function DashboardEditor() {
           {/* Left Column: Tools & Settings (Col Span 3) */}
           <div
             data-tour="editor-palette"
-            className="col-span-12 lg:col-span-3 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
           >
             {/* Tabs */}
             <div className="flex border-b border-gray-100 p-3 bg-white">
@@ -1962,10 +2022,20 @@ export default function DashboardEditor() {
                     {expandedSettings.includes("background") && (
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                         <div className="grid grid-cols-3 gap-2">
-                          {(['color', 'image', 'video', 'grid', 'dots', 'waves', 'abstract', 'palm-leaves', 'wheat', 'gradient', 'blueprint', 'marble', 'wood-grain', 'brick', 'frosted-glass', 'steel', 'concrete', 'terracotta']).map((type) => (
+                          {([
+                            'color', 'image', 'video', 'grid', 'dots', 'waves', 'abstract',
+                            'palm-leaves', 'wheat', 'gradient', 'blueprint', 'marble',
+                            'wood-grain', 'brick', 'frosted-glass', 'steel', 'concrete', 'terracotta',
+                            // New animated/creative backgrounds
+                            'aurora', 'mesh-gradient', 'particles-float', 'gradient-animated',
+                            'geometric', 'bubbles', 'confetti', 'starfield', 'rain'
+                          ]).map((type) => (
                             <button
                               key={type}
-                              onClick={() => setBgType(type as any)}
+                              onClick={() => {
+                                setBgType(type as any);
+                                applyBackgroundUpdate({ bgType: type as any });
+                              }}
                               className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${bgType === type ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                             >
                               {t(`dashboard.editor.settings.backgroundTypes.${type}`)}
@@ -1980,8 +2050,465 @@ export default function DashboardEditor() {
                               onChange={(val) => {
                                 setBgColor(val);
                                 takeSnapshot();
+                                applyBackgroundUpdate({ bgColor: val });
                               }}
                             />
+                          </div>
+                        )}
+                        {(bgType === 'gradient' || bgType === 'mesh-gradient' || bgType === 'gradient-animated' || bgType === 'aurora') && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <ColorPicker
+                              label="Primary Color"
+                              value={bgColor}
+                              onChange={(val) => {
+                                setBgColor(val);
+                                takeSnapshot();
+                                applyBackgroundUpdate({ bgColor: val });
+                              }}
+                            />
+                            <ColorPicker
+                              label="Secondary Color"
+                              value={bgSecondaryColor}
+                              onChange={(val) => {
+                                setBgSecondaryColor(val);
+                                takeSnapshot();
+                                applyBackgroundUpdate({ bgSecondaryColor: val });
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Parallax Effects Settings */}
+                  <div>
+                    <button
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      onClick={() => toggleSetting("parallax")}
+                    >
+                      Parallax Effects
+                      <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${expandedSettings.includes("parallax") ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                    {expandedSettings.includes("parallax") && (
+                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                        {/* Enable Parallax Toggle */}
+                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">Enable Parallax</span>
+                            <span className="text-[10px] text-gray-400">Adds depth effect on scroll</span>
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.enableParallax ? 'bg-indigo-500' : 'bg-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              checked={bio?.enableParallax || false}
+                              onChange={(e) => {
+                                if (bio?.id) updateBio(bio.id, { enableParallax: e.target.checked });
+                              }}
+                              className="hidden"
+                            />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${bio?.enableParallax ? 'left-5.5' : 'left-0.5'}`} />
+                          </div>
+                        </label>
+
+                        {/* Parallax Intensity */}
+                        {bio?.enableParallax && (
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs font-medium text-gray-900">Intensity</label>
+                              <span className="text-xs text-gray-500 font-mono">{bio?.parallaxIntensity || 50}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="10"
+                              max="100"
+                              value={bio?.parallaxIntensity || 50}
+                              onChange={(e) => {
+                                if (bio?.id) updateBio(bio.id, { parallaxIntensity: parseInt(e.target.value) });
+                              }}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                            />
+                          </div>
+                        )}
+
+                        {/* Parallax Depth */}
+                        {bio?.enableParallax && (
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs font-medium text-gray-900">Depth</label>
+                              <span className="text-xs text-gray-500 font-mono">{bio?.parallaxDepth || 50}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="10"
+                              max="100"
+                              value={bio?.parallaxDepth || 50}
+                              onChange={(e) => {
+                                if (bio?.id) updateBio(bio.id, { parallaxDepth: parseInt(e.target.value) });
+                              }}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                            />
+                          </div>
+                        )}
+
+                        {/* Parallax Axis */}
+                        {bio?.enableParallax && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-900 mb-2 block">Axis</label>
+                            <select
+                              value={bio?.parallaxAxis || "y"}
+                              onChange={(e) => {
+                                if (bio?.id) updateBio(bio.id, { parallaxAxis: e.target.value as any });
+                              }}
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            >
+                              <option value="y">Vertical</option>
+                              <option value="x">Horizontal</option>
+                              <option value="xy">Both</option>
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Parallax Layers */}
+                        {bio?.enableParallax && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-medium text-gray-900">Layers</p>
+                                <p className="text-[10px] text-gray-400">Add multiple layers and customize each one.</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!bio?.id) return;
+                                  const layers = bio.parallaxLayers ? [...bio.parallaxLayers] : [];
+                                  layers.push({
+                                    id: makeId(),
+                                    image: "",
+                                    speed: 0.2,
+                                    axis: "y",
+                                    opacity: 0.6,
+                                    size: 600,
+                                    repeat: true,
+                                    rotate: 0,
+                                    blur: 0,
+                                    zIndex: 1,
+                                    positionX: 0,
+                                    positionY: 0,
+                                  });
+                                  updateBio(bio.id, { parallaxLayers: layers });
+                                }}
+                                className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-900 text-white"
+                              >
+                                + Add layer
+                              </button>
+                            </div>
+
+                            {(bio?.parallaxLayers || []).length === 0 && (
+                              <div className="text-[10px] text-gray-400">No layers yet.</div>
+                            )}
+
+                            {(bio?.parallaxLayers || []).map((layer, idx) => (
+                              <div key={layer.id || idx} className="p-3 rounded-xl border border-gray-200 bg-white space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[11px] font-bold text-gray-700">Layer {idx + 1}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!bio?.id) return;
+                                      const layers = (bio.parallaxLayers || []).filter((l: any) => l.id !== layer.id);
+                                      updateBio(bio.id, { parallaxLayers: layers });
+                                    }}
+                                    className="text-[10px] font-bold text-red-500"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+
+                                <input
+                                  type="text"
+                                  placeholder="Image URL"
+                                  value={layer.image || ""}
+                                  onChange={(e) => {
+                                    if (!bio?.id) return;
+                                    const layers = [...(bio.parallaxLayers || [])];
+                                    layers[idx] = { ...layer, image: e.target.value };
+                                    updateBio(bio.id, { parallaxLayers: layers });
+                                  }}
+                                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                />
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Speed</label>
+                                    <input
+                                      type="range"
+                                      min="-1"
+                                      max="1"
+                                      step="0.05"
+                                      value={layer.speed ?? 0.2}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, speed: parseFloat(e.target.value) };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Axis</label>
+                                    <select
+                                      value={layer.axis || "y"}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, axis: e.target.value as "x" | "y" | "xy" };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    >
+                                      <option value="y">Vertical</option>
+                                      <option value="x">Horizontal</option>
+                                      <option value="xy">Both</option>
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Opacity</label>
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="1"
+                                      step="0.05"
+                                      value={layer.opacity ?? 0.6}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, opacity: parseFloat(e.target.value) };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Size</label>
+                                    <input
+                                      type="number"
+                                      min="50"
+                                      value={layer.size ?? 600}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, size: parseInt(e.target.value) || 600 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Rotate</label>
+                                    <input
+                                      type="number"
+                                      value={layer.rotate ?? 0}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, rotate: parseFloat(e.target.value) || 0 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Blur</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={layer.blur ?? 0}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, blur: parseFloat(e.target.value) || 0 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Z-index</label>
+                                    <input
+                                      type="number"
+                                      value={layer.zIndex ?? 1}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, zIndex: parseInt(e.target.value) || 1 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={layer.repeat !== false}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, repeat: e.target.checked };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                    />
+                                    <span className="text-[10px] font-medium text-gray-600">Repeat</span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Pos X</label>
+                                    <input
+                                      type="number"
+                                      value={layer.positionX ?? 0}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, positionX: parseInt(e.target.value) || 0 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-gray-600">Pos Y</label>
+                                    <input
+                                      type="number"
+                                      value={layer.positionY ?? 0}
+                                      onChange={(e) => {
+                                        if (!bio?.id) return;
+                                        const layers = [...(bio.parallaxLayers || [])];
+                                        layers[idx] = { ...layer, positionY: parseInt(e.target.value) || 0 };
+                                        updateBio(bio.id, { parallaxLayers: layers });
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Floating Elements Toggle */}
+                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">Floating Elements</span>
+                            <span className="text-[10px] text-gray-400">Decorative floating shapes</span>
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.floatingElements ? 'bg-indigo-500' : 'bg-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              checked={bio?.floatingElements || false}
+                              onChange={(e) => {
+                                if (bio?.id) updateBio(bio.id, { floatingElements: e.target.checked });
+                              }}
+                              className="hidden"
+                            />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${bio?.floatingElements ? 'left-5.5' : 'left-0.5'}`} />
+                          </div>
+                        </label>
+
+                        {/* Floating Elements Advanced */}
+                        {bio?.floatingElements && (
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Density</label>
+                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsDensity || 12}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="4"
+                                max="40"
+                                value={bio?.floatingElementsDensity || 12}
+                                onChange={(e) => {
+                                  if (bio?.id) updateBio(bio.id, { floatingElementsDensity: parseInt(e.target.value) });
+                                }}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Size</label>
+                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsSize || 24}px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="8"
+                                max="80"
+                                value={bio?.floatingElementsSize || 24}
+                                onChange={(e) => {
+                                  if (bio?.id) updateBio(bio.id, { floatingElementsSize: parseInt(e.target.value) });
+                                }}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Speed</label>
+                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsSpeed || 12}s</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="4"
+                                max="40"
+                                value={bio?.floatingElementsSpeed || 12}
+                                onChange={(e) => {
+                                  if (bio?.id) updateBio(bio.id, { floatingElementsSpeed: parseInt(e.target.value) });
+                                }}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Opacity</label>
+                                <span className="text-xs text-gray-500 font-mono">{Math.round((bio?.floatingElementsOpacity ?? 0.35) * 100)}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="5"
+                                max="90"
+                                value={Math.round((bio?.floatingElementsOpacity ?? 0.35) * 100)}
+                                onChange={(e) => {
+                                  if (bio?.id) updateBio(bio.id, { floatingElementsOpacity: parseInt(e.target.value) / 100 });
+                                }}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-xs font-medium text-gray-900">Blur</label>
+                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsBlur || 0}px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="20"
+                                value={bio?.floatingElementsBlur || 0}
+                                onChange={(e) => {
+                                  if (bio?.id) updateBio(bio.id, { floatingElementsBlur: parseInt(e.target.value) });
+                                }}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -2216,7 +2743,7 @@ export default function DashboardEditor() {
           {/* Middle Column: Drag & Drop (Col Span 5 - ADJUSTED) */}
           <div
             data-tour="editor-drag-canvas"
-            className="col-span-12 lg:col-span-5 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
+            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
           >
             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
               <h2 className="font-bold text-gray-900 text-lg">{t("dashboard.editor.layout.title")}</h2>

@@ -8,6 +8,12 @@ const router: Router = Router()
 router.post("/update/:id", ownerMiddleware, async (req, res) => {
     const { id } = z.object({ id: z.string() }).parse(req.params);
     
+    const toNumber = (value: unknown) => {
+        if (value === "" || value === null || value === undefined) return undefined;
+        const num = Number(value);
+        return Number.isNaN(num) ? undefined : num;
+    };
+
     const schema = z.object({
         html: z.string().optional(),
         blocks: z.array(z.any()).optional(),
@@ -33,19 +39,32 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         customDomain: z.string().nullable().optional(),
         cardStyle: z.string().optional(),
         cardBackgroundColor: z.string().optional(),
+        cardOpacity: z.preprocess(toNumber, z.number().optional()),
+        cardBlur: z.preprocess(toNumber, z.number().optional()),
         cardBorderColor: z.string().optional(),
-        cardBorderWidth: z.number().optional(),
-        cardBorderRadius: z.number().optional(),
+        cardBorderWidth: z.preprocess(toNumber, z.number().optional()),
+        cardBorderRadius: z.preprocess(toNumber, z.number().optional()),
         cardShadow: z.string().optional(),
-        cardPadding: z.number().optional(),
-        maxWidth: z.number().optional(),
+        cardPadding: z.preprocess(toNumber, z.number().optional()),
+        maxWidth: z.preprocess(toNumber, z.number().optional()),
         enableSubscribeButton: z.boolean().optional(),
         removeBranding: z.boolean().optional(),
         description: z.string().optional(),
         socials: z.any().optional(),
         font: z.string().optional(),
         customFontUrl: z.string().nullable().optional(),
-        customFontName: z.string().nullable().optional()
+        customFontName: z.string().nullable().optional(),
+        enableParallax: z.boolean().optional(),
+        parallaxIntensity: z.preprocess(toNumber, z.number().optional()),
+        parallaxDepth: z.preprocess(toNumber, z.number().optional()),
+        parallaxAxis: z.string().optional(),
+        parallaxLayers: z.array(z.any()).optional(),
+        floatingElements: z.boolean().optional(),
+        floatingElementsDensity: z.preprocess(toNumber, z.number().optional()),
+        floatingElementsSize: z.preprocess(toNumber, z.number().optional()),
+        floatingElementsSpeed: z.preprocess(toNumber, z.number().optional()),
+        floatingElementsOpacity: z.preprocess(toNumber, z.number().optional()),
+        floatingElementsBlur: z.preprocess(toNumber, z.number().optional())
     }).parse(req.body);
 
     const updateOptions: UpdateBioOptions = {
@@ -85,12 +104,27 @@ router.post("/update/:id", ownerMiddleware, async (req, res) => {
         layoutSettings: {
             cardStyle: schema.cardStyle,
             cardBackgroundColor: schema.cardBackgroundColor,
+            cardOpacity: schema.cardOpacity,
+            cardBlur: schema.cardBlur,
             cardBorderColor: schema.cardBorderColor,
             cardBorderWidth: schema.cardBorderWidth,
             cardBorderRadius: schema.cardBorderRadius,
             cardShadow: schema.cardShadow,
             cardPadding: schema.cardPadding,
             maxWidth: schema.maxWidth
+        },
+        effectsSettings: {
+            enableParallax: schema.enableParallax,
+            parallaxIntensity: schema.parallaxIntensity,
+            parallaxDepth: schema.parallaxDepth,
+            parallaxAxis: schema.parallaxAxis,
+            parallaxLayers: schema.parallaxLayers,
+            floatingElements: schema.floatingElements,
+            floatingElementsDensity: schema.floatingElementsDensity,
+            floatingElementsSize: schema.floatingElementsSize,
+            floatingElementsSpeed: schema.floatingElementsSpeed,
+            floatingElementsOpacity: schema.floatingElementsOpacity,
+            floatingElementsBlur: schema.floatingElementsBlur
         }
     };
 

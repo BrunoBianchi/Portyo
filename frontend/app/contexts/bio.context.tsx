@@ -166,6 +166,32 @@ export type BioBlock = {
     marketingShowImage?: boolean;
     marketingShowButton?: boolean;
     marketingSponsorLabel?: string;
+    // Image block effects
+    imageScale?: number;           // 10-200 (percentage)
+    imageRotation?: number;        // -180 to 180 degrees
+    imageBlur?: number;            // 0-20px
+    imageBrightness?: number;      // 0-200 (percentage)
+    imageContrast?: number;        // 0-200 (percentage)
+    imageSaturation?: number;      // 0-200 (percentage)
+    imageGrayscale?: boolean;
+    imageSepia?: boolean;
+    imageBorderRadius?: number;    // 0-50px
+    imageBorderWidth?: number;     // 0-10px
+    imageBorderColor?: string;
+    imageShadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+    imageHoverEffect?: "none" | "zoom" | "lift" | "glow" | "tilt";
+    // Block container effects (applies to all blocks)
+    blockOpacity?: number;         // 0-100
+    blockBlur?: number;            // 0-20px backdrop blur
+    blockShadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "glow";
+    blockShadowColor?: string;
+    blockBorderRadius?: number;    // 0-40px
+    blockBorderWidth?: number;     // 0-8px
+    blockBorderColor?: string;
+    blockBackground?: string;
+    blockPadding?: number;         // 0-40px
+    entranceAnimation?: "none" | "fadeIn" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "zoomIn" | "bounceIn" | "flipIn";
+    entranceDelay?: number;        // 0-1000ms
 };
 
 export interface Integration {
@@ -183,7 +209,7 @@ interface Bio {
     clicks: number;
     userId: string;
     integrations?: Integration[];
-    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat";
+    bgType?: "color" | "image" | "video" | "grid" | "dots" | "waves" | "polka" | "stripes" | "zigzag" | "mesh" | "particles" | "noise" | "abstract" | "palm-leaves" | "blueprint" | "marble" | "concrete" | "terracotta" | "wood-grain" | "brick" | "frosted-glass" | "steel" | "wheat" | "aurora" | "mesh-gradient" | "particles-float" | "gradient-animated" | "gradient" | "geometric" | "bubbles" | "confetti" | "starfield" | "rain";
     bgColor?: string;
     bgSecondaryColor?: string;
     bgImage?: string;
@@ -230,6 +256,33 @@ interface Bio {
     customFontUrl?: string;
     customFontName?: string;
     verified?: boolean;
+    // Parallax settings
+    enableParallax?: boolean;
+    parallaxIntensity?: number;   // 0-100
+    parallaxDepth?: number;       // 0-100
+    parallaxAxis?: "x" | "y" | "xy";
+    parallaxLayers?: Array<{
+        id: string;
+        image: string;
+        speed?: number;
+        axis?: "x" | "y" | "xy";
+        opacity?: number;
+        size?: number;
+        repeat?: boolean;
+        rotate?: number;
+        blur?: number;
+        zIndex?: number;
+        positionX?: number;
+        positionY?: number;
+    }>;
+    floatingElements?: boolean;
+    floatingElementsType?: string; // circles, hearts, fire, stars, sparkles, music, leaves, snow, bubbles, confetti, diamonds, petals, emojis
+    floatingElementsColor?: string;
+    floatingElementsDensity?: number; // count
+    floatingElementsSize?: number; // px
+    floatingElementsSpeed?: number; // seconds
+    floatingElementsOpacity?: number; // 0-1
+    floatingElementsBlur?: number; // px
 }
 
 interface BioData {

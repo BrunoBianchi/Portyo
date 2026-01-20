@@ -7,6 +7,38 @@ const groq = new Groq({
 });
 
 export interface OnboardingAnswers {
+    theme?: {
+        name?: string;
+        styles?: {
+            bgType?: string;
+            bgColor?: string;
+            bgSecondaryColor?: string;
+            cardStyle?: string;
+            cardBackgroundColor?: string;
+            cardBorderColor?: string;
+            cardBorderWidth?: number;
+            cardBorderRadius?: number;
+            cardShadow?: string;
+            cardPadding?: number;
+            cardOpacity?: number;
+            cardBlur?: number;
+            usernameColor?: string;
+            font?: string;
+            maxWidth?: number;
+            imageStyle?: string;
+            enableParallax?: boolean;
+            parallaxIntensity?: number;
+            parallaxDepth?: number;
+            floatingElements?: boolean;
+            floatingElementsType?: string;
+            floatingElementsColor?: string;
+            floatingElementsDensity?: number;
+            floatingElementsSize?: number;
+            floatingElementsSpeed?: number;
+            floatingElementsOpacity?: number;
+            floatingElementsBlur?: number;
+        };
+    } | null;
     aboutYou: string;
     education: {
         hasGraduation: boolean;
@@ -14,7 +46,7 @@ export interface OnboardingAnswers {
     };
     profession: string;
     skills: string[];
-    goals: string;
+    goals: string[];
 }
 
 export interface BioBlock {
@@ -102,11 +134,50 @@ const buildUserPrompt = (answers: OnboardingAnswers): string => {
         prompt += `**Main skills:** ${answers.skills.join(", ")}\n\n`;
     }
     
-    prompt += `**Goal with Portyo:** ${answers.goals}\n\n`;
+    if (answers.goals.length > 0) {
+        prompt += `**Goals with Portyo:** ${answers.goals.join(", ")}\n\n`;
+    }
     
     prompt += `Generate the appropriate content blocks and settings for this person. Remember to respond ONLY with the JSON, no additional text.`;
     
     return prompt;
+};
+
+const extractThemeSettings = (answers: OnboardingAnswers): Record<string, any> | null => {
+    const themeStyles = answers.theme?.styles;
+    if (!themeStyles) return null;
+
+    const themeSettings: Record<string, any> = {
+        bgType: themeStyles.bgType,
+        bgColor: themeStyles.bgColor,
+        bgSecondaryColor: themeStyles.bgSecondaryColor,
+        cardStyle: themeStyles.cardStyle,
+        cardBackgroundColor: themeStyles.cardBackgroundColor,
+        cardBorderColor: themeStyles.cardBorderColor,
+        cardBorderWidth: themeStyles.cardBorderWidth,
+        cardBorderRadius: themeStyles.cardBorderRadius,
+        cardShadow: themeStyles.cardShadow,
+        cardPadding: themeStyles.cardPadding,
+        cardOpacity: themeStyles.cardOpacity,
+        cardBlur: themeStyles.cardBlur,
+        usernameColor: themeStyles.usernameColor,
+        font: themeStyles.font,
+        maxWidth: themeStyles.maxWidth,
+        imageStyle: themeStyles.imageStyle,
+        enableParallax: themeStyles.enableParallax,
+        parallaxIntensity: themeStyles.parallaxIntensity,
+        parallaxDepth: themeStyles.parallaxDepth,
+        floatingElements: themeStyles.floatingElements,
+        floatingElementsType: themeStyles.floatingElementsType,
+        floatingElementsColor: themeStyles.floatingElementsColor,
+        floatingElementsDensity: themeStyles.floatingElementsDensity,
+        floatingElementsSize: themeStyles.floatingElementsSize,
+        floatingElementsSpeed: themeStyles.floatingElementsSpeed,
+        floatingElementsOpacity: themeStyles.floatingElementsOpacity,
+        floatingElementsBlur: themeStyles.floatingElementsBlur,
+    };
+
+    return themeSettings;
 };
 
 export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<{ blocks: BioBlock[], settings: any }> => {
@@ -161,6 +232,11 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
         } else {
             console.error("Unexpected response format:", parsedResponse);
             throw new Error("Unexpected response format from AI");
+        }
+
+        const themeSettings = extractThemeSettings(answers);
+        if (themeSettings) {
+            settings = { ...settings, ...themeSettings };
         }
 
         // Add IDs to each block

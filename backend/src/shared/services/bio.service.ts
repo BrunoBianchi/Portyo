@@ -42,12 +42,30 @@ export interface SeoSettings {
 export interface LayoutSettings {
     cardStyle?: string;
     cardBackgroundColor?: string;
+    cardOpacity?: number;
+    cardBlur?: number;
     cardBorderColor?: string;
     cardBorderWidth?: number;
     cardBorderRadius?: number;
     cardShadow?: string;
     cardPadding?: number;
     maxWidth?: number;
+}
+
+export interface EffectsSettings {
+    enableParallax?: boolean;
+    parallaxIntensity?: number;
+    parallaxDepth?: number;
+    parallaxAxis?: string;
+    parallaxLayers?: any[];
+    floatingElements?: boolean;
+    floatingElementsType?: string;
+    floatingElementsColor?: string;
+    floatingElementsDensity?: number;
+    floatingElementsSize?: number;
+    floatingElementsSpeed?: number;
+    floatingElementsOpacity?: number;
+    floatingElementsBlur?: number;
 }
 
 export interface UpdateBioOptions {
@@ -57,6 +75,7 @@ export interface UpdateBioOptions {
     seoSettings?: SeoSettings;
     customDomain?: string;
     layoutSettings?: LayoutSettings;
+    effectsSettings?: EffectsSettings;
     enableSubscribeButton?: boolean;
     removeBranding?: boolean;
     profileImage?: string;
@@ -158,7 +177,7 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     const bio = await findBioById(id, ['integrations', 'user']) as BioEntity;
     if (!bio) return null;
 
-    const { html, blocks, bgSettings, seoSettings, customDomain, layoutSettings, enableSubscribeButton, removeBranding, profileImage } = options;
+    const { html, blocks, bgSettings, seoSettings, customDomain, layoutSettings, effectsSettings, enableSubscribeButton, removeBranding, profileImage } = options;
 
     // Check Plan Limits using Active Plan
     const activePlan = await BillingService.getActivePlan(bio.user.id);
@@ -207,8 +226,17 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     // Layout settings
     if (layoutSettings) {
         applySettings(bio, layoutSettings, [
-            'cardStyle', 'cardBackgroundColor', 'cardBorderColor', 'cardBorderWidth',
-            'cardBorderRadius', 'cardShadow', 'cardPadding', 'maxWidth'
+            'cardStyle', 'cardBackgroundColor', 'cardOpacity', 'cardBlur', 'cardBorderColor',
+            'cardBorderWidth', 'cardBorderRadius', 'cardShadow', 'cardPadding', 'maxWidth'
+        ]);
+    }
+
+    // Effects settings
+    if (effectsSettings) {
+        applySettings(bio, effectsSettings, [
+            'enableParallax', 'parallaxIntensity', 'parallaxDepth', 'parallaxAxis', 'parallaxLayers',
+            'floatingElements', 'floatingElementsType', 'floatingElementsColor', 'floatingElementsDensity', 'floatingElementsSize',
+            'floatingElementsSpeed', 'floatingElementsOpacity', 'floatingElementsBlur'
         ]);
     }
 

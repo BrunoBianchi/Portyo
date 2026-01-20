@@ -324,25 +324,157 @@ export const useBioScripts = (bio: any) => {
             if(modal) modal.style.display = 'none';
         };
 
-        // Parallax script (Wheat/Leaves)
-        const onScroll = () => {
-             const scrolled = window.scrollY;
-             const layer1 = document.getElementById('wheat-layer-1');
-             const layer2 = document.getElementById('wheat-layer-2');
-             const palmLayer1 = document.getElementById('palm-layer-1');
-             const palmLayer2 = document.getElementById('palm-layer-2');
+        const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+        const prefersReducedMotion = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
-             if (layer1) layer1.style.transform = 'rotate(15deg) translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
-             if (layer2) layer2.style.transform = 'rotate(-10deg) translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
-             
-             if (palmLayer1) palmLayer1.style.transform = 'translateY(' + (scrolled * 0.2) + 'px) translateZ(0)';
-             if (palmLayer2) palmLayer2.style.transform = 'translateY(' + (scrolled * 0.5) + 'px) translateZ(0)';
+        // Parallax script (Wheat/Leaves + any data-parallax-layer)
+        const enableParallax = !!bio.enableParallax && !prefersReducedMotion;
+        const intensity = clamp((bio.parallaxIntensity ?? 50) / 100, 0, 1);
+        const depth = clamp((bio.parallaxDepth ?? 50) / 100, 0, 1);
+        const defaultAxis = (bio.parallaxAxis || 'y') as 'x' | 'y' | 'xy';
+
+        const layers = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax-layer]'));
+        const bgEl = document.getElementById('portyo-bg');
+        let bgBaseX = '50%';
+        let bgBaseY = '0px';
+        if (bgEl) {
+            const style = window.getComputedStyle(bgEl);
+            const pos = (style.backgroundPosition || '50% 0px').split(' ');
+            bgBaseX = pos[0] || '50%';
+            bgBaseY = pos[1] || '0px';
+        }
+        layers.forEach((layer) => {
+            if (!layer.dataset.parallaxBase) {
+                layer.dataset.parallaxBase = layer.style.transform || '';
+            }
+        });
+
+        let rafId: number | null = null;
+        const applyParallax = () => {
+            const scrolled = window.scrollY;
+            if (enableParallax && bgEl) {
+                const delta = scrolled * 0.25 * intensity * (0.4 + depth);
+                const x = (defaultAxis === 'x' || defaultAxis === 'xy') ? delta : 0;
+                const y = (defaultAxis === 'y' || defaultAxis === 'xy') ? delta : 0;
+                bgEl.style.backgroundPosition = `calc(${bgBaseX} + ${x.toFixed(2)}px) calc(${bgBaseY} + ${y.toFixed(2)}px)`;
+            }
+            layers.forEach((layer) => {
+                const base = layer.dataset.parallaxBase || '';
+                const speed = Number(layer.dataset.parallaxSpeed || 0.2);
+                const axis = (layer.dataset.parallaxAxis as 'x' | 'y' | 'xy' | undefined) || defaultAxis;
+                const delta = scrolled * speed * intensity * (0.4 + depth);
+                const x = axis === 'x' || axis === 'xy' ? delta : 0;
+                const y = axis === 'y' || axis === 'xy' ? delta : 0;
+                layer.style.transform = `${base} translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+            });
         };
 
-        window.addEventListener('scroll', onScroll);
+        const onScroll = () => {
+            if (!enableParallax || layers.length === 0) return;
+            if (rafId !== null) return;
+            rafId = window.requestAnimationFrame(() => {
+                rafId = null;
+                applyParallax();
+            });
+        };
+
+        if (enableParallax && (layers.length > 0 || bgEl)) {
+            applyParallax();
+            window.addEventListener('scroll', onScroll, { passive: true });
+        } else {
+            layers.forEach((layer) => {
+                const base = layer.dataset.parallaxBase || '';
+                layer.style.transform = base;
+            });
+            if (bgEl) {
+                bgEl.style.backgroundPosition = `${bgBaseX} ${bgBaseY}`;
+            }
+        }
+
+        // Floating elements (decorative)
+        const floatingEnabled = !!bio.floatingElements && !prefersReducedMotion;
+        const floatingDensity = clamp(bio.floatingElementsDensity ?? 12, 4, 40);
+        const floatingSize = clamp(bio.floatingElementsSize ?? 24, 8, 80);
+        const floatingSpeed = clamp(bio.floatingElementsSpeed ?? 12, 4, 40);
+        const floatingOpacity = clamp(bio.floatingElementsOpacity ?? 0.35, 0.05, 0.9);
+        const floatingBlur = clamp(bio.floatingElementsBlur ?? 0, 0, 20);
+
+        const profileContainer = document.getElementById('profile-container');
+        const floatingHost = profileContainer?.parentElement || document.body;
+        const existingContainer = document.getElementById('portyo-floating-elements');
+
+        if (!floatingEnabled) {
+            existingContainer?.remove();
+        } else {
+            const configKey = `${floatingDensity}-${floatingSize}-${floatingSpeed}-${floatingOpacity}-${floatingBlur}`;
+            if (existingContainer && existingContainer.getAttribute('data-config') !== configKey) {
+                existingContainer.remove();
+            }
+
+            if (!document.getElementById('portyo-floating-style')) {
+                const style = document.createElement('style');
+                style.id = 'portyo-floating-style';
+                style.textContent = `
+                  @keyframes portyoFloatUp {
+                    0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+                    20% { opacity: 1; }
+                    100% { transform: translate3d(0, -140vh, 0) scale(0.8); opacity: 0; }
+                  }
+                  .portyo-floating-item {
+                    position: absolute;
+                    border-radius: 999px;
+                    filter: blur(var(--float-blur, 0px));
+                    animation: portyoFloatUp var(--float-speed, 12s) linear infinite;
+                    opacity: var(--float-opacity, 0.35);
+                    will-change: transform, opacity;
+                  }
+                  .portyo-floating-item.square { border-radius: 12px; }
+                `;
+                document.head.appendChild(style);
+            }
+
+            if (!document.getElementById('portyo-floating-elements')) {
+                const container = document.createElement('div');
+                container.id = 'portyo-floating-elements';
+                container.setAttribute('data-config', `${floatingDensity}-${floatingSize}-${floatingSpeed}-${floatingOpacity}-${floatingBlur}`);
+                container.style.position = 'fixed';
+                container.style.inset = '0';
+                container.style.overflow = 'hidden';
+                container.style.pointerEvents = 'none';
+                container.style.zIndex = '2';
+
+                for (let i = 0; i < floatingDensity; i += 1) {
+                    const item = document.createElement('div');
+                    const size = floatingSize * (0.6 + Math.random() * 0.9);
+                    const left = Math.random() * 100;
+                    const delay = -(Math.random() * floatingSpeed);
+                    const speed = floatingSpeed * (0.8 + Math.random() * 0.8);
+                    const hue = Math.floor(200 + Math.random() * 100);
+                    const isSquare = Math.random() > 0.7;
+
+                    item.className = `portyo-floating-item${isSquare ? ' square' : ''}`;
+                    item.style.width = `${size}px`;
+                    item.style.height = `${size}px`;
+                    item.style.left = `${left}%`;
+                    item.style.bottom = `${-size - Math.random() * 200}px`;
+                    item.style.background = `hsla(${hue}, 70%, 70%, ${floatingOpacity})`;
+                    item.style.animationDelay = `${delay}s`;
+                    item.style.setProperty('--float-speed', `${speed}s`);
+                    item.style.setProperty('--float-opacity', `${floatingOpacity}`);
+                    item.style.setProperty('--float-blur', `${floatingBlur}px`);
+                    container.appendChild(item);
+                }
+
+                floatingHost?.insertBefore(container, profileContainer || null);
+            }
+        }
 
         return () => {
-            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('scroll', onScroll as any);
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+            document.getElementById('portyo-floating-elements')?.remove();
         };
     }, [bio]);
 };
