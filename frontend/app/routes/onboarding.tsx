@@ -21,7 +21,9 @@ interface OnboardingAnswers {
     };
     profession: string;
     skills: string[];
+
     goals: string[];
+    resumeText?: string;
 }
 
 const PROFESSIONS = [
@@ -115,6 +117,13 @@ const STEP_CONFIG = [
         subtitle: "Uma breve descrição que ajudará a criar sua página"
     },
     {
+        icon: "📄",
+        gradient: "from-blue-500 to-indigo-600",
+        shadow: "shadow-blue-500/30",
+        title: "Importar Currículo",
+        subtitle: "Envie seu currículo para preenchermos automaticamente (Opcional)"
+    },
+    {
         icon: "🎓",
         gradient: "from-sky-500 to-blue-600",
         shadow: "shadow-sky-500/30",
@@ -161,7 +170,9 @@ export default function Onboarding() {
         },
         profession: "",
         skills: [],
-        goals: []
+
+        goals: [],
+        resumeText: ""
     });
 
     const availableThemes = useMemo(() => {
@@ -177,7 +188,9 @@ export default function Onboarding() {
         }
     }, [user, loading, navigate]);
 
-    const totalSteps = 6;
+
+
+    const totalSteps = 7;
     const currentConfig = STEP_CONFIG[step - 1];
 
     const handleSkip = async () => {
@@ -222,6 +235,38 @@ export default function Onboarding() {
         }
     };
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== "application/pdf") {
+            setError("Apenas arquivos PDF são permitidos");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("resume", file);
+
+        try {
+            setError(null);
+            const response = await api.post("/user/upload-resume", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            if (response.data.success && response.data.resumeText) {
+                setAnswers(prev => ({
+                    ...prev,
+                    resumeText: response.data.resumeText
+                }));
+            }
+        } catch (err) {
+            console.error("Erro ao enviar currículo:", err);
+            setError("Falha ao processar o currículo. Tente novamente ou pule esta etapa.");
+        }
+    };
+
     const toggleSkill = (skill: string) => {
         setAnswers(prev => ({
             ...prev,
@@ -236,9 +281,10 @@ export default function Onboarding() {
             case 1: return true;
             case 2: return answers.aboutYou.trim().length > 0;
             case 3: return true;
-            case 4: return answers.profession.length > 0;
-            case 5: return true;
-            case 6: return answers.goals.length > 0;
+            case 4: return true;
+            case 5: return answers.profession.length > 0;
+            case 6: return true;
+            case 7: return answers.goals.length > 0;
             default: return false;
         }
     };
@@ -251,6 +297,8 @@ export default function Onboarding() {
                 : [...prev.goals, goal]
         }));
     };
+
+
 
     if (loading || !user) return null;
 
@@ -314,6 +362,47 @@ export default function Onboarding() {
 
             case 3:
                 return (
+                    <div className="space-y-6 text-center">
+                        <div className="border-2 border-dashed border-border rounded-2xl p-8 hover:border-primary/50 transition-colors bg-surface-muted/30">
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                                id="resume-upload"
+                            />
+                            <label
+                                htmlFor="resume-upload"
+                                className="cursor-pointer flex flex-col items-center gap-4"
+                            >
+                                <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-lg">Clique para enviar seu PDF</p>
+                                    <p className="text-sm text-text-muted mt-1">Tamanho máximo: 5MB</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        {answers.resumeText && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium border border-green-100">
+                                    <span className="w-5 h-5 rounded-full bg-green-200 flex items-center justify-center">✓</span>
+                                    Currículo processado com sucesso!
+                                </div>
+                                <p className="text-xs text-text-muted mt-2">
+                                    Nossa IA usará as informações do seu currículo para enriquecer seu perfil.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                );
+
+            case 4:
+                return (
                     <div className="space-y-8">
                         <div className="grid grid-cols-2 gap-4">
                             <button
@@ -369,7 +458,9 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 4:
+
+
+            case 5:
                 return (
                     <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                         {PROFESSIONS.map((profession) => (
@@ -395,7 +486,9 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 5:
+
+
+            case 6:
                 return (
                     <div className="space-y-4">
                         <div className="flex flex-wrap gap-2 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
@@ -425,7 +518,9 @@ export default function Onboarding() {
                     </div>
                 );
 
-            case 6:
+
+
+            case 7:
                 return (
                     <div className="space-y-4">
                         <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
@@ -495,7 +590,7 @@ export default function Onboarding() {
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-3">
                             <div className="flex items-center gap-2">
-                                    {Array.from({ length: totalSteps }, (_, index) => index + 1).map((s) => (
+                                {Array.from({ length: totalSteps }, (_, index) => index + 1).map((s) => (
                                     <div
                                         key={s}
                                         className={`w-2 h-2 rounded-full transition-all duration-300 ${s === step

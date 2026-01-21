@@ -19,9 +19,11 @@ export const useBioScripts = (bio: any) => {
             const linksFeed = document.getElementById('links-feed');
             const shopFeed = document.getElementById('shop-feed');
             const blogFeed = document.getElementById('blog-feed');
+            const experienceFeed = document.getElementById('experience-feed');
+            const experienceTab = document.getElementById('tab-experience');
             
             // Reset all
-            [linksTab, shopTab, blogTab].forEach(t => {
+            [linksTab, shopTab, blogTab, experienceTab].forEach(t => {
                 if(t) {
                     t.style.color = navInactive;
                     t.style.opacity = '0.9';
@@ -29,7 +31,7 @@ export const useBioScripts = (bio: any) => {
                     if (indicator) indicator.style.background = 'transparent';
                 }
             });
-            [linksFeed, shopFeed, blogFeed].forEach(f => {
+            [linksFeed, shopFeed, blogFeed, experienceFeed].forEach(f => {
                 if(f) f.style.display = 'none';
             });
 
@@ -47,6 +49,7 @@ export const useBioScripts = (bio: any) => {
             let basePath = window.location.pathname;
             if (basePath.endsWith('/shop')) basePath = basePath.replace('/shop', '');
             if (basePath.endsWith('/blog')) basePath = basePath.replace('/blog', '');
+            if (basePath.endsWith('/experience')) basePath = basePath.replace('/experience', '');
             if (basePath.endsWith('/')) basePath = basePath.slice(0, -1); // remove trailing slash
 
             if (tabName === 'shop') {
@@ -77,6 +80,20 @@ export const useBioScripts = (bio: any) => {
                     if ((window as any).gtag && bio.googleAnalyticsId) {
                         (window as any).gtag('event', 'page_view', {
                             page_title: 'Blog - ' + (bio.seoTitle || bio.sufix),
+                            page_location: window.location.href,
+                            page_path: newPath,
+                            send_to: bio.googleAnalyticsId
+                        });
+                    }
+                }
+            } else if (tabName === 'experience') {
+                activate(experienceTab, experienceFeed);
+                const newPath = `${basePath}/experience`;
+                if (window.location.pathname !== newPath) {
+                    window.history.pushState({ tab: 'experience' }, '', newPath);
+                    if ((window as any).gtag && bio.googleAnalyticsId) {
+                        (window as any).gtag('event', 'page_view', {
+                            page_title: 'Experience - ' + (bio.seoTitle || bio.sufix),
                             page_location: window.location.href,
                             page_path: newPath,
                             send_to: bio.googleAnalyticsId
@@ -551,5 +568,15 @@ export const useBioScripts = (bio: any) => {
             }
             document.getElementById('portyo-floating-elements')?.remove();
         };
+        // Initial Load Logic
+        const path = window.location.pathname;
+        if (path.endsWith('/shop')) {
+             (window as any).switchTab('shop');
+        } else if (path.endsWith('/blog')) {
+             (window as any).switchTab('blog');
+        } else if (path.endsWith('/experience')) {
+             (window as any).switchTab('experience');
+        }
+
     }, [bio]);
 };

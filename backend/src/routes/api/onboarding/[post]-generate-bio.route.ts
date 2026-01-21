@@ -53,6 +53,7 @@ const onboardingSchema = z.object({
         z.array(z.string()).min(1, "Por favor, informe seu objetivo"),
         z.string().min(1, "Por favor, informe seu objetivo")
     ]),
+    resumeText: z.string().optional(),
 });
 
 router.post("/generate-bio", authMiddleware, async (req, res, next) => {

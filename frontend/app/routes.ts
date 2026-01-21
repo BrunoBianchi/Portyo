@@ -60,7 +60,7 @@ const baseRoutes: RouteConfig = [
     { path: "blog/post/:postId", file: "routes/blog.$postId.tsx" },
     { path: "shop", file: "routes/home.tsx", id: "home-shop" },
     { path: "payment-success", file: "routes/payment-success.tsx" },
-    { path: "p/:username", file: "routes/p.$username.tsx" },
+    { path: "p/:username/:tab?", file: "routes/p.$username.tsx" },
     { path: "*", file: "routes/catchall.tsx" }
 ] satisfies RouteConfig;
 

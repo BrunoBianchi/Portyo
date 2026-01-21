@@ -47,6 +47,7 @@ export interface OnboardingAnswers {
     profession: string;
     skills: string[];
     goals: string[];
+    resumeText?: string;
 }
 
 export interface BioBlock {
@@ -136,6 +137,13 @@ const buildUserPrompt = (answers: OnboardingAnswers): string => {
     
     if (answers.goals.length > 0) {
         prompt += `**Goals with Portyo:** ${answers.goals.join(", ")}\n\n`;
+    }
+    
+
+
+    if (answers.resumeText) {
+        prompt += `**Resume/CV Content:**\n${answers.resumeText}\n\n`;
+        prompt += `Use the information from the Resume/CV (experience, education, skills, projects) to enrich the bio content, but prioritize the specific answers provided strictly above.\n\n`;
     }
     
     prompt += `Generate the appropriate content blocks and settings for this person. Remember to respond ONLY with the JSON, no additional text.`;
@@ -489,5 +497,60 @@ export const generateContentFromPrompt = async (prompt: string): Promise<AIGener
     } catch (error) {
         console.error("AI Generation failed:", error);
         return { blocks: [], settings: {}, replaceBlocks: false };
+    }
+};
+
+export const extractExperiencesFromResume = async (resumeText: string): Promise<any[]> => { 
+    const prompt = `
+    You are an AI that extracts structured work experience data from resume text.
+    
+    Resume Text:
+    "${resumeText}"
+    
+    Extract the work experiences into a JSON array of objects with the following schema:
+    [
+        {
+            "id": "generated_id",
+            "company": "Company Name",
+            "role": "Job Title",
+            "period": "Start Date - End Date (e.g. Jan 2020 - Present)",
+            "location": "City, Country",
+            "description": "Brief description of responsibilities (max 200 chars)"
+        }
+    ]
+    
+    Rules:
+    - If no experiences are found, return an empty array [].
+    - Respond ONLY with the valid JSON array.
+    - Summarize descriptions to be concise.
+    - generate a random string id for the "id" field
+    - CRITICAL: Detect the language of the provided "Resume Text". You must generate the "role", "description", "period" and "location" values in the SAME LANGUAGE as the resume text. Do NOT translate to English if the text is in Portuguese or another language.
+    `;
+
+    try {
+        const completion = await groq.chat.completions.create({
+            messages: [
+                { role: "system", content: "You are a helpful assistant that extracts structured JSON data from text." },
+                { role: "user", content: prompt }
+            ],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.1,
+            max_tokens: 2048,
+            response_format: { type: "json_object" },
+        });
+
+        const content = completion.choices[0]?.message?.content;
+        if (!content) return [];
+
+        const parsed = JSON.parse(content);
+        // Sometimes the model might wrap it in a key like "experiences", handle that or array directly
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed.experiences && Array.isArray(parsed.experiences)) return parsed.experiences;
+        
+        // Fallback if structure is unexpected but valid JSON
+        return [];
+    } catch (error) {
+        console.error("Error extracting experiences:", error);
+        return [];
     }
 };

@@ -1491,7 +1491,10 @@
         "defaultPeriod": "2020 — 2022",
         "defaultLocation": "New York, NY",
         "defaultDescription": "Designed and shipped key product features.",
-        "addExperience": "Add Experience"
+        "addExperience": "Add Experience",
+        "roleColor": "Role Color",
+        "textColor": "Text Color",
+        "lineColor": "Line Color"
       },
       "blockTypes": {
         "heading": "Heading",

@@ -162,6 +162,9 @@ export type BioBlock = {
         location?: string;
         description?: string;
     }[];
+    experienceRoleColor?: string;
+    experienceTextColor?: string;
+    experienceLineColor?: string;
     // Marketing specific
     marketingId?: string; // Reference to backend MarketingBlockEntity
     marketingTitle?: string;

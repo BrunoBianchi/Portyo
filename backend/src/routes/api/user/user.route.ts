@@ -21,6 +21,8 @@ import forgotPasswordRoute from "./[post]-forgot-password.route";
 import resetPasswordRoute from "./[post]-reset-password.route";
 import changePasswordRoute from "./[post]-change-password.route";
 
+import parseResumeRoute from "./[post]-parse-resume-experiences.route";
+
 const router: Router = Router();
 router.use(createNewUserRoute);
 router.use("/me", meRoute);
@@ -33,6 +35,7 @@ router.use("/upload-product-image", uploadProductImageRoute);
 router.use("/upload-block-image", uploadBlockImageRoute);
 router.use("/upload-favicon", uploadFaviconRoute);
 router.use("/upload-og-image", uploadOgImageRoute);
+router.use(parseResumeRoute);
 router.use("/billing", billingHistoryRoute)
 router.use(emailUsageRoute)
 router.use(refreshTokenRoute)

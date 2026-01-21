@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 import { api } from "~/services/api";
-import { Loader2, CreditCard, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, CreditCard, Calendar as CalendarIcon, Upload as UploadIcon } from "lucide-react";
+import toast from "react-hot-toast";
 import type { QrCode } from "~/services/qrcode.service";
 import {
   DragHandleIcon,
@@ -341,6 +342,49 @@ const BlockItem = memo((props: BlockItemProps) => {
     currency: "usd",
     image: ""
   });
+
+  const [isResumeUploading, setIsResumeUploading] = useState(false);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsResumeUploading(true);
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    const loader = toast.loading("Parsing resume...");
+
+    try {
+      const response = await api.post("/user/parse-resume-experiences", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (response.data.success && response.data.experiences) {
+        const newExperiences = response.data.experiences.map((exp: any) => ({
+          id: exp.id || makeId(),
+          role: exp.role || "",
+          company: exp.company || "",
+          period: exp.period || "",
+          location: exp.location || "",
+          description: exp.description || "",
+        }));
+
+        const currentExperiences = block.experiences || [];
+        handleFieldChange("experiences", [...currentExperiences, ...newExperiences]);
+
+        toast.success("Experiences imported successfully!", { id: loader });
+
+        // Clear input value so same file can be selected again if needed
+        e.target.value = "";
+      }
+    } catch (error) {
+      console.error("Failed to parse resume", error);
+      toast.error("Failed to parse resume", { id: loader });
+    } finally {
+      setIsResumeUploading(false);
+    }
+  };
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2511,24 +2555,60 @@ const BlockItem = memo((props: BlockItemProps) => {
                     </div>
                   ))}
 
-                  <button
-                    onClick={() => {
-                      const newItems = [...(block.experiences || [])];
-                      newItems.push({
-                        id: makeId(),
-                        role: t("dashboard.editor.blockItem.experience.defaultRole"),
-                        company: t("dashboard.editor.blockItem.experience.defaultCompany"),
-                        period: t("dashboard.editor.blockItem.experience.defaultPeriod"),
-                        location: t("dashboard.editor.blockItem.experience.defaultLocation"),
-                        description: t("dashboard.editor.blockItem.experience.defaultDescription")
-                      });
-                      handleFieldChange("experiences", newItems);
-                    }}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
-                  >
-                    <PlusIcon />
-                    {t("dashboard.editor.blockItem.experience.addExperience")}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const newItems = [...(block.experiences || [])];
+                        newItems.push({
+                          id: makeId(),
+                          role: t("dashboard.editor.blockItem.experience.defaultRole"),
+                          company: t("dashboard.editor.blockItem.experience.defaultCompany"),
+                          period: t("dashboard.editor.blockItem.experience.defaultPeriod"),
+                          location: t("dashboard.editor.blockItem.experience.defaultLocation"),
+                          description: t("dashboard.editor.blockItem.experience.defaultDescription")
+                        });
+                        handleFieldChange("experiences", newItems);
+                      }}
+                      className="flex-1 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+                    >
+                      <PlusIcon />
+                      {t("dashboard.editor.blockItem.experience.addExperience")}
+                    </button>
+
+                    <label className={`flex-1 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs font-medium hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2 cursor-pointer ${isResumeUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleResumeUpload}
+                        disabled={isResumeUploading}
+                      />
+                      {isResumeUploading ? (
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-current rounded-full animate-spin"></div>
+                      ) : (
+                        <UploadIcon size={14} />
+                      )}
+                      Import Resume
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+                  <ColorPicker
+                    label={t("dashboard.editor.blockItem.experience.roleColor") || "Role/Dot Color"}
+                    value={block.experienceRoleColor || "#111827"}
+                    onChange={(val) => handleFieldChange("experienceRoleColor", val)}
+                  />
+                  <ColorPicker
+                    label={t("dashboard.editor.blockItem.experience.textColor") || "Text Color"}
+                    value={block.experienceTextColor || "#374151"}
+                    onChange={(val) => handleFieldChange("experienceTextColor", val)}
+                  />
+                  <ColorPicker
+                    label={t("dashboard.editor.blockItem.experience.lineColor") || "Line Color"}
+                    value={block.experienceLineColor || "#e5e7eb"}
+                    onChange={(val) => handleFieldChange("experienceLineColor", val)}
+                  />
                 </div>
               </div>
             )}
@@ -2707,148 +2787,148 @@ const BlockItem = memo((props: BlockItemProps) => {
                   Container Effects
                 </div>
 
-              {/* Block Background */}
-              <ColorPicker
-                label="Container Background"
-                value={block.blockBackground || "transparent"}
-                onChange={(val) => handleFieldChange("blockBackground", val)}
-              />
-
-              {/* Opacity */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-gray-600">Container Opacity</label>
-                  <span className="text-xs text-gray-500 font-mono">{block.blockOpacity ?? 100}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={block.blockOpacity ?? 100}
-                  onChange={(e) => handleFieldChange("blockOpacity", parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                />
-              </div>
-
-              {/* Border Radius */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-gray-600">Border Radius</label>
-                  <span className="text-xs text-gray-500 font-mono">{block.blockBorderRadius || 0}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  value={block.blockBorderRadius || 0}
-                  onChange={(e) => handleFieldChange("blockBorderRadius", parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                />
-              </div>
-
-              {/* Shadow */}
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1.5 block">Container Shadow</label>
-                <select
-                  value={block.blockShadow || "none"}
-                  onChange={(e) => handleFieldChange("blockShadow", e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none bg-gray-50 focus:bg-white"
-                >
-                  <option value="none">None</option>
-                  <option value="sm">Small</option>
-                  <option value="md">Medium</option>
-                  <option value="lg">Large</option>
-                  <option value="xl">Extra Large</option>
-                  <option value="2xl">2X Large</option>
-                  <option value="glow">Glow Effect</option>
-                </select>
-              </div>
-
-              {block.blockShadow === "glow" && (
+                {/* Block Background */}
                 <ColorPicker
-                  label="Glow Color"
-                  value={block.blockShadowColor || "#6366f1"}
-                  onChange={(val) => handleFieldChange("blockShadowColor", val)}
+                  label="Container Background"
+                  value={block.blockBackground || "transparent"}
+                  onChange={(val) => handleFieldChange("blockBackground", val)}
                 />
-              )}
 
-              {/* Border */}
-              <div className="grid grid-cols-2 gap-3">
+                {/* Opacity */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-medium text-gray-600">Border Width</label>
-                    <span className="text-xs text-gray-500 font-mono">{block.blockBorderWidth || 0}px</span>
+                    <label className="text-xs font-medium text-gray-600">Container Opacity</label>
+                    <span className="text-xs text-gray-500 font-mono">{block.blockOpacity ?? 100}%</span>
                   </div>
                   <input
                     type="range"
                     min="0"
-                    max="8"
-                    value={block.blockBorderWidth || 0}
-                    onChange={(e) => handleFieldChange("blockBorderWidth", parseInt(e.target.value))}
+                    max="100"
+                    value={block.blockOpacity ?? 100}
+                    onChange={(e) => handleFieldChange("blockOpacity", parseInt(e.target.value))}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
                   />
                 </div>
-                <ColorPicker
-                  label="Border Color"
-                  value={block.blockBorderColor || "#e5e7eb"}
-                  onChange={(val) => handleFieldChange("blockBorderColor", val)}
-                />
-              </div>
 
-              {/* Padding */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-gray-600">Container Padding</label>
-                  <span className="text-xs text-gray-500 font-mono">{block.blockPadding || 0}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  value={block.blockPadding || 0}
-                  onChange={(e) => handleFieldChange("blockPadding", parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                />
-              </div>
-
-              {/* Entrance Animation */}
-              <div className="grid grid-cols-2 gap-3">
+                {/* Border Radius */}
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Entrance Animation</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-gray-600">Border Radius</label>
+                    <span className="text-xs text-gray-500 font-mono">{block.blockBorderRadius || 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="40"
+                    value={block.blockBorderRadius || 0}
+                    onChange={(e) => handleFieldChange("blockBorderRadius", parseInt(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  />
+                </div>
+
+                {/* Shadow */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Container Shadow</label>
                   <select
-                    value={block.entranceAnimation || "none"}
-                    onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
+                    value={block.blockShadow || "none"}
+                    onChange={(e) => handleFieldChange("blockShadow", e.target.value)}
                     className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none bg-gray-50 focus:bg-white"
                   >
                     <option value="none">None</option>
-                    <option value="fadeIn">Fade In</option>
-                    <option value="slideUp">Slide Up</option>
-                    <option value="slideDown">Slide Down</option>
-                    <option value="slideLeft">Slide Left</option>
-                    <option value="slideRight">Slide Right</option>
-                    <option value="zoomIn">Zoom In</option>
-                    <option value="bounceIn">Bounce In</option>
-                    <option value="flipIn">Flip In</option>
+                    <option value="sm">Small</option>
+                    <option value="md">Medium</option>
+                    <option value="lg">Large</option>
+                    <option value="xl">Extra Large</option>
+                    <option value="2xl">2X Large</option>
+                    <option value="glow">Glow Effect</option>
                   </select>
                 </div>
-                {block.entranceAnimation && block.entranceAnimation !== "none" && (
+
+                {block.blockShadow === "glow" && (
+                  <ColorPicker
+                    label="Glow Color"
+                    value={block.blockShadowColor || "#6366f1"}
+                    onChange={(val) => handleFieldChange("blockShadowColor", val)}
+                  />
+                )}
+
+                {/* Border */}
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-gray-600">Delay</label>
-                      <span className="text-xs text-gray-500 font-mono">{block.entranceDelay || 0}ms</span>
+                      <label className="text-xs font-medium text-gray-600">Border Width</label>
+                      <span className="text-xs text-gray-500 font-mono">{block.blockBorderWidth || 0}px</span>
                     </div>
                     <input
                       type="range"
                       min="0"
-                      max="1000"
-                      step="50"
-                      value={block.entranceDelay || 0}
-                      onChange={(e) => handleFieldChange("entranceDelay", parseInt(e.target.value))}
+                      max="8"
+                      value={block.blockBorderWidth || 0}
+                      onChange={(e) => handleFieldChange("blockBorderWidth", parseInt(e.target.value))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
                     />
                   </div>
-                )}
-              </div>
+                  <ColorPicker
+                    label="Border Color"
+                    value={block.blockBorderColor || "#e5e7eb"}
+                    onChange={(val) => handleFieldChange("blockBorderColor", val)}
+                  />
+                </div>
+
+                {/* Padding */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-gray-600">Container Padding</label>
+                    <span className="text-xs text-gray-500 font-mono">{block.blockPadding || 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="40"
+                    value={block.blockPadding || 0}
+                    onChange={(e) => handleFieldChange("blockPadding", parseInt(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  />
+                </div>
+
+                {/* Entrance Animation */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1.5 block">Entrance Animation</label>
+                    <select
+                      value={block.entranceAnimation || "none"}
+                      onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none bg-gray-50 focus:bg-white"
+                    >
+                      <option value="none">None</option>
+                      <option value="fadeIn">Fade In</option>
+                      <option value="slideUp">Slide Up</option>
+                      <option value="slideDown">Slide Down</option>
+                      <option value="slideLeft">Slide Left</option>
+                      <option value="slideRight">Slide Right</option>
+                      <option value="zoomIn">Zoom In</option>
+                      <option value="bounceIn">Bounce In</option>
+                      <option value="flipIn">Flip In</option>
+                    </select>
+                  </div>
+                  {block.entranceAnimation && block.entranceAnimation !== "none" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-medium text-gray-600">Delay</label>
+                        <span className="text-xs text-gray-500 font-mono">{block.entranceDelay || 0}ms</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1000"
+                        step="50"
+                        value={block.entranceDelay || 0}
+                        onChange={(e) => handleFieldChange("entranceDelay", parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

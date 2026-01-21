@@ -1440,7 +1440,10 @@
         "defaultPeriod": "2020 — 2022",
         "defaultLocation": "São Paulo, SP",
         "defaultDescription": "Desenhou e entregou funcionalidades-chave do produto.",
-        "addExperience": "Adicionar experiência"
+        "addExperience": "Adicionar experiência",
+        "roleColor": "Cor do Cargo",
+        "textColor": "Cor do Texto",
+        "lineColor": "Cor da Linha"
       },
       "blockTypes": {
         "heading": "Título",

@@ -431,9 +431,14 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "experience") {
     const title = block.experienceTitle || "Experiência";
     const experiences = block.experiences || [];
+    
+    // Colors
+    const roleColor = block.experienceRoleColor || "#111827";
+    const textColor = block.experienceTextColor || "#374151";
+    const lineColor = block.experienceLineColor || "#e5e7eb";
 
     const itemsHtml = experiences
-      .map((experience) => {
+      .map((experience, index) => {
         const role = escapeHtml(experience.role || "");
         const company = escapeHtml(experience.company || "");
         const period = escapeHtml(experience.period || "");
@@ -441,29 +446,45 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
         const description = experience.description
           ? escapeHtml(experience.description).replace(/\n/g, "<br />")
           : "";
-        const meta = [company, location].filter(Boolean).join(" • ");
+        
+        // Use roleColor for the dot as well
+        const dotColor = roleColor; 
 
         return `
-          <div style="padding:16px; border:1px solid #e5e7eb; border-radius:16px; background:rgba(255,255,255,0.95); margin-bottom:12px;">
-            <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-              <div style="font-weight:700; color:#111827; font-size:15px;">${role}</div>
-              ${period ? `<div style=\"font-size:12px; color:#6b7280;\">${period}</div>` : ""}
-            </div>
-            ${meta ? `<div style=\"font-size:13px; color:#374151; font-weight:600; margin-top:2px;\">${meta}</div>` : ""}
-            ${description ? `<p style=\"margin:8px 0 0; color:#4b5563; font-size:13px; line-height:1.6;\">${description}</p>` : ""}
+          <div style="position:relative; margin-bottom:32px; padding-left:14px;">
+             <!-- Timeline Dot -->
+             <div style="position:absolute; left:-27px; top:6px; width:12px; height:12px; border-radius:50%; background:${dotColor}; border:2px solid #ffffff; box-shadow:0 0 0 2px ${dotColor}10;"></div>
+             
+             <!-- Content -->
+             <div style="display:flex; flex-direction:column; gap:4px;">
+               <div style="font-weight:700; font-size:16px; color:${roleColor}; line-height:1.3;">${role}</div>
+               
+               <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:13px; color:${textColor}b3; font-weight:500;">
+                 <span>${company}</span>
+                 ${location ? `<span style="width:3px; height:3px; border-radius:50%; background:${textColor}60;"></span><span>${location}</span>` : ""}
+               </div>
+
+               ${period ? `<div style="font-size:12px; color:${textColor}90; font-family:monospace; margin-top:2px; background:${lineColor}40; align-self:flex-start; padding:2px 8px; border-radius:4px;">${period}</div>` : ""}
+
+               ${description ? `<p style="margin:8px 0 0; color:${textColor}; font-size:14px; line-height:1.6;">${description}</p>` : ""}
+             </div>
           </div>
         `;
       })
       .join("");
 
     const emptyHtml = experiences.length === 0
-      ? `<div style="padding:16px; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af; font-size:13px; text-align:center;">Add your first experience</div>`
+      ? `<div style="padding:16px; border:1px dashed ${lineColor}; border-radius:16px; color:${textColor}80; font-size:13px; text-align:center;">Add your first experience</div>`
       : "";
 
     return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
-      <div style="padding:16px 0;">
-        <h3 style="margin:0 0 12px 0; font-size:18px; font-weight:700; color:#111827;">${escapeHtml(title)}</h3>
-        ${itemsHtml || emptyHtml}
+      <div style="padding:16px 20px;">
+        <h3 style="margin:0 0 24px 0; font-size:20px; font-weight:800; color:${roleColor}; letter-spacing:-0.5px;">${escapeHtml(title)}</h3>
+        
+        <!-- Timeline Container -->
+        <div style="border-left:2px solid ${lineColor}; margin-left:8px; padding-top:4px;">
+           ${itemsHtml || emptyHtml}
+        </div>
       </div>
     </section>`;
   }
@@ -1628,7 +1649,11 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
 
   // Tab Bar Logic
-  const showTabs = hasProducts || hasBlog;
+  const experienceBlocks = blocks.filter(b => b.type === 'experience');
+  const otherBlocks = blocks.filter(b => b.type !== 'experience');
+  
+  const hasExperience = experienceBlocks.length > 0;
+  const showTabs = hasProducts || hasBlog || hasExperience;
   const tabsHtml = showTabs ? `
     <div style="display:flex; justify-content:center; gap:24px; border-bottom:1px solid rgba(0,0,0,0.06); margin-bottom:24px; padding-bottom:16px;">
         <button id="tab-links" onclick="window.switchTab('links')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navTextColor}; cursor:pointer; position:relative; transition:opacity 0.2s;">
@@ -1643,6 +1668,11 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         ${hasBlog ? `
         <button id="tab-blog" onclick="window.switchTab('blog')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.85; cursor:pointer; position:relative; transition:opacity 0.2s;">
             Blog
+            <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
+        </button>` : ''}
+        ${hasExperience ? `
+        <button id="tab-experience" onclick="window.switchTab('experience')" style="background:none; border:none; padding:8px 12px; font-size:15px; font-weight:700; color:${navInactive}; opacity:0.85; cursor:pointer; position:relative; transition:opacity 0.2s;">
+            CV
             <span style="position:absolute; bottom:-17px; left:0; right:0; height:3px; background:transparent; border-radius:3px 3px 0 0; transition:background 0.2s;"></span>
         </button>` : ''}
     </div>
@@ -1746,7 +1776,11 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       ${tabsHtml}
       
       <div id="links-feed" style="position:relative; z-index:20; display:block; animation:fadeIn 0.3s ease-out;">
-        ${blocks.map(b => blockToHtml(b, bio)).join("")}
+        ${otherBlocks.map(b => blockToHtml(b, bio)).join("")}
+      </div>
+
+      <div id="experience-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
+        ${experienceBlocks.map(b => blockToHtml(b, bio)).join("")}
       </div>
 
       <div id="shop-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
@@ -2049,12 +2083,15 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         const linksTab = document.getElementById('tab-links');
         const shopTab = document.getElementById('tab-shop');
         const blogTab = document.getElementById('tab-blog');
+        const experienceTab = document.getElementById('tab-experience');
+        
         const linksFeed = document.getElementById('links-feed');
         const shopFeed = document.getElementById('shop-feed');
         const blogFeed = document.getElementById('blog-feed');
+        const experienceFeed = document.getElementById('experience-feed');
         
         // Reset all
-        [linksTab, shopTab, blogTab].forEach(t => {
+        [linksTab, shopTab, blogTab, experienceTab].forEach(t => {
           if(t) {
             t.style.color = '${navInactive}';
             t.style.opacity = '0.9';
@@ -2062,7 +2099,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
             if (indicator) indicator.style.background = 'transparent';
           }
         });
-        [linksFeed, shopFeed, blogFeed].forEach(f => {
+        [linksFeed, shopFeed, blogFeed, experienceFeed].forEach(f => {
           if(f) f.style.display = 'none';
         });
 
@@ -2097,6 +2134,18 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
             
             if (window.location.pathname !== '/blog') {
                 window.history.pushState({ tab: 'blog' }, '', '/blog');
+            }
+        } else if (tabName === 'experience') {
+            if (experienceTab) {
+            experienceTab.style.color = '${navTextColor}';
+            experienceTab.style.opacity = '1';
+            const indicator = experienceTab.querySelector('span');
+            if (indicator) indicator.style.background = '${navIndicator}';
+            }
+            if (experienceFeed) experienceFeed.style.display = 'block';
+            
+            if (window.location.pathname !== '/experience') {
+                window.history.pushState({ tab: 'experience' }, '', '/experience');
             }
         } else {
             if (linksTab) {
@@ -2384,6 +2433,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
         window.switchTab('blog');
       } else if (window.location.pathname === '/shop') {
         window.switchTab('shop');
+      } else if (window.location.pathname === '/experience') {
+        window.switchTab('experience');
       }
 
       // Load Forms
