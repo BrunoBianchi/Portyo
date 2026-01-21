@@ -152,7 +152,7 @@ export default function WhoUsesSection() {
     return (
         <section
             ref={sectionRef}
-            className="relative w-full py-16 md:py-24 bg-[#FDFDF3] overflow-hidden"
+            className="relative w-full pt-0 pb-16 md:pb-24 bg-[#FDFDF3] overflow-hidden -mt-10"
         >
             {/* Edge fade gradients */}
             <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-[#FDFDF3] to-transparent z-10 pointer-events-none" />

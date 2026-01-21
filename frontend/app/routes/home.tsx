@@ -6,6 +6,25 @@ import { BioNotFound } from "~/components/public-bio/not-found";
 import type { ay } from "node_modules/react-router/dist/development/router-5iOvts3c.mjs";
 import i18n from "~/i18n";
 
+const META_FALLBACK = {
+  en: {
+    title: "Portyo - Link in Bio",
+    description:
+      "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform.",
+  },
+  pt: {
+    title: "Portyo - Link in Bio",
+    description:
+      "Converta seguidores em clientes com um link. Gere bios poderosas que geram receita com nossa plataforma tudo-em-um.",
+  },
+} as const;
+
+const getMetaText = (lang: "en" | "pt", key: string, fallback: string) => {
+  const tMeta = i18n.getFixedT(lang, "meta");
+  const value = tMeta(key, { defaultValue: fallback }) as string;
+  return value || fallback;
+};
+
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const hostname = url.hostname;
@@ -39,16 +58,40 @@ export function meta({ data, params }: Route.MetaArgs) {
     const bio = data.bio;
     // ... Copy meta logic from p.$username.tsx or use a shared helper?
     // For now, let's duplicate the critical parts or simpler: use defaults if missing
+    const title = bio.seoTitle || bio.ogTitle || `${bio.subdomain} | Portyo`;
+    const description = bio.seoDescription || bio.ogDescription || "";
+    const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
+    const url = data.hostname ? `https://${data.hostname}` : undefined;
     return [
-      { title: bio.seoTitle || bio.ogTitle || `${bio.subdomain} | Portyo` },
-      { name: "description", content: bio.seoDescription || bio.ogDescription || "" },
-      // ... add other critical meta
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: bio.ogTitle || title },
+      { property: "og:description", content: bio.ogDescription || description || "" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: ogImage },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: bio.ogTitle || title },
+      { name: "twitter:description", content: bio.ogDescription || description || "" },
+      { name: "twitter:image", content: ogImage },
+      ...(url ? [{ property: "og:url", content: url }] : []),
     ];
   }
   const lang = params?.lang === "pt" ? "pt" : "en";
+  const fallback = META_FALLBACK[lang];
+  const title = getMetaText(lang, "home.title", fallback.title);
+  const description = getMetaText(lang, "home.description", fallback.description);
+  const ogImage = "https://portyo.me/favicons/192x192.png";
   return [
-    { title: i18n.t("meta.home.title", { lng: lang }) },
-    { name: "description", content: i18n.t("meta.home.description", { lng: lang }) },
+    { title },
+    { name: "description", content: description },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
+    { property: "og:image", content: ogImage },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogImage },
   ];
 }
 

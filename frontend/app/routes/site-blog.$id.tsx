@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 
 export default function SiteBlogPostPage() {
     const { id } = useParams();
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation("blogPage");
     const [post, setPost] = useState<SitePost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -127,6 +127,8 @@ export default function SiteBlogPostPage() {
                         <span suppressHydrationWarning>{formattedDate}</span>
                         <span>•</span>
                         <span suppressHydrationWarning>{readTime} min read</span>
+                        <span>•</span>
+                        <span suppressHydrationWarning>{t("views", { count: post.views ?? 0 })}</span>
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">

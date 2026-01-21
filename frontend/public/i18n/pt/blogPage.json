@@ -3,5 +3,6 @@
   "subtitle": "Últimas atualizações, ideias e notícias da Portyo.",
   "empty": "Nenhum post disponível no momento.",
   "categoryFallback": "Atualizações",
-  "readTime": "{{count}} min de leitura"
+  "readTime": "{{count}} min de leitura",
+  "views": "{{count}} visualizações"
 }

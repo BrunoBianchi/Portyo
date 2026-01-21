@@ -45,6 +45,7 @@ interface BlockItemProps {
   onDragEnd: () => void;
   onDrop: (e: React.DragEvent, index: number) => void;
   onDragEnter: (e: React.DragEvent, id: string) => void;
+  onTouchDragStart?: (event: React.TouchEvent) => void;
   availableQrCodes?: QrCode[];
   onCreateQrCode?: () => void;
 }
@@ -308,24 +309,25 @@ const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
   );
 };
 
-const BlockItem = memo(({
-  block,
-  index,
-  isExpanded,
-  isDragging,
-  isDragOver,
-  dragItem,
-  isLocked,
-  onToggleExpand,
-  onRemove,
-  onChange,
-  onDragStart,
-  onDragEnd,
-  onDrop,
-  onDragEnter,
-  availableQrCodes = [],
-  onCreateQrCode
-}: BlockItemProps) => {
+const BlockItem = memo((props: BlockItemProps) => {
+  const {
+    block,
+    index,
+    isExpanded,
+    isDragging,
+    isDragOver,
+    dragItem,
+    isLocked,
+    onToggleExpand,
+    onRemove,
+    onChange,
+    onDragStart,
+    onDragEnd,
+    onDrop,
+    onDragEnter,
+    availableQrCodes = [],
+    onCreateQrCode
+  } = props;
   const { t } = useTranslation();
   const { bio } = useContext(BioContext);
   const [stripeProducts, setStripeProducts] = useState<any[]>([]);
@@ -568,7 +570,17 @@ const BlockItem = memo(({
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className={`p-1 shrink-0 ${isMarketingLocked ? 'text-gray-200 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500'}`}>
-                <DragHandleIcon />
+                <div
+                  onTouchStart={(e) => {
+                    if (isMarketingLocked) return;
+                    e.stopPropagation();
+                    props.onTouchDragStart?.(e);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ touchAction: "none" }}
+                >
+                  <DragHandleIcon />
+                </div>
               </div>
               <div className={`p-2.5 rounded-xl ${getBlockTypeAccent(block.type).bg} ${getBlockTypeAccent(block.type).text} shrink-0`}>
                 {/* Icon based on type */}

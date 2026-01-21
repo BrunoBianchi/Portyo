@@ -199,11 +199,16 @@ export const getPublicSitePost = async (req: Request, res: Response) => {
             throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
         }
 
+        const currentViews = post.views || 0;
+        await sitePostRepository.increment({ id: post.id }, "views", 1);
+        const views = currentViews + 1;
+
         return res.json({
             ...post,
             title,
             content,
             keywords,
+            views,
         });
     } catch (error) {
         if (error instanceof ApiError) {

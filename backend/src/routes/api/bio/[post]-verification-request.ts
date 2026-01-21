@@ -11,11 +11,17 @@ const router: Router = Router();
 router.post("/verification-request/:id", ownerMiddleware, async (req, res) => {
     const { id } = z.object({ id: z.string() }).parse(req.params);
 
+    const optionalTrimmed = (minLength: number) =>
+        z.preprocess(
+            (val) => (typeof val === "string" && val.trim() === "" ? undefined : val),
+            z.string().min(minLength).optional()
+        );
+
     const schema = z.object({
         name: z.string().min(2),
         email: z.string().email(),
-        phone: z.string().min(6),
-        description: z.string().min(10)
+        phone: optionalTrimmed(6),
+        description: optionalTrimmed(10)
     }).parse(req.body);
 
     const bioRepository = AppDataSource.getRepository(BioEntity);
@@ -45,8 +51,8 @@ router.post("/verification-request/:id", ownerMiddleware, async (req, res) => {
         userId: req.user!.id as string,
         name: schema.name,
         email: schema.email,
-        phone: schema.phone,
-        description: schema.description,
+        phone: schema.phone || "",
+        description: schema.description || "",
         status: "pending"
     });
 

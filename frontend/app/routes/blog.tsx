@@ -153,6 +153,9 @@ export default function BlogIndex() {
                                         <span className="text-sm text-gray-500">
                                             {t("readTime", { count: readingTime })}
                                         </span>
+                                        <span className="text-sm text-gray-500">
+                                            {t("views", { count: post.views ?? 0 })}
+                                        </span>
                                     </div>
 
                                     {/* Card Content */}

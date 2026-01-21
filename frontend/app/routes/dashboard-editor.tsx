@@ -799,6 +799,8 @@ export default function DashboardEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [touchPoint, setTouchPoint] = useState<{ x: number; y: number } | null>(null);
+  const touchDragMovedRef = useRef(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(["Content", "Social", "Shop", "Music", "Blog", "Marketing"]);
   const [expandedSettings, setExpandedSettings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"blocks" | "settings">("blocks");
@@ -1596,6 +1598,115 @@ export default function DashboardEditor() {
     setDragItem(null);
   }, []);
 
+  const isTouchReorderActive = isMobile && !!dragItem && dragItem.source === "canvas";
+
+  const getDropIndexFromPoint = useCallback((x: number, y: number) => {
+    if (typeof document === "undefined") return null;
+
+    const blockElements = Array.from(document.querySelectorAll("[data-drop-block-index]")) as HTMLElement[];
+    if (blockElements.length > 0) {
+      const positions = blockElements
+        .map((el) => ({
+          index: Number(el.getAttribute("data-drop-block-index")),
+          rect: el.getBoundingClientRect(),
+        }))
+        .filter((item) => Number.isFinite(item.index))
+        .sort((a, b) => a.index - b.index);
+
+      for (const item of positions) {
+        const midY = item.rect.top + item.rect.height / 2;
+        if (y < midY) return item.index;
+      }
+      return positions.length;
+    }
+
+    const el = document.elementFromPoint(x, y) as HTMLElement | null;
+    const dropEl = el?.closest("[data-drop-index]") as HTMLElement | null;
+    if (!dropEl) return null;
+    const indexAttr = dropEl.getAttribute("data-drop-index");
+    if (indexAttr === null) return null;
+    const index = Number(indexAttr);
+    return Number.isFinite(index) ? index : null;
+  }, []);
+
+  const moveBlockToIndex = useCallback((dragId: string, targetIndex: number) => {
+    setBlocks((prev) => {
+      const dragIndex = prev.findIndex((b) => b.id === dragId);
+      if (dragIndex === -1) return prev;
+      const draggedBlock = prev[dragIndex];
+      if (draggedBlock && isMarketingLockedBlock(draggedBlock)) return prev;
+
+      const clampedIndex = Math.max(0, Math.min(targetIndex, prev.length));
+      const targetBlock = prev[clampedIndex];
+      if (targetBlock && isMarketingLockedBlock(targetBlock)) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      let insertIndex = clampedIndex;
+      if (insertIndex > dragIndex) insertIndex -= 1;
+      insertIndex = Math.max(0, Math.min(insertIndex, next.length));
+      next.splice(insertIndex, 0, moved);
+      return next;
+    });
+  }, [isMarketingLockedBlock]);
+
+  const handleTouchReorderToIndex = useCallback((index: number) => {
+    if (!dragItem || dragItem.source !== "canvas" || !dragItem.id) return;
+    moveBlockToIndex(dragItem.id, index);
+    setDragItem(null);
+    setTouchPoint(null);
+  }, [dragItem, moveBlockToIndex]);
+
+  useEffect(() => {
+    if (!dragItem || typeof document === "undefined") return;
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!dragItem) return;
+      const touch = event.touches[0];
+      if (!touch) return;
+      touchDragMovedRef.current = true;
+      setTouchPoint({ x: touch.clientX, y: touch.clientY });
+      const dropIndex = getDropIndexFromPoint(touch.clientX, touch.clientY);
+      if (dropIndex !== null && dragItem.source === "canvas" && dragItem.id) {
+        moveBlockToIndex(dragItem.id, dropIndex);
+      }
+      event.preventDefault();
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (!dragItem) return;
+      if (!touchDragMovedRef.current && dragItem.source === "canvas") {
+        setTouchPoint(null);
+        return;
+      }
+      const touch = event.changedTouches[0];
+      const point = touch
+        ? { x: touch.clientX, y: touch.clientY }
+        : touchPoint;
+      const dropIndex = point ? getDropIndexFromPoint(point.x, point.y) : null;
+
+      if (dragItem.source === "palette") {
+        handleDrop(dropIndex ?? undefined, undefined);
+      } else if (dragItem.source === "canvas" && dragItem.id && dropIndex !== null) {
+        moveBlockToIndex(dragItem.id, dropIndex);
+      }
+
+      setDragItem(null);
+      setTouchPoint(null);
+      touchDragMovedRef.current = false;
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
+    document.addEventListener("touchcancel", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchmove", handleTouchMove as any);
+      document.removeEventListener("touchend", handleTouchEnd as any);
+      document.removeEventListener("touchcancel", handleTouchEnd as any);
+    };
+  }, [dragItem, getDropIndexFromPoint, handleDrop, moveBlockToIndex, touchPoint]);
+
   const handleDragEnter = useCallback((e: React.DragEvent, id: string) => {
     e.preventDefault();
     if (dragItem?.source === "canvas" && dragItem.id !== id) {
@@ -1884,7 +1995,7 @@ export default function DashboardEditor() {
             </button>
             <div className="w-px h-4 bg-gray-200 mx-1"></div>
             <button
-              onClick={() => setShareData({ url: `https://${bio.sufix}.portyo.me`, title: `@${bio.sufix}` })}
+              onClick={() => setShareData({ url: `https://portyo.me/p/${bio.sufix}`, title: `@${bio.sufix}` })}
 
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
             >
@@ -1892,7 +2003,7 @@ export default function DashboardEditor() {
             </button>
             <div className="w-px h-4 bg-gray-200 mx-1"></div>
             <a
-              href={`https://${bio.sufix}.portyo.me`}
+              href={`https://portyo.me/p/${bio.sufix}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
@@ -1991,6 +2102,14 @@ export default function DashboardEditor() {
                                     draggable={!isLocked}
                                     onDragStart={() => !isLocked && setDragItem({ source: "palette", type: item.type as BioBlock["type"] })}
                                     onDragEnd={() => setDragItem(null)}
+                                    onTouchStart={(event) => {
+                                      if (isLocked) return;
+                                      const touch = event.touches[0];
+                                      if (touch) {
+                                        setTouchPoint({ x: touch.clientX, y: touch.clientY });
+                                      }
+                                      setDragItem({ source: "palette", type: item.type as BioBlock["type"] });
+                                    }}
                                     className={`
                                                     group relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-gray-100 bg-white transition-all duration-200
                                                     ${isLocked
@@ -3054,38 +3173,84 @@ export default function DashboardEditor() {
 
                 {/* Drop Zone Top */}
                 {blocks.length > 0 && (
-                  <div
-                    className={`h-2 rounded-lg transition-all ${dragItem ? 'bg-blue-100 my-2' : 'bg-transparent my-0'}`}
+                  <button
+                    type="button"
+                    className={`w-full rounded-lg transition-all ${isTouchReorderActive
+                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold'
+                      : `h-2 ${dragItem ? 'bg-blue-100 my-2' : 'bg-transparent my-0'}`
+                      }`}
+                    data-drop-index={0}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDrop(0, e)}
-                  />
+                    onClick={() => handleTouchReorderToIndex(0)}
+                    disabled={!isTouchReorderActive}
+                  >
+                    {isTouchReorderActive && t("dashboard.editor.blockItem.general.dropHere")}
+                  </button>
                 )}
 
                 {/* Blocks */}
                 {blocks.map((block, index) => (
-                  <BlockItem
-                    key={block.id}
-                    block={block}
-                    index={index}
-                    isExpanded={expandedId === block.id}
-                    isDragging={dragItem?.id === block.id}
-                    isDragOver={false} /* Simplified, usually managed by BlockItem internal ref or complex state */
-                    dragItem={dragItem}
-                    isLocked={block.type === 'marketing' && !!block.marketingId && !!marketingSlotStatusById[block.marketingId] && marketingSlotStatusById[block.marketingId] !== 'available'}
-                    onToggleExpand={handleToggleExpand}
-                    onRemove={handleRemove}
-                    onChange={handleFieldChange}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDrop={(e: React.DragEvent, i: number) => handleDrop(i, e)}
-                    onDragEnter={handleDragEnter}
-                    availableQrCodes={availableQrCodes}
-                    onCreateQrCode={() => {
-                      setCreatingQrForBlockId(block.id);
-                      setShowCreateQrModal(true);
-                    }}
-                  />
+                  <div key={block.id} data-drop-index={index} data-drop-block-index={index}>
+                    {isTouchReorderActive && index > 0 && (
+                      <button
+                        type="button"
+                        className="w-full my-2 h-10 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold"
+                        data-drop-index={index}
+                        onClick={() => handleTouchReorderToIndex(index)}
+                      >
+                        {t("dashboard.editor.blockItem.general.dropHere")}
+                      </button>
+                    )}
+                    <BlockItem
+                      block={block}
+                      index={index}
+                      isExpanded={expandedId === block.id}
+                      isDragging={dragItem?.id === block.id}
+                      isDragOver={false} /* Simplified, usually managed by BlockItem internal ref or complex state */
+                      dragItem={dragItem}
+                      isLocked={block.type === 'marketing' && !!block.marketingId && !!marketingSlotStatusById[block.marketingId] && marketingSlotStatusById[block.marketingId] !== 'available'}
+                      onToggleExpand={handleToggleExpand}
+                      onRemove={handleRemove}
+                      onChange={handleFieldChange}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onDrop={(e: React.DragEvent, i: number) => handleDrop(i, e)}
+                      onDragEnter={handleDragEnter}
+                      onTouchDragStart={(event) => {
+                        if (block.type === 'marketing' && !!block.marketingId && !!marketingSlotStatusById[block.marketingId] && marketingSlotStatusById[block.marketingId] !== 'available') return;
+                        touchDragMovedRef.current = false;
+                        takeSnapshot();
+                        setDragItem({ source: "canvas", id: block.id });
+                        const touch = event.touches[0];
+                        if (touch) {
+                          setTouchPoint({ x: touch.clientX, y: touch.clientY });
+                        }
+                      }}
+                      availableQrCodes={availableQrCodes}
+                      onCreateQrCode={() => {
+                        setCreatingQrForBlockId(block.id);
+                        setShowCreateQrModal(true);
+                      }}
+                    />
+                  </div>
                 ))}
+
+                {/* Drop Zone Bottom */}
+                {blocks.length > 0 && (
+                  <button
+                    type="button"
+                    className={`w-full rounded-lg transition-all ${isTouchReorderActive
+                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold'
+                      : `h-8 ${dragItem ? 'bg-blue-50' : 'bg-transparent'}`
+                      }`}
+                    data-drop-index={blocks.length}
+                    onClick={() => handleTouchReorderToIndex(blocks.length)}
+                    disabled={!isTouchReorderActive}
+                  >
+                    {isTouchReorderActive && t("dashboard.editor.blockItem.general.dropHere")}
+                  </button>
+                )}
               </div>
             </div>
           </div>

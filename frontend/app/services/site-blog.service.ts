@@ -8,6 +8,7 @@ export interface SitePost {
     thumbnail: string | null;
     language?: string;
     keywords: string[];
+    views?: number;
     titleEn?: string | null;
     titlePt?: string | null;
     contentEn?: string | null;

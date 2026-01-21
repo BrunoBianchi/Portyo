@@ -124,47 +124,27 @@ export default function CarouselSection() {
   const items = [...users, ...users];
 
   return (
-    <section className="w-full overflow-hidden py-10 bg-surface-alt top-[-102px] relative">
+    <section className="w-full overflow-hidden pt-10 pb-0 bg-surface-alt top-[-102px] relative">
       <div className="flex w-max animate-scroll hover:[animation-play-state:paused]">
         {items.map((user, index) => (
           <a
             key={`${user.username}-${index}`}
             href={`/p/${user.username}`}
             aria-label={`Abrir portyo.me/${user.username}`}
-            className="relative w-[240px] h-[320px] mx-3 rounded-2xl overflow-hidden group cursor-pointer shrink-0 [perspective:1000px]"
+            className="relative w-[240px] h-[320px] mx-3 rounded-2xl overflow-hidden group cursor-pointer shrink-0"
           >
-            <div className="relative w-full h-full rounded-2xl overflow-hidden transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-              {/* Front Face */}
-              <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
-                <img
-                  src={needsOptimization(user.image) ? buildOptimizedImageUrl(user.image, 240, 320) : user.image}
-                  alt={user.name}
-                  width={240}
-                  height={320}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-                <div className="absolute bottom-4 left-4 right-4 bg-white rounded-xl p-3 flex items-center justify-between shadow-lg">
-                  <span className="font-bold text-text-main text-sm truncate mr-2">{user.name}</span>
-                  <span className="text-gray-600 text-xs whitespace-nowrap">{user.role}</span>
-                </div>
-              </div>
-
-              {/* Back Face */}
-              <div className="absolute inset-0 w-full h-full rounded-2xl [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden bg-black">
-                {/* Blurred Background Image */}
-                <div
-                  className="absolute inset-0 w-full h-full bg-cover bg-center blur-md opacity-60 scale-110"
-                  style={{ backgroundImage: `url(${needsOptimization(user.image) ? buildOptimizedImageUrl(user.image, 240, 320) : user.image})` }}
-                ></div>
-
-                {/* Content Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center p-6 text-center z-20 bg-black/70 backdrop-blur-md [transform:translateZ(1px)]">
-                  <span className="text-white font-extrabold text-lg px-5 py-2.5 rounded-full bg-white/20 border border-white/40 shadow-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-                    portyo.me/{user.username}
-                  </span>
-                </div>
+            <div className="relative w-full h-full rounded-2xl overflow-hidden">
+              <img
+                src={needsOptimization(user.image) ? buildOptimizedImageUrl(user.image, 240, 320) : user.image}
+                alt={user.name}
+                width={240}
+                height={320}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover rounded-2xl"
+              />
+              <div className="absolute bottom-4 left-4 right-4 bg-white rounded-xl p-3 flex items-center shadow-lg">
+                <span className="font-bold text-text-main text-sm truncate mr-2">{user.name}</span>
               </div>
             </div>
           </a>

@@ -91,10 +91,23 @@ export default function BuiltForEveryoneSection() {
     return `translate(${parallaxX + floatX}px, ${parallaxY + floatY}px)`;
   };
 
+  const mobileLabelKeys = [
+    "creators",
+    "musicians",
+    "engineers",
+    "designers",
+    "teachers",
+    "students",
+    "lawyers",
+    "doctors",
+    "architects",
+    "professionals",
+  ];
+
   return (
     <section
       ref={sectionRef}
-      className="relative w-full overflow-hidden bg-[#0B0E14] py-24 md:py-32 lg:py-40"
+      className="relative w-full overflow-hidden bg-[#0B0E14] pt-16 pb-16 md:pt-20 md:pb-32 lg:pt-24 lg:pb-40 -mt-10"
     >
       <div className="relative mx-auto max-w-7xl px-4">
         {/* Floating Labels - Behind Text */}
@@ -102,7 +115,7 @@ export default function BuiltForEveryoneSection() {
           <div
             key={label.key}
             className={`
-              absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap
+              absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap hidden md:flex
               ${colorClasses[label.color]}
               transition-transform duration-100 ease-out
             `}
@@ -134,12 +147,24 @@ export default function BuiltForEveryoneSection() {
           </h2>
         </div>
 
+        {/* Mobile chips */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 md:hidden">
+          {mobileLabelKeys.map((key) => (
+            <span
+              key={key}
+              className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#F9FFE6]"
+            >
+              {t(`builtForEveryone.labels.${key}`)}
+            </span>
+          ))}
+        </div>
+
         {/* Floating Labels - In Front of Text */}
         {labels.filter(l => l.zIndex === 3).map((label) => (
           <div
             key={label.key}
             className={`
-              absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap
+              absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap hidden md:flex
               ${colorClasses[label.color]}
               transition-transform duration-100 ease-out
               shadow-lg
