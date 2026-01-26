@@ -168,6 +168,45 @@ router.post('/:bioId', requireAuth, async (req, res) => {
 });
 
 /**
+ * PUT /portfolio/:bioId/reorder - Reorder portfolio items (auth required)
+ */
+router.put('/:bioId/reorder', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session?.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        await checkBioOwnership(req.params.bioId, userId);
+
+        const schema = z.object({
+            items: z.array(z.object({
+                id: z.string().uuid(),
+                order: z.number()
+            }))
+        });
+
+        const { items } = schema.parse(req.body);
+
+        // Update each item's order
+        for (const { id, order } of items) {
+            await portfolioRepository.update(
+                { id, bioId: req.params.bioId },
+                { order }
+            );
+        }
+
+        res.json({ success: true });
+    } catch (error: any) {
+        console.error("Error reordering portfolio items:", error);
+        if (error.status) {
+            return res.status(error.status).json({ error: error.message });
+        }
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+/**
  * PUT /portfolio/:bioId/:id - Update a portfolio item (auth required)
  */
 router.put('/:bioId/:id', requireAuth, async (req, res) => {
@@ -252,43 +291,6 @@ router.delete('/:bioId/:id', requireAuth, async (req, res) => {
     }
 });
 
-/**
- * PUT /portfolio/:bioId/reorder - Reorder portfolio items (auth required)
- */
-router.put('/:bioId/reorder', requireAuth, async (req, res) => {
-    try {
-        const userId = req.session?.user?.id;
-        if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
 
-        await checkBioOwnership(req.params.bioId, userId);
-
-        const schema = z.object({
-            items: z.array(z.object({
-                id: z.string().uuid(),
-                order: z.number()
-            }))
-        });
-
-        const { items } = schema.parse(req.body);
-
-        // Update each item's order
-        for (const { id, order } of items) {
-            await portfolioRepository.update(
-                { id, bioId: req.params.bioId },
-                { order }
-            );
-        }
-
-        res.json({ success: true });
-    } catch (error: any) {
-        console.error("Error reordering portfolio items:", error);
-        if (error.status) {
-            return res.status(error.status).json({ error: error.message });
-        }
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
 
 export default router;

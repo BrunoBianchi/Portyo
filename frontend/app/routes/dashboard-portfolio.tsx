@@ -20,6 +20,27 @@ import BioContext from "~/contexts/bio.context";
 import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
 import { useJoyrideSettings } from "~/utils/joyride";
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+    defaultDropAnimationSideEffects,
+    type DropAnimation,
+    type DragEndEvent,
+    type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Category {
     id: string;
@@ -37,6 +58,105 @@ interface PortfolioItem {
     order: number;
     createdAt: string;
 }
+
+interface SortablePortfolioItemProps {
+    item: PortfolioItem;
+    index: number;
+    t: any;
+    setDeleteConfirm: (item: PortfolioItem) => void;
+    openEditModal: (item: PortfolioItem) => void;
+}
+
+const SortablePortfolioItem = ({ item, index, t, setDeleteConfirm, openEditModal }: SortablePortfolioItemProps) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: item.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+        touchAction: 'none'
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            data-tour={index === 0 ? "portfolio-card" : undefined}
+            className={`bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden ${isDragging ? 'z-50 ring-2 ring-primary ring-offset-2' : ''}`}
+        >
+            <div className="p-2">
+                {/* Image */}
+                <div className="aspect-square relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+                    {item.images && item.images.length > 0 ? (
+                        <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50/50">
+                            <ImageIcon className="w-12 h-12 opacity-20" />
+                        </div>
+                    )}
+                    {item.images && item.images.length > 1 && (
+                        <div className="absolute top-3 left-3">
+                            <span className="pl-2 pr-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-xl bg-white/80 border border-gray-100 shadow-sm flex items-center gap-1.5 text-gray-600">
+                                <ImageIcon className="w-3 h-3" />
+                                {t("dashboard.portfolio.photos", { count: item.images.length })}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="px-4 pb-4 pt-1 flex flex-col flex-1">
+                <div className="mb-3">
+                    <h3 className="font-bold text-gray-900 text-base mb-0.5 truncate tracking-tight" title={item.title}>{item.title}</h3>
+                    {item.category ? (
+                        <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            {item.category.name}
+                        </p>
+                    ) : (
+                        <p className="text-xs text-gray-400 font-medium">{t("dashboard.portfolio.uncategorized")}</p>
+                    )}
+                </div>
+
+                <div className="mt-auto flex items-end justify-end gap-1.5">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent drag start when clicking delete
+                            setDeleteConfirm(item);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on pointer down
+                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all cursor-pointer"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent drag start when clicking edit
+                            openEditModal(item);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on pointer down
+                        className="h-9 px-4 bg-black text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                    >
+                        {t("dashboard.portfolio.edit")}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function PortfolioDashboard() {
     const { bio } = useContext(BioContext);
@@ -75,6 +195,68 @@ export default function PortfolioDashboard() {
     const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
     const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const [activeId, setActiveId] = useState<string | null>(null);
+
+    const handleDragStartMain = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string);
+    };
+
+    const handleDragEndMain = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setItems((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Update order in backend
+                // Re-calculate orders based on new index
+                const updates = newItems.map((item, index) => ({
+                    id: item.id,
+                    order: index
+                }));
+
+                api.put(`/portfolio/${bio!.id}/reorder`, { items: updates })
+                    .catch(err => {
+                        console.error("Failed to save order", err);
+                        // Revert on error? For now just log
+                        alert(t("dashboard.portfolio.saveOrderError"));
+                    });
+
+                return newItems;
+            });
+        }
+        setActiveId(null);
+    };
+
+    const handleDragCancelMain = () => {
+        setActiveId(null);
+    };
+
+    const dropAnimation: DropAnimation = {
+        sideEffects: defaultDropAnimationSideEffects({
+            styles: {
+                active: {
+                    opacity: '0.4',
+                },
+            },
+        }),
+    };
 
     useEffect(() => {
         if (bio?.id) {
@@ -400,10 +582,17 @@ export default function PortfolioDashboard() {
                     {t("dashboard.portfolio.filterAll")}
                 </button>
                 {categories.map(category => (
-                    <button
+                    <div
                         key={category.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setActiveFilter(category.id)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all group relative ${activeFilter === category.id
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                setActiveFilter(category.id);
+                            }
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all group relative cursor-pointer select-none ${activeFilter === category.id
                             ? 'bg-gray-900 text-white shadow-sm'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
@@ -418,7 +607,7 @@ export default function PortfolioDashboard() {
                         >
                             ×
                         </button>
-                    </button>
+                    </div>
                 ))}
                 <button
                     onClick={() => setIsCategoryModalOpen(true)}
@@ -456,84 +645,60 @@ export default function PortfolioDashboard() {
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" data-tour="portfolio-grid">
-                    {filteredItems.map((item, index) => (
-                        <div
-                            key={item.id}
-                            data-tour={index === 0 ? "portfolio-card" : undefined}
-                            className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden"
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStartMain}
+                    onDragEnd={handleDragEndMain}
+                    onDragCancel={handleDragCancelMain}
+                >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" data-tour="portfolio-grid">
+                        <SortableContext
+                            items={filteredItems.map(i => i.id)}
+                            strategy={rectSortingStrategy}
+                            disabled={!!activeFilter} // Disable drag sorting if filtered by category (handled simpler for now)
                         >
-                            <div className="p-2">
-                                {/* Image */}
-                                <div className="aspect-square relative bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
-                                    {item.images && item.images.length > 0 ? (
-                                        <img
-                                            src={item.images[0]}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50/50">
-                                            <ImageIcon className="w-12 h-12 opacity-20" />
-                                        </div>
-                                    )}
-                                    {item.images && item.images.length > 1 && (
-                                        <div className="absolute top-3 left-3">
-                                            <span className="pl-2 pr-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-xl bg-white/80 border border-gray-100 shadow-sm flex items-center gap-1.5 text-gray-600">
-                                                <ImageIcon className="w-3 h-3" />
-                                                {t("dashboard.portfolio.photos", { count: item.images.length })}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
+                            {filteredItems.map((item, index) => (
+                                <SortablePortfolioItem
+                                    key={item.id}
+                                    item={item}
+                                    index={index}
+                                    t={t}
+                                    setDeleteConfirm={setDeleteConfirm}
+                                    openEditModal={openEditModal}
+                                />
+                            ))}
+                        </SortableContext>
+
+                        {/* Drag Overlay */}
+                        <DragOverlay dropAnimation={dropAnimation}>
+                            {activeId ? (
+                                <SortablePortfolioItem
+                                    item={items.find(i => i.id === activeId)!}
+                                    index={0}
+                                    t={t}
+                                    setDeleteConfirm={() => { }}
+                                    openEditModal={() => { }}
+                                />
+                            ) : null}
+                        </DragOverlay>
+
+                        {/* Add New Placeholder - Not draggable */}
+                        <button
+                            data-tour="portfolio-add-placeholder"
+                            onClick={openCreateModal}
+                            className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-6 hover:border-black/20 hover:bg-gray-50/50 transition-all group h-full min-h-[280px]"
+                        >
+                            <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-black group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 border border-gray-100">
+                                <Plus className="w-6 h-6" />
                             </div>
-
-                            <div className="px-4 pb-4 pt-1 flex flex-col flex-1">
-                                <div className="mb-3">
-                                    <h3 className="font-bold text-gray-900 text-base mb-0.5 truncate tracking-tight" title={item.title}>{item.title}</h3>
-                                    {item.category ? (
-                                        <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                                            <Tag className="w-3 h-3" />
-                                            {item.category.name}
-                                        </p>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 font-medium">{t("dashboard.portfolio.uncategorized")}</p>
-                                    )}
-                                </div>
-
-                                <div className="mt-auto flex items-end justify-end gap-1.5">
-                                    <button
-                                        onClick={() => setDeleteConfirm(item)}
-                                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => openEditModal(item)}
-                                        className="h-9 px-4 bg-black text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1.5"
-                                    >
-                                        {t("dashboard.portfolio.edit")}
-                                    </button>
-                                </div>
+                            <div className="text-center">
+                                <p className="font-bold text-gray-900 text-base mb-0.5">{t("dashboard.portfolio.addNewProject")}</p>
+                                <p className="text-xs text-gray-500">{t("dashboard.portfolio.showcaseWork")}</p>
                             </div>
-                        </div>
-                    ))}
-
-                    {/* Add New Placeholder */}
-                    <button
-                        data-tour="portfolio-add-placeholder"
-                        onClick={openCreateModal}
-                        className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center gap-3 p-6 hover:border-black/20 hover:bg-gray-50/50 transition-all group h-full min-h-[280px]"
-                    >
-                        <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-black group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 border border-gray-100">
-                            <Plus className="w-6 h-6" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-bold text-gray-900 text-base mb-0.5">{t("dashboard.portfolio.addNewProject")}</p>
-                            <p className="text-xs text-gray-500">{t("dashboard.portfolio.showcaseWork")}</p>
-                        </div>
-                    </button>
-                </div>
+                        </button>
+                    </div>
+                </DndContext>
             )}
 
             {/* Create/Edit Modal */}
