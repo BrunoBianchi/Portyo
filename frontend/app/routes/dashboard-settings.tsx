@@ -1,5 +1,5 @@
 import type { MetaFunction } from "react-router";
-import { User, Mail, Lock, Bell, Trash2, Save, CreditCard, Shield, Check, Zap, Plus, Receipt, Clock, Download } from "lucide-react";
+import { User, Mail, Lock, Bell, Trash2, Save, CreditCard, Shield, Check, Zap, Plus, Receipt, Clock, Download, Loader2, Megaphone } from "lucide-react";
 import { Link } from "react-router";
 import { useContext, useState, useEffect, useMemo } from "react";
 import AuthContext from "~/contexts/auth.context";
@@ -861,13 +861,16 @@ export default function DashboardSettings() {
                 >
                   {isAdminLoading ? "Saving..." : (
                     <>
-                      <Save className="w-4 h-4" /> Save Announcement
+                      <Save className="w-4 h-4" /> Save Changes
                     </>
                   )}
                 </button>
               </div>
             </form>
           </section>
+
+          {/* Broadcast Notification Section */}
+          <BroadcastSection />
         </div>
       ) : null}
 
@@ -877,5 +880,125 @@ export default function DashboardSettings() {
         onClose={() => setIsUpgradePopupOpen(false)}
       />
     </div>
+  );
+}
+
+function BroadcastSection() {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [data, setData] = useState({
+    title: "",
+    message: "",
+    icon: "Megaphone",
+    link: ""
+  });
+
+  const handleBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirm("Are you sure you want to send this notification to ALL users?")) return;
+
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const { api } = await import('~/services/api');
+      await api.post("/admin/notifications/broadcast", data);
+      setSuccess(true);
+      setData({ title: "", message: "", icon: "Megaphone", link: "" });
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (error) {
+      console.error("Failed to broadcast", error);
+      alert("Failed to send notification");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+          <Bell className="w-6 h-6" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Global Notification</h2>
+          <p className="text-sm text-gray-500">Send an in-app notification to all users.</p>
+        </div>
+        <div className="ml-auto bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+          Caution
+        </div>
+      </div>
+
+      <form onSubmit={handleBroadcast} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              required
+              type="text"
+              value={data.title}
+              onChange={(e) => setData({ ...data, title: e.target.value })}
+              placeholder="New Feature Alert! 🚀"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Icon (Lucide Name)</label>
+            <input
+              type="text"
+              value={data.icon}
+              onChange={(e) => setData({ ...data, icon: e.target.value })}
+              placeholder="Megaphone"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <textarea
+              required
+              rows={3}
+              value={data.message}
+              onChange={(e) => setData({ ...data, message: e.target.value })}
+              placeholder="Type your message here..."
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Action Link (Optional)</label>
+            <input
+              type="text"
+              value={data.link}
+              onChange={(e) => setData({ ...data, link: e.target.value })}
+              placeholder="/dashboard/new-feature"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-2">
+          {success && (
+            <div className="flex items-center gap-2 text-green-600 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+              <Check className="w-4 h-4" />
+              Sent!
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+              </>
+            ) : (
+              <>
+                <Bell className="w-4 h-4" /> Send Notification
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }

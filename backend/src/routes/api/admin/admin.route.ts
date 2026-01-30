@@ -4,6 +4,7 @@ import { requireAdmin, ADMIN_EMAIL } from '../../../middlewares/admin.middleware
 import { requireAuth } from '../../../middlewares/auth.middleware';
 import * as AdminService from '../../../shared/services/admin.service';
 import { z } from 'zod';
+import { notificationService } from '../../../services/notification.service';
 
 const router = express.Router();
 
@@ -153,6 +154,25 @@ router.post('/announcement', async (req, res) => {
     }
 });
 
+/**
+ * POST /admin/notifications/broadcast - Send a notification to all users
+ */
+router.post('/notifications/broadcast', async (req, res) => {
+    try {
+        const { title, message, icon, link } = req.body;
+        
+        if (!title || !message) {
+             return res.status(400).json({ error: "Title and message are required" });
+        }
+
+        await notificationService.createSystemNotification(title, message, icon, link);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error broadcasting notification:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 /**
  * GET /admin/users/:id/bios - Get bios for a user

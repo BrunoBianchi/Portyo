@@ -71,8 +71,14 @@ export default function AnnouncementManager() {
                 </p>
             </div>
 
+
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-100">
+                        <h2 className="text-lg font-bold text-gray-900">Website Header Bar</h2>
+                        <p className="text-sm text-gray-500">The notification bar that appears at the top of the website for all visitors.</p>
+                    </div>
+
                     <div className="p-6 space-y-6">
                         {/* Preview */}
                         <div className="space-y-3">
@@ -179,6 +185,130 @@ export default function AnnouncementManager() {
                     </div>
                 </div>
             </form>
+
+            <BroadcastForm />
         </div>
+    );
+}
+
+function BroadcastForm() {
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [data, setData] = useState({
+        title: "",
+        message: "",
+        icon: "Megaphone",
+        link: ""
+    });
+
+    const handleBroadcast = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!confirm("Are you sure you want to send this notification to ALL users?")) return;
+
+        setLoading(true);
+        setSuccess(false);
+
+        try {
+            await api.post("/admin/notifications/broadcast", data);
+            setSuccess(true);
+            setData({ title: "", message: "", icon: "Megaphone", link: "" });
+            setTimeout(() => setSuccess(false), 5000);
+        } catch (error) {
+            console.error("Failed to broadcast", error);
+            alert("Failed to send notification");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleBroadcast} className="mt-8 space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Global Notification Broadcast</h2>
+                        <p className="text-sm text-gray-500">Send an in-app notification to ALL registered users.</p>
+                    </div>
+                    <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        Use with caution
+                    </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text-main uppercase tracking-wider">Title</label>
+                            <input
+                                required
+                                type="text"
+                                value={data.title}
+                                onChange={(e) => setData({ ...data, title: e.target.value })}
+                                placeholder="e.g. New Feature Alert! 🚀"
+                                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text-main uppercase tracking-wider">Icon (Lucide Name)</label>
+                            <input
+                                type="text"
+                                value={data.icon}
+                                onChange={(e) => setData({ ...data, icon: e.target.value })}
+                                placeholder="e.g. Megaphone, Gift, AlertTriangle"
+                                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-text-main uppercase tracking-wider">Message</label>
+                        <textarea
+                            required
+                            value={data.message}
+                            onChange={(e) => setData({ ...data, message: e.target.value })}
+                            placeholder="Type your message here..."
+                            rows={3}
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-text-main uppercase tracking-wider">Action Link (Optional)</label>
+                        <input
+                            type="text"
+                            value={data.link}
+                            onChange={(e) => setData({ ...data, link: e.target.value })}
+                            placeholder="e.g. /dashboard/new-feature"
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                    </div>
+                </div>
+
+                <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                    {success && (
+                        <div className="flex items-center gap-2 text-green-600 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+                            <CheckCircle className="w-4 h-4" />
+                            Sent to all users!
+                        </div>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-black text-white hover:bg-gray-800 px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:translate-y-[-1px] active:translate-y-[0px]"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Sending...
+                            </>
+                        ) : (
+                            <>
+                                <Megaphone className="w-4 h-4" />
+                                Send Notification
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </form>
     );
 }
