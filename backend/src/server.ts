@@ -138,11 +138,18 @@ app.use(deserializeUser);
 app.use(routes);
 app.use(errorMiddleware);
 
+import { CronService } from "./services/cron.service";
+
+// ...
+
 export const InitializateServer = () => {
   const port = env.PORT;
   const server = app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
     logger.info(`Environment: ${env.NODE_ENV}`);
+    
+    // Initialize Cron Jobs
+    CronService.init();
   });
 
   const runNudgeJob = async () => {

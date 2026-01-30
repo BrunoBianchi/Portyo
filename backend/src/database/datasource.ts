@@ -23,6 +23,7 @@ import { PortfolioCategoryEntity } from "./entity/portfolio-category-entity"
 import { MarketingSlotEntity } from "./entity/marketing-slot-entity"
 import { MarketingProposalEntity } from "./entity/marketing-proposal-entity"
 import { ThemeEntity } from "./entity/theme-entity"
+import { NotificationEntity } from "./entity/notification-entity"
 
 import { env } from "../config/env"
 import { SystemSettings } from "../entities/system-settings.entity"
@@ -34,7 +35,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? {

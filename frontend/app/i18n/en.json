@@ -178,6 +178,13 @@
       "logout": "Log out",
       "createError": "Failed to create page. Username might be taken."
     },
+    "notifications": {
+      "bell": "Notifications",
+      "title": "Notifications",
+      "empty": "No notifications",
+      "markAllRead": "Mark all as read",
+      "viewAll": "View all"
+    },
     "overview": {
       "overview": "Overview",
       "title": "Dashboard",

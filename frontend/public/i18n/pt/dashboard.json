@@ -420,6 +420,13 @@
     "logout": "Sair",
     "createError": "Falha ao criar página. O nome de usuário pode já estar em uso."
   },
+  "notifications": {
+    "bell": "Notificações",
+    "title": "Notificações",
+    "empty": "Nenhuma notificação",
+    "markAllRead": "Marcar todas como lidas",
+    "viewAll": "Ver todas"
+  },
   "overview": {
     "overview": "Visão geral",
     "title": "Painel",

@@ -38,6 +38,7 @@ import imageRoute from "./images/image.route";
 
 import siteBlogRoute from "./site-blog/site-blog.route"
 import publicSiteBlogRoute from "./public/site-blog.public.route"
+import notificationRoute from "./notification/notification.route"
 
 const router: Router = Router();
 // Specific routes first
@@ -91,6 +92,7 @@ router.use('/google-analytics', googleAnalyticsRoute)
 router.use('/google-calendar', googleCalendarRoute)
 router.use('/templates', authMiddleware, templateRoute)
 router.use('/bookings', authMiddleware, bookingRoute)
+router.use('/notifications', authMiddleware, notificationRoute)
 
 import onboardingRoute from "./onboarding/onboarding.route"
 router.use('/onboarding', onboardingRoute)

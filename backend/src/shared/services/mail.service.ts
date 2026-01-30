@@ -534,4 +534,90 @@ export class MailService {
             console.error("Error sending access code email:", error);
         }
     }
+    static async sendPlanExpirationEmail(email: string, fullname: string, daysRemaining: number, isTrial: boolean, isExpired: boolean = false) {
+        const title = isExpired
+            ? (isTrial ? "Seu período de teste acabou 😔" : "Sua assinatura expirou")
+            : (isTrial ? "Seu teste grátis está acabando! ⏳" : "Sua assinatura vence em breve");
+
+        const subject = isExpired
+            ? (isTrial ? "Seu teste Portyo acabou" : "Assinatura Portyo expirada")
+            : (isTrial ? `Faltam ${daysRemaining} dias para o fim do seu teste` : `Sua assinatura vence em ${daysRemaining} dias`);
+
+        const messageBody = isExpired
+            ? (isTrial
+                ? `<p class="text">Seu período de testes chegou ao fim. Isso significa que sua página perdeu funcionalidades exclusivas de personalização e visibilidade.</p>
+                   <p class="text">Não deixe seu crescimento parar! Assine agora para recuperar tudo e continuar evoluindo.</p>`
+                : `<p class="text">Sua assinatura expirou hoje. Para evitar interrupções no seu perfil e manter suas estatísticas ativas, renove agora.</p>`)
+            : (isTrial
+                ? `<p class="text">Você tem apenas mais <strong>${daysRemaining} dias</strong> de teste gratuito.</p>
+                   <p class="text">Após esse período, você perderá acesso a temas premium, estatísticas avançadas e outras ferramentas essenciais para seu crescimento.</p>
+                   <p class="text">Garanta seu plano agora e não perca o ritmo!</p>`
+                : `<p class="text">Sua assinatura será renovada em ${daysRemaining} dias. Verifique seus dados de pagamento para garantir a continuidade do serviço.</p>`);
+
+        const ctaText = isExpired ? "Reativar agora" : (isTrial ? "Assinar Premium" : "Gerenciar Assinatura");
+        const ctaUrl = `${APP_URL}/dashboard/settings/billing`;
+
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #111827; margin: 0; padding: 0; background-color: #ffffff; }
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .header { border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; margin-bottom: 32px; }
+        .logo { font-size: 24px; font-weight: bold; color: #000000; letter-spacing: -0.5px; }
+        .h1 { font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 24px; }
+        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; font-weight: 600; border-radius: 8px; margin: 24px 0; }
+        .button:hover { background-color: #1f2937; }
+        .footer { margin-top: 48px; border-top: 1px solid #f3f4f6; padding-top: 32px; text-align: center; color: #9ca3af; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <span class="logo">Portyo</span>
+        </div>
+        
+        <h1 class="h1">${title}</h1>
+        
+        <p class="text">Olá ${fullname.split(' ')[0]},</p>
+        
+        ${messageBody}
+        
+        <a href="${ctaUrl}" class="button">${ctaText}</a>
+        
+        ${FOOTER_HTML}
+    </div>
+</body>
+</html>
+        `;
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                return await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from: formatFrom(env.MAILGUN_FROM_EMAIL),
+                    to: [email],
+                    subject,
+                    html
+                });
+            } catch (error) {
+                console.error("Error sending expiration email via Mailgun:", error);
+            }
+        }
+
+        try {
+            return await transporter.sendMail({
+                from: formatFrom(env.MAILGUN_FROM_EMAIL),
+                to: email,
+                subject,
+                html
+            });
+        } catch (error) {
+            console.error("Error sending expiration email:", error);
+        }
+    }
 }

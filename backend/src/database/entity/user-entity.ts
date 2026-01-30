@@ -49,6 +49,9 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "timestamp", nullable: true })
     planExpiresAt?: Date;
 
+    @Column({ type: "timestamp", nullable: true })
+    planExpirationEmailSentAt?: Date;
+
     @Column({ type: "boolean", default: false })
     onboardingCompleted: boolean = false;
 

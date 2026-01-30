@@ -36,6 +36,7 @@ import {
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
+import { NotificationBell } from "./notification-bell";
 
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 
@@ -251,9 +252,12 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         </div>
                         <span className="font-bold text-xl tracking-tight text-gray-900">Portyo</span>
                     </Link>
-                    <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
-                        <X className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <NotificationBell />
+                        <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Workspace Switcher */}

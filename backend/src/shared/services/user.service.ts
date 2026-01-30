@@ -7,6 +7,7 @@ import { MailService } from "./mail.service";
 import bcrypt from "bcrypt"
 import { ApiError, APIErrors } from "../errors/api-error";
 import { BillingService } from "../../services/billing.service";
+import { notificationService } from "../../services/notification.service";
 
 const repository = AppDataSource.getRepository(UserEntity);
 
@@ -64,6 +65,13 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
     // Add 7-day Standard Trial (email signup)
     await BillingService.ensureStandardTrial(savedUser.id, 7);
     const activePlan = await BillingService.getActivePlan(savedUser.id);
+
+    // Create welcome notification
+    try {
+        await notificationService.createWelcomeNotification(savedUser.id);
+    } catch (error) {
+        console.error("Failed to create welcome notification:", error);
+    }
     
     const payload = {
         id: savedUser.id,
