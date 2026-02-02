@@ -64,28 +64,28 @@ export default function AnnouncementManager() {
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <Megaphone className="w-5 h-5" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Announcement Bar</h1>
+                    <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Announcement Bar</h1>
                 </div>
-                <p className="text-gray-500">
+                <p className="text-muted-foreground">
                     Manage the notification bar that appears at the top of the website.
                 </p>
             </div>
 
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-900">Website Header Bar</h2>
-                        <p className="text-sm text-gray-500">The notification bar that appears at the top of the website for all visitors.</p>
+                <div className="bg-surface-card rounded-xl border border-border shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-border">
+                        <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Website Header Bar</h2>
+                        <p className="text-sm text-muted-foreground">The notification bar that appears at the top of the website for all visitors.</p>
                     </div>
 
                     <div className="p-6 space-y-6">
                         {/* Preview */}
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-gray-900 uppercase tracking-wider">Live Preview</label>
+                            <label className="text-xs font-bold text-foreground uppercase tracking-wider">Live Preview</label>
                             <div className="w-full bg-black text-white py-2.5 px-4 rounded-lg flex items-center justify-between text-xs md:text-sm font-medium">
                                 <div className="flex items-center gap-2">
-                                    {formData.isNew && <span className="px-2 py-0.5 bg-white/20 rounded text-[10px] font-bold uppercase tracking-wider">New</span>}
+                                    {formData.isNew && <span className="px-2 py-0.5 bg-surface-card/20 rounded text-[10px] font-bold uppercase tracking-wider">New</span>}
                                     <span>{formData.text || "Your announcement text..."}</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-[#d0f224]">
@@ -94,12 +94,12 @@ export default function AnnouncementManager() {
                             </div>
                         </div>
 
-                        <hr className="border-gray-100" />
+                        <hr className="border-border" />
 
                         {/* Visibility Toggle */}
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <label className="text-sm font-bold text-gray-900">Enable Announcement</label>
+                                <label className="text-sm font-bold text-foreground">Enable Announcement</label>
                                 <p className="text-xs text-text-muted">Show this announcement on the top of the website</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -109,14 +109,14 @@ export default function AnnouncementManager() {
                                     onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-card after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
 
                         {/* New Badge Toggle */}
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <label className="text-sm font-bold text-gray-900">Show "NEW" Badge</label>
+                                <label className="text-sm font-bold text-foreground">Show "NEW" Badge</label>
                                 <p className="text-xs text-text-muted">Display a small "NEW" badge next to the text</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -126,7 +126,7 @@ export default function AnnouncementManager() {
                                     onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-card after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                             </label>
                         </div>
 
@@ -138,7 +138,7 @@ export default function AnnouncementManager() {
                                 value={formData.text}
                                 onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                                 placeholder="e.g. Launch your bio page in seconds!"
-                                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                             />
                         </div>
 
@@ -146,21 +146,21 @@ export default function AnnouncementManager() {
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-text-main uppercase tracking-wider">Action Link</label>
                             <div className="relative">
-                                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                                 <input
                                     type="text"
                                     value={formData.link}
                                     onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                                     placeholder="e.g. /sign-up"
-                                    className="w-full rounded-xl border border-gray-200 pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    className="w-full rounded-xl border border-border pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <div className="p-4 bg-muted border-t border-border flex items-center justify-end gap-3">
                         {success && (
-                            <div className="flex items-center gap-2 text-green-600 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+                            <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
                                 <CheckCircle className="w-4 h-4" />
                                 Saved successfully
                             </div>
@@ -223,11 +223,11 @@ function BroadcastForm() {
 
     return (
         <form onSubmit={handleBroadcast} className="mt-8 space-y-6">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="bg-surface-card rounded-xl border border-border shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-border flex items-center justify-between">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Global Notification Broadcast</h2>
-                        <p className="text-sm text-gray-500">Send an in-app notification to ALL registered users.</p>
+                        <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Global Notification Broadcast</h2>
+                        <p className="text-sm text-muted-foreground">Send an in-app notification to ALL registered users.</p>
                     </div>
                     <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                         Use with caution
@@ -244,7 +244,7 @@ function BroadcastForm() {
                                 value={data.title}
                                 onChange={(e) => setData({ ...data, title: e.target.value })}
                                 placeholder="e.g. New Feature Alert! 🚀"
-                                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                             />
                         </div>
                         <div className="space-y-2">
@@ -254,7 +254,7 @@ function BroadcastForm() {
                                 value={data.icon}
                                 onChange={(e) => setData({ ...data, icon: e.target.value })}
                                 placeholder="e.g. Megaphone, Gift, AlertTriangle"
-                                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                             />
                         </div>
                     </div>
@@ -267,7 +267,7 @@ function BroadcastForm() {
                             onChange={(e) => setData({ ...data, message: e.target.value })}
                             placeholder="Type your message here..."
                             rows={3}
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                         />
                     </div>
 
@@ -278,14 +278,14 @@ function BroadcastForm() {
                             value={data.link}
                             onChange={(e) => setData({ ...data, link: e.target.value })}
                             placeholder="e.g. /dashboard/new-feature"
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         />
                     </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                <div className="p-4 bg-muted border-t border-border flex items-center justify-end gap-3">
                     {success && (
-                        <div className="flex items-center gap-2 text-green-600 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
                             <CheckCircle className="w-4 h-4" />
                             Sent to all users!
                         </div>

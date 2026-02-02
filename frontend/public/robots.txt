@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Allow all search engines to crawl public pages
+Allow: /en/
+Allow: /pt/
+Allow: /p/
+Allow: /blog/
+
+# Disallow dashboard and private areas
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /sign-up
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /onboarding
+Disallow: /api/
+
+# Crawl-delay to prevent server overload
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://portyo.me/sitemap.xml
+
+# Host
+Host: https://portyo.me

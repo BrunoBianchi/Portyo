@@ -69,7 +69,7 @@ export default function DashboardHome() {
             case "PURCHASE": return <ShoppingBag className="w-5 h-5 text-green-500" />;
             case "SUBSCRIBE": return <Mail className="w-5 h-5 text-blue-500" />;
             case "CLICK": return <MousePointer2 className="w-5 h-5 text-purple-500" />;
-            case "VIEW": return <Eye className="w-5 h-5 text-gray-500" />;
+            case "VIEW": return <Eye className="w-5 h-5 text-muted-foreground" />;
             default: return <Sparkles className="w-5 h-5 text-yellow-500" />;
         }
     };
@@ -77,10 +77,10 @@ export default function DashboardHome() {
     const renderTrend = (change: number) => {
         const isPositive = change >= 0;
         return (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-500/10 text-green-700' : 'bg-destructive/10 text-red-700'}`}>
                 <TrendingUp className={`w-3 h-3 ${!isPositive && 'rotate-180'}`} />
                 <span>{isPositive ? '+' : ''}{change}%</span>
-                <span className={`${isPositive ? 'text-green-600/70' : 'text-red-600/70'} font-medium`}>{t("dashboard.overview.vsLastMonth")}</span>
+                <span className={`${isPositive ? 'text-green-400/70' : 'text-destructive/70'} font-medium`}>{t("dashboard.overview.vsLastMonth")}</span>
             </div>
         );
     };
@@ -97,7 +97,7 @@ export default function DashboardHome() {
                             <Sparkles className="w-3 h-3" />
                             {t("dashboard.overview.overview")}
                         </div>
-                        <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">{t("dashboard.overview.title")}</h1>
+                        <h1 className="text-4xl font-bold text-text-main tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.title")}</h1>
                         <p className="text-lg text-text-muted">{t("dashboard.overview.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -135,15 +135,15 @@ export default function DashboardHome() {
                         </div>
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl">
                                     <BarChart3 className="w-6 h-6" />
                                 </div>
                                 <h3 className="label mb-0">{t("dashboard.overview.totalViews")}</h3>
                             </div>
                             {loadingAnalytics ? (
-                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                                <div className="h-10 w-24 bg-muted rounded animate-pulse mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.views.total || bio?.views || 0}</p>
+                                <p className="text-4xl font-bold text-text-main mb-2">{analytics?.views.total || bio?.views || 0}</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.views.change)}
                         </div>
@@ -161,9 +161,9 @@ export default function DashboardHome() {
                                 <h3 className="label mb-0">{t("dashboard.overview.totalClicks")}</h3>
                             </div>
                             {loadingAnalytics ? (
-                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                                <div className="h-10 w-24 bg-muted rounded animate-pulse mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.clicks.total || bio?.clicks || 0}</p>
+                                <p className="text-4xl font-bold text-text-main mb-2">{analytics?.clicks.total || bio?.clicks || 0}</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.clicks.change)}
                         </div>
@@ -181,9 +181,9 @@ export default function DashboardHome() {
                                 <h3 className="label mb-0">{t("dashboard.overview.avgCtr")}</h3>
                             </div>
                             {loadingAnalytics ? (
-                                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse mb-2" />
+                                <div className="h-10 w-24 bg-muted rounded animate-pulse mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold text-text-main mb-2">{analytics?.ctr.average || 0}%</p>
+                                <p className="text-4xl font-bold text-text-main mb-2">{analytics?.ctr.average || 0}%</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.ctr.change)}
                         </div>
@@ -196,11 +196,11 @@ export default function DashboardHome() {
                     <div className="card p-6" data-tour="dashboard-overview-sales">
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center shrink-0">
+                                <div className="w-12 h-12 bg-green-500/10 text-green-400 rounded-xl flex items-center justify-center shrink-0">
                                     <DollarSign className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-text-main text-lg">{t("dashboard.overview.salesRevenue")}</h3>
+                                    <h3 className="font-bold text-text-main text-lg" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.salesRevenue")}</h3>
                                     <p className="text-sm text-text-muted mt-0.5">{t("dashboard.overview.salesRevenueSubtitle")}</p>
                                 </div>
                             </div>
@@ -208,8 +208,8 @@ export default function DashboardHome() {
 
                         {loadingSales ? (
                             <div className="space-y-3">
-                                <div className="h-6 w-32 bg-gray-100 rounded animate-pulse" />
-                                <div className="h-6 w-40 bg-gray-100 rounded animate-pulse" />
+                                <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+                                <div className="h-6 w-40 bg-muted rounded animate-pulse" />
                             </div>
                         ) : sales && sales.connected ? (
                             <div className="space-y-6">
@@ -220,13 +220,13 @@ export default function DashboardHome() {
                                         <div className="mt-1 flex items-center gap-1.5 text-sm">
                                             {sales.sales.change >= 0 ? (
                                                 <>
-                                                    <ArrowUpRight className="w-4 h-4 text-green-600" />
-                                                    <span className="text-green-600 font-semibold">+{sales.sales.change}%</span>
+                                                    <ArrowUpRight className="w-4 h-4 text-green-400" />
+                                                    <span className="text-green-400 font-semibold">+{sales.sales.change}%</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ArrowDownRight className="w-4 h-4 text-red-600" />
-                                                    <span className="text-red-600 font-semibold">{sales.sales.change}%</span>
+                                                    <ArrowDownRight className="w-4 h-4 text-destructive" />
+                                                    <span className="text-destructive font-semibold">{sales.sales.change}%</span>
                                                 </>
                                             )}
                                             <span className="text-text-muted">{t("dashboard.overview.vsLastMonth")}</span>
@@ -240,13 +240,13 @@ export default function DashboardHome() {
                                         <div className="mt-1 flex items-center gap-1.5 text-sm">
                                             {sales.revenue.change >= 0 ? (
                                                 <>
-                                                    <ArrowUpRight className="w-4 h-4 text-green-600" />
-                                                    <span className="text-green-600 font-semibold">+{sales.revenue.change}%</span>
+                                                    <ArrowUpRight className="w-4 h-4 text-green-400" />
+                                                    <span className="text-green-400 font-semibold">+{sales.revenue.change}%</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ArrowDownRight className="w-4 h-4 text-red-600" />
-                                                    <span className="text-red-600 font-semibold">{sales.revenue.change}%</span>
+                                                    <ArrowDownRight className="w-4 h-4 text-destructive" />
+                                                    <span className="text-destructive font-semibold">{sales.revenue.change}%</span>
                                                 </>
                                             )}
                                             <span className="text-text-muted">{t("dashboard.overview.vsLastMonth")}</span>
@@ -319,7 +319,7 @@ export default function DashboardHome() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 card p-8 h-fit" data-tour="dashboard-overview-activity">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-text-main">{t("dashboard.overview.recentActivity")}</h2>
+                            <h2 className="text-xl font-bold text-text-main" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.recentActivity")}</h2>
                             <div className="flex items-center gap-2">
                                 <select
                                     value={filterType}
@@ -348,7 +348,7 @@ export default function DashboardHome() {
                                 <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                     {activities.map((activity) => (
                                         <div key={activity.id} className="flex items-center gap-4 p-4 rounded-xl bg-surface-alt/30 hover:bg-surface-alt/50 transition-colors border border-border/50">
-                                            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-surface-card shadow-sm flex items-center justify-center shrink-0">
                                                 {getActivityIcon(activity.type)}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -387,7 +387,7 @@ export default function DashboardHome() {
                                 <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4 shadow-sm">
                                     <BarChart3 className="w-8 h-8 text-text-muted" />
                                 </div>
-                                <h3 className="text-lg font-bold text-text-main mb-1">{t("dashboard.overview.noActivityTitle")}</h3>
+                                <h3 className="text-lg font-bold text-text-main mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.noActivityTitle")}</h3>
                                 <p className="text-text-muted max-w-xs mx-auto">{t("dashboard.overview.noActivityBody")}</p>
                             </div>
                         )}
@@ -396,12 +396,12 @@ export default function DashboardHome() {
                     <div className="card p-8 bg-black text-white relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                         <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-card/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
                                 <Sparkles className="w-3 h-3 text-primary" />
                                 {t("dashboard.overview.proFeature")}
                             </div>
-                            <h2 className="text-2xl font-bold mb-3">{t("dashboard.overview.upgradeTitle")}</h2>
-                            <p className="text-gray-400 mb-8 leading-relaxed">{t("dashboard.overview.upgradeBody")}</p>
+                            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.upgradeTitle")}</h2>
+                            <p className="text-muted-foreground mb-8 leading-relaxed">{t("dashboard.overview.upgradeBody")}</p>
                             <button className="w-full btn bg-primary text-primary-foreground hover:bg-primary-hover border-none">
                                 {t("dashboard.overview.upgradeCta")}
                             </button>

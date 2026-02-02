@@ -117,4 +117,7 @@ router.use('/user/upload-font', uploadFontRoute)
 import fontRoute from "./fonts/font.route"
 router.use('/fonts', fontRoute)
 
+import autoPostRoute from "./auto-post/auto-post.route"
+router.use('/auto-post', authMiddleware, autoPostRoute)
+
 export default router;

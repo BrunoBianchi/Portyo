@@ -14,6 +14,7 @@ export type Post = {
     createdAt: string;
     updatedAt: string;
     thumbnail?: string | null;
+    slug?: string | null;
 };
 
 interface BlogContextType {

@@ -82,13 +82,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
                   posts.forEach((post: any) => {
                      // Check if post is published? The public API should filter that.
                      // The API endpoint is likely filtering. 
-                     const postUrl = `${baseUrl}/blog/post/${post.id}`;
+                     const postSlug = post.slug || post.id;
+                     const postUrl = `${baseUrl}/blog/post/${postSlug}`;
                      addUrl(postUrl, post.updatedAt, 'monthly', 0.7);
                      supportedLangs.forEach((lang) => {
                        const localizedBase = username
                          ? `https://portyo.me/${lang}${bioBasePath}`
                          : `${origin}/${lang}`;
-                       addUrl(`${localizedBase}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                       addUrl(`${localizedBase}/blog/post/${postSlug}`, post.updatedAt, 'monthly', 0.7);
                      });
                   });
                }
@@ -132,18 +133,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           ]);
 
           if (resEn.ok) {
-            const posts: { id: string | number; updatedAt?: string }[] = await resEn.json();
+            const posts: { id: string | number; slug?: string; updatedAt?: string }[] = await resEn.json();
             posts.forEach((post) => {
               const lastmod = post.updatedAt;
-              addUrl(`${siteBase}/en/blog/${post.id}`, lastmod, 'weekly', 0.7);
+              const postSlug = post.slug || post.id;
+              addUrl(`${siteBase}/en/blog/${postSlug}`, lastmod, 'weekly', 0.7);
             });
           }
 
           if (resPt.ok) {
-            const posts: { id: string | number; updatedAt?: string }[] = await resPt.json();
+            const posts: { id: string | number; slug?: string; updatedAt?: string }[] = await resPt.json();
             posts.forEach((post) => {
               const lastmod = post.updatedAt;
-              addUrl(`${siteBase}/pt/blog/${post.id}`, lastmod, 'weekly', 0.7);
+              const postSlug = post.slug || post.id;
+              addUrl(`${siteBase}/pt/blog/${postSlug}`, lastmod, 'weekly', 0.7);
             });
           }
         } catch (e) {
@@ -178,9 +181,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
                     if (!Array.isArray(posts)) return;
 
                     posts.forEach((post: any) => {
-                      addUrl(`${siteBase}/p/${bio.sufix}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                      const postSlug = post.slug || post.id;
+                      addUrl(`${siteBase}/p/${bio.sufix}/blog/post/${postSlug}`, post.updatedAt, 'monthly', 0.7);
                       supportedLangs.forEach((lang) => {
-                        addUrl(`${siteBase}/${lang}/p/${bio.sufix}/blog/post/${post.id}`, post.updatedAt, 'monthly', 0.7);
+                        addUrl(`${siteBase}/${lang}/p/${bio.sufix}/blog/post/${postSlug}`, post.updatedAt, 'monthly', 0.7);
                       });
                     });
                   } catch (err) {

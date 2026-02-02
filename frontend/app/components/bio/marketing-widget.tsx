@@ -193,7 +193,7 @@ export const MarketingWidget: React.FC<MarketingWidgetProps> = ({ slotId, bioId 
                                 )}
                                 {item.type === 'price' && (
                                     <div
-                                        className="text-4xl font-black tracking-tighter my-2 py-2 px-4 rounded-xl inline-block"
+                                        className="text-4xl font-bold tracking-tight my-2 py-2 px-4 rounded-xl inline-block"
                                         style={{
                                             backgroundColor: itemColor + '0a',
                                             color: itemColor,

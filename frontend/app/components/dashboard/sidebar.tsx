@@ -31,7 +31,8 @@ import {
     Megaphone,
     Shield,
     Briefcase,
-    TrendingUp
+    TrendingUp,
+    Bot
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -126,6 +127,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
         { name: t("dashboard.nav.marketing"), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
         { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
+        { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
         { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
         { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
         { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
@@ -166,34 +168,34 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             {isCreateModalOpen && typeof document !== 'undefined' && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsCreateModalOpen(false)} />
-                    <div className="bg-white w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl">
+                    <div className="bg-surface-card w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl border border-border">
                         <div className="flex items-start justify-between mb-6">
                             <div>
                                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
                                     <Sparkles className="w-3 h-3" />
                                     {t("dashboard.sidebar.newPage")}
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{t("dashboard.sidebar.claimTitle")}</h2>
-                                <p className="text-gray-500 mt-1 text-sm">{t("dashboard.sidebar.claimSubtitle")}</p>
+                                <h2 className="text-2xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.sidebar.claimTitle")}</h2>
+                                <p className="text-muted-foreground mt-1 text-sm">{t("dashboard.sidebar.claimSubtitle")}</p>
                             </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-black" aria-label={t("dashboard.sidebar.closeModal")}>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground" aria-label={t("dashboard.sidebar.closeModal")}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {createError && (
-                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg text-sm">
                                 {createError}
                             </div>
                         )}
 
                         <div className="space-y-6">
                             <div className="relative group">
-                                <div className="flex items-center bg-white rounded-full h-16 px-6 border border-gray-200 shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 hover:shadow-md">
-                                    <Globe className="w-6 h-6 text-gray-400 group-focus-within:text-primary transition-colors shrink-0 mr-4" />
+                                <div className="flex items-center bg-surface-card rounded-full h-16 px-6 border border-border shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 hover:shadow-md">
+                                    <Globe className="w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors shrink-0 mr-4" />
 
                                     <div className="flex-1 flex items-center h-full relative">
-                                        <span className="text-xl md:text-2xl font-bold text-gray-400 select-none tracking-tight shrink-0 pl-1">portyo.me/p/</span>
+                                        <span className="text-xl md:text-2xl font-bold text-muted-foreground select-none tracking-tight shrink-0 pl-1">portyo.me/p/</span>
                                         <input
                                             type="text"
                                             value={newUsername}
@@ -202,7 +204,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                                 setCreateError(null);
                                             }}
                                             placeholder={t("dashboard.sidebar.usernamePlaceholder")}
-                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-gray-900 placeholder:text-gray-300 h-full text-left pl-0.5 tracking-tight w-full min-w-0"
+                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-foreground placeholder:text-muted-foreground h-full text-left pl-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
                                         />
@@ -238,8 +240,8 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             <aside
                 data-tour="dashboard-sidebar"
                 className={`
-                w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-white
-                transition-transform duration-300 ease-out border-r border-gray-100
+                w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-surface-card
+                transition-transform duration-300 ease-out border-r border-border
                 ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
                 md:translate-x-0 md:shadow-none
             `}
@@ -250,11 +252,11 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
                             P
                         </div>
-                        <span className="font-bold text-xl tracking-tight text-gray-900">Portyo</span>
+                        <span className="font-bold text-xl tracking-tight text-foreground">Portyo</span>
                     </Link>
                     <div className="flex items-center gap-2">
                         <NotificationBell />
-                        <button onClick={onClose} className="md:hidden text-gray-500 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
+                        <button onClick={onClose} className="md:hidden text-muted-foreground hover:text-foreground p-2 hover:bg-muted rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
                             <X className="w-5 h-5" />
                         </button>
                     </div>
@@ -265,30 +267,30 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     <div className="relative">
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full bg-gray-50 hover:bg-gray-100 text-gray-900 p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                            className={`w-full bg-muted hover:bg-muted-hover text-foreground p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-border hover:border-border-hover'}`}
                             aria-label={t("dashboard.sidebar.switchWorkspace")}
                             aria-expanded={isDropdownOpen}
                         >
                             <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-primary shrink-0 shadow-sm">
+                                <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center text-primary shrink-0 shadow-sm">
                                     <Globe className="w-5 h-5" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden min-w-0 flex-1">
-                                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">{t("dashboard.sidebar.currentPage")}</span>
-                                    <span className="text-sm font-bold truncate w-full text-left text-gray-900">
+                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-0.5">{t("dashboard.sidebar.currentPage")}</span>
+                                    <span className="text-sm font-bold truncate w-full text-left text-foreground">
                                         {bio?.sufix || t("dashboard.sidebar.selectPage")}
                                     </span>
                                 </div>
                             </div>
-                            <div className="w-6 h-6 flex items-center justify-center rounded-md text-gray-400">
+                            <div className="w-6 h-6 flex items-center justify-center rounded-md text-muted-foreground">
                                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
 
                         {/* Dropdown Menu */}
                         {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-20 ring-1 ring-black/5 p-2">
-                                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden z-20 ring-1 ring-black/5 p-2">
+                                <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                     {t("dashboard.sidebar.yourPages")}
                                 </div>
                                 <div className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar">
@@ -299,9 +301,9 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                                 selectBio(b);
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${bio?.id === b.id ? 'bg-primary/10 text-gray-900 font-bold' : 'hover:bg-gray-50 text-gray-600 hover:text-gray-900 font-medium'}`}
+                                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${bio?.id === b.id ? 'bg-primary/10 text-foreground font-bold' : 'hover:bg-muted text-muted-foreground hover:text-foreground font-medium'}`}
                                         >
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-white text-primary shadow-sm' : 'bg-gray-100 text-gray-400'}`}>
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-surface-card text-primary shadow-sm' : 'bg-muted text-muted-foreground'}`}>
                                                 <Globe className="w-4 h-4" />
                                             </div>
                                             <span className="text-sm truncate flex-1">{b.sufix}</span>
@@ -314,17 +316,17 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                     ))}
                                 </div>
 
-                                <div className="h-px bg-gray-100 my-2 mx-2" />
+                                <div className="h-px bg-border my-2 mx-2" />
 
                                 <button
                                     onClick={() => {
                                         setIsDropdownOpen(false);
                                         setIsCreateModalOpen(true);
                                     }}
-                                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 text-left transition-colors group text-gray-500 hover:text-gray-900"
+                                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted text-left transition-colors group text-muted-foreground hover:text-foreground"
                                     aria-label={t("dashboard.sidebar.createNewPage")}
                                 >
-                                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors text-gray-500 group-hover:text-gray-700">
+                                    <div className="w-8 h-8 rounded-lg bg-muted group-hover:bg-muted-hover flex items-center justify-center transition-colors text-muted-foreground group-hover:text-foreground">
                                         {canCreateBio ? <Plus className="w-4 h-4" /> : <Lock className="w-3 h-3" />}
                                     </div>
                                     <div className="flex flex-col items-start">
@@ -339,7 +341,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
                 {/* Navigation */}
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                    <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         {t("dashboard.sidebar.menu")}
                     </div>
                     {bio ? (
@@ -366,14 +368,14 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                         }
                                     }}
                                     className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${isActive(item.path)
-                                        ? "bg-primary/15 text-gray-900 font-bold"
-                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                        ? "bg-primary/15 text-foreground font-bold"
+                                        : "text-muted-foreground hover:bg-muted hover:text-foreground font-medium"
                                         }`}
                                 >
-                                    <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-gray-900" : "text-gray-400 group-hover:text-gray-900"} transition-colors`} />
+                                    <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"} transition-colors`} />
                                     <span className="flex-1 text-sm">{item.name}</span>
                                     {isLocked && (
-                                        <span className={`px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-900 text-white'}`}>
+                                        <span className={`px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-surface-card text-foreground shadow-sm' : 'bg-muted text-foreground'}`}>
                                             {badgeText}
                                         </span>
                                     )}
@@ -382,7 +384,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         })
                     ) : (
                         <div className="px-3 py-4 text-center">
-                            <p className="text-sm text-gray-500 mb-3">{t("dashboard.sidebar.selectOrCreate")}</p>
+                            <p className="text-sm text-muted-foreground mb-3">{t("dashboard.sidebar.selectOrCreate")}</p>
                             <button
                                 onClick={() => {
                                     if (canCreateBio) {
@@ -401,22 +403,22 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 </nav>
 
                 {/* Footer Actions */}
-                <div className="border-t border-gray-100 bg-white flex flex-col">
+                <div className="border-t border-border bg-surface-card flex flex-col">
                     {bio && (
                         <div className="p-3 pb-0">
                             <a
                                 href={`https://portyo.me/p/${bio.sufix}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between w-full p-2 rounded-lg bg-gray-50 border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
+                                className="flex items-center justify-between w-full p-2 rounded-lg bg-muted border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
                             >
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center text-gray-400 group-hover:text-primary transition-colors shadow-sm border border-gray-100">
+                                    <div className="w-8 h-8 rounded-md bg-surface-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors shadow-sm border border-border">
                                         <ExternalLink className="w-4 h-4" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t("dashboard.sidebar.livePage")}</span>
-                                        <span className="text-xs font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.sidebar.livePage")}</span>
+                                        <span className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                                             portyo.me/p/{bio.sufix}
                                         </span>
                                     </div>
@@ -428,22 +430,22 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                     <Link
                         to={withLang("/dashboard/settings")}
                         data-tour="dashboard-nav-settings"
-                        className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group cursor-pointer"
+                        className="w-full flex items-center gap-3 p-4 hover:bg-muted transition-colors group cursor-pointer"
                     >
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">
                             {user?.fullname?.[0]?.toUpperCase() || "U"}
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold truncate text-gray-900">{user?.fullname || t("dashboard.sidebar.userFallback")}</p>
+                                <p className="text-sm font-bold truncate text-foreground">{user?.fullname || t("dashboard.sidebar.userFallback")}</p>
                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${userPlan === 'free'
-                                    ? 'bg-gray-100 text-gray-600 border-gray-200'
+                                    ? 'bg-muted text-muted-foreground border-border'
                                     : 'bg-gradient-to-br from-emerald-500 to-black text-white border-transparent shadow-sm'
                                     }`}>
                                     {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)}
                                 </span>
                             </div>
-                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                         </div>
                         <button
                             onClick={(e) => {
@@ -451,7 +453,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                 e.stopPropagation();
                                 logout();
                             }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                             title={t("dashboard.sidebar.logout")}
                             aria-label={t("dashboard.sidebar.logout")}
                         >

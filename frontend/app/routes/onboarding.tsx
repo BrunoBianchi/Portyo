@@ -320,7 +320,7 @@ export default function Onboarding() {
                                             }`}
                                     >
                                         <div
-                                            className="h-20 rounded-xl mb-3 border border-white/50"
+                                            className="h-20 rounded-xl mb-3 border border-border"
                                             style={{
                                                 backgroundColor: theme.styles.bgColor,
                                                 backgroundImage: theme.styles.bgType === "gradient"
@@ -375,7 +375,7 @@ export default function Onboarding() {
                                 htmlFor="resume-upload"
                                 className="cursor-pointer flex flex-col items-center gap-4"
                             >
-                                <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">
+                                <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center">
                                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
@@ -389,7 +389,7 @@ export default function Onboarding() {
 
                         {answers.resumeText && (
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium border border-green-100">
+                                <div className="bg-green-500/10 text-green-400 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium border border-green-500/20">
                                     <span className="w-5 h-5 rounded-full bg-green-200 flex items-center justify-center">✓</span>
                                     Currículo processado com sucesso!
                                 </div>
@@ -409,7 +409,7 @@ export default function Onboarding() {
                                 onClick={() => setAnswers({ ...answers, education: { hasGraduation: true, degree: answers.education.degree } })}
                                 className={`group relative px-6 py-8 rounded-2xl font-semibold transition-all duration-300 text-center overflow-hidden ${answers.education.hasGraduation
                                     ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
-                                    : 'bg-white border-2 border-border hover:border-primary/50 hover:shadow-lg'
+                                    : 'bg-surface-card border-2 border-border hover:border-primary/50 hover:shadow-lg'
                                     }`}
                             >
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${answers.education.hasGraduation
@@ -427,14 +427,14 @@ export default function Onboarding() {
                                 onClick={() => setAnswers({ ...answers, education: { hasGraduation: false, degree: "" } })}
                                 className={`group relative px-6 py-8 rounded-2xl font-semibold transition-all duration-300 text-center overflow-hidden ${!answers.education.hasGraduation
                                     ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
-                                    : 'bg-white border-2 border-border hover:border-primary/50 hover:shadow-lg'
+                                    : 'bg-surface-card border-2 border-border hover:border-primary/50 hover:shadow-lg'
                                     }`}
                             >
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${!answers.education.hasGraduation
                                     ? 'bg-white/20'
-                                    : 'bg-gray-100 group-hover:bg-gray-200'
+                                    : 'bg-muted group-hover:bg-muted'
                                     }`}>
-                                    <svg className={`w-7 h-7 ${!answers.education.hasGraduation ? 'text-white' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className={`w-7 h-7 ${!answers.education.hasGraduation ? 'text-white' : 'text-muted-foreground'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </div>
@@ -450,7 +450,7 @@ export default function Onboarding() {
                                     value={answers.education.degree || ""}
                                     onChange={(e) => setAnswers({ ...answers, education: { ...answers.education, degree: e.target.value } })}
                                     placeholder="O que você estudou? Ex.: Ciência da Computação"
-                                    className="w-full px-5 py-4 rounded-2xl border-2 border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60"
+                                    className="w-full px-5 py-4 rounded-2xl border-2 border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60"
                                     autoFocus
                                 />
                             </div>
@@ -557,7 +557,7 @@ export default function Onboarding() {
             <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
                 <AuthBackground />
                 <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                    <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-14 relative border border-white/50 text-center">
+                    <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-14 relative border border-border text-center">
                         <div className="mb-8">
                             <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary-hover rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/40 animate-pulse">
                                 <span className="text-4xl">✨</span>
@@ -584,7 +584,7 @@ export default function Onboarding() {
         <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
             <AuthBackground />
             <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-12 relative border border-white/50">
+                <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-12 relative border border-border">
 
                     {/* Progress Header */}
                     <div className="mb-8">
@@ -627,7 +627,7 @@ export default function Onboarding() {
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium text-center border border-red-100">
+                        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-xl text-sm font-medium text-center border border-destructive/20">
                             {error}
                         </div>
                     )}
@@ -637,7 +637,7 @@ export default function Onboarding() {
                         {step > 1 && (
                             <button
                                 onClick={handleBack}
-                                className="flex-1 bg-white border-2 border-border text-text-main font-bold py-4 px-6 rounded-2xl hover:bg-surface-muted hover:border-primary/30 transition-all flex items-center justify-center gap-2"
+                                className="flex-1 bg-surface-card border-2 border-border text-text-main font-bold py-4 px-6 rounded-2xl hover:bg-surface-muted hover:border-primary/30 transition-all flex items-center justify-center gap-2"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

@@ -4,6 +4,8 @@
 		"schema:sync": "cross-env TYPEORM_SYNC=true tsx main.ts"
 	},
 	"dependencies": {
+		"@boundaryml/baml": "^0.218.1",
+		"@byjohann/toon": "^0.6.0",
 		"@dotenvx/dotenvx": "^1.51.4",
 		"@types/multer": "^2.0.0",
 		"@types/node-schedule": "^2.1.8",

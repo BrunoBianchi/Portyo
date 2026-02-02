@@ -129,7 +129,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
             <div className="w-full">
                 {/* Section Title */}
                 {title && (
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">{title}</h3>
+                    <h3 className="text-lg font-bold text-foreground mb-4 text-center">{title}</h3>
                 )}
 
                 {/* Category Filter */}
@@ -139,7 +139,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                             onClick={() => setActiveFilter(null)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === null
                                 ? 'bg-gray-900 text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                 }`}
                         >
                             All
@@ -150,7 +150,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                 onClick={() => setActiveFilter(category.id)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === category.id
                                     ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                     }`}
                             >
                                 {category.name}
@@ -165,19 +165,19 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                     {hasPrevPage && (
                         <button
                             onClick={goToPrevPage}
-                            className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white shadow-lg rounded-full hover:bg-gray-50 transition-all border border-gray-200"
+                            className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface-card shadow-lg rounded-full hover:bg-muted transition-all border border-border"
                             aria-label="Previous projects"
                         >
-                            <ChevronLeft className="w-5 h-5 text-gray-700" />
+                            <ChevronLeft className="w-5 h-5 text-foreground" />
                         </button>
                     )}
                     {hasNextPage && (
                         <button
                             onClick={goToNextPage}
-                            className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-white shadow-lg rounded-full hover:bg-gray-50 transition-all border border-gray-200"
+                            className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface-card shadow-lg rounded-full hover:bg-muted transition-all border border-border"
                             aria-label="Next projects"
                         >
-                            <ChevronRight className="w-5 h-5 text-gray-700" />
+                            <ChevronRight className="w-5 h-5 text-foreground" />
                         </button>
                     )}
 
@@ -185,17 +185,17 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                         {(loading || fetching) ? (
                             // Skeleton Loading
                             Array.from({ length: 4 }).map((_, idx) => (
-                                <div key={idx} className="aspect-square bg-gray-100 rounded-xl animate-pulse border border-gray-100" />
+                                <div key={idx} className="aspect-square bg-muted rounded-xl animate-pulse border border-border" />
                             ))
                         ) : (
                             items.map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => setSelectedItem(item)}
-                                    className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 text-left"
+                                    className="group relative bg-surface-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-border text-left"
                                 >
                                     {/* Image */}
-                                    <div className="aspect-square bg-gray-100 overflow-hidden">
+                                    <div className="aspect-square bg-muted overflow-hidden">
                                         {item.images && item.images.length > 0 ? (
                                             <img
                                                 src={item.images[0]}
@@ -205,8 +205,8 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                                                <span className="text-3xl font-bold text-gray-300">
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
+                                                <span className="text-3xl font-bold text-muted-foreground/30">
                                                     {item.title[0]?.toUpperCase()}
                                                 </span>
                                             </div>
@@ -247,7 +247,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                         onClick={() => setPage(p)}
                                         className={`w-2 h-2 rounded-full transition-all flex-shrink-0 ${p === page
                                             ? 'bg-gray-900 w-4'
-                                            : 'bg-gray-300 hover:bg-gray-400'
+                                            : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
                                             }`}
                                         aria-label={`Go to page ${p}`}
                                     />
@@ -269,7 +269,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
                     {/* Modal */}
                     <div
-                        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200"
+                        className="relative bg-surface-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close Button */}
@@ -281,7 +281,7 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                         </button>
 
                         {/* Image Carousel (Left/Top) */}
-                        <div className="relative md:w-2/3 bg-gray-900 group">
+                        <div className="relative md:w-2/3 bg-black/80 group">
                             {selectedItem.images && selectedItem.images.length > 0 ? (
                                 <>
                                     <div
@@ -338,21 +338,21 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                     )}
                                 </>
                             ) : (
-                                <div className="w-full h-[300px] md:h-[600px] bg-gray-100 flex items-center justify-center text-gray-400">
+                                <div className="w-full h-[300px] md:h-[600px] bg-muted flex items-center justify-center text-muted-foreground">
                                     No Image
                                 </div>
                             )}
                         </div>
 
                         {/* Content (Right/Bottom) */}
-                        <div className="flex-1 p-6 md:p-8 overflow-y-auto bg-white flex flex-col">
+                        <div className="flex-1 p-6 md:p-8 overflow-y-auto bg-surface-card flex flex-col">
                             <div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
+                                <h3 className="text-2xl font-bold text-foreground mb-2 leading-tight">
                                     {selectedItem.title}
                                 </h3>
 
                                 {selectedItem.category && (
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full mb-4">
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full mb-4">
                                         <Tag className="w-3 h-3" />
                                         {selectedItem.category.name}
                                     </span>
@@ -361,11 +361,11 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
                             <div className="flex-1 mt-4">
                                 {selectedItem.description ? (
-                                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">
                                         {selectedItem.description}
                                     </p>
                                 ) : (
-                                    <p className="text-gray-400 italic text-sm">No description available</p>
+                                    <p className="text-muted-foreground italic text-sm">No description available</p>
                                 )}
                             </div>
                         </div>

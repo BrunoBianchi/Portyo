@@ -140,8 +140,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
     // Check if we're on a blog post page
     const location = useLocation();
-    const blogPostMatch = location.pathname.match(/^\/blog\/post\/([a-f0-9-]+)$/i);
-    const blogPostId = blogPostMatch ? blogPostMatch[1] : null;
+    const blogPostMatch = location.pathname.match(/^\/blog\/post\/(.+)$/i);
+    const blogPostSlug = blogPostMatch ? blogPostMatch[1] : null;
 
 
 
@@ -175,9 +175,9 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     const headerImageSrc = bio?.profileImage || (htmlContent && htmlContent.match(/src="((?:https?:\/\/[^\"]+)?\/(?:api\/images|users-photos)\/[^\"]+)"/i)?.[1]);
 
     // If we're on a blog post page, render the BlogPostView instead
-    if (blogPostId) {
+    if (blogPostSlug) {
         if (isPreview) {
-            return <BlogPostView postId={blogPostId} bio={bio} subdomain={subdomain} />;
+            return <BlogPostView slug={blogPostSlug} bio={bio} subdomain={subdomain} />;
         }
         console.log(bio.profileImage)
         return (
@@ -200,7 +200,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     />
                 </head>
                 <body style={{ margin: 0, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    <BlogPostView postId={blogPostId} bio={bio} subdomain={subdomain} />
+                    <BlogPostView slug={blogPostSlug} bio={bio} subdomain={subdomain} />
                     <ScrollRestoration />
                     <Scripts />
                 </body>
@@ -730,7 +730,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                 const reactRoot = createRoot(block);
                 reactRoot.render(
-                    <React.Suspense fallback={<div className="h-24 w-full bg-gray-50 flex items-center justify-center rounded-lg"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <React.Suspense fallback={<div className="h-24 w-full bg-muted flex items-center justify-center rounded-lg"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
                         <BookingWidget
                             bioId={bioIdStr}
                             title={title}
@@ -1026,7 +1026,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             const authorImage = bio.profileImage || bio.favicon || bio.ogImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
                             return `
-                                <div class="blog-card-item" data-index="${index}" onclick="(function(){ window.location.href='/blog/post/' + '${post.id}'; })()" style="
+                                <div class="blog-card-item" data-index="${index}" onclick="(function(){ window.location.href='/blog/post/' + '${post.slug || post.id}'; })()" style="
                                     background:white; border-radius:24px; overflow:hidden; box-shadow:0 8px 25px -8px rgba(0,0,0,0.08); 
                                     border:1px solid rgba(0,0,0,0.03); padding:20px; text-decoration:none; cursor:pointer;
                                     display:flex; flex-wrap:wrap; align-items:flex-start; min-height:180px;

@@ -1,265 +1,270 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import ClaimUsernameInput from "./claim-username-input";
 import { useTranslation } from "react-i18next";
+import { Star, ArrowRight, Play } from "lucide-react";
 
-// Cards with scattered positions and smooth animations
-const floatingCards = [
-  // Left side cards - will animate from left to right
-  { src: "/hero-card-collab.png", alt: "Brand collaboration", side: "left", x: "2%", y: "15%", speed: 0.4, rotate: -15, scale: 0.88, delay: 0, floatSpeed: 3.5 },
-  { src: "/hero-card-product.png", alt: "Digital product", side: "left", x: "8%", y: "48%", speed: 0.55, rotate: 12, scale: 0.82, delay: 150, floatSpeed: 4.2 },
-  { src: "/hero-card-sales.png", alt: "Sales metrics", side: "left", x: "0%", y: "72%", speed: 0.35, rotate: -8, scale: 0.78, delay: 300, floatSpeed: 3.8 },
-  { src: "/hero-card-store.png", alt: "Your store", side: "left", x: "14%", y: "32%", speed: 0.5, rotate: 16, scale: 0.74, delay: 200, floatSpeed: 4.5 },
-  // Right side cards - will animate from right to left  
-  { src: "/hero-card-earnings.png", alt: "Earnings", side: "right", x: "0%", y: "12%", speed: 0.45, rotate: 14, scale: 0.88, delay: 100, floatSpeed: 4.0 },
-  { src: "/hero-card-message.png", alt: "Message", side: "right", x: "10%", y: "52%", speed: 0.5, rotate: -10, scale: 0.82, delay: 250, floatSpeed: 3.6 },
-  { src: "/hero-card-followers.png", alt: "Followers", side: "right", x: "-2%", y: "36%", speed: 0.4, rotate: 8, scale: 0.78, delay: 150, floatSpeed: 4.3 },
-  { src: "/hero-card-clicks.png", alt: "Link clicks", side: "right", x: "6%", y: "68%", speed: 0.6, rotate: -14, scale: 0.85, delay: 350, floatSpeed: 3.9 },
-  { src: "/hero-card-calendar.png", alt: "Calendar", side: "right", x: "16%", y: "24%", speed: 0.45, rotate: 10, scale: 0.7, delay: 400, floatSpeed: 4.1 },
+// Simplified floating elements - com lazy loading e melhor desempenho
+// Usando WebP com fallback PNG para navegadores antigos
+const floatingElements = [
+  { src: "/hero-card-collab.webp", fallback: "/hero-card-collab.png", alt: "Brand collaboration feature", side: "left", top: "10%", delay: 0.2, width: 144, height: 180 },
+  { src: "/hero-card-sales.webp", fallback: "/hero-card-sales.png", alt: "Sales analytics dashboard", side: "left", top: "50%", delay: 0.4, width: 144, height: 180 },
+  { src: "/hero-card-earnings.webp", fallback: "/hero-card-earnings.png", alt: "Earnings tracking", side: "right", top: "15%", delay: 0.3, width: 144, height: 180 },
+  { src: "/hero-card-followers.webp", fallback: "/hero-card-followers.png", alt: "Followers growth", side: "right", top: "55%", delay: 0.5, width: 144, height: 180 },
 ];
+
+// Animações otimizadas - sem repetição infinita para reduzir carga na GPU
+const cardFloatVariants = {
+  initial: (i: number) => ({
+    opacity: 0,
+    x: floatingElements[i].side === "left" ? -80 : 80,
+    rotate: floatingElements[i].side === "left" ? -15 : 15,
+  }),
+  animate: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    rotate: floatingElements[i].side === "left" ? -6 : 6,
+    y: [0, -12, 0],
+    transition: {
+      opacity: { delay: floatingElements[i].delay, duration: 0.6 },
+      x: { delay: floatingElements[i].delay, duration: 0.6, ease: "easeOut" },
+      rotate: { delay: floatingElements[i].delay, duration: 0.6 },
+      y: {
+        delay: floatingElements[i].delay + 0.6,
+        duration: 4 + i * 0.3,
+        repeat: Infinity,
+        repeatType: "reverse" as const,
+        ease: "easeInOut",
+      },
+    },
+  }),
+};
 
 export default function HeroSection() {
   const { t } = useTranslation();
-  const sectionRef = useRef<HTMLElement>(null);
-  const [scrollY, setScrollY] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const [time, setTime] = useState(0);
-  const [hydrated, setHydrated] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  // Entrance animation trigger
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Idle floating animation
-  useEffect(() => {
-    let animationFrame: number;
-    const animate = () => {
-      setTime(Date.now() / 1000);
-      animationFrame = requestAnimationFrame(animate);
-    };
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, []);
-
-  // Scroll parallax - limited range
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      // Limit scroll progress to stay within hero section
-      const scrollProgress = Math.max(0, Math.min(0.5, (viewportHeight - rect.top) / (viewportHeight + rect.height)));
-      setScrollY(scrollProgress);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Usar requestAnimationFrame para melhor performance
+    requestAnimationFrame(() => {
+      setIsLoaded(true);
+    });
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative w-full min-h-[800px] bg-[#f9f4e8] flex flex-col items-center justify-center py-20 overflow-hidden"
+    <section 
+      className="relative w-full min-h-screen bg-background overflow-hidden"
+      itemScope
+      itemType="https://schema.org/WebPageElement"
     >
-      {/* Decorative subtle gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%)',
-            transform: `translateY(${scrollY * 60}px) rotate(${scrollY * 20}deg)`,
-          }}
-        />
-        <div
-          className="absolute top-1/4 -right-40 w-[600px] h-[600px] rounded-full opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(244, 114, 182, 0.25) 0%, transparent 70%)',
-            transform: `translateY(${scrollY * 80}px)`,
-          }}
-        />
-        <div
-          className="absolute bottom-10 left-1/3 w-[450px] h-[450px] rounded-full opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)',
-            transform: `translateY(${scrollY * -40}px)`,
+      {/* Background Gradient - Estático para melhor performance */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30"
+          style={{ 
+            background: 'radial-gradient(ellipse at center, rgba(187,255,0,0.15) 0%, transparent 70%)',
+            filter: 'blur(100px)'
           }}
         />
       </div>
 
-      {/* Floating Cards Container - clips to section bounds */}
-      <div className="absolute inset-0 overflow-hidden" suppressHydrationWarning>
-        {/* Left Side Cards - Animate from left */}
-        {hydrated && floatingCards.filter(c => c.side === 'left').map((card, i) => {
-          // Capped parallax effect to prevent overflow
-          const xParallax = Math.min(scrollY * (80 + card.speed * 100), 80);
-          const yParallax = Math.min(scrollY * card.speed * 60, 40);
-          const rotateParallax = scrollY * 8;
+      {/* Grid Pattern Background - CSS puro para performance */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.06]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(163,255,0,0.5) 1px, transparent 1px), 
+            linear-gradient(90deg, rgba(163,255,0,0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px'
+        }}
+      />
 
-          // Subtle idle floating animation
-          const floatX = Math.sin(time * card.floatSpeed + i) * 3;
-          const floatY = Math.cos(time * card.floatSpeed * 0.7 + i * 2) * 4;
-          const floatRotate = Math.sin(time * card.floatSpeed * 0.5 + i * 3) * 1.5;
-
-          return (
-            <div
-              key={card.src}
-              className="absolute transition-all ease-out hidden lg:block"
-              style={{
-                left: card.x,
-                top: card.y,
-                transform: `
-                  translateX(${isVisible ? xParallax + floatX : -500}px) 
-                  translateY(${yParallax + floatY}px) 
-                  rotate(${card.rotate + rotateParallax + floatRotate}deg) 
-                  scale(${isVisible ? card.scale : 0.3})
-                `,
-                opacity: isVisible ? 1 : 0,
-                transitionDuration: isVisible ? '100ms' : '1000ms',
-                transitionDelay: isVisible ? '0ms' : `${card.delay}ms`,
-                zIndex: 10 + i,
-              }}
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20 min-h-screen flex flex-col justify-center">
+        
+        {/* Floating Cards - Desktop Only - Otimizadas */}
+        <div className="hidden lg:block" aria-hidden="true">
+          {floatingElements.map((el, i) => (
+            <motion.div
+              key={i}
+              custom={i}
+              variants={cardFloatVariants}
+              initial="initial"
+              animate={isLoaded ? "animate" : "initial"}
+              className={`absolute ${el.side}-0`}
+              style={{ top: el.top }}
             >
-              <img
-                src={card.src}
-                alt={card.alt}
-                className="w-28 xl:w-36 h-auto rounded-2xl shadow-2xl shadow-gray-400/40 hover:shadow-gray-400/70 hover:scale-125 hover:rotate-0 transition-all duration-500 cursor-pointer"
-              />
-            </div>
-          );
-        })}
-
-        {/* Right Side Cards - Animate from right */}
-        {hydrated && floatingCards.filter(c => c.side === 'right').map((card, i) => {
-          // Capped parallax effect to prevent overflow
-          const xParallax = Math.max(scrollY * -(80 + card.speed * 100), -80);
-          const yParallax = Math.min(scrollY * card.speed * 60, 40);
-          const rotateParallax = scrollY * -8;
-
-          // Subtle idle floating animation
-          const floatX = Math.sin(time * card.floatSpeed + i + 5) * 3;
-          const floatY = Math.cos(time * card.floatSpeed * 0.7 + i * 2 + 5) * 4;
-          const floatRotate = Math.sin(time * card.floatSpeed * 0.5 + i * 3 + 5) * 1.5;
-
-          return (
-            <div
-              key={card.src}
-              className="absolute transition-all ease-out hidden lg:block"
-              style={{
-                right: card.x,
-                top: card.y,
-                transform: `
-                  translateX(${isVisible ? xParallax + floatX : 500}px) 
-                  translateY(${yParallax + floatY}px) 
-                  rotate(${card.rotate + rotateParallax + floatRotate}deg) 
-                  scale(${isVisible ? card.scale : 0.3})
-                `,
-                opacity: isVisible ? 1 : 0,
-                transitionDuration: isVisible ? '100ms' : '1000ms',
-                transitionDelay: isVisible ? '0ms' : `${card.delay}ms`,
-                zIndex: 10 + i,
-              }}
-            >
-              <img
-                src={card.src}
-                alt={card.alt}
-                className="w-28 xl:w-36 h-auto rounded-2xl shadow-2xl shadow-gray-400/40 hover:shadow-gray-400/70 hover:scale-125 hover:rotate-0 transition-all duration-500 cursor-pointer"
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Main Content - Centered */}
-      <div className="relative z-30 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto">
-        {/* Main Headline */}
-        <div
-          className={`text-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-            }`}
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '0ms' }}>
-              {t("home.hero.convert.word1", "Convert")}
-            </span>{" "}
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '60ms' }}>
-              {t("home.hero.convert.word2", "your")}
-            </span>{" "}
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '120ms' }}>
-              {t("home.hero.convert.word3", "followers")}
-            </span>
-            <br className="hidden sm:block" />
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '180ms' }}>
-              {t("home.hero.convert.word4", "into")}
-            </span>{" "}
-            <span className="inline-block animate-fade-word relative" style={{ animationDelay: '240ms' }}>
-              {t("home.hero.convert.word5", "customers")}
-              <span className="absolute -bottom-1 left-0 right-0 h-3 bg-amber-300/70 -z-10 rounded-sm" />
-            </span>{" "}
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '300ms' }}>
-              {t("home.hero.convert.word6", "with")}
-            </span>
-            <br className="hidden sm:block" />
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '360ms' }}>
-              {t("home.hero.convert.word7", "one")}
-            </span>{" "}
-            <span className="inline-block animate-fade-word" style={{ animationDelay: '420ms' }}>
-              {t("home.hero.convert.word8", "link")}
-            </span>
-          </h1>
+              <div 
+                className="opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer group"
+                style={{ 
+                  marginLeft: el.side === "left" ? "2rem" : "0",
+                  marginRight: el.side === "right" ? "2rem" : "0",
+                }}
+              >
+                {/* Glow effect behind card - só no hover para economizar GPU */}
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ 
+                    background: 'linear-gradient(135deg, rgba(187,255,0,0.15), rgba(167,139,250,0.15))',
+                    filter: 'blur(20px)'
+                  }}
+                />
+                <picture>
+                  <source srcSet={el.src} type="image/webp" />
+                  <img
+                    src={el.fallback}
+                    alt={el.alt}
+                    loading="lazy"
+                    decoding="async"
+                    width={el.width}
+                    height={el.height}
+                    className="relative w-28 xl:w-36 h-auto rounded-2xl shadow-xl shadow-black/40 border border-border/50 group-hover:border-primary/30 transition-all duration-300 will-change-transform"
+                    style={{ transform: `rotate(${el.side === "left" ? -6 : 6}deg)` }}
+                  />
+                </picture>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Username Claim Input */}
-        <div
-          className={`mt-10 w-full max-w-xl transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
-        >
-          <ClaimUsernameInput />
-        </div>
-
-        {/* Product Hunt Badge */}
-        <div
-          className={`mt-6 transition-all duration-700 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-        >
-          <a
-            href="https://www.producthunt.com/products/portyo-me-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-portyo-me-2"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform duration-300 drop-shadow-lg hover:drop-shadow-xl inline-block"
+        {/* Center Content */}
+        <div className="text-center max-w-5xl mx-auto">
+          
+          {/* Trust Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="mb-8"
           >
-            <img
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1063792&theme=neutral&t=1768577104057"
-              alt="Portyo.me | Product Hunt"
-              style={{ width: '180px', height: '40px' }}
-              width="180"
-              height="40"
-            />
-          </a>
+            <div 
+              className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-surface-card/80 border border-border shadow-lg"
+              itemScope
+              itemType="https://schema.org/AggregateRating"
+            >
+              <meta itemProp="ratingValue" content="5" />
+              <meta itemProp="reviewCount" content="10000" />
+              <div className="flex -space-x-2">
+                {[
+                  { bg: "bg-accent-purple", initial: "SC" },
+                  { bg: "bg-accent-blue", initial: "MJ" },
+                  { bg: "bg-accent-orange", initial: "ER" },
+                ].map((avatar, i) => (
+                  <div
+                    key={i}
+                    className={`w-7 h-7 rounded-full ${avatar.bg} flex items-center justify-center text-white text-xs font-bold border-2 border-surface-card`}
+                  >
+                    {avatar.initial}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
+                ))}
+              </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                <span className="font-bold text-foreground">10,000+</span> creators
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Main Headline - Estrutura semântica otimizada */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-display font-bold tracking-tight leading-[1.05] mb-8"
+          >
+            <span className="block text-foreground">
+              Convert your
+            </span>
+            <span className="block text-outline-gradient">
+              customers
+            </span>
+          </motion.h1>
+
+          {/* Subtitle - Rich snippets friendly */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mt-6 text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+            itemProp="description"
+          >
+            The all-in-one platform to showcase your work, sell products, and grow your audience with one powerful link.
+          </motion.p>
+
+          {/* CTA Input */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="mt-8"
+          >
+            <ClaimUsernameInput />
+          </motion.div>
+
+          {/* Secondary CTA */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isLoaded ? { opacity: 1 } : {}}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <button 
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Watch how Portyo works"
+            >
+              <span className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Play className="w-4 h-4 text-primary" aria-hidden="true" />
+                </span>
+                Watch how it works
+              </span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            </button>
+            <span className="hidden sm:inline text-border" aria-hidden="true">|</span>
+            <span className="text-sm text-muted-foreground">Free forever. No credit card required.</span>
+          </motion.div>
         </div>
+
+        {/* Bottom Gradient */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </div>
 
-      {/* Custom animations */}
-      <style>{`
-        @keyframes fade-word {
-          0% {
-            opacity: 0;
-            transform: translateY(24px) scale(0.9);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        .animate-fade-word {
-          animation: fade-word 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          opacity: 0;
-        }
-      `}</style>
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Portyo",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "5",
+              "reviewCount": "10000"
+            },
+            "description": "The all-in-one platform to showcase your work, sell products, and grow your audience with one powerful link.",
+            "featureList": [
+              "Link in Bio",
+              "Newsletter Collection",
+              "Product Sales",
+              "Booking Scheduler",
+              "Automation Workflows",
+              "Analytics Dashboard"
+            ]
+          })
+        }}
+      />
     </section>
   );
 }

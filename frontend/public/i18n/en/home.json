@@ -110,73 +110,78 @@
     }
   },
   "pricing": {
-    "billing": {
-      "monthly": "Monthly",
-      "annually": "Annually (save 25%)"
-    },
+    "badge": "Simple, transparent pricing",
+    "title": "Choose your plan",
+    "subtitle": "Start free, upgrade when you're ready. No hidden fees, cancel anytime.",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "save": "Save 25%",
     "showMore": "Show more",
     "showLess": "Show less",
-    "alerts": {
-      "checkoutMissing": "Something went wrong. Please try again.",
-      "checkoutFailed": "Failed to initiate checkout. Please try again."
-    },
+    "getStarted": "Get Started",
+    "startTrial": "Start Trial",
+    "goPro": "Go Pro",
+    "checkoutFailed": "Failed to initiate checkout. Please try again.",
+    "cancelAnytime": "Cancel anytime",
+    "noHiddenFees": "No hidden fees",
+    "securePayment": "Secure payment",
     "cards": {
       "free": {
         "title": "Free",
         "subtitle": "For getting started",
         "cta": "Get Started",
-        "features": [
-          "Create only one page",
-          "Create 1 form",
-          "No branding removal",
-          "No custom domain",
-          "Basic analytics",
-          "3% store fee"
-        ],
-        "more": [
-          "Limited integrations"
-        ]
+        "billedYearly": "Free forever",
+        "features": {
+          "onePage": "Create only one page",
+          "oneForm": "Create 1 form",
+          "noBranding": "No branding removal",
+          "noDomain": "No custom domain",
+          "basicAnalytics": "Basic analytics",
+          "storeFee3": "3% store fee"
+        },
+        "more": {
+          "limitedIntegrations": "Limited integrations"
+        }
       },
       "standard": {
         "badge": "Most Popular",
         "title": "Standard",
         "subtitle": "For growing creators",
-        "billedYearly": "Billed $49.50 yearly",
-        "ctaUpgrade": "Upgrade",
-        "ctaTrial": "Start Trial",
-        "features": [
-          "Create up to 2 bios",
-          "Create 3 forms",
-          "Branding removal",
-          "Custom domain",
-          "Email collection",
-          "1% store fee",
-          "150 emails/month"
-        ],
-        "more": [
-          "Automation (2 per bio)",
-          "Email template (2 per bio)",
-          "SEO settings",
-          "Google and Facebook analytics",
-          "More customizations"
-        ]
+        "cta": "Start Trial",
+        "billedYearly": "Billed annually (save 25%)",
+        "features": {
+          "twoBios": "Create up to 2 bios",
+          "threeForms": "Create 3 forms",
+          "branding": "Branding removal",
+          "domain": "Custom domain",
+          "email": "Email collection",
+          "storeFee1": "1% store fee",
+          "emails150": "150 emails/month"
+        },
+        "more": {
+          "automation2": "Automation (2 per bio)",
+          "templates2": "Email template (2 per bio)",
+          "seo": "SEO settings",
+          "analytics": "Google and Facebook analytics",
+          "customizations": "More customizations"
+        }
       },
       "pro": {
         "title": "Pro",
-        "subtitle": "For serious business",
-        "billedYearly": "Billed $135 yearly",
+        "subtitle": "For pro business",
         "cta": "Go Pro",
-        "features": [
-          "Everything in Standard",
-          "Create up to 5 bios",
-          "Create 4 forms",
-          "Scheduler",
-          "Automation (4 per bio)",
-          "Email template (4 per bio)",
-          "0% store fee",
-          "500 emails/month",
-          "More customizations"
-        ]
+        "billedYearly": "Billed annually (save 25%)",
+        "features": {
+          "everything": "Everything in Standard",
+          "fiveBios": "Create up to 5 bios",
+          "fourForms": "Create 4 forms",
+          "scheduler": "Scheduler",
+          "automation4": "Automation (4 per bio)",
+          "templates4": "Email template (4 per bio)",
+          "storeFee0": "0% store fee",
+          "emails500": "500 emails/month",
+          "customizationsPro": "More customizations"
+        }
       }
     }
   },
@@ -223,6 +228,24 @@
       "branding": "Branding",
       "ecommerce": "E-commerce",
       "creators": "Creators"
+    }
+  },
+  "whoUses": {
+    "badge": "All-in-One Platform",
+    "title": "Share everything you create",
+    "subtitle": "One link for all your content, products, and services",
+    "ctaText": "And much more...",
+    "ctaButton": "Explore all features",
+    "features": {
+      "music": "Music",
+      "videos": "Videos",
+      "products": "Products",
+      "courses": "Courses",
+      "podcasts": "Podcasts",
+      "events": "Events",
+      "payments": "Payments",
+      "links": "Links",
+      "merch": "Merch"
     }
   },
   "carousel": {

@@ -227,28 +227,28 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
     return createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]"
+                className="bg-surface-card rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
             >
 
                 {/* Header */}
-                <div className="p-6 pb-4 border-b border-gray-100">
+                <div className="p-6 pb-4 border-b border-border">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                            <h2 className="text-xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                                 {post ? "Edit Site Post" : "New Site Post"}
                             </h2>
-                            <p className="text-gray-500 text-sm mt-0.5">{post ? "Update your site blog content" : "Create content for your main site blog"}</p>
+                            <p className="text-muted-foreground text-sm mt-0.5">{post ? "Update your site blog content" : "Create content for your main site blog"}</p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900">
+                            <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
 
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                        <div className="mb-4 p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">
                             {error}
                         </div>
                     )}
@@ -264,7 +264,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 onChange={() => setActiveLanguage("en")}
                                 className="w-4 h-4 text-black focus:ring-black"
                             />
-                            <span className="text-sm font-medium text-gray-700">English</span>
+                            <span className="text-sm font-medium text-muted-foreground">English</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -275,17 +275,17 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 onChange={() => setActiveLanguage("pt")}
                                 className="w-4 h-4 text-black focus:ring-black"
                             />
-                            <span className="text-sm font-medium text-gray-700">Portuguese</span>
+                            <span className="text-sm font-medium text-muted-foreground">Portuguese</span>
                         </label>
                     </div>
 
                     {/* Mode Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full">
+                    <div className="bg-muted p-1 rounded-lg inline-flex w-full">
                         <button
                             onClick={() => setActiveMode("upload")}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeMode === "upload"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-900"
+                                ? "bg-surface-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             <Upload className="w-4 h-4" />
@@ -294,8 +294,8 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                         <button
                             onClick={() => setActiveMode("write")}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeMode === "write"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-900"
+                                ? "bg-surface-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             <FileText className="w-4 h-4" />
@@ -313,7 +313,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             onClick={() => fileInputRef.current?.click()}
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
-                            className="border border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-all group bg-white min-h-[200px]"
+                            className="border border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-border hover:bg-muted transition-all group bg-surface-card min-h-[200px]"
                         >
                             <input
                                 type="file"
@@ -321,18 +321,18 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 onChange={handleFileChange}
                                 className="hidden"
                             />
-                            <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <Upload className="w-5 h-5 text-gray-600" />
+                            <div className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <Upload className="w-5 h-5 text-muted-foreground" />
                             </div>
                             {file ? (
                                 <div>
-                                    <p className="text-base font-bold text-gray-900">{file.name}</p>
-                                    <p className="text-xs text-gray-500 mt-1 font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    <p className="text-base font-bold text-foreground">{file.name}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
                             ) : (
                                 <>
-                                    <p className="text-base font-bold text-gray-900 mb-1">Upload your blog file</p>
-                                    <p className="text-xs text-gray-500 font-medium">
+                                    <p className="text-base font-bold text-foreground mb-1">Upload your blog file</p>
+                                    <p className="text-xs text-muted-foreground font-medium">
                                         HTML, Markdown, or PDF (10 mb max)
                                     </p>
                                 </>
@@ -343,7 +343,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                     {/* Form Fields */}
                     <div className="grid grid-cols-2 gap-5">
                         <div className="col-span-2 md:col-span-1 space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-700 ml-1">Post Title <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-semibold text-muted-foreground ml-1">Post Title <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 value={titles[activeLanguage] || ""}
@@ -352,19 +352,19 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                     [activeLanguage]: e.target.value,
                                 }))}
                                 placeholder="e.g. The Future of Design"
-                                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm placeholder:text-gray-400"
+                                className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm placeholder:text-muted-foreground/50"
                             />
                         </div>
                         <div className="col-span-2 md:col-span-1 space-y-1.5">
                             <div className="flex items-center justify-between ml-1">
-                                <label className="text-xs font-semibold text-gray-700">Publish Time</label>
+                                <label className="text-xs font-semibold text-muted-foreground">Publish Time</label>
                             </div>
-                            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 h-[42px]">
+                            <div className="flex items-center gap-1 bg-muted rounded-lg p-1 h-[42px]">
                                 <button
                                     onClick={() => setScheduleMode("now")}
                                     className={`flex-1 h-full rounded-md text-xs font-medium transition-all ${scheduleMode === "now"
-                                        ? "bg-white text-gray-900 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-900"
+                                        ? "bg-surface-card text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     Now
@@ -372,8 +372,8 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 <div
                                     ref={datePickerRef}
                                     className={`flex-[2] h-full relative rounded-md transition-all flex items-center px-3 gap-2 cursor-pointer ${scheduleMode === "later"
-                                        ? "bg-white text-gray-900 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-900"
+                                        ? "bg-surface-card text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground"
                                         }`}
                                     onClick={() => setShowDatePicker(!showDatePicker)}
                                 >
@@ -404,10 +404,10 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
 
                     {/* Thumbnail Input (Both Modes) */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-gray-700 ml-1">Thumbnail / Cover Image</label>
+                        <label className="text-xs font-semibold text-muted-foreground ml-1">Thumbnail / Cover Image</label>
                         <div
                             onClick={() => thumbnailInputRef.current?.click()}
-                            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer flex items-center gap-3 group"
+                            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card hover:bg-muted hover:border-border transition-all cursor-pointer flex items-center gap-3 group"
                         >
                             <input
                                 type="file"
@@ -416,7 +416,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                 className="hidden"
                                 accept="image/*"
                             />
-                            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
+                            <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
                                 {thumbnail ? (
                                     <img
                                         src={thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail}
@@ -424,15 +424,15 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <ImageIcon className="w-4 h-4 text-gray-600" />
+                                    <ImageIcon className="w-4 h-4 text-muted-foreground" />
                                 )}
                             </div>
                             {thumbnail ? (
-                                <span className="text-sm font-medium text-gray-900">
+                                <span className="text-sm font-medium text-foreground">
                                     {thumbnail instanceof File ? thumbnail.name : "Current Thumbnail"}
                                 </span>
                             ) : (
-                                <span className="text-sm text-gray-400">Click to upload thumbnail...</span>
+                                <span className="text-sm text-muted-foreground/50">Click to upload thumbnail...</span>
                             )}
                         </div>
                     </div>
@@ -440,21 +440,21 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                     {/* Markdown Editor (Only in Write Mode) */}
                     {activeMode === "write" && (
                         <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-700 ml-1">
+                            <label className="text-xs font-semibold text-muted-foreground ml-1">
                                 Content <span className="text-red-500">*</span>
                             </label>
 
-                            <div className="relative group border border-gray-200 rounded-lg bg-white focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all overflow-hidden">
+                            <div className="relative group border border-border rounded-lg bg-surface-card focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all overflow-hidden">
                                 {/* Fixed Toolbar inside container */}
-                                <div className="flex items-center gap-1 p-1.5 border-b border-gray-100 bg-gray-50">
-                                    <button onClick={() => insertMarkdown("**", "**")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("*", "*")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("<u>", "</u>")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
+                                <div className="flex items-center gap-1 p-1.5 border-b border-border bg-muted">
+                                    <button onClick={() => insertMarkdown("**", "**")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
+                                    <button onClick={() => insertMarkdown("*", "*")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
+                                    <button onClick={() => insertMarkdown("<u>", "</u>")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
                                     <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                                    <button onClick={() => insertMarkdown("`", "`")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="Code"><Code className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("[", "](url)")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
+                                    <button onClick={() => insertMarkdown("`", "`")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Code"><Code className="w-3.5 h-3.5" /></button>
+                                    <button onClick={() => insertMarkdown("[", "](url)")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
                                     <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                                    <button onClick={() => insertMarkdown("\n- ")} className="p-1.5 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-700 hover:text-black" title="List"><List className="w-3.5 h-3.5" /></button>
+                                    <button onClick={() => insertMarkdown("\n- ")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="List"><List className="w-3.5 h-3.5" /></button>
                                 </div>
 
                                 <textarea
@@ -474,12 +474,12 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                     {/* Tags */}
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between ml-1">
-                            <label className="text-xs font-semibold text-gray-700">Tags</label>
-                            <span className="text-xs text-gray-400">12 tags remaining</span>
+                            <label className="text-xs font-semibold text-muted-foreground">Tags</label>
+                            <span className="text-xs text-muted-foreground/50">12 tags remaining</span>
                         </div>
-                        <div className="flex flex-wrap gap-2 p-2 bg-white border border-gray-200 rounded-lg min-h-[46px] items-center focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all">
+                        <div className="flex flex-wrap gap-2 p-2 bg-surface-card border border-border rounded-lg min-h-[46px] items-center focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all">
                             {tagsByLang[activeLanguage].map(tag => (
-                                <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 text-xs font-medium text-gray-900 border border-transparent">
+                                <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-foreground border border-transparent">
                                     {tag}
                                     <button onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
                                 </span>
@@ -487,7 +487,7 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             <input
                                 type="text"
                                 placeholder="Add tags..."
-                                className="bg-transparent border-none focus:outline-none text-xs px-2 py-1 min-w-[80px] flex-1 font-medium placeholder:text-gray-400"
+                                className="bg-transparent border-none focus:outline-none text-xs px-2 py-1 min-w-[80px] flex-1 font-medium placeholder:text-muted-foreground/50"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = (e.target as HTMLInputElement).value.trim();
@@ -503,10 +503,10 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                             />
                         </div>
                         <div className="flex gap-2 mt-1">
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors bg-white">
+                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors bg-surface-card">
                                 <Plus className="w-3 h-3" /> Photography
                             </button>
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors bg-white">
+                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors bg-surface-card">
                                 <Plus className="w-3 h-3" /> AI Art
                             </button>
                         </div>
@@ -514,15 +514,15 @@ export function NewSitePostModal({ isOpen, onClose, post }: NewSitePostModalProp
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+                <div className="flex items-center justify-between p-6 border-t border-border bg-muted/50 rounded-b-2xl">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.2)]"></div>
-                        <span className="text-xs font-medium text-gray-600">Saved as a draft</span>
+                        <div className="w-2 h-2 rounded-full bg-green-500/100 shadow-[0_0_0_2px_rgba(34,197,94,0.2)]"></div>
+                        <span className="text-xs font-medium text-muted-foreground">Saved as a draft</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="px-6 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                             disabled={isSubmitting}
                         >
                             Cancel

@@ -19,6 +19,7 @@ export interface SitePost {
     scheduledAt: string | null;
     createdAt: string;
     updatedAt: string;
+    slug?: string | null;
 }
 
 export const getPublicSitePosts = async (lang: string = 'en'): Promise<SitePost[]> => {

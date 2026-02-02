@@ -45,10 +45,10 @@ export function InfoTooltip({ content, position = "top", size = "sm" }: InfoTool
     };
 
     const arrowClasses = {
-        top: "top-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-800",
-        bottom: "bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-gray-800",
-        left: "left-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-gray-800",
-        right: "right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-gray-800",
+        top: "top-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-surface-elevated",
+        bottom: "bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-surface-elevated",
+        left: "left-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-surface-elevated",
+        right: "right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-surface-elevated",
     };
 
     return (
@@ -59,7 +59,7 @@ export function InfoTooltip({ content, position = "top", size = "sm" }: InfoTool
                 onClick={() => setIsVisible(!isVisible)}
                 onMouseEnter={() => setIsVisible(true)}
                 onMouseLeave={() => setIsVisible(false)}
-                className={`${buttonSize} flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
+                className={`${buttonSize} flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
                 aria-label="More information"
             >
                 <HelpCircle className={iconSize} />
@@ -70,7 +70,7 @@ export function InfoTooltip({ content, position = "top", size = "sm" }: InfoTool
                     ref={tooltipRef}
                     className={`absolute z-50 ${positionClasses[position]} animate-in fade-in zoom-in-95 duration-150`}
                 >
-                    <div className="bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg min-w-[280px] max-w-[320px] leading-relaxed">
+                    <div className="bg-surface-elevated text-foreground text-xs px-3 py-2 rounded-lg shadow-lg min-w-[280px] max-w-[320px] leading-relaxed border border-border">
                         {content}
                     </div>
                     <div

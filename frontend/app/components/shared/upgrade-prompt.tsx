@@ -16,11 +16,11 @@ export function UpgradePrompt({ feature, requiredPlan = 'pro', onClose }: Upgrad
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-8 relative animate-in fade-in duration-200">
+            <div className="bg-surface-card rounded-2xl max-w-md w-full p-8 relative animate-in fade-in duration-200">
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute top-4 right-4 text-muted-foreground hover:text-muted-foreground transition-colors"
                         aria-label="Close"
                     >
                         <X className="w-5 h-5" />
@@ -31,11 +31,11 @@ export function UpgradePrompt({ feature, requiredPlan = 'pro', onClose }: Upgrad
                     <Crown className="w-8 h-8 text-white" />
                 </div>
 
-                <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-center text-foreground mb-2">
                     Upgrade to {requiredPlan === 'pro' ? 'PRO' : 'Standard'}
                 </h2>
 
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-muted-foreground text-center mb-6">
                     <span className="font-semibold">{feature}</span> is a premium feature available for {requiredPlan === 'pro' ? 'PRO' : 'Standard'} users.
                 </p>
 
@@ -49,7 +49,7 @@ export function UpgradePrompt({ feature, requiredPlan = 'pro', onClose }: Upgrad
                     {onClose && (
                         <button
                             onClick={onClose}
-                            className="block w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium text-center hover:bg-gray-200 transition-colors"
+                            className="block w-full py-3 px-4 bg-muted text-gray-700 rounded-xl font-medium text-center hover:bg-gray-200 transition-colors"
                         >
                             Maybe Later
                         </button>

@@ -86,7 +86,7 @@ interface NodeData {
 
 const NODE_CONFIG: Record<NodeType, NodeData> = {
   trigger: { title: "Trigger", icon: Zap, color: "bg-amber-500" },
-  action: { title: "Email", icon: Mail, color: "bg-blue-500" },
+  action: { title: "Email", icon: Mail, color: "bg-blue-500/100" },
   condition: { title: "Condition", icon: GitBranch, color: "bg-orange-500" },
   delay: { title: "Delay", icon: Clock, color: "bg-purple-500" },
   instagram: { title: "Instagram", icon: Instagram, color: "bg-pink-600" },
@@ -94,7 +94,7 @@ const NODE_CONFIG: Record<NodeType, NodeData> = {
   integration: { title: "Integration", icon: Share2, color: "bg-indigo-500" },
   page_event: { title: "Page Event", icon: Layout, color: "bg-teal-500" },
   update_element: { title: "Update Element", icon: Edit, color: "bg-amber-500" },
-  sms: { title: "SMS", icon: Mail, color: "bg-green-500" },
+  sms: { title: "SMS", icon: Mail, color: "bg-green-500/100" },
   webhook: { title: "Webhook", icon: Globe, color: "bg-violet-600" },
   tag: { title: "Add Tag", icon: CheckCircle, color: "bg-emerald-500" },
   split_test: { title: "A/B Split", icon: Settings, color: "bg-cyan-500" },
@@ -121,10 +121,10 @@ const CustomNode = ({ id, data, type, selected }: any) => {
   };
 
   return (
-    <div data-tour="automation-builder-node" className={`w-[280px] bg-white rounded-2xl shadow-sm border transition-all duration-200 group relative
+    <div data-tour="automation-builder-node" className={`w-[280px] bg-surface-card rounded-2xl shadow-sm border transition-all duration-200 group relative
       ${selected
         ? 'border-primary ring-2 ring-primary/20 shadow-lg'
-        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+        : 'border-border hover:border-gray-300 hover:shadow-md'
       }
     `}>
       {/* Input Handle (Top) */}
@@ -132,7 +132,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
         <Handle
           type="target"
           position={Position.Top}
-          className="!w-4 !h-4 !bg-white !border-[3px] !border-gray-300 !-top-2 hover:!border-primary transition-colors"
+          className="!w-4 !h-4 !bg-surface-card !border-[3px] !border-gray-300 !-top-2 hover:!border-primary transition-colors"
         />
       )}
 
@@ -143,23 +143,23 @@ const CustomNode = ({ id, data, type, selected }: any) => {
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-gray-900 truncate leading-tight mb-0.5">{data.label || config.title}</h3>
-          <p className="text-[10px] text-gray-400 font-bold tracking-wider uppercase">{config.title}</p>
+          <h3 className="text-sm font-bold text-foreground truncate leading-tight mb-0.5">{data.label || config.title}</h3>
+          <p className="text-[10px] text-muted-foreground font-bold tracking-wider uppercase">{config.title}</p>
         </div>
 
         <button
           onClick={onDelete}
-          className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-red-50 rounded-lg"
+          className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-destructive/10 rounded-lg"
         >
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-gray-100 mx-4" />
+      <div className="h-px bg-muted mx-4" />
 
       {/* Node Details / Preview */}
-      <div className="p-3 px-4 text-[11px] text-gray-500 min-h-[44px] flex items-center">
+      <div className="p-3 px-4 text-[11px] text-muted-foreground min-h-[44px] flex items-center">
         {type === 'trigger' && (
           <div className="flex items-center gap-2">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
@@ -227,9 +227,9 @@ const CustomNode = ({ id, data, type, selected }: any) => {
             position={Position.Bottom}
             id="true"
             style={{ left: '30%' }}
-            className="!w-4 !h-4 !bg-white !border-[3px] !border-green-500 !-bottom-2 hover:!border-green-600 transition-colors"
+            className="!w-4 !h-4 !bg-surface-card !border-[3px] !border-green-500 !-bottom-2 hover:!border-green-600 transition-colors"
           />
-          <div className="absolute -bottom-6 left-1/4 -translate-x-1/2 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1">
+          <div className="absolute -bottom-6 left-1/4 -translate-x-1/2 text-[10px] font-bold text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1">
             <CheckCircle className="w-2.5 h-2.5" /> TRUE
           </div>
 
@@ -238,9 +238,9 @@ const CustomNode = ({ id, data, type, selected }: any) => {
             position={Position.Bottom}
             id="false"
             style={{ left: '70%' }}
-            className="!w-4 !h-4 !bg-white !border-[3px] !border-red-500 !-bottom-2 hover:!border-red-600 transition-colors"
+            className="!w-4 !h-4 !bg-surface-card !border-[3px] !border-red-500 !-bottom-2 hover:!border-red-600 transition-colors"
           />
-          <div className="absolute -bottom-6 left-3/4 -translate-x-1/2 text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
+          <div className="absolute -bottom-6 left-3/4 -translate-x-1/2 text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
             <X className="w-2.5 h-2.5" /> FALSE
           </div>
         </>
@@ -248,7 +248,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
         <Handle
           type="source"
           position={Position.Bottom}
-          className="!w-4 !h-4 !bg-white !border-[3px] !border-gray-300 !-bottom-2 hover:!border-primary transition-colors"
+          className="!w-4 !h-4 !bg-surface-card !border-[3px] !border-gray-300 !-bottom-2 hover:!border-primary transition-colors"
         />
       )}
     </div>
@@ -731,7 +731,7 @@ export default function DashboardAutomation() {
 
   return (
     <AuthorizationGuard minPlan="standard">
-      <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-gray-50 flex-1 overflow-hidden">
+      <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-muted flex-1 overflow-hidden">
         <Joyride
           steps={automationBuilderSteps}
           run={tourRun && !isMobile}
@@ -748,7 +748,7 @@ export default function DashboardAutomation() {
         />
         {/* Status Message Toast */}
         {statusMessage && (
-          <div className={`absolute top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top duration-300 ${statusMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          <div className={`absolute top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top duration-300 ${statusMessage.type === 'success' ? 'bg-green-500/100 text-white' : 'bg-destructive/100 text-white'
             }`}>
             {statusMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
             <span className="text-sm font-medium">{statusMessage.message}</span>
@@ -756,11 +756,11 @@ export default function DashboardAutomation() {
         )}
 
         {/* Header Bar */}
-        <div data-tour="automation-builder-header" className="h-auto md:h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/50 flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 py-4 md:py-0 z-40 relative gap-4">
+        <div data-tour="automation-builder-header" className="h-auto md:h-16 bg-surface-card/80 backdrop-blur-md border-b border-border/50 flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 py-4 md:py-0 z-40 relative gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/dashboard/automation")}
-              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors shrink-0"
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -769,7 +769,7 @@ export default function DashboardAutomation() {
               type="text"
               value={automationName}
               onChange={(e) => setAutomationName(e.target.value)}
-              className="bg-transparent border-none outline-none text-base font-bold text-gray-900 placeholder:text-gray-400 w-full md:w-64 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors focus:bg-white focus:ring-2 focus:ring-primary/20"
+              className="bg-transparent border-none outline-none text-base font-bold text-foreground placeholder:text-muted-foreground w-full md:w-64 hover:bg-muted px-2 py-1 rounded-lg transition-colors focus:bg-surface-card focus:ring-2 focus:ring-primary/20"
               placeholder={t("dashboard.automationBuilder.namePlaceholder")}
             />
           </div>
@@ -779,9 +779,9 @@ export default function DashboardAutomation() {
             {currentAutomation && (
               <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${currentAutomation.isActive
                 ? 'bg-green-100 text-green-700 border border-green-200'
-                : 'bg-gray-100 text-gray-500 border border-gray-200'
+                : 'bg-muted text-muted-foreground border border-border'
                 }`}>
-                <span className={`w-2 h-2 rounded-full ${currentAutomation.isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                <span className={`w-2 h-2 rounded-full ${currentAutomation.isActive ? 'bg-green-500/100 animate-pulse' : 'bg-gray-400'}`}></span>
                 {currentAutomation.isActive ? t("dashboard.automationBuilder.status.active") : t("dashboard.automationBuilder.status.draft")}
               </div>
             )}
@@ -791,7 +791,7 @@ export default function DashboardAutomation() {
             <button
               onClick={handleSaveDraft}
               disabled={isSaving}
-              className="px-4 py-2 hover:bg-white hover:shadow-sm text-gray-600 rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-gray-200"
+              className="px-4 py-2 hover:bg-surface-card hover:shadow-sm text-muted-foreground rounded-xl text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 border border-transparent hover:border-border"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span className="hidden sm:inline">{isSaving ? t("dashboard.automationBuilder.saving") : t("dashboard.automationBuilder.saveDraft")}</span>
@@ -801,7 +801,7 @@ export default function DashboardAutomation() {
               onClick={handleActivate}
               disabled={isActivating}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 ${currentAutomation?.isActive
-                ? 'bg-red-50 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100'
+                ? 'bg-destructive/10 text-destructive bg-destructive/10 hover:bg-red-100 border border-red-100'
                 : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-md'
                 }`}
             >
@@ -835,20 +835,20 @@ export default function DashboardAutomation() {
               fitViewOptions={{ maxZoom: 1 }}
               minZoom={0.1}
               maxZoom={1}
-              className="bg-gray-50"
+              className="bg-muted"
             >
               <Background color="#94a3b8" gap={20} size={1} />
-              <Controls className="!bg-white !border-gray-200 !shadow-lg !rounded-xl !m-4 !bottom-24 md:!bottom-4" />
+              <Controls className="!bg-surface-card !border-border !shadow-lg !rounded-xl !m-4 !bottom-24 md:!bottom-4" />
 
               <Panel position="top-left" className="!m-0 !top-auto !bottom-0 !left-0 !right-0 md:!top-4 md:!bottom-auto md:!left-0 md:!right-auto md:!m-4 w-full md:w-auto z-10">
-                <div data-tour="automation-builder-palette" className="bg-white/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-xl border-t md:border border-gray-200/50 p-4 md:p-2 flex flex-row md:flex-col gap-3 md:gap-1 w-full md:w-14 items-center overflow-x-auto md:overflow-visible md:rounded-2xl no-scrollbar">
+                <div data-tour="automation-builder-palette" className="bg-surface-card/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-xl border-t md:border border-border/50 p-4 md:p-2 flex flex-row md:flex-col gap-3 md:gap-1 w-full md:w-14 items-center overflow-x-auto md:overflow-visible md:rounded-2xl no-scrollbar">
                   {[
                     { type: 'trigger', label: t("dashboard.automationBuilder.palette.trigger"), icon: Zap, color: 'text-amber-600 bg-amber-50 hover:bg-amber-100' },
-                    { type: 'action', label: t("dashboard.automationBuilder.palette.email"), icon: Mail, color: 'text-blue-600 bg-blue-50 hover:bg-blue-100' },
+                    { type: 'action', label: t("dashboard.automationBuilder.palette.email"), icon: Mail, color: 'text-blue-400 bg-blue-500/10 hover:bg-blue-100' },
                     { type: 'instagram', label: t("dashboard.automationBuilder.palette.instagram"), icon: Instagram, color: 'text-pink-600 bg-pink-50 hover:bg-pink-100' },
-                    { type: 'youtube', label: t("dashboard.automationBuilder.palette.youtube"), icon: Youtube, color: 'text-red-600 bg-red-50 hover:bg-red-100' },
+                    { type: 'youtube', label: t("dashboard.automationBuilder.palette.youtube"), icon: Youtube, color: 'text-destructive bg-destructive/10 hover:bg-red-100' },
                     { type: 'delay', label: t("dashboard.automationBuilder.palette.delay"), icon: Clock, color: 'text-purple-600 bg-purple-50 hover:bg-purple-100' },
-                    { type: 'condition', label: t("dashboard.automationBuilder.palette.condition"), icon: Settings, color: 'text-gray-600 bg-gray-50 hover:bg-gray-100' },
+                    { type: 'condition', label: t("dashboard.automationBuilder.palette.condition"), icon: Settings, color: 'text-muted-foreground bg-muted hover:bg-muted' },
                     { type: 'integration', label: t("dashboard.automationBuilder.palette.integration"), icon: Share2, color: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' },
                     { type: 'page_event', label: t("dashboard.automationBuilder.palette.pageEvent"), icon: Layout, color: 'text-teal-600 bg-teal-50 hover:bg-teal-100' },
                     { type: 'update_element', label: t("dashboard.automationBuilder.palette.updateElement"), icon: Edit, color: 'text-orange-600 bg-orange-50 hover:bg-orange-100' },
@@ -895,13 +895,13 @@ export default function DashboardAutomation() {
 
           {/* Properties Panel */}
           {selectedNode && (
-            <div className="absolute inset-0 md:inset-auto md:right-6 md:top-6 md:bottom-6 w-full md:w-[340px] bg-white/95 backdrop-blur-xl border-l md:border border-gray-200/60 md:rounded-2xl shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom md:slide-in-from-right duration-300">
+            <div className="absolute inset-0 md:inset-auto md:right-6 md:top-6 md:bottom-6 w-full md:w-[340px] bg-surface-card/95 backdrop-blur-xl border-l md:border border-border/60 md:rounded-2xl shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom md:slide-in-from-right duration-300">
               {/* Header */}
-              <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white/50 md:rounded-t-2xl">
-                <h2 className="font-bold text-lg text-gray-900">{t("dashboard.automationBuilder.config.title")}</h2>
+              <div className="p-5 border-b border-border flex items-center justify-between bg-surface-card/50 md:rounded-t-2xl">
+                <h2 className="font-bold text-lg text-foreground">{t("dashboard.automationBuilder.config.title")}</h2>
                 <button
                   onClick={() => setSelectedNodeId(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-muted-foreground transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -912,10 +912,10 @@ export default function DashboardAutomation() {
 
                 {/* Common: Label */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.config.stepName")}</label>
+                  <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.automationBuilder.config.stepName")}</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                    className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                     value={selectedNode.data.label}
                     onChange={(e) => updateNodeData('label', e.target.value)}
                   />
@@ -925,10 +925,10 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'trigger' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.trigger.eventType")}</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.automationBuilder.trigger.eventType")}</label>
                       <div className="relative">
                         <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                           value={selectedNode.data.eventType || 'newsletter_subscribe'}
                           onChange={(e) => updateNodeData('eventType', e.target.value)}
                         >
@@ -958,7 +958,7 @@ export default function DashboardAutomation() {
                             <option value="custom_event">{t("dashboard.automationBuilder.trigger.events.customEvent")}</option>
                           </optgroup>
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                           <Settings className="w-4 h-4" />
                         </div>
                       </div>
@@ -980,7 +980,7 @@ export default function DashboardAutomation() {
                         <input
                           type="number"
                           min="1"
-                          className="w-full px-4 py-2 bg-white border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                          className="w-full px-4 py-2 bg-surface-card border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
                           value={selectedNode.data.milestoneCount || 100}
                           onChange={(e) => updateNodeData('milestoneCount', parseInt(e.target.value) || 1)}
                           placeholder={t("dashboard.automationBuilder.trigger.milestone.placeholder")}
@@ -994,7 +994,7 @@ export default function DashboardAutomation() {
                       <div className="space-y-2 p-4 bg-orange-50 rounded-xl border border-orange-200/50">
                         <label className="block text-xs font-bold text-orange-700 uppercase tracking-wider">{t("dashboard.automationBuilder.trigger.selectForm")}</label>
                         <select
-                          className="w-full px-4 py-2 bg-white border border-orange-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                          className="w-full px-4 py-2 bg-surface-card border border-orange-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
                           value={selectedNode.data.elementId || ''}
                           onChange={(e) => updateNodeData('elementId', e.target.value)}
                         >
@@ -1019,8 +1019,8 @@ export default function DashboardAutomation() {
                             )}
 
                             {forms.filter(f => f.fields.some((field: any) => (field.type === 'email' || field.label.toLowerCase().includes('email')) && !field.required)).length > 0 && (
-                              <div className="mt-2 p-2 bg-red-50 rounded border border-red-100">
-                                <p className="text-xs text-red-600 font-semibold mb-1">
+                              <div className="mt-2 p-2 bg-destructive/10 rounded border border-red-100">
+                                <p className="text-xs text-destructive font-semibold mb-1">
                                   {t("dashboard.automationBuilder.trigger.formsMissingRequired")}
                                 </p>
                                 <ul className="list-disc list-inside text-[10px] text-red-500">
@@ -1051,7 +1051,7 @@ export default function DashboardAutomation() {
                           <label className="block text-xs font-bold text-purple-700 uppercase tracking-wider">{t("dashboard.automationBuilder.action.loadTemplate")}</label>
                         </div>
                         <select
-                          className="w-full px-4 py-2 bg-white border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                          className="w-full px-4 py-2 bg-surface-card border border-purple-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
                           onChange={(e) => {
                             const template = templates.find(t => t.id === e.target.value);
                             if (template && template.html) {
@@ -1071,19 +1071,19 @@ export default function DashboardAutomation() {
                     )}
 
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailSubject")}</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailSubject")}</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder={t("dashboard.automationBuilder.action.subjectPlaceholder")}
                         value={selectedNode.data.subject || ''}
                         onChange={(e) => updateNodeData('subject', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailContent")}</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.automationBuilder.action.emailContent")}</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[120px] resize-y"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[120px] resize-y"
                         placeholder={t("dashboard.automationBuilder.action.contentPlaceholder")}
                         value={selectedNode.data.content || ''}
                         onChange={(e) => updateNodeData('content', e.target.value)}
@@ -1097,7 +1097,7 @@ export default function DashboardAutomation() {
                           <Mail className="w-4 h-4" />
                           <span className="text-xs font-bold uppercase tracking-wider">{t("dashboard.automationBuilder.action.leadRecipients.title")}</span>
                         </div>
-                        <p className="text-xs text-green-600">
+                        <p className="text-xs text-green-400">
                           {t("dashboard.automationBuilder.action.leadRecipients.subtitle")}
                         </p>
 
@@ -1111,9 +1111,9 @@ export default function DashboardAutomation() {
                                 updateNodeData('sendToAllLeads', true);
                                 updateNodeData('leadCount', null);
                               }}
-                              className="w-4 h-4 text-green-600 focus:ring-green-500"
+                              className="w-4 h-4 text-green-400 focus:ring-green-500"
                             />
-                            <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+                            <span className="text-sm font-medium text-foreground group-hover:text-green-700 transition-colors">
                               {t("dashboard.automationBuilder.action.leadRecipients.sendAll")}
                             </span>
                           </label>
@@ -1129,10 +1129,10 @@ export default function DashboardAutomation() {
                                   updateNodeData('leadCount', 10);
                                 }
                               }}
-                              className="w-4 h-4 text-green-600 focus:ring-green-500 mt-0.5"
+                              className="w-4 h-4 text-green-400 focus:ring-green-500 mt-0.5"
                             />
                             <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+                              <span className="text-sm font-medium text-foreground group-hover:text-green-700 transition-colors">
                                 {t("dashboard.automationBuilder.action.leadRecipients.sendSpecific")}
                               </span>
                               {selectedNode.data.sendToAllLeads === false && (
@@ -1141,11 +1141,11 @@ export default function DashboardAutomation() {
                                     type="number"
                                     min="1"
                                     max="10000"
-                                    className="w-24 px-3 py-2 bg-white border border-green-200 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400"
+                                    className="w-24 px-3 py-2 bg-surface-card border border-green-200 rounded-lg text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-green-400/50 focus:border-green-400"
                                     value={selectedNode.data.leadCount || 10}
                                     onChange={(e) => updateNodeData('leadCount', parseInt(e.target.value) || 10)}
                                   />
-                                  <span className="text-xs text-gray-500">{t("dashboard.automationBuilder.action.leadRecipients.leads")}</span>
+                                  <span className="text-xs text-muted-foreground">{t("dashboard.automationBuilder.action.leadRecipients.leads")}</span>
                                 </div>
                               )}
                             </div>
@@ -1160,56 +1160,56 @@ export default function DashboardAutomation() {
                         <Code className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-wider">{t("dashboard.automationBuilder.action.variables.title")}</span>
                       </div>
-                      <p className="text-xs text-blue-600">{t("dashboard.automationBuilder.action.variables.subtitle")}</p>
+                      <p className="text-xs text-blue-400">{t("dashboard.automationBuilder.action.variables.subtitle")}</p>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.subscriber")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{email}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.bio")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bioName}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bioUrl}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.owner")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{ownerName}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{ownerFirstName}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.dateTime")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{currentDate}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{currentYear}}"}</code>
                         </div>
                         {showLeadSelectionOptions && (
                           <div className="space-y-1">
                             <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.blogPost")}</p>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postTitle}}"}</code>
-                            <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{postUrl}}"}</code>
+                            <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{postTitle}}"}</code>
+                            <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{postUrl}}"}</code>
                           </div>
                         )}
 
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.analytics")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{milestoneCount}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{milestoneCount}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.stripe")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripePromotionCode}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountPercent}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountAmount}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountCurrency}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountExpiresAt}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{stripePromotionCode}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountPercent}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountAmount}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountCurrency}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{stripeDiscountExpiresAt}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.appointments")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{bookingDate}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{customerName}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bookingDate}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{customerName}}"}</code>
                         </div>
                         <div className="space-y-1">
                           <p className="font-semibold text-gray-700">{t("dashboard.automationBuilder.action.variables.qrCode")}</p>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{qrValue}}"}</code>
-                          <code className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{country}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{qrValue}}"}</code>
+                          <code className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{country}}"}</code>
                         </div>
 
                         {/* Form Variables - Show when connected to Form Trigger */}
@@ -1226,7 +1226,7 @@ export default function DashboardAutomation() {
                                   {form.fields.map((field: any) => {
                                     const safeLabel = field.label.replace(/[^a-zA-Z0-9]/g, '_');
                                     return (
-                                      <code key={field.id} className="block text-blue-600 bg-white/60 px-1.5 py-0.5 rounded">{"{{" + safeLabel + "}}"}</code>
+                                      <code key={field.id} className="block text-blue-400 bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{" + safeLabel + "}}"}</code>
                                     );
                                   })}
                                 </div>
@@ -1238,17 +1238,17 @@ export default function DashboardAutomation() {
 
                       </div>
                       <details className="text-xs">
-                        <summary className="text-blue-600 cursor-pointer hover:text-blue-800 font-medium">{t("dashboard.automationBuilder.action.variables.more")}</summary>
-                        <div className="mt-2 grid grid-cols-2 gap-1 text-blue-600">
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
-                          <code className="bg-white/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
+                        <summary className="text-blue-400 cursor-pointer hover:text-blue-800 font-medium">{t("dashboard.automationBuilder.action.variables.more")}</summary>
+                        <div className="mt-2 grid grid-cols-2 gap-1 text-blue-400">
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bioDescription}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bioViews}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{bioClicks}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{instagram}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{twitter}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{youtube}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{linkedin}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{website}}"}</code>
+                          <code className="bg-surface-card/60 px-1.5 py-0.5 rounded">{"{{currentTime}}"}</code>
                         </div>
                       </details>
                     </div>
@@ -1259,9 +1259,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'stripe_discount' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Discount Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.discountType || 'percent'}
                         onChange={(e) => updateNodeData('discountType', e.target.value)}
                       >
@@ -1272,12 +1272,12 @@ export default function DashboardAutomation() {
 
                     {selectedNode.data.discountType !== 'amount' && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Percent Off</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Percent Off</label>
                         <input
                           type="number"
                           min="1"
                           max="100"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                           value={selectedNode.data.percentOff || 10}
                           onChange={(e) => updateNodeData('percentOff', parseInt(e.target.value) || 0)}
                         />
@@ -1287,20 +1287,20 @@ export default function DashboardAutomation() {
                     {selectedNode.data.discountType === 'amount' && (
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Off</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Amount Off</label>
                           <input
                             type="number"
                             min="1"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                             value={selectedNode.data.amountOff || 10}
                             onChange={(e) => updateNodeData('amountOff', parseFloat(e.target.value) || 0)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Currency</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Currency</label>
                           <input
                             type="text"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
                             value={selectedNode.data.currency || 'usd'}
                             onChange={(e) => updateNodeData('currency', e.target.value.toLowerCase())}
                             placeholder="usd"
@@ -1311,9 +1311,9 @@ export default function DashboardAutomation() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</label>
                         <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                           value={selectedNode.data.durationType || 'once'}
                           onChange={(e) => updateNodeData('durationType', e.target.value)}
                         >
@@ -1323,12 +1323,12 @@ export default function DashboardAutomation() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Repeat (Months)</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Repeat (Months)</label>
                         <input
                           type="number"
                           min="1"
                           disabled={(selectedNode.data.durationType || 'once') !== 'repeating'}
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm disabled:opacity-60"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm disabled:opacity-60"
                           value={selectedNode.data.durationInMonths || 3}
                           onChange={(e) => updateNodeData('durationInMonths', parseInt(e.target.value) || 1)}
                         />
@@ -1337,21 +1337,21 @@ export default function DashboardAutomation() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Max Redemptions</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Max Redemptions</label>
                         <input
                           type="number"
                           min="1"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                           value={selectedNode.data.maxRedemptions || ''}
                           onChange={(e) => updateNodeData('maxRedemptions', e.target.value ? parseInt(e.target.value) : undefined)}
                           placeholder="Optional"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Code Prefix</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Code Prefix</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm uppercase"
                           value={selectedNode.data.promotionCodePrefix || 'PORTYO'}
                           onChange={(e) => updateNodeData('promotionCodePrefix', e.target.value)}
                         />
@@ -1360,20 +1360,20 @@ export default function DashboardAutomation() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Expires In</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Expires In</label>
                         <input
                           type="number"
                           min="1"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                           value={selectedNode.data.expiresInValue || ''}
                           onChange={(e) => updateNodeData('expiresInValue', e.target.value ? parseInt(e.target.value) : undefined)}
                           placeholder="Optional"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Unit</label>
                         <select
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                           value={selectedNode.data.expiresInUnit || 'days'}
                           onChange={(e) => updateNodeData('expiresInUnit', e.target.value)}
                         >
@@ -1394,19 +1394,19 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'delay' && (
                   <div className="grid grid-cols-3 gap-4">
                     <div className="col-span-2 space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</label>
                       <input
                         type="number"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         defaultValue="1"
                         value={selectedNode.data.duration || '1'}
                         onChange={(e) => updateNodeData('duration', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Unit</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Unit</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.unit || 'Days'}
                         onChange={(e) => updateNodeData('unit', e.target.value)}
                       >
@@ -1422,9 +1422,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'condition' && (
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Condition Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Condition Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.conditionType || 'tag'}
                         onChange={(e) => updateNodeData('conditionType', e.target.value)}
                       >
@@ -1436,9 +1436,9 @@ export default function DashboardAutomation() {
                     {selectedNode.data.conditionType === 'element_property' && (
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Target Element</label>
                           <select
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                             value={selectedNode.data.elementId || ''}
                             onChange={(e) => updateNodeData('elementId', e.target.value)}
                           >
@@ -1452,9 +1452,9 @@ export default function DashboardAutomation() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Property</label>
                           <select
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                             value={selectedNode.data.property || 'title'}
                             onChange={(e) => updateNodeData('property', e.target.value)}
                           >
@@ -1466,9 +1466,9 @@ export default function DashboardAutomation() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Operator</label>
                           <select
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                             value={selectedNode.data.operator || 'equals'}
                             onChange={(e) => updateNodeData('operator', e.target.value)}
                           >
@@ -1480,10 +1480,10 @@ export default function DashboardAutomation() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Value</label>
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Value</label>
                           <input
                             type="text"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                             placeholder="Value to check..."
                             value={selectedNode.data.value || ''}
                             onChange={(e) => updateNodeData('value', e.target.value)}
@@ -1494,10 +1494,10 @@ export default function DashboardAutomation() {
 
                     {(!selectedNode.data.conditionType || selectedNode.data.conditionType === 'tag') && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Tag Name</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                           placeholder="e.g. VIP"
                           value={selectedNode.data.tagName || ''}
                           onChange={(e) => updateNodeData('tagName', e.target.value)}
@@ -1511,9 +1511,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'instagram' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Action Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.actionType || 'send_dm'}
                         onChange={(e) => updateNodeData('actionType', e.target.value)}
                       >
@@ -1523,9 +1523,9 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Message</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
                         placeholder="Enter message..."
                         value={selectedNode.data.message || ''}
                         onChange={(e) => updateNodeData('message', e.target.value)}
@@ -1538,9 +1538,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'youtube' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Action Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.actionType || 'reply_comment'}
                         onChange={(e) => updateNodeData('actionType', e.target.value)}
                       >
@@ -1549,9 +1549,9 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Comment Text</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Comment Text</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
                         placeholder="Enter comment..."
                         value={selectedNode.data.comment || ''}
                         onChange={(e) => updateNodeData('comment', e.target.value)}
@@ -1564,9 +1564,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'integration' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Platform</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Platform</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.platform || 'google_sheets'}
                         onChange={(e) => updateNodeData('platform', e.target.value)}
                       >
@@ -1577,8 +1577,8 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Connection</label>
-                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 flex items-center justify-between">
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Connection</label>
+                      <div className="p-3 bg-muted border border-border rounded-xl text-sm text-muted-foreground flex items-center justify-between">
                         <span>No account connected</span>
                         <button className="text-primary font-bold text-xs hover:underline">Connect</button>
                       </div>
@@ -1590,9 +1590,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'page_event' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Event Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Event Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.eventType || 'page_load'}
                         onChange={(e) => updateNodeData('eventType', e.target.value)}
                       >
@@ -1608,9 +1608,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'update_element' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Target Element</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Target Element</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.elementId || ''}
                         onChange={(e) => updateNodeData('elementId', e.target.value)}
                       >
@@ -1624,9 +1624,9 @@ export default function DashboardAutomation() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Property to Update</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Property to Update</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.property || 'title'}
                         onChange={(e) => updateNodeData('property', e.target.value)}
                       >
@@ -1639,10 +1639,10 @@ export default function DashboardAutomation() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">New Value</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">New Value</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder="Enter new value..."
                         value={selectedNode.data.value || ''}
                         onChange={(e) => updateNodeData('value', e.target.value)}
@@ -1655,24 +1655,24 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'sms' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Phone Number</label>
                       <input
                         type="tel"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder="+55 11 99999-9999 or {{phone}}"
                         value={selectedNode.data.phone || ''}
                         onChange={(e) => updateNodeData('phone', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Message</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[100px] resize-y"
                         placeholder="Hi {{ownerFirstName}}! Thanks for subscribing..."
                         value={selectedNode.data.message || ''}
                         onChange={(e) => updateNodeData('message', e.target.value)}
                       />
-                      <p className="text-xs text-gray-500">Max 160 characters for SMS. Use template variables.</p>
+                      <p className="text-xs text-muted-foreground">Max 160 characters for SMS. Use template variables.</p>
                     </div>
                   </div>
                 )}
@@ -1681,9 +1681,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'webhook' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Method</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Method</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.method || 'POST'}
                         onChange={(e) => updateNodeData('method', e.target.value)}
                       >
@@ -1694,19 +1694,19 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">URL</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">URL</label>
                       <input
                         type="url"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder="https://api.example.com/webhook"
                         value={selectedNode.data.webhookUrl || ''}
                         onChange={(e) => updateNodeData('webhookUrl', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Headers (JSON)</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Headers (JSON)</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[60px] resize-y font-mono text-xs"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[60px] resize-y font-mono text-xs"
                         placeholder='{"Authorization": "Bearer token"}'
                         value={selectedNode.data.headers || ''}
                         onChange={(e) => updateNodeData('headers', e.target.value)}
@@ -1722,9 +1722,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'tag' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Action</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Action</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.tagAction || 'add'}
                         onChange={(e) => updateNodeData('tagAction', e.target.value)}
                       >
@@ -1733,10 +1733,10 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Tag Name</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Tag Name</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder="e.g. VIP, Newsletter, Engaged"
                         value={selectedNode.data.tagName || ''}
                         onChange={(e) => updateNodeData('tagName', e.target.value)}
@@ -1752,27 +1752,27 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'split_test' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Split Ratio</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Split Ratio</label>
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
-                          <label className="text-xs text-gray-500 mb-1 block">Path A</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">Path A</label>
                           <input
                             type="number"
                             min="0"
                             max="100"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                             value={selectedNode.data.splitA || '50'}
                             onChange={(e) => updateNodeData('splitA', e.target.value)}
                           />
                         </div>
-                        <span className="text-gray-400 font-bold mt-6">:</span>
+                        <span className="text-muted-foreground font-bold mt-6">:</span>
                         <div className="flex-1">
-                          <label className="text-xs text-gray-500 mb-1 block">Path B</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">Path B</label>
                           <input
                             type="number"
                             min="0"
                             max="100"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                             value={selectedNode.data.splitB || '50'}
                             onChange={(e) => updateNodeData('splitB', e.target.value)}
                           />
@@ -1789,9 +1789,9 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'notification' && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Notification Type</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Notification Type</label>
                       <select
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
                         value={selectedNode.data.notifyType || 'owner'}
                         onChange={(e) => updateNodeData('notifyType', e.target.value)}
                       >
@@ -1801,19 +1801,19 @@ export default function DashboardAutomation() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Title</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         placeholder="New subscriber!"
                         value={selectedNode.data.notifyTitle || ''}
                         onChange={(e) => updateNodeData('notifyTitle', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Message</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Message</label>
                       <textarea
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[80px] resize-y"
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm min-h-[80px] resize-y"
                         placeholder="{{email}} subscribed to your newsletter!"
                         value={selectedNode.data.notifyMessage || ''}
                         onChange={(e) => updateNodeData('notifyMessage', e.target.value)}
@@ -1826,7 +1826,7 @@ export default function DashboardAutomation() {
                 {(selectedNode as any).type === 'math_operation' && (
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Operator</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Operator</label>
                       <div className="grid grid-cols-4 gap-2">
                         {[
                           { op: '+', label: 'Add' },
@@ -1839,7 +1839,7 @@ export default function DashboardAutomation() {
                             onClick={() => updateNodeData('mathOperator', op)}
                             className={`py-3 rounded-xl border text-sm font-bold transition-all ${selectedNode.data.mathOperator === op
                               ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200'
-                              : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-200 hover:bg-indigo-50'
+                              : 'bg-surface-card border-border text-muted-foreground hover:border-indigo-200 hover:bg-indigo-50'
                               }`}
                           >
                             {op}
@@ -1848,12 +1848,12 @@ export default function DashboardAutomation() {
                       </div>
                     </div>
 
-                    <div className="space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="space-y-4 p-4 bg-muted rounded-xl border border-border">
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Value 1</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Value 1</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
                           placeholder="Number or {{Var}}"
                           value={selectedNode.data.operand1 || ''}
                           onChange={(e) => updateNodeData('operand1', e.target.value)}
@@ -1861,16 +1861,16 @@ export default function DashboardAutomation() {
                       </div>
 
                       <div className="flex justify-center">
-                        <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-indigo-600 font-bold shadow-sm">
+                        <div className="w-8 h-8 rounded-full bg-surface-card border border-border flex items-center justify-center text-indigo-600 font-bold shadow-sm">
                           {selectedNode.data.mathOperator || '+'}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Value 2</label>
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Value 2</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
                           placeholder="Number or {{Var}}"
                           value={selectedNode.data.operand2 || ''}
                           onChange={(e) => updateNodeData('operand2', e.target.value)}
@@ -1879,26 +1879,26 @@ export default function DashboardAutomation() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Save Result As</label>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Save Result As</label>
                       <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">{"{{"}</div>
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-xs">{"{{"}</div>
                         <input
                           type="text"
-                          className="w-full pl-8 pr-8 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
+                          className="w-full pl-8 pr-8 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-400"
                           placeholder="result_name"
                           value={selectedNode.data.resultVarName || ''}
                           onChange={(e) => updateNodeData('resultVarName', e.target.value)}
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono text-xs">{"}}"}</div>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-xs">{"}}"}</div>
                       </div>
-                      <p className="text-[10px] text-gray-500 italic">You can use this name in following steps like {"{{result_name}}"}</p>
+                      <p className="text-[10px] text-muted-foreground italic">You can use this name in following steps like {"{{result_name}}"}</p>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex gap-3">
+              <div className="p-6 border-t border-border bg-muted/50 rounded-b-2xl flex gap-3">
                 <button
                   onClick={() => {
                     if (selectedNodeId) {
@@ -1907,7 +1907,7 @@ export default function DashboardAutomation() {
                       setSelectedNodeId(null);
                     }
                   }}
-                  className="px-4 py-3.5 bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-xl font-bold transition-all shadow-sm"
+                  className="px-4 py-3.5 bg-surface-card border border-border text-muted-foreground hover:text-destructive hover:border-red-200 hover:bg-destructive/10 rounded-xl font-bold transition-all shadow-sm"
                   title="Delete Step"
                 >
                   <Trash2 className="w-5 h-5" />

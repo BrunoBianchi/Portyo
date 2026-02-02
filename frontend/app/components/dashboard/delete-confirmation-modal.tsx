@@ -51,25 +51,25 @@ export function DeleteConfirmationModal({
 
             {/* Modal */}
             <div
-                className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform ${isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-0"}`}
+                className={`relative bg-surface-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform ${isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-0"}`}
             >
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                    className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted rounded-xl transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>
 
                 <div className="p-6">
                     {/* Icon */}
-                    <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6">
+                    <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mb-6">
                         <Trash2 className="w-6 h-6" />
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                    <p className="text-gray-500 leading-relaxed mb-8">
+                    <h3 className="text-xl font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{title}</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-8">
                         {description}
                     </p>
 
@@ -78,7 +78,7 @@ export function DeleteConfirmationModal({
                         <button
                             onClick={onClose}
                             disabled={isDeleting}
-                            className="flex-1 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            className="flex-1 px-4 py-2.5 bg-surface-card border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>

@@ -50,15 +50,15 @@ export default function DashboardSiteBlog() {
             {/* Delete Confirmation Modal */}
             {postToDelete && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-75" onClick={() => setPostToDelete(null)}>
-                    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm animate-in zoom-in-95 duration-75" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Post?</h3>
-                        <p className="text-sm text-gray-500 mb-6">
+                    <div className="bg-surface-card rounded-2xl shadow-xl p-6 w-full max-w-sm animate-in zoom-in-95 duration-75" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>Delete Post?</h3>
+                        <p className="text-sm text-muted-foreground mb-6">
                             Are you sure you want to delete "{postToDelete.title}"? This action cannot be undone.
                         </p>
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setPostToDelete(null)}
-                                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-muted transition-colors"
                             >
                                 Cancel
                             </button>
@@ -80,7 +80,7 @@ export default function DashboardSiteBlog() {
                         <FileText className="w-3 h-3" />
                         Admin
                     </div>
-                    <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">Site Blog</h1>
+                    <h1 className="text-4xl font-bold text-text-main tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>Site Blog</h1>
                     <p className="text-lg text-text-muted">Manage main site's blog posts.</p>
                 </div>
                 <button
@@ -104,13 +104,13 @@ export default function DashboardSiteBlog() {
                         <input
                             type="text"
                             placeholder="Search posts..."
-                            className="w-full pl-9 pr-4 py-2 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                            className="w-full pl-9 pr-4 py-2 rounded-lg border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                         />
                     </div>
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         <div className="relative w-full md:w-48">
                             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                            <select className="w-full pl-9 pr-8 py-2 rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm appearance-none cursor-pointer">
+                            <select className="w-full pl-9 pr-8 py-2 rounded-lg border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm appearance-none cursor-pointer">
                                 <option value="all">All Status</option>
                                 <option value="published">Published</option>
                                 <option value="draft">Draft</option>
@@ -133,17 +133,17 @@ export default function DashboardSiteBlog() {
                         <div key={post.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-alt/50 transition-colors group">
                             {/* Post Info */}
                             <div className="col-span-6 flex items-center gap-4">
-                                <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-border">
+                                <div className="w-16 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border">
                                     {post.thumbnail ? (
                                         <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-muted-foreground">
                                             <FileText className="w-6 h-6" />
                                         </div>
                                     )}
                                 </div>
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-text-main truncate group-hover:text-primary-foreground transition-colors">{post.title}</h3>
+                                    <h3 className="text-sm font-bold text-text-main truncate group-hover:text-primary-foreground transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{post.title}</h3>
                                     <p className="text-xs text-text-muted truncate">
                                         {post.keywords ? post.keywords.split(',').map((k: string) => `#${k.trim()}`).join(' ') : 'No keywords'}
                                     </p>
@@ -153,11 +153,11 @@ export default function DashboardSiteBlog() {
                             {/* Status */}
                             <div className="col-span-2">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${post.status === 'published'
-                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                    : 'bg-gray-50 text-gray-600 border-gray-200'
+                                    ? 'bg-green-500/10 text-green-700 border-green-200'
+                                    : 'bg-muted text-muted-foreground border-border'
                                     }`}>
-                                    {post.status === 'published' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>}
-                                    {post.status === 'scheduled' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>}
+                                    {post.status === 'published' && <span className="w-1.5 h-1.5 rounded-full bg-green-500/100 mr-1.5"></span>}
+                                    {post.status === 'scheduled' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500/100 mr-1.5"></span>}
                                     {post.status === 'draft' && <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>}
                                     <span className="capitalize">{post.status}</span>
                                 </span>
@@ -186,12 +186,12 @@ export default function DashboardSiteBlog() {
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(post)}
-                                    className="p-2 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                     title="Delete"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
-                                <button className="p-2 text-text-muted hover:text-text-main hover:bg-gray-100 rounded-lg transition-colors" aria-label="More options">
+                                <button className="p-2 text-text-muted hover:text-text-main hover:bg-muted rounded-lg transition-colors" aria-label="More options">
                                     <MoreHorizontal className="w-4 h-4" />
                                 </button>
                             </div>
@@ -203,8 +203,8 @@ export default function DashboardSiteBlog() {
                 <div className="px-6 py-4 border-t border-border bg-surface-muted/30 flex items-center justify-between text-xs text-text-muted">
                     <span>Showing {posts.length} posts</span>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Previous</button>
-                        <button className="px-3 py-1 rounded-md border border-border bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Next</button>
+                        <button className="px-3 py-1 rounded-md border border-border bg-surface-card hover:bg-muted disabled:opacity-50" disabled>Previous</button>
+                        <button className="px-3 py-1 rounded-md border border-border bg-surface-card hover:bg-muted disabled:opacity-50" disabled>Next</button>
                     </div>
                 </div>
             </div>

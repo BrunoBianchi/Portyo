@@ -5,6 +5,7 @@ import { BillingEntity } from "../database/entity/billing-entity";
 import { notificationService } from "./notification.service";
 import { MailService } from "../shared/services/mail.service";
 import { IsNull, Between, LessThan, MoreThan } from "typeorm";
+import { runAutoPostJob } from "./auto-post.service";
 
 export class CronService {
     
@@ -17,6 +18,11 @@ export class CronService {
         // Run every day at 10:00 AM
         schedule.scheduleJob("0 10 * * *", () => {
             this.checkPlanExpiration();
+        });
+        
+        // Run auto-post job every minute (testing)
+        schedule.scheduleJob("* * * * *", () => {
+            runAutoPostJob();
         });
         
         console.log("✅ Cron Jobs scheduled.");

@@ -115,7 +115,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
     if (success) {
         return (
             <div className="p-8 rounded-2xl text-center" style={{ backgroundColor, color: textColor }}>
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                 </div>
                 <h3 className="text-xl font-bold mb-2">{form.successMessage || "Thank you!"}</h3>
@@ -149,7 +149,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                 placeholder={field.placeholder}
                                 value={formData[field.id] || ''}
                                 onChange={e => handleChange(field.id, e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-muted-foreground text-foreground"
                             />
                         )}
 
@@ -160,7 +160,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                 value={formData[field.id] || ''}
                                 onChange={e => handleChange(field.id, e.target.value)}
                                 rows={4}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-gray-400 text-gray-900 resize-y"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-muted-foreground text-foreground resize-y"
                             />
                         )}
 
@@ -171,7 +171,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                 placeholder={field.placeholder}
                                 value={formData[field.id] || ''}
                                 onChange={e => handleChange(field.id, e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-muted-foreground text-foreground"
                             />
                         )}
 
@@ -182,7 +182,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                 placeholder={field.placeholder}
                                 value={formData[field.id] || ''}
                                 onChange={e => handleChange(field.id, e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-muted-foreground text-foreground"
                             />
                         )}
 
@@ -192,14 +192,14 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                     required={field.required}
                                     value={formData[field.id] || ''}
                                     onChange={e => handleChange(field.id, e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 text-gray-900 appearance-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 text-foreground appearance-none"
                                 >
                                     <option value="" disabled>Select an option</option>
                                     {getOptions(field.options).map((opt: any, i: number) => (
                                         <option key={i} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                                 placeholder={field.placeholder}
                                 value={formData[field.id] || ''}
                                 onChange={e => handleChange(field.id, e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-muted hover:bg-surface-card focus:bg-surface-card focus:border-black focus:ring-1 focus:ring-black outline-none transition-all duration-200 placeholder:text-muted-foreground text-foreground"
                             />
                         )}
 
@@ -250,7 +250,7 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                 ))}
 
                 {error && (
-                    <div className="text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-100">
+                    <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-xl border border-border">
                         {error}
                     </div>
                 )}

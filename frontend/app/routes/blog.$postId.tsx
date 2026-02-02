@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import { api } from "../services/api";
 import { format } from "date-fns";
-import { ArrowLeft, Share2, Clock, Calendar } from "lucide-react";
+import { ArrowLeft, Share2, Clock, Calendar, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { sanitizeHtml } from "~/utils/security";
@@ -32,7 +31,7 @@ interface BlogPost {
 
 export default function BlogPostPage() {
     const { postId } = useParams();
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation("blogPage");
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -51,8 +50,8 @@ export default function BlogPostPage() {
             const res = await api.get(`/public/blog/post/${postId}`);
             setPost(res.data);
 
-            if (res.data?.title) {
-                document.title = `${res.data.title} | ${res.data.bio?.seoTitle || res.data.bio?.sufix || 'Blog'}`;
+            if (res.data?.title && typeof document !== "undefined") {
+                document.title = `${res.data.title} | Blog`;
             }
         } catch (err: any) {
             setError(err.response?.data?.message || "Failed to load post");
@@ -74,7 +73,7 @@ export default function BlogPostPage() {
             }
         } else {
             navigator.clipboard.writeText(url);
-            alert("Link copied to clipboard!");
+            alert(t("linkCopied", "Link copied to clipboard!"));
         }
     };
 
@@ -83,183 +82,332 @@ export default function BlogPostPage() {
         return Math.max(1, Math.ceil(wordCount / 200));
     };
 
+    // Remove o H1 do conteúdo markdown para evitar duplicação do título
+    const removeFirstH1 = (content: string) => {
+        return content.replace(/^#\s+.+\n?/m, '');
+    };
+
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-surface-alt">
-                <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     if (error || !post) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-surface-alt">
-                <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">404</h1>
-                <p className="text-gray-600 mb-6 font-serif italic">Post not found</p>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+                    <span className="text-3xl font-bold text-muted-foreground">404</span>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    {t("notFound.title", "Post not found")}
+                </h1>
+                <p className="text-muted-foreground mb-8">{t("notFound.description", "The post you're looking for doesn't exist.")}</p>
                 <Link
-                    to="/"
-                    className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:underline transition-all"
+                    to={`/${i18n.language}/blog`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:bg-primary-hover transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    Return Home
+                    {t("backToBlog", "Back to Blog")}
                 </Link>
             </div>
         );
     }
 
-    const authorName = "Portyo.me";
-    const authorImage = post.bio?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f3f4f6&color=000`;
+    const authorName = post.bio?.seoTitle || post.user?.name || "Portyo.me";
+    const authorImage = post.bio?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=bbff00&color=000`;
     const readTime = getReadTime(post.content);
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
     const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
 
-    const fadeIn = {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-        }
-    };
+    // Processa o conteúdo removendo o H1 inicial
+    const processedContent = isHtmlContent ? post.content : removeFirstH1(post.content);
 
     return (
-        <article className="min-h-screen bg-surface-alt">
-            {/* Minimalist Navigation */}
-            <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
+        <article className="min-h-screen bg-background">
+            {/* Navigation */}
+            <nav className="border-b border-border/50 sticky top-0 bg-background/95 backdrop-blur-md z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link
                         to={`/${i18n.language}/blog`}
-                        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        <span className="font-medium">Back to Blog</span>
+                        <span className="font-medium">{t("backToBlog", "Back to Blog")}</span>
                     </Link>
 
                     <button
                         onClick={handleShare}
-                        className="p-2 text-gray-400 hover:text-black transition-colors"
-                        title="Share"
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all"
+                        title={t("share", "Share")}
                     >
                         <Share2 className="w-4 h-4" />
                     </button>
                 </div>
             </nav>
 
-            <motion.div
-                className="max-w-3xl mx-auto px-6 py-12 md:py-20"
-                initial="hidden"
-                animate="visible"
-            >
-                {/* Editorial Header */}
-                <header className="mb-12 text-center">
-                    <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-gray-400 uppercase mb-6">
-                        <span suppressHydrationWarning>{formattedDate}</span>
-                        <span>•</span>
-                        <span suppressHydrationWarning>{readTime} min read</span>
-                    </div>
+            {/* Hero Section */}
+            <header className="relative">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background pointer-events-none" />
+                
+                <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-12">
+                    {/* Meta info */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6"
+                    >
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {formattedDate}
+                        </span>
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
+                            <Clock className="w-3.5 h-3.5" />
+                            {t("readTime", { count: readTime })}
+                        </span>
+                        {post.views !== undefined && (
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
+                                <Eye className="w-3.5 h-3.5" />
+                                {post.views.toLocaleString()} {t("views", "views")}
+                            </span>
+                        )}
+                    </motion.div>
 
-                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
+                    {/* Title */}
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-8 tracking-tight"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                    >
                         {post.title}
-                    </h1>
+                    </motion.h1>
 
-                    <div className="flex items-center justify-center gap-3">
+                    {/* Author */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="flex items-center gap-3"
+                    >
                         <img
                             src={authorImage}
                             alt={authorName}
-                            className="w-10 h-10 rounded-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all"
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
                         />
-                        <div className="text-left">
-                            <p className="text-sm font-bold text-gray-900">{authorName}</p>
-                            <p className="text-xs text-gray-500 font-medium">Author & Creator</p>
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">{authorName}</p>
+                            <p className="text-xs text-muted-foreground">{t("author.role", "Author")}</p>
                         </div>
-                    </div>
-                </header>
+                    </motion.div>
+                </div>
+            </header>
 
-                {/* Featured Image - Clean & Sharp */}
-                {post.thumbnail && (
-                    <div className="mb-16 -mx-6 md:-mx-12">
+            {/* Featured Image */}
+            {post.thumbnail && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="max-w-5xl mx-auto px-6 mb-12"
+                >
+                    <div className="relative overflow-hidden rounded-2xl">
                         <img
                             src={post.thumbnail}
                             alt={post.title}
-                            className="w-full h-auto shadow-sm"
+                            className="w-full h-auto max-h-[500px] object-cover"
                         />
-                        <div className="mt-2 text-center">
-                            <span className="text-xs text-gray-400 font-medium">Featured Image</span>
-                        </div>
+                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl" />
                     </div>
-                )}
+                </motion.div>
+            )}
 
-                {/* Content - High Readability */}
-                <div className="blog-markdown font-sans">
+            {/* Content */}
+            <main className="max-w-3xl mx-auto px-6 pb-20">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="blog-post-content"
+                >
                     {isHtmlContent ? (
-                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedContent) }} />
                     ) : (
-                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                        <ReactMarkdown
+                            components={{
+                                h1: ({ children }) => (
+                                    <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-10 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+                                        {children}
+                                    </h1>
+                                ),
+                                h2: ({ children }) => (
+                                    <h2 className="text-xl md:text-2xl font-bold text-foreground mt-8 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
+                                        {children}
+                                    </h2>
+                                ),
+                                h3: ({ children }) => (
+                                    <h3 className="text-lg md:text-xl font-semibold text-foreground mt-6 mb-2">
+                                        {children}
+                                    </h3>
+                                ),
+                                h4: ({ children }) => (
+                                    <h4 className="text-base md:text-lg font-semibold text-foreground mt-5 mb-2">
+                                        {children}
+                                    </h4>
+                                ),
+                                p: ({ children }) => (
+                                    <p className="text-base text-muted-foreground leading-7 mb-5">
+                                        {children}
+                                    </p>
+                                ),
+                                a: ({ href, children }) => (
+                                    <a 
+                                        href={href} 
+                                        className="text-primary hover:text-primary-hover underline underline-offset-2 transition-colors"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {children}
+                                    </a>
+                                ),
+                                ul: ({ children }) => (
+                                    <ul className="list-disc pl-5 space-y-2 mb-5 text-muted-foreground">
+                                        {children}
+                                    </ul>
+                                ),
+                                ol: ({ children }) => (
+                                    <ol className="list-decimal pl-5 space-y-2 mb-5 text-muted-foreground">
+                                        {children}
+                                    </ol>
+                                ),
+                                li: ({ children }) => (
+                                    <li className="text-muted-foreground leading-7">
+                                        {children}
+                                    </li>
+                                ),
+                                blockquote: ({ children }) => (
+                                    <blockquote className="border-l-4 border-primary/50 pl-5 py-3 my-6 bg-muted/50 rounded-r-lg">
+                                        <p className="text-foreground italic m-0">{children}</p>
+                                    </blockquote>
+                                ),
+                                code: ({ children, className }) => {
+                                    const isInline = !className;
+                                    return isInline ? (
+                                        <code className="bg-muted px-1.5 py-0.5 rounded text-sm text-foreground font-mono">
+                                            {children}
+                                        </code>
+                                    ) : (
+                                        <pre className="bg-muted p-4 rounded-xl overflow-x-auto mb-5 border border-border">
+                                            <code className={`text-sm text-foreground font-mono ${className || ''}`}>
+                                                {children}
+                                            </code>
+                                        </pre>
+                                    );
+                                },
+                                hr: () => <hr className="border-border my-8" />,
+                                table: ({ children }) => (
+                                    <div className="overflow-x-auto my-6">
+                                        <table className="w-full border-collapse border border-border text-sm">
+                                            {children}
+                                        </table>
+                                    </div>
+                                ),
+                                thead: ({ children }) => (
+                                    <thead className="bg-muted">
+                                        {children}
+                                    </thead>
+                                ),
+                                tbody: ({ children }) => (
+                                    <tbody>
+                                        {children}
+                                    </tbody>
+                                ),
+                                tr: ({ children }) => (
+                                    <tr className="border-b border-border">
+                                        {children}
+                                    </tr>
+                                ),
+                                th: ({ children }) => (
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
+                                        {children}
+                                    </th>
+                                ),
+                                td: ({ children }) => (
+                                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                                        {children}
+                                    </td>
+                                ),
+                                strong: ({ children }) => (
+                                    <strong className="font-semibold text-foreground">
+                                        {children}
+                                    </strong>
+                                ),
+                                em: ({ children }) => (
+                                    <em className="italic text-muted-foreground">
+                                        {children}
+                                    </em>
+                                ),
+                            }}
+                        >
+                            {processedContent}
+                        </ReactMarkdown>
                     )}
-                </div>
+                </motion.div>
 
                 {/* Footer Section */}
-                <div className="mt-24 pt-12 border-t border-gray-100">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                    className="mt-16 pt-10 border-t border-border/50"
+                >
                     <div className="text-center">
-                        <div className="inline-block p-4 border border-black rounded-full mb-8">
-                            <h3 className="font-bold text-xl px-4">The End.</h3>
-                        </div>
-                        <p className="text-gray-500 font-medium mb-8 max-w-md mx-auto">
-                            Thanks for reading. If you enjoyed this piece, please consider sharing it with your network.
+                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                            {t("thanksReading", "Thanks for reading! If you enjoyed this article, consider sharing it.")}
                         </p>
+                        <button
+                            onClick={handleShare}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-semibold rounded-xl hover:bg-primary-hover transition-colors"
+                        >
+                            <Share2 className="w-4 h-4" />
+                            {t("shareArticle", "Share this article")}
+                        </button>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
+            </main>
 
+            {/* Custom styles */}
             <style>{`
-                .blog-markdown {
-                    font-size: 1.05rem;
-                    line-height: 1.9;
-                    color: #111827;
+                .blog-post-content h1,
+                .blog-post-content h2,
+                .blog-post-content h3,
+                .blog-post-content h4 {
+                    scroll-margin-top: 80px;
                 }
-                .blog-markdown > * + * { margin-top: 1.25rem; }
-                .blog-markdown h1 { font-size: 2.25rem; line-height: 1.2; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; }
-                .blog-markdown h2 { font-size: 1.75rem; line-height: 1.3; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; }
-                .blog-markdown h3 { font-size: 1.4rem; line-height: 1.35; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.5rem; }
-                .blog-markdown h4 { font-size: 1.15rem; line-height: 1.4; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-                .blog-markdown p { margin: 0 0 1rem; white-space: pre-wrap; }
-                .blog-markdown a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
-                .blog-markdown a:hover { color: #1e40af; }
-                .blog-markdown ul, .blog-markdown ol { margin: 0 0 1rem; padding-left: 1.5rem; }
-                .blog-markdown li { margin: 0.4rem 0; }
-                .blog-markdown blockquote {
-                    border-left: 4px solid #e5e7eb;
-                    background: #f9fafb;
-                    color: #374151;
-                    padding: 0.75rem 1rem;
-                    border-radius: 0.75rem;
-                    margin: 1.5rem 0;
-                }
-                .blog-markdown code {
-                    background: #f3f4f6;
-                    padding: 0.15rem 0.4rem;
-                    border-radius: 0.4rem;
-                    font-size: 0.95em;
-                }
-                .blog-markdown pre {
-                    background: #0b1020;
-                    color: #e5e7eb;
-                    padding: 1rem;
-                    border-radius: 0.75rem;
-                    overflow-x: auto;
-                    margin: 1.5rem 0;
-                }
-                .blog-markdown pre code { background: none; padding: 0; color: inherit; }
-                .blog-markdown img {
+                
+                .blog-post-content img {
                     max-width: 100%;
+                    height: auto;
                     border-radius: 12px;
-                    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
                     margin: 1.5rem 0;
                 }
-                .blog-markdown hr { border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
-                .blog-markdown table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
-                .blog-markdown th, .blog-markdown td { border: 1px solid #e5e7eb; padding: 0.6rem 0.75rem; }
-                .blog-markdown th { background: #f9fafb; text-align: left; }
+                
+                .blog-post-content pre {
+                    background: hsl(var(--muted));
+                }
+                
+                .blog-post-content code {
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                }
+                
+                .blog-post-content blockquote > p {
+                    margin: 0;
+                }
             `}</style>
         </article>
     );

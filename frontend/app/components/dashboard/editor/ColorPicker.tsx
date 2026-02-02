@@ -127,19 +127,19 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     return (
         <div className={`relative ${className}`}>
             {label && (
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
                     {label}
                 </label>
             )}
 
-            <div className="flex items-center h-11 w-full rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300 relative">
+            <div className="flex items-center h-11 w-full rounded-xl border border-border bg-surface-card overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300 relative">
 
                 {/* Visual Swatch Trigger */}
                 <button
                     ref={triggerRef}
                     type="button"
                     onClick={togglePicker}
-                    className="h-full w-12 border-r border-gray-100 p-0 cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center relative group"
+                    className="h-full w-12 border-r border-border p-0 cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center relative group"
                     style={{ backgroundColor: value }}
                 >
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
@@ -154,7 +154,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     }}
                     onBlur={() => addToRecent(value)}
                     onFocus={(e) => e.target.select()}
-                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent"
+                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent"
                     placeholder="#000000"
                     maxLength={9}
                 />
@@ -164,7 +164,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
             {isOpen && typeof document !== 'undefined' && createPortal(
                 <div
                     ref={popupRef}
-                    className="fixed z-[9999] w-64 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 animate-in fade-in zoom-in-95 duration-200 origin-top-left"
+                    className="fixed z-[9999] w-64 bg-surface-card rounded-xl shadow-2xl border border-border p-4 animate-in fade-in zoom-in-95 duration-200 origin-top-left"
                     style={{
                         top: coords.top - window.scrollY, // Fixed position needs viewport relative coords
                         left: coords.left - window.scrollX
@@ -173,7 +173,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
 
                     {/* Native Picker Wrapper */}
                     <div className="mb-4">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Pick Custom Color</label>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Pick Custom Color</label>
                         <div
                             className="w-full"
                             onMouseUp={handleInteractionEnd}
@@ -190,17 +190,17 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     {/* Recent Colors */}
                     {recentColors.length > 0 && (
                         <div className="mb-4">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Recent</label>
+                            <label className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider mb-2 block">Recent</label>
                             <div className="grid grid-cols-5 gap-2">
                                 {recentColors.map((c, i) => (
                                     <button
                                         key={`${c}-${i}`}
                                         onClick={() => handleColorSelect(c)}
-                                        className="w-8 h-8 rounded-full border border-gray-100 shadow-sm hover:scale-110 transition-transform relative group"
+                                        className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform relative group"
                                         style={{ backgroundColor: c }}
                                         title={c}
                                     >
-                                        {value === c && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full shadow-sm" /></div>}
+                                        {value === c && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-surface-card rounded-full shadow-sm" /></div>}
                                     </button>
                                 ))}
                             </div>
@@ -210,15 +210,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     {/* Saved Palette */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">My Palette</label>
-                            <button onClick={addToPalette} className="text-[10px] flex items-center gap-1 text-blue-600 hover:text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-full transition-colors">
+                            <label className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider block">My Palette</label>
+                            <button onClick={addToPalette} className="text-[10px] flex items-center gap-1 text-blue-400 hover:text-blue-700 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full transition-colors">
                                 <PlusIcon size={10} /> Add Current
                             </button>
                         </div>
 
                         {savedPalette.length === 0 ? (
-                            <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                <span className="text-[10px] text-gray-400">No saved colors</span>
+                            <div className="text-center py-4 bg-muted rounded-lg border border-dashed border-border">
+                                <span className="text-[10px] text-muted-foreground/50">No saved colors</span>
                             </div>
                         ) : (
                             <div className="grid grid-cols-5 gap-2">
@@ -226,12 +226,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                                     <button
                                         key={`${c}-${i}-p`}
                                         onClick={() => handleColorSelect(c)}
-                                        className="w-8 h-8 rounded-full border border-gray-100 shadow-sm hover:scale-110 transition-transform relative group"
+                                        className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform relative group"
                                         style={{ backgroundColor: c }}
                                         title={c}
                                     >
                                         <div
-                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                            className="absolute -top-1 -right-1 bg-destructive/100 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                             onClick={(e) => removeFromPalette(c, e)}
                                         >
                                             <XIcon size={8} />

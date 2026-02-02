@@ -44,6 +44,7 @@ const baseRoutes: RouteConfig = [
             { path: "marketing", file: "routes/dashboard-marketing.tsx" },
             { path: "blog", file: "routes/dashboard-blog.tsx" },
             { path: "site-blog", file: "routes/dashboard.site-blog.tsx" },
+            { path: "auto-post", file: "routes/dashboard-auto-post.tsx" },
             { path: "qrcode", file: "routes/dashboard-qrcode.tsx" },
             { path: "scheduler", file: "routes/dashboard-scheduler.tsx" },
             { path: "templates", file: "routes/dashboard-templates.tsx" },

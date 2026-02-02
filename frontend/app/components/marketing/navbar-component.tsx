@@ -1,633 +1,93 @@
-
-import { useContext, useEffect, useId, useRef, useState, type JSX } from "react";
+import { useContext, useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
 import AuthContext from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "~/constants/languages";
+import { Menu, X, ChevronDown, Globe, Sparkles } from "lucide-react";
 
-type DropdownSectionItem = {
-  title: string;
-  description?: string;
-  href?: string;
-};
-
-function IconLink(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.43" />
-      <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.57" />
-    </svg>
-  );
-}
-
-function IconShare(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M16 8a3 3 0 1 0-2.83-4" />
-      <path d="M6 14a3 3 0 1 0 2.83 4" />
-      <path d="M16 8l-8 6" />
-      <path d="M8 18l8-6" />
-    </svg>
-  );
-}
-
-function IconUsers(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M16 11a4 4 0 1 0-8 0" />
-      <path d="M12 15c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5Z" />
-    </svg>
-  );
-}
 function IconGlobe(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
       <circle cx="12" cy="12" r="10" />
       <line x1="2" y1="12" x2="22" y2="12" />
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   );
 }
-function IconCoin(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M12 1v22" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
-  );
-}
 
-function IconChart(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M4 19V5" />
-      <path d="M8 19V9" />
-      <path d="M12 19V12" />
-      <path d="M16 19V7" />
-      <path d="M20 19V4" />
-    </svg>
-  );
-}
-
-function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
-type LanguageSelectProps = {
-  value: string;
+function LanguageSelect({ value, onChange, buttonClassName }: { 
+  value: string; 
   onChange: (value: string) => void;
   buttonClassName: string;
-  menuClassName?: string;
-};
-
-function LanguageSelect({ value, onChange, buttonClassName, menuClassName }: LanguageSelectProps) {
-  const { t } = useTranslation();
+}) {
   const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const buttonId = useId();
-  const menuId = useId();
-
-  const currentLabel = LANGUAGES.find((language) => language.code === value)?.label ?? value;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const currentLabel = LANGUAGES.find((l) => l.code === value)?.label ?? value;
 
   useEffect(() => {
     if (!open) return;
-
-    function onPointerDown(event: PointerEvent) {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      if (event.target instanceof Node && !wrapper.contains(event.target)) {
+    function onPointerDown(e: PointerEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
     document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
   return (
-    <div ref={wrapperRef} className="relative min-w-[8.5rem] sm:min-w-[9.5rem]">
-      <IconGlobe className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+    <div ref={wrapperRef} className="relative">
       <button
         type="button"
-        id={buttonId}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={menuId}
-        onClick={() => setOpen((prev) => !prev)}
-        className={`${buttonClassName} flex items-center justify-between gap-2 text-left`}
+        onClick={() => setOpen(!open)}
+        className={`${buttonClassName} flex items-center gap-2`}
       >
-        <span className="truncate">{currentLabel}</span>
+        <Globe className="w-4 h-4" />
+        <span className="hidden sm:inline">{currentLabel}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      <ChevronDown
-        className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted transition-transform ${open ? "rotate-180" : ""}`}
-      />
-      {open && (
-        <div
-          id={menuId}
-          role="listbox"
-          aria-labelledby={buttonId}
-          className={`absolute mt-2 w-full rounded-lg border border-border/60 bg-surface overflow-hidden ${menuClassName ?? ""}`}
-        >
-          {LANGUAGES.map((language) => {
-            const isActive = language.code === value;
-            return (
+      
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden z-50"
+          >
+            {LANGUAGES.map((lang) => (
               <button
-                key={language.code}
-                type="button"
-                role="option"
-                aria-selected={isActive}
+                key={lang.code}
                 onClick={() => {
-                  onChange(language.code);
+                  onChange(lang.code);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-surface-muted/60 text-text-main"
-                    : "text-text-main/80 hover:text-text-main hover:bg-surface-muted/60"
+                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
+                  lang.code === value
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {language.label}
+                {lang.label}
               </button>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-import { getPublicSitePosts, type SitePost } from "~/services/site-blog.service";
-import { format } from "date-fns";
-
-function ProductsDropdown() {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const buttonId = useId();
-  const panelId = useId();
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
-  const [latestPosts, setLatestPosts] = useState<SitePost[]>([]);
-  const currentLang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
-  const withLang = (to: string) => (to.startsWith("/") ? `/${currentLang}${to}` : `/${currentLang}/${to}`);
-
-  function closeIfFocusLeft(currentTarget: HTMLElement) {
-    const active = document.activeElement;
-    if (active && active instanceof Node && currentTarget.contains(active)) return;
-    setOpen(false);
-  }
-
-  useEffect(() => {
-    getPublicSitePosts(currentLang).then(posts => {
-      if (posts) setLatestPosts(posts.slice(0, 3));
-    });
-  }, [currentLang]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onPointerDown(e: PointerEvent) {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      if (e.target instanceof Node && !wrapper.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        queueMicrotask(() => buttonRef.current?.focus());
-      }
-    }
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  function clearCloseTimer() {
-    if (closeTimerRef.current == null) return;
-    window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = null;
-  }
-
-  function scheduleClose() {
-    clearCloseTimer();
-    closeTimerRef.current = window.setTimeout(() => {
-      setOpen(false);
-    }, 120);
-  }
-
-  return (
-    <div
-      ref={wrapperRef}
-      className="relative"
-      onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") {
-          clearCloseTimer();
-          setOpen(true);
-        }
-      }}
-      onPointerLeave={(e) => {
-        if (e.pointerType === "mouse") {
-          scheduleClose();
-        }
-      }}
-      onFocusCapture={() => setOpen(true)}
-      onBlurCapture={(e) => closeIfFocusLeft(e.currentTarget)}
-    >
-      <button
-        ref={buttonRef}
-        id={buttonId}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={(event) => {
-          if (!open) {
-            navigate(withLang("/blog"));
-            return;
-          }
-          setOpen((v) => !v);
-          event.preventDefault();
-        }}
-        className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
-      >
-        {t("nav.blog")}
-        <ChevronDown
-          className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
-            }`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 pt-4">
-          <div
-            id={panelId}
-            role="menu"
-            aria-labelledby={buttonId}
-            onPointerEnter={() => clearCloseTimer()}
-            onPointerLeave={() => scheduleClose()}
-            className="w-[640px] rounded-xl border border-border/70 bg-surface shadow-[0_12px_40px_rgba(15,23,42,0.08)] overflow-hidden"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-[1.2fr_0.8fr] gap-6 p-6">
-              {/* Column 1: Latest Posts */}
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
-                  Latest posts
-                </div>
-                <div className="flex flex-col gap-3">
-                  {latestPosts.length > 0 ? latestPosts.map(post => (
-                    <Link key={post.id} to={withLang(`/blog/${post.id}`)} className="group block">
-                      <div className="text-sm font-medium text-text-main group-hover:text-primary transition-colors line-clamp-2">
-                        {post.title}
-                      </div>
-                      <div className="text-xs text-text-muted mt-1">
-                        {format(new Date(post.createdAt), 'MMM d, yyyy')}
-                      </div>
-                    </Link>
-                  )) : (
-                    <div className="text-sm text-text-muted">No posts yet</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Column 2: Explore */}
-              <div className="flex flex-col gap-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Explore
-                </div>
-                <div className="rounded-xl border border-border/60 bg-surface-muted/40 p-4">
-                  <p className="text-sm text-text-main font-medium mb-2">All posts, one place.</p>
-                  <p className="text-xs text-text-muted mb-4">Browse the full archive and the newest updates.</p>
-                  <Link
-                    to={withLang("/blog")}
-                    className="inline-flex items-center justify-center rounded-lg border border-border/70 bg-white px-3 py-2 text-xs font-semibold text-text-main transition-colors hover:border-border hover:bg-surface"
-                  >
-                    View all posts
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-function IconLayoutDashboard(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <rect width="7" height="9" x="3" y="3" rx="1" />
-      <rect width="7" height="5" x="14" y="3" rx="1" />
-      <rect width="7" height="9" x="14" y="12" rx="1" />
-      <rect width="7" height="5" x="3" y="16" rx="1" />
-    </svg>
-  );
-}
-
-function IconSettings(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function IconLogOut(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" x2="9" y1="12" y2="12" />
-    </svg>
-  );
-}
-
-function UserDropdown({ user, logout }: { user: { fullname: string; email: string; plan?: 'free' | 'standard' | 'pro' }; logout: () => void }) {
-  const { t } = useTranslation();
-  const buttonId = useId();
-  const panelId = useId();
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
-
-  function closeIfFocusLeft(currentTarget: HTMLElement) {
-    const active = document.activeElement;
-    if (active && active instanceof Node && currentTarget.contains(active)) return;
-    setOpen(false);
-  }
-
-  useEffect(() => {
-    if (!open) return;
-
-    function onPointerDown(e: PointerEvent) {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      if (e.target instanceof Node && !wrapper.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        queueMicrotask(() => buttonRef.current?.focus());
-      }
-    }
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  function clearCloseTimer() {
-    if (closeTimerRef.current == null) return;
-    window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = null;
-  }
-
-  function scheduleClose() {
-    clearCloseTimer();
-    closeTimerRef.current = window.setTimeout(() => {
-      setOpen(false);
-    }, 120);
-  }
-
-  const planColors = {
-    free: "bg-gray-100 text-gray-700 border-gray-200",
-    standard: "bg-blue-50 text-blue-700 border-blue-200",
-    pro: "bg-primary/20 text-primary-dark border-primary/30"
-  };
-
-  const userPlan = user.plan || 'free';
-
-  return (
-    <div
-      ref={wrapperRef}
-      className="relative"
-      onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") {
-          clearCloseTimer();
-          setOpen(true);
-        }
-      }}
-      onPointerLeave={(e) => {
-        if (e.pointerType === "mouse") {
-          scheduleClose();
-        }
-      }}
-      onFocusCapture={() => setOpen(true)}
-      onBlurCapture={(e) => closeIfFocusLeft(e.currentTarget)}
-    >
-      <button
-        ref={buttonRef}
-        id={buttonId}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-main transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-hover"
-      >
-        <div className="w-9 h-9 rounded-full bg-[#E8F0B8] flex items-center justify-center text-[#A3B808] font-bold text-sm border border-[#D2E823]/30">
-          {user.fullname?.charAt(0).toUpperCase() ?? "U"}
-        </div>
-        <span className="hidden sm:inline font-semibold text-[#A3B808]">{user.fullname ?? "User"}</span>
-        <ChevronDown
-          className={`h-4 w-4 text-text-muted transition-transform ${open ? "rotate-180" : "rotate-0"
-            }`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full z-50 pt-3 min-w-[260px]">
-          <div
-            id={panelId}
-            role="menu"
-            aria-labelledby={buttonId}
-            onPointerEnter={() => clearCloseTimer()}
-            onPointerLeave={() => scheduleClose()}
-            className="rounded-2xl border border-border bg-surface shadow-xl overflow-hidden py-2"
-          >
-            <div className="px-5 py-4 border-b border-border/50">
-              <p className="text-base font-bold text-text-main truncate">{user.fullname ?? "User"}</p>
-              <p className="text-xs text-text-muted truncate mb-3 font-medium">{user.email}</p>
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${planColors[userPlan]}`}>
-                {userPlan} Plan
-              </span>
-            </div>
-
-            <div className="py-2">
-              <Link to="/dashboard" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
-                <IconLayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link>
-              <Link to="/dashboard/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-text-main hover:bg-surface-muted hover:text-primary transition-colors">
-                <IconSettings className="w-4 h-4" />
-                Settings
-              </Link>
-            </div>
-
-            <div className="border-t border-border/50 py-2">
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <IconLogOut className="w-4 h-4" />
-                {t("nav.signOut")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-import { Menu, X } from "lucide-react";
-
-// ... existing imports
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const { i18n, t } = useTranslation();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [announcement, setAnnouncement] = useState<{
-    text: string;
-    link: string;
-    badge?: "new" | "hot" | "sale" | "update" | "none";
-    isNew?: boolean; // Legacy support
-    isVisible: boolean;
-    bgColor?: string;
-    textColor?: string;
-    fontSize?: "12" | "14" | "16";
-    textAlign?: "left" | "center";
-  } | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
-
-  const onChangeLang = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    i18n.changeLanguage(event.target.value);
-  };
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const buildLocalizedPath = (lang: string) => {
     if (/^\/(en|pt)(\/|$)/.test(pathname)) {
@@ -643,31 +103,15 @@ export default function Navbar() {
     return to === "/" ? `/${currentLang}` : `/${currentLang}${to}`;
   };
 
-  const currentPathWithSearch = `${pathname}${search || ""}`;
-
   useEffect(() => {
     setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    // Fetch announcement
-    const fetchAnnouncement = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://api.portyo.me';
-        const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
-        const res = await fetch(`${baseUrl}/public/settings/announcement`);
-        if (res.ok) {
-          const data = await res.json();
-          setAnnouncement(data);
-        }
-      } catch (e) {
-        console.error("Failed to fetch announcement", e);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
     };
-    fetchAnnouncement();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -679,243 +123,229 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  // Determine badge to show (support both legacy isNew and new badge field)
-  const badgeType = announcement?.badge ?? (announcement?.isNew ? 'new' : 'none');
-
-  const canShowUser = isHydrated && !!user;
-  const canShowAuthLinks = isHydrated && !user;
-
-  const getBadgeStyle = (type: string) => {
-    switch (type) {
-      case 'hot': return 'bg-orange-500 text-white';
-      case 'sale': return 'bg-green-500 text-white';
-      case 'update': return 'bg-blue-500 text-white';
-      case 'new': return 'bg-red-500 text-white';
-      default: return '';
-    }
-  };
-
-  const getBadgeLabel = (type: string) => {
-    switch (type) {
-      case 'hot': return 'HOT';
-      case 'sale': return 'SALE';
-      case 'update': return 'UPDATE';
-      case 'new': return 'NEW';
-      default: return '';
-    }
-  };
+  const currentPathWithSearch = `${pathname}${search || ""}`;
 
   return (
     <>
-      {announcement && announcement.isVisible && (
-        <div
-          className="w-full py-2.5 px-4 z-50 transition-all duration-300 relative"
-          style={{
-            backgroundColor: announcement.bgColor || '#000000',
-            color: announcement.textColor || '#ffffff',
-            fontSize: `${announcement.fontSize || '14'}px`
-          }}
-        >
-          <div
-            className="max-w-7xl mx-auto flex items-center justify-between font-medium"
-            style={{ justifyContent: announcement.textAlign === 'center' ? 'center' : 'space-between' }}
-          >
-            <div
-              className="flex items-center gap-2 truncate pr-4"
-              style={{ justifyContent: announcement.textAlign === 'center' ? 'center' : 'flex-start', flex: announcement.textAlign === 'center' ? 'none' : 1 }}
-            >
-              {badgeType !== 'none' && (
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${getBadgeStyle(badgeType)}`}>
-                  {getBadgeLabel(badgeType)}
-                </span>
-              )}
-              <span className="truncate">{announcement.text}</span>
-            </div>
-            {announcement.textAlign !== 'center' && (
-              <Link to={announcement.link} className="flex items-center gap-1 hover:opacity-80 transition-colors whitespace-nowrap shrink-0">
-                <span className="hidden sm:inline">{t("nav.getStarted")}</span>
-                <span className="sm:hidden">{t("nav.view")}</span>
-                <span style={{ color: announcement.textColor === '#ffffff' ? '#d0f224' : undefined }}>→</span>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
-      <header className="w-full p-4 md:p-6 z-40 max-w-7xl mx-auto relative">
-        <div className="flex justify-between items-start">
-          {/* Logo Section */}
-          <div className="flex flex-col items-start z-50 relative">
-            <Link to={withLang('/')} className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 md:mb-4">Portyo</Link>
-            <div className="hidden md:block w-32 h-px bg-text-main/20 mb-3"></div>
-            <Link to={withLang('/sign-up')} className="hidden md:flex text-sm font-medium text-text-main hover:text-primary transition-colors items-center gap-2 group">
-              {t("nav.launch")}
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-background/80 backdrop-blur-xl shadow-lg shadow-black/20 border-b border-border/50' 
+            : 'bg-transparent'
+        }`}
+        style={{ top: '40px' }} // Espaço para announcement bar
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <Link to={withLang('/')} className="flex items-center gap-2">
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20"
+              >
+                <span className="text-background font-bold text-xl">P</span>
+              </motion.div>
+              <span className="text-xl font-bold tracking-tight text-foreground">Portyo</span>
             </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex pt-2 items-center gap-6">
-            <ProductsDropdown />
-            <Link
-              to={withLang('/themes')}
-              className="text-sm font-medium text-text-main transition-colors hover:text-primary"
-            >
-              {t("nav.themes")}
-            </Link>
-          </div>
-
-          {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-6 pt-2">
-            <div className="flex items-center gap-2">
-              <LanguageSelect
-                value={i18n.resolvedLanguage || i18n.language}
-                onChange={(value) => {
-                  i18n.changeLanguage(value);
-                  navigate(buildLocalizedPath(value), { replace: true });
-                }}
-                buttonClassName="w-full min-w-[120px] rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-1.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
-              />
-            </div>
-            {canShowAuthLinks ? (
-              <>
-                <Link to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)} className="text-sm font-medium hover:text-primary transition-colors">{t("nav.signIn")}</Link>
-                <Link to={withLang('/sign-up')} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
-                  {t("nav.startFree")}
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1">
+              {[
+                { label: t("nav.features", "Features"), href: "/#features" },
+                { label: t("nav.pricing", "Pricing"), href: "/pricing" },
+                { label: t("nav.themes", "Themes"), href: "/themes" },
+                { label: t("nav.blog", "Blog"), href: "/blog" },
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  to={withLang(item.href)}
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  {item.label}
                 </Link>
-              </>
-            ) : canShowUser ? (
-              <UserDropdown user={user} logout={logout} />
-            ) : (
-              <div className="h-10 w-[180px] rounded-lg bg-gray-100" aria-hidden="true" />
-            )}
-          </div>
+              ))}
+            </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden z-50 p-2 text-text-main hover:bg-surface-muted rounded-lg transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-
-        {/* Mobile Menu Overlay */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-surface z-40 md:hidden pt-24 px-6 pb-6 flex flex-col gap-6 overflow-y-auto animate-in fade-in slide-in-from-top-5 duration-200">
-            <div className="flex flex-col gap-4">
-              <div className="text-sm font-bold text-text-muted uppercase tracking-wider">{t("nav.menu")}</div>
-              <Link
-                to={withLang('/blog')}
-                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t("nav.blog")}
-              </Link>
-              <Link
-                to={withLang('/themes')}
-                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t("nav.themes")}
-              </Link>
-              <Link
-                to={withLang('/manifesto')}
-                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t("nav.manifesto")}
-              </Link>
-              <Link
-                to={withLang('/pricing')}
-                className="text-2xl font-bold text-text-main hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t("nav.pricing")}
-              </Link>
-            </div>
-
-            <div className="h-px w-full bg-border"></div>
-
-            <div className="flex flex-col gap-4">
-              <Link
-                to={withLang('/sign-up')}
-                className="text-lg font-medium text-text-main hover:text-primary transition-colors flex items-center gap-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t("nav.launch")} →
-              </Link>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                {t("nav.language")}
-              </label>
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-4">
               <LanguageSelect
                 value={i18n.resolvedLanguage || i18n.language}
                 onChange={(value) => {
                   i18n.changeLanguage(value);
                   navigate(buildLocalizedPath(value), { replace: true });
                 }}
-                buttonClassName="w-full rounded-lg border border-border/60 bg-transparent pl-9 pr-7 py-2.5 text-sm font-medium text-text-main/80 transition-colors hover:text-text-main focus:outline-none focus:ring-1 focus:ring-primary/20"
-                menuClassName="w-full"
+                buttonClassName="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-white/5 transition-colors"
               />
-            </div>
-
-            <div className="mt-auto flex flex-col gap-3">
-              {canShowAuthLinks ? (
-                <>
-                  <Link
+              
+              {isHydrated && user ? (
+                <div className="flex items-center gap-3">
+                  <Link 
+                    to="/dashboard"
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {t("nav.dashboard", "Dashboard")}
+                  </Link>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={logout}
+                    className="px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                  >
+                    {t("nav.signOut", "Sign out")}
+                  </motion.button>
+                </div>
+              ) : isHydrated ? (
+                <div className="flex items-center gap-3">
+                  <Link 
                     to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
-                    className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t("nav.signIn")}
                   </Link>
-                  <Link
-                    to={withLang('/sign-up')}
-                    className="w-full py-4 text-center font-bold text-primary-foreground bg-primary rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {t("nav.startFree")}
-                  </Link>
-                </>
-              ) : canShowUser ? (
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3 p-4 bg-surface-muted rounded-xl">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark font-bold">
-                      {user.fullname?.charAt(0).toUpperCase() ?? "U"}
-                    </div>
-                    <div>
-                      <div className="font-bold text-text-main">{user.fullname}</div>
-                      <div className="text-xs text-text-muted">{user.email}</div>
-                    </div>
-                  </div>
-                  <Link
-                    to={withLang('/dashboard')}
-                    className="w-full py-4 text-center font-bold text-text-main border border-border rounded-xl hover:bg-surface-muted transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {t("nav.goToDashboard")}
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-4 text-center font-bold text-red-600 border border-red-100 bg-red-50/50 rounded-xl hover:bg-red-50 transition-colors"
-                  >
-                    {t("nav.signOut")}
-                  </button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link 
+                      to={withLang('/sign-up')}
+                      className="px-5 py-2.5 bg-primary text-background text-sm font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20 flex items-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {t("nav.startFree")}
+                    </Link>
+                  </motion.div>
                 </div>
               ) : (
-                <div className="h-12 rounded-xl bg-gray-100" aria-hidden="true" />
+                <div className="h-10 w-24 bg-muted rounded-xl animate-pulse" />
               )}
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl hover:bg-white/5 transition-colors text-foreground"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+        </div>
+      </motion.header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 md:hidden"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            
+            {/* Menu Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-surface-card shadow-2xl border-l border-border"
+            >
+              <div className="p-6 pt-20">
+                <nav className="space-y-2">
+                  {[
+                    { label: t("nav.features", "Features"), href: "/#features" },
+                    { label: t("nav.pricing", "Pricing"), href: "/pricing" },
+                    { label: t("nav.themes", "Themes"), href: "/themes" },
+                    { label: t("nav.blog", "Blog"), href: "/blog" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={withLang(item.href)}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-3 text-lg font-semibold text-foreground hover:bg-muted rounded-xl transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Language Selector */}
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="px-4 text-sm font-medium text-muted-foreground mb-3">{t("nav.language")}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          i18n.changeLanguage(lang.code);
+                          navigate(buildLocalizedPath(lang.code), { replace: true });
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          lang.code === (i18n.resolvedLanguage || i18n.language)
+                            ? "bg-primary text-background"
+                            : "bg-muted text-muted-foreground hover:bg-muted-hover"
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Auth Buttons */}
+                <div className="mt-6 pt-6 border-t border-border space-y-3">
+                  {user ? (
+                    <>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                      >
+                        {t("nav.goToDashboard")}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-center font-semibold text-destructive bg-destructive/10 rounded-xl hover:bg-destructive/20 transition-colors"
+                      >
+                        {t("nav.signOut")}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                      >
+                        {t("nav.signIn")}
+                      </Link>
+                      <Link
+                        to={withLang('/sign-up')}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 text-center font-bold text-background bg-primary rounded-xl hover:bg-primary-hover transition-colors"
+                      >
+                        {t("nav.startFree")}
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </header>
+      </AnimatePresence>
     </>
   );
 }

@@ -122,7 +122,7 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
         className="rounded-xl p-4 text-center shadow-lg"
         style={{ backgroundColor: bgColor, color: textColor }}
       >
-        <h3 className="mb-4 text-xl font-bold tracking-tight">{title}</h3>
+        <h3 className="mb-4 text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{title}</h3>
 
         {isExpired ? (
           <div className="text-lg font-bold py-4 mb-4">{t("dashboard.editor.event.started")}</div>
@@ -136,8 +136,8 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
             ].map((label, i) => {
               const val = i === 0 ? timeLeft.d : i === 1 ? timeLeft.h : i === 2 ? timeLeft.m : timeLeft.s;
               return (
-                <div key={label} className="bg-white/10 p-2 rounded-xl min-w-[55px] backdrop-blur-sm flex-1 max-w-[80px]">
-                  <div className="text-xl font-black leading-none mb-1">{val.toString().padStart(2, '0')}</div>
+                <div key={label} className="bg-[#141414]/10 p-2 rounded-xl min-w-[55px] backdrop-blur-sm flex-1 max-w-[80px]">
+                  <div className="text-xl font-bold leading-none mb-1">{val.toString().padStart(2, '0')}</div>
                   <div className="text-[9px] font-bold opacity-60 uppercase tracking-wider">{label}</div>
                 </div>
               );
@@ -148,7 +148,7 @@ const EventBlockPreview = ({ block }: { block: BioBlock }) => {
         {btnText && (
           <a
             href={btnUrl}
-            className="inline-block bg-white px-6 py-3 rounded-full font-bold text-sm transition-transform hover:scale-105 shadow-md"
+            className="inline-block bg-[#141414] px-6 py-3 rounded-full font-bold text-sm transition-transform hover:scale-105 shadow-md"
             style={{ color: bgColor }}
           >
             {btnText}
@@ -228,13 +228,13 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
           <>
             <button
               onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: -230, behavior: 'smooth' })}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-[#141414] rounded-full shadow-lg border border-[#222] flex items-center justify-center text-gray-400 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
             >
               <ChevronLeftIcon />
             </button>
             <button
               onClick={() => document.getElementById(`preview-blog-${block.id}`)?.scrollBy({ left: 230, behavior: 'smooth' })}
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-[#141414] rounded-full shadow-lg border border-[#222] flex items-center justify-center text-gray-400 hover:text-primary opacity-0 group-hover/carousel:opacity-100 transition-opacity"
             >
               <ChevronRightIcon />
             </button>
@@ -266,8 +266,8 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
                   ${cardStyle === 'featured'
                       ? 'p-3 rounded-2xl flex flex-col gap-2.5 w-[200px]'
                       : cardStyle === 'modern'
-                        ? 'py-4 flex flex-col gap-2 w-full border-b border-gray-100 last:border-0'
-                        : 'border border-gray-200 p-3.5 rounded-2xl w-[160px]'}
+                        ? 'py-4 flex flex-col gap-2 w-full border-b border-[#222] last:border-0'
+                        : 'border border-[#222] p-3.5 rounded-2xl w-[160px]'}
                   ${(layout === 'list' || layout === 'grid') && cardStyle !== 'modern' ? 'w-full' : ''}
                   ${cardStyle === 'modern' && layout === 'carousel' ? 'w-[280px] border-r border-b-0 pr-6 mr-2' : ''}
                   shrink-0 snap-start
@@ -277,7 +277,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
                   {cardStyle === 'modern' ? (
                     <>
                       <div className="text-xs font-bold mb-1" style={{ color: dateColor }}>{date}</div>
-                      <h3 className="text-lg font-bold leading-tight mb-0.5" style={{ color: titleColor }}>{post.title}</h3>
+                      <h3 className="text-lg font-bold leading-tight mb-0.5" style={{ color: titleColor, fontFamily: 'var(--font-display)' }}>{post.title}</h3>
                       <div className="text-xs font-medium opacity-80 mb-2" style={{ color: textColor }}>{category} ÔÇó {readTime}</div>
                       <p className="text-xs leading-relaxed mb-3 line-clamp-2" style={{ color: textColor, opacity: 0.8 }}>{description}</p>
                     </>
@@ -290,7 +290,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{category}</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: tagBg, color: tagText }}>{readTime}</span>
                       </div>
-                      <h3 className="text-base font-extrabold leading-tight" style={{ color: titleColor }}>{post.title}</h3>
+                      <h3 className="text-base font-bold leading-tight" style={{ color: titleColor, fontFamily: 'var(--font-display)' }}>{post.title}</h3>
                       <div className="flex items-center gap-1.5 mt-auto pt-1">
                         <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
                         <span className="text-xs" style={{ color: textColor }}>{author}</span>
@@ -298,7 +298,7 @@ const BlogBlockPreview = ({ block, bioId }: { block: BioBlock; bioId: string }) 
                     </>
                   ) : (
                     <>
-                      <h3 className="font-bold text-sm mb-1.5" style={{ color: titleColor }}>{post.title}</h3>
+                      <h3 className="font-bold text-sm mb-1.5" style={{ color: titleColor, fontFamily: 'var(--font-display)' }}>{post.title}</h3>
                       <div className="flex justify-between items-center">
                         <span className="text-[11px]" style={{ color: textColor }}>{readTime}</span>
                         <span className="text-[11px] font-medium" style={{ color: dateColor }}>{t("dashboard.editor.blog.readMore")}</span>
@@ -337,10 +337,10 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
 
   return (
     <div className="w-full py-4 relative group/container">
-      <h3 className="text-center text-white font-bold mb-4 tracking-wider text-sm">{title.toUpperCase()}</h3>
+      <h3 className="text-center text-white font-bold mb-4 tracking-wider text-sm" style={{ fontFamily: 'var(--font-display)' }}>{title.toUpperCase()}</h3>
 
       {tours.length === 0 ? (
-        <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+        <div className="text-center text-gray-400 text-xs py-8 bg-[#1a1a1a] rounded-lg border border-dashed border-gray-600">
           {t("dashboard.editor.tour.empty")}
         </div>
       ) : (
@@ -348,7 +348,7 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
           {/* Left Arrow */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/container:opacity-100 transition-opacity hover:bg-white/20 -ml-2"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#141414]/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/container:opacity-100 transition-opacity hover:bg-[#141414]/20 -ml-2"
           >
             <ArrowLeftIcon className="text-white" />
           </button>
@@ -356,7 +356,7 @@ const TourBlockPreview = ({ block }: { block: BioBlock }) => {
           {/* Right Arrow */}
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/50 opacity-0 group-hover/container:opacity-100 transition-opacity hover:bg-blue-500 -mr-2"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/50 opacity-0 group-hover/container:opacity-100 transition-opacity hover:bg-blue-500/100 -mr-2"
           >
             <ArrowRightIcon className="text-white" />
           </button>
@@ -426,7 +426,7 @@ const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
   if (!url) {
     return (
       <div className="w-full py-4">
-        <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+        <div className="text-center text-gray-400 text-xs py-8 bg-[#1a1a1a] rounded-lg border border-dashed border-gray-600">
           {t("dashboard.editor.spotify.empty")}
         </div>
       </div>
@@ -462,7 +462,7 @@ const SpotifyBlockPreview = ({ block }: { block: BioBlock }) => {
   if (!embedUrl) {
     return (
       <div className="w-full py-4">
-        <div className="text-center text-red-500 text-xs py-8 bg-red-50 rounded-lg border border-dashed border-red-300">
+        <div className="text-center text-red-500 text-xs py-8 bg-destructive/10 rounded-lg border border-dashed border-red-300">
           {t("dashboard.editor.spotify.invalidUrl")}
         </div>
       </div>
@@ -564,7 +564,7 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
       {textPosition === 'top' && textElement}
       <div className={`overflow-hidden rounded-xl ${displayType === 'grid' ? 'grid grid-cols-3 gap-1' : 'flex flex-col gap-3'}`}>
         {displayImages.map((img, i) => (
-          <div key={i} className={`relative bg-gray-100 ${displayType === 'grid' ? 'aspect-square w-full' : 'aspect-square w-full max-h-[400px]'}`}>
+          <div key={i} className={`relative bg-[#1a1a1a] ${displayType === 'grid' ? 'aspect-square w-full' : 'aspect-square w-full max-h-[400px]'}`}>
             {img ? (
               <img
                 src={img}
@@ -575,7 +575,7 @@ const InstagramBlockPreview = ({ block }: { block: BioBlock }) => {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-gray-300">
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-gray-600 border-t-gray-500 rounded-full animate-spin"></div>
                 ) : (
                   <ImageIcon width={24} height={24} />
                 )}
@@ -652,7 +652,7 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
       {textPosition === 'top' && textElement}
       <div className={`overflow-hidden rounded-xl ${displayType === 'grid' ? 'grid grid-cols-3 gap-1' : 'flex flex-col gap-3'}`}>
         {displayImages.map((img, i) => (
-          <div key={i} className={`relative bg-gray-100 ${displayType === 'grid' ? 'aspect-video w-full' : 'aspect-video w-full'}`}>
+          <div key={i} className={`relative bg-[#1a1a1a] ${displayType === 'grid' ? 'aspect-video w-full' : 'aspect-video w-full'}`}>
             {img ? (
               <img
                 src={img}
@@ -663,7 +663,7 @@ const YoutubeBlockPreview = ({ block }: { block: BioBlock }) => {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-gray-300">
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-gray-600 border-t-gray-500 rounded-full animate-spin"></div>
                 ) : (
                   <YouTubeIcon width={24} height={24} />
                 )}
@@ -706,7 +706,7 @@ const QrCodeBlockPreview = ({ block }: { block: BioBlock }) => {
   if (items.length === 0) {
     return (
       <div className="w-full py-4">
-        <div className="text-center text-gray-500 text-xs py-8 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+        <div className="text-center text-gray-400 text-xs py-8 bg-[#1a1a1a] rounded-lg border border-dashed border-gray-600">
           {t("dashboard.editor.qr.empty")}
         </div>
       </div>
@@ -742,37 +742,37 @@ const MarketingBlockPreview = ({ block }: { block: BioBlock }) => {
 
   return (
     <div key={block.id} className="py-4">
-      <div className="border-[3px] border-dashed border-gray-900/60 rounded-2xl p-6 bg-white/40 text-center backdrop-blur-sm">
+      <div className="border-[3px] border-dashed border-gray-900/60 rounded-2xl p-6 bg-[#141414]/40 text-center backdrop-blur-sm">
         {hasActiveSlot ? (
           // When there's an active proposal/ad
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
+          <div className="bg-[#141414] rounded-xl p-5 shadow-sm border border-[#222]">
             <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-3">
               <span className="text-white text-xl">📢</span>
             </div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2">{t("dashboard.editor.marketing.activeTitle")}</h3>
-            <p className="text-sm text-gray-600 mb-4">{t("dashboard.editor.marketing.activeSubtitle")}</p>
-            <button className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition">
+            <h3 className="font-bold text-lg text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.marketing.activeTitle")}</h3>
+            <p className="text-sm text-gray-400 mb-4">{t("dashboard.editor.marketing.activeSubtitle")}</p>
+            <button className="px-4 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-200 transition">
               {t("dashboard.editor.marketing.viewDetails")}
             </button>
           </div>
         ) : (
           // Empty state - no active proposal
           <div>
-            <div className="flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4">
+            <div className="flex items-center justify-center w-16 h-16 bg-[#222] rounded-full mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
                 <polyline points="17 6 23 6 23 12" />
               </svg>
             </div>
-            <h3 className="font-bold text-base text-gray-700 mb-1">{t("dashboard.editor.marketing.slotTitle")}</h3>
-            <p className="text-xs text-gray-500 mb-4">
+            <h3 className="font-bold text-base text-white mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.marketing.slotTitle")}</h3>
+            <p className="text-xs text-gray-400 mb-4">
               {t("dashboard.editor.marketing.slotHintLine1")}<br />
               {t("dashboard.editor.marketing.slotHintLine2")}
             </p>
             <a
               href="/dashboard/marketing"
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#141414] border-2 border-gray-600 text-white text-sm font-semibold rounded-lg hover:border-gray-400 hover:bg-[#1a1a1a] transition"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -1883,20 +1883,20 @@ export default function DashboardEditor() {
 
   if (!bio) {
     return (
-      <div className="p-8 min-h-screen bg-[#f9f7f2] flex items-center justify-center">
-        <div className="max-w-md w-full bg-white border border-gray-100 rounded-2xl p-8 text-center shadow-sm">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="p-8 min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="max-w-md w-full bg-[#141414] border border-[#222] rounded-2xl p-8 text-center shadow-sm">
+          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
             <SearchIcon className="text-gray-400 w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.editor.noBioTitle")}</h3>
-          <p className="text-sm text-gray-500 mb-6">{t("dashboard.editor.noBioBody")}</p>
+          <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.noBioTitle")}</h3>
+          <p className="text-sm text-gray-400 mb-6">{t("dashboard.editor.noBioBody")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f9f7f2] font-sans text-gray-900 flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] font-sans text-white flex flex-col h-screen overflow-hidden">
       <Joyride
         steps={editorTourSteps}
         run={tourRun && !isMobile}
@@ -1929,7 +1929,7 @@ export default function DashboardEditor() {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #e5e7eb;
+          background-color: #333;
           border-radius: 20px;
         }
       `}</style>
@@ -1937,14 +1937,14 @@ export default function DashboardEditor() {
       {/* Top Bar */}
       <header
         data-tour="editor-topbar"
-        className="shrink-0 px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#f9f7f2] z-40"
+        className="shrink-0 px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#0a0a0a] border-b border-[#222] z-40"
       >
         <div className="flex-shrink-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            <span className="w-2 h-2 rounded-full bg-green-500/100"></span>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t("dashboard.editor.top.editor")}</p>
           </div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">{bio.sufix}</h1>
+          <h1 className="text-lg md:text-xl font-bold text-white truncate max-w-[200px] sm:max-w-none" style={{ fontFamily: 'var(--font-display)' }}>{bio.sufix}</h1>
         </div>
 
         <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
@@ -1980,11 +1980,11 @@ export default function DashboardEditor() {
             />
           </div>
 
-          <div className="hidden md:flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1">
+          <div className="hidden md:flex items-center bg-[#141414] rounded-xl border border-[#222] shadow-sm p-1">
             <button
               onClick={handleUndo}
               disabled={undoStack.length === 0}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
               title={t("dashboard.editor.top.undoTitle")}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1993,20 +1993,20 @@ export default function DashboardEditor() {
               </svg>
               {t("dashboard.editor.top.undo")}
             </button>
-            <div className="w-px h-4 bg-gray-200 mx-1"></div>
+            <div className="w-px h-4 bg-[#333] mx-1"></div>
             <button
               onClick={() => setShareData({ url: `https://portyo.me/p/${bio.sufix}`, title: `@${bio.sufix}` })}
 
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-all"
             >
               {t("dashboard.editor.top.share")}
             </button>
-            <div className="w-px h-4 bg-gray-200 mx-1"></div>
+            <div className="w-px h-4 bg-[#333] mx-1"></div>
             <a
               href={`https://portyo.me/p/${bio.sufix}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-all"
             >
               {t("dashboard.editor.top.openPage")}
               <ExternalLinkIcon width={12} height={12} />
@@ -2016,11 +2016,11 @@ export default function DashboardEditor() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center justify-center gap-2 bg-black text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
+            className="flex items-center justify-center gap-2 bg-white text-black px-4 md:px-5 py-2 md:py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-white/10 hover:shadow-white/20 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
           >
             {isSaving ? (
               <>
-                <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                <div className="w-3 h-3 border-2 border-black/50 border-t-black rounded-full animate-spin"></div>
                 <span className="hidden sm:inline">{t("dashboard.editor.top.saving")}</span>
               </>
             ) : (
@@ -2042,20 +2042,20 @@ export default function DashboardEditor() {
           {/* Left Column: Tools & Settings (Col Span 3) */}
           <div
             data-tour="editor-palette"
-            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-[#141414] rounded-2xl shadow-sm border border-[#222] overflow-hidden"
           >
             {/* Tabs */}
-            <div className="flex border-b border-gray-100 p-3 bg-white">
+            <div className="flex border-b border-[#222] p-3 bg-[#141414]">
               <button
                 onClick={() => setActiveTab("blocks")}
-                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "blocks" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "blocks" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-white hover:bg-[#1a1a1a]"}`}
               >
                 {t("dashboard.editor.tabs.blocks")}
               </button>
               <button
                 data-tour="editor-settings-tab"
                 onClick={() => setActiveTab("settings")}
-                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "settings" ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all ${activeTab === "settings" ? "bg-[#1a1a1a] text-white" : "text-gray-400 hover:text-white hover:bg-[#1a1a1a]"}`}
               >
                 {t("dashboard.editor.tabs.settings")}
               </button>
@@ -2073,7 +2073,7 @@ export default function DashboardEditor() {
                       placeholder={t("dashboard.editor.searchPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
+                      className="w-full pl-9 pr-4 py-3 bg-[#1a1a1a] border border-[#222] rounded-xl text-sm font-medium text-white placeholder-gray-500 focus:ring-2 focus:ring-white/10 focus:bg-[#1f1f1f] transition-all"
                     />
                   </div>
 
@@ -2085,7 +2085,7 @@ export default function DashboardEditor() {
                       Object.entries(groupedPalette).map(([category, items]) => (
                         <div key={category}>
                           <button
-                            className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                            className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-white transition-colors"
                             onClick={() => toggleCategory(category)}
                           >
                             {t(`dashboard.editor.categories.${category}`)}
@@ -2111,24 +2111,24 @@ export default function DashboardEditor() {
                                       setDragItem({ source: "palette", type: item.type as BioBlock["type"] });
                                     }}
                                     className={`
-                                                    group relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-gray-100 bg-white transition-all duration-200
+                                                    group relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-[#222] bg-[#1a1a1a] transition-all duration-200
                                                     ${isLocked
-                                        ? 'opacity-60 grayscale cursor-not-allowed bg-gray-50'
-                                        : 'cursor-grab active:cursor-grabbing hover:border-blue-200 hover:shadow-md hover:-translate-y-1'
+                                        ? 'opacity-60 grayscale cursor-not-allowed bg-[#0f0f0f]'
+                                        : 'cursor-grab active:cursor-grabbing hover:border-white/20 hover:shadow-lg hover:-translate-y-1'
                                       }
                                                 `}
                                   >
-                                    {isLocked && <div className="absolute top-2 right-2 flex space-x-1"><div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>}
+                                    {isLocked && <div className="absolute top-2 right-2 flex space-x-1"><div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div></div>}
 
                                     <div className={`
-                                                    w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-500 mb-1 transition-colors
-                                                    ${!isLocked && 'group-hover:bg-blue-50 group-hover:text-blue-600'}
+                                                    w-10 h-10 rounded-full flex items-center justify-center bg-[#222] text-gray-400 mb-1 transition-colors
+                                                    ${!isLocked && 'group-hover:bg-white/10 group-hover:text-white'}
                                                  `}>
                                       <div className="scale-90">
                                         {item.icon}
                                       </div>
                                     </div>
-                                    <span className="text-[11px] font-semibold text-gray-700 text-center leading-tight">{item.label}</span>
+                                    <span className="text-[11px] font-semibold text-gray-300 text-center leading-tight">{item.label}</span>
                                   </div>
                                 )
                               })}
@@ -2145,7 +2145,7 @@ export default function DashboardEditor() {
                   {/** Font Settings */}
                   <div data-tour="editor-typography">
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-white transition-colors"
                       onClick={() => toggleSetting("font")}
                     >
                       {t("dashboard.editor.settings.typography")}
@@ -2154,12 +2154,12 @@ export default function DashboardEditor() {
                     {expandedSettings.includes("font") && (
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.fontFamily")}</label>
+                          <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.fontFamily")}</label>
                           <div className="relative">
                             <select
                               value={font}
                               onChange={(e) => setFont(e.target.value)}
-                              className="w-full appearance-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 pr-8 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              className="w-full appearance-none rounded-lg border border-[#222] bg-[#1a1a1a] px-3 py-2 pr-8 text-sm text-white outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20"
                             >
                               <option value="Inter">Inter (Default)</option>
                               <option value="Roboto">Roboto</option>
@@ -2177,7 +2177,7 @@ export default function DashboardEditor() {
 
                           {(font === 'Custom' || bio?.customFontName) && (
                             <div className="mt-3">
-                              <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.customFontUrl") || "Custom Font URL"}</label>
+                              <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.customFontUrl") || "Custom Font URL"}</label>
                               <input
                                 type="text"
                                 placeholder="https://fonts.googleapis.com/css2?family=MyFont..."
@@ -2191,7 +2191,7 @@ export default function DashboardEditor() {
                                   }
                                   applyBackgroundUpdate({ bgColor }); // Trigger preview update
                                 }}
-                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-3 py-2 text-xs rounded-lg border border-[#222] bg-[#1a1a1a] text-white focus:outline-none focus:ring-1 focus:ring-white/30"
                               />
                             </div>
                           )}
@@ -2267,9 +2267,9 @@ export default function DashboardEditor() {
                             />
                             <label
                               htmlFor="font-upload"
-                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm group"
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#222] rounded-lg text-sm font-medium text-gray-300 hover:bg-[#222] hover:border-gray-600 transition-all cursor-pointer shadow-sm group"
                             >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-gray-400 transition-colors">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="17 8 12 3 7 8"></polyline>
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -2288,7 +2288,7 @@ export default function DashboardEditor() {
                   {/* Background Settings */}
                   <div>
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-white transition-colors"
                       onClick={() => toggleSetting("background")}
                     >
                       {t("dashboard.editor.settings.background")}
@@ -2311,7 +2311,7 @@ export default function DashboardEditor() {
                                 setBgType(type as any);
                                 applyBackgroundUpdate({ bgType: type as any });
                               }}
-                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${bgType === type ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${bgType === type ? 'bg-white text-black border-white' : 'bg-[#1a1a1a] text-gray-400 border-[#222] hover:border-gray-600'}`}
                             >
                               {t(`dashboard.editor.settings.backgroundTypes.${type}`)}
                             </button>
@@ -2359,7 +2359,7 @@ export default function DashboardEditor() {
                   {/* Parallax Effects Settings */}
                   <div>
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-400 transition-colors"
                       onClick={() => toggleSetting("parallax")}
                     >
                       Parallax Effects
@@ -2368,12 +2368,12 @@ export default function DashboardEditor() {
                     {expandedSettings.includes("parallax") && (
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                         {/* Enable Parallax Toggle */}
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                        <label className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl cursor-pointer hover:bg-[#1f1f1f] transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">Enable Parallax</span>
+                            <span className="text-sm font-medium text-white">Enable Parallax</span>
                             <span className="text-[10px] text-gray-400">Adds depth effect on scroll</span>
                           </div>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.enableParallax ? 'bg-black' : 'bg-gray-300'}`}>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.enableParallax ? 'bg-white' : 'bg-[#333]'}`}>
                             <input
                               type="checkbox"
                               checked={bio?.enableParallax || false}
@@ -2382,7 +2382,7 @@ export default function DashboardEditor() {
                               }}
                               className="hidden"
                             />
-                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${bio?.enableParallax ? 'left-5.5' : 'left-0.5'}`} />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-[#0a0a0a] rounded-full transition-all shadow-sm ${bio?.enableParallax ? 'left-5.5' : 'left-0.5'}`} />
                           </div>
                         </label>
 
@@ -2390,8 +2390,8 @@ export default function DashboardEditor() {
                         {bio?.enableParallax && (
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <label className="text-xs font-medium text-gray-900">Intensity</label>
-                              <span className="text-xs text-gray-500 font-mono">{bio?.parallaxIntensity || 50}%</span>
+                              <label className="text-xs font-medium text-white">Intensity</label>
+                              <span className="text-xs text-gray-400 font-mono">{bio?.parallaxIntensity || 50}%</span>
                             </div>
                             <input
                               type="range"
@@ -2401,7 +2401,7 @@ export default function DashboardEditor() {
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxIntensity: parseInt(e.target.value) });
                               }}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                              className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                             />
                           </div>
                         )}
@@ -2410,8 +2410,8 @@ export default function DashboardEditor() {
                         {bio?.enableParallax && (
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <label className="text-xs font-medium text-gray-900">Depth</label>
-                              <span className="text-xs text-gray-500 font-mono">{bio?.parallaxDepth || 50}%</span>
+                              <label className="text-xs font-medium text-white">Depth</label>
+                              <span className="text-xs text-gray-400 font-mono">{bio?.parallaxDepth || 50}%</span>
                             </div>
                             <input
                               type="range"
@@ -2421,7 +2421,7 @@ export default function DashboardEditor() {
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxDepth: parseInt(e.target.value) });
                               }}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                              className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                             />
                           </div>
                         )}
@@ -2429,13 +2429,13 @@ export default function DashboardEditor() {
                         {/* Parallax Axis */}
                         {bio?.enableParallax && (
                           <div>
-                            <label className="text-xs font-medium text-gray-900 mb-2 block">Axis</label>
+                            <label className="text-xs font-medium text-white mb-2 block">Axis</label>
                             <select
                               value={bio?.parallaxAxis || "y"}
                               onChange={(e) => {
                                 if (bio?.id) updateBio(bio.id, { parallaxAxis: e.target.value as any });
                               }}
-                              className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/20"
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-[#222] bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-white/20"
                             >
                               <option value="y">Vertical</option>
                               <option value="x">Horizontal</option>
@@ -2449,7 +2449,7 @@ export default function DashboardEditor() {
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-xs font-medium text-gray-900">Layers</p>
+                                <p className="text-xs font-medium text-white">Layers</p>
                                 <p className="text-[10px] text-gray-400">Add multiple layers and customize each one.</p>
                               </div>
                               <button
@@ -2473,7 +2473,7 @@ export default function DashboardEditor() {
                                   });
                                   updateBio(bio.id, { parallaxLayers: layers });
                                 }}
-                                className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-900 text-white"
+                                className="text-[10px] font-bold px-2 py-1 rounded-full bg-white text-black"
                               >
                                 + Add layer
                               </button>
@@ -2484,9 +2484,9 @@ export default function DashboardEditor() {
                             )}
 
                             {(bio?.parallaxLayers || []).map((layer, idx) => (
-                              <div key={layer.id || idx} className="p-3 rounded-xl border border-gray-200 bg-white space-y-3">
+                              <div key={layer.id || idx} className="p-3 rounded-xl border border-[#222] bg-[#1a1a1a] space-y-3">
                                 <div className="flex items-center justify-between">
-                                  <p className="text-[11px] font-bold text-gray-700">Layer {idx + 1}</p>
+                                  <p className="text-[11px] font-bold text-white">Layer {idx + 1}</p>
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -2514,7 +2514,7 @@ export default function DashboardEditor() {
 
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Speed</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Speed</label>
                                     <input
                                       type="range"
                                       min="-1"
@@ -2531,7 +2531,7 @@ export default function DashboardEditor() {
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Axis</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Axis</label>
                                     <select
                                       value={layer.axis || "y"}
                                       onChange={(e) => {
@@ -2540,7 +2540,7 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, axis: e.target.value as "x" | "y" | "xy" };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     >
                                       <option value="y">Vertical</option>
                                       <option value="x">Horizontal</option>
@@ -2551,7 +2551,7 @@ export default function DashboardEditor() {
 
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Opacity</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Opacity</label>
                                     <input
                                       type="range"
                                       min="0"
@@ -2568,7 +2568,7 @@ export default function DashboardEditor() {
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Size</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Size</label>
                                     <input
                                       type="number"
                                       min="50"
@@ -2579,14 +2579,14 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, size: parseInt(e.target.value) || 600 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Rotate</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Rotate</label>
                                     <input
                                       type="number"
                                       value={layer.rotate ?? 0}
@@ -2596,11 +2596,11 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, rotate: parseFloat(e.target.value) || 0 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Blur</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Blur</label>
                                     <input
                                       type="number"
                                       min="0"
@@ -2611,14 +2611,14 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, blur: parseFloat(e.target.value) || 0 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Z-index</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Z-index</label>
                                     <input
                                       type="number"
                                       value={layer.zIndex ?? 1}
@@ -2628,7 +2628,7 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, zIndex: parseInt(e.target.value) || 1 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -2642,13 +2642,13 @@ export default function DashboardEditor() {
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
                                     />
-                                    <span className="text-[10px] font-medium text-gray-600">Repeat</span>
+                                    <span className="text-[10px] font-medium text-gray-400">Repeat</span>
                                   </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Pos X</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Pos X</label>
                                     <input
                                       type="number"
                                       value={layer.positionX ?? 0}
@@ -2658,11 +2658,11 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, positionX: parseInt(e.target.value) || 0 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-[10px] font-medium text-gray-600">Pos Y</label>
+                                    <label className="text-[10px] font-medium text-gray-400">Pos Y</label>
                                     <input
                                       type="number"
                                       value={layer.positionY ?? 0}
@@ -2672,7 +2672,7 @@ export default function DashboardEditor() {
                                         layers[idx] = { ...layer, positionY: parseInt(e.target.value) || 0 };
                                         updateBio(bio.id, { parallaxLayers: layers });
                                       }}
-                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50"
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-[#222] bg-[#1a1a1a]"
                                     />
                                   </div>
                                 </div>
@@ -2682,9 +2682,9 @@ export default function DashboardEditor() {
                         )}
 
                         {/* Floating Elements Toggle */}
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                        <label className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl cursor-pointer hover:bg-[#1a1a1a] transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">Floating Elements</span>
+                            <span className="text-sm font-medium text-white">Floating Elements</span>
                             <span className="text-[10px] text-gray-400">Decorative floating shapes</span>
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${bio?.floatingElements ? 'bg-black' : 'bg-gray-300'}`}>
@@ -2696,7 +2696,7 @@ export default function DashboardEditor() {
                               }}
                               className="hidden"
                             />
-                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${bio?.floatingElements ? 'left-5.5' : 'left-0.5'}`} />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-[#141414] rounded-full transition-all shadow-sm ${bio?.floatingElements ? 'left-5.5' : 'left-0.5'}`} />
                           </div>
                         </label>
 
@@ -2705,11 +2705,11 @@ export default function DashboardEditor() {
                           <div className="space-y-4">
                             {/* Type Selector */}
                             <div>
-                              <label className="text-xs font-medium text-gray-900 mb-2 block">Type</label>
+                              <label className="text-xs font-medium text-white mb-2 block">Type</label>
                               <select
                                 value={bio?.floatingElementsType || 'circles'}
                                 onChange={(e) => updateBio(bio.id, { floatingElementsType: e.target.value })}
-                                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 outline-none focus:border-black focus:ring-1 focus:ring-black/20"
+                                className="w-full text-xs rounded-lg border border-[#222] bg-[#141414] px-3 py-2 outline-none focus:border-black focus:ring-1 focus:ring-black/20"
                               >
                                 <optgroup label="Shapes">
                                   <option value="circles">Circles</option>
@@ -2736,14 +2736,14 @@ export default function DashboardEditor() {
                             {/* Custom Emoji Input */}
                             {bio?.floatingElementsType === 'custom-emoji' && (
                               <div>
-                                <label className="text-xs font-medium text-gray-900 mb-2 block">Emoji / Text</label>
+                                <label className="text-xs font-medium text-white mb-2 block">Emoji / Text</label>
                                 <input
                                   type="text"
                                   maxLength={2}
                                   placeholder="😎"
                                   value={bio?.customFloatingElementText || ''}
                                   onChange={(e) => updateBio(bio.id, { customFloatingElementText: e.target.value })}
-                                  className="w-full text-center text-xl p-2 rounded-lg border border-gray-200 focus:border-black focus:ring-1 focus:ring-black/20"
+                                  className="w-full text-center text-xl p-2 rounded-lg border border-[#222] focus:border-black focus:ring-1 focus:ring-black/20"
                                 />
                               </div>
                             )}
@@ -2751,16 +2751,16 @@ export default function DashboardEditor() {
                             {/* Custom Image Input */}
                             {bio?.floatingElementsType === 'custom-image' && (
                               <div>
-                                <label className="text-xs font-medium text-gray-900 mb-2 block">Image URL</label>
+                                <label className="text-xs font-medium text-white mb-2 block">Image URL</label>
                                 <div className="flex gap-2">
                                   <input
                                     type="text"
                                     placeholder="https://..."
                                     value={bio?.customFloatingElementImage || ''}
                                     onChange={(e) => updateBio(bio.id, { customFloatingElementImage: e.target.value })}
-                                    className="flex-1 text-xs p-2 rounded-lg border border-gray-200 focus:border-black"
+                                    className="flex-1 text-xs p-2 rounded-lg border border-[#222] focus:border-black"
                                   />
-                                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-2 rounded-lg transition-colors">
+                                  <label className="cursor-pointer bg-[#1a1a1a] hover:bg-[#222] p-2 rounded-lg transition-colors">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                                     <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
                                       if (e.target.files?.[0]) {
@@ -2781,8 +2781,8 @@ export default function DashboardEditor() {
 
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Density</label>
-                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsDensity || 12}</span>
+                                <label className="text-xs font-medium text-white">Density</label>
+                                <span className="text-xs text-gray-400 font-mono">{bio?.floatingElementsDensity || 12}</span>
                               </div>
                               <input
                                 type="range"
@@ -2792,14 +2792,14 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsDensity: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
 
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Size</label>
-                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsSize || 24}px</span>
+                                <label className="text-xs font-medium text-white">Size</label>
+                                <span className="text-xs text-gray-400 font-mono">{bio?.floatingElementsSize || 24}px</span>
                               </div>
                               <input
                                 type="range"
@@ -2809,13 +2809,13 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsSize: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Speed</label>
-                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsSpeed || 12}s</span>
+                                <label className="text-xs font-medium text-white">Speed</label>
+                                <span className="text-xs text-gray-400 font-mono">{bio?.floatingElementsSpeed || 12}s</span>
                               </div>
                               <input
                                 type="range"
@@ -2825,13 +2825,13 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsSpeed: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Opacity</label>
-                                <span className="text-xs text-gray-500 font-mono">{Math.round((bio?.floatingElementsOpacity ?? 0.35) * 100)}%</span>
+                                <label className="text-xs font-medium text-white">Opacity</label>
+                                <span className="text-xs text-gray-400 font-mono">{Math.round((bio?.floatingElementsOpacity ?? 0.35) * 100)}%</span>
                               </div>
                               <input
                                 type="range"
@@ -2841,13 +2841,13 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsOpacity: parseInt(e.target.value) / 100 });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs font-medium text-gray-900">Blur</label>
-                                <span className="text-xs text-gray-500 font-mono">{bio?.floatingElementsBlur || 0}px</span>
+                                <label className="text-xs font-medium text-white">Blur</label>
+                                <span className="text-xs text-gray-400 font-mono">{bio?.floatingElementsBlur || 0}px</span>
                               </div>
                               <input
                                 type="range"
@@ -2857,7 +2857,7 @@ export default function DashboardEditor() {
                                 onChange={(e) => {
                                   if (bio?.id) updateBio(bio.id, { floatingElementsBlur: parseInt(e.target.value) });
                                 }}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
                           </div>
@@ -2869,7 +2869,7 @@ export default function DashboardEditor() {
                   {/* Card Settings */}
                   <div data-tour="editor-card-style">
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-400 transition-colors"
                       onClick={() => toggleSetting("card")}
                     >
                       {t("dashboard.editor.settings.cardStyle")}
@@ -2880,8 +2880,8 @@ export default function DashboardEditor() {
 
                         {/* Style Selector */}
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.cardType")}</label>
-                          <div className="flex bg-gray-100 p-1 rounded-lg">
+                          <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.cardType")}</label>
+                          <div className="flex bg-[#1a1a1a] p-1 rounded-lg">
                             {[
                               { value: 'none', label: t("dashboard.editor.settings.cardTypes.none") },
                               { value: 'solid', label: t("dashboard.editor.settings.cardTypes.solid") },
@@ -2890,7 +2890,7 @@ export default function DashboardEditor() {
                               <button
                                 key={type.value}
                                 onClick={() => setCardStyle(type.value as any)}
-                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${cardStyle === type.value ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${cardStyle === type.value ? 'bg-[#141414] shadow-sm text-white' : 'text-gray-400 hover:text-white'}`}
                               >
                                 {type.label}
                               </button>
@@ -2914,10 +2914,10 @@ export default function DashboardEditor() {
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-1">
-                                  <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.opacity")}</label>
+                                  <label className="text-xs font-medium text-white">{t("dashboard.editor.settings.opacity")}</label>
                                   <InfoTooltip content={t("tooltips.editor.cardOpacity")} position="right" />
                                 </div>
-                                <span className="text-xs text-gray-500 font-mono">{cardOpacity}%</span>
+                                <span className="text-xs text-gray-400 font-mono">{cardOpacity}%</span>
                               </div>
                               <input
                                 type="range"
@@ -2925,7 +2925,7 @@ export default function DashboardEditor() {
                                 max="100"
                                 value={cardOpacity}
                                 onChange={(e) => setCardOpacity(parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                               />
                             </div>
 
@@ -2934,10 +2934,10 @@ export default function DashboardEditor() {
                               <div>
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-1">
-                                    <label className="text-xs font-medium text-gray-900">{t("dashboard.editor.settings.blur")}</label>
+                                    <label className="text-xs font-medium text-white">{t("dashboard.editor.settings.blur")}</label>
                                     <InfoTooltip content={t("tooltips.editor.cardBlur")} position="right" />
                                   </div>
-                                  <span className="text-xs text-gray-500 font-mono">{cardBlur}px</span>
+                                  <span className="text-xs text-gray-400 font-mono">{cardBlur}px</span>
                                 </div>
                                 <input
                                   type="range"
@@ -2945,7 +2945,7 @@ export default function DashboardEditor() {
                                   max="40"
                                   value={cardBlur}
                                   onChange={(e) => setCardBlur(parseInt(e.target.value))}
-                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                  className="w-full h-2 bg-[#222] rounded-lg appearance-none cursor-pointer accent-white"
                                 />
                               </div>
                             )}
@@ -2959,7 +2959,7 @@ export default function DashboardEditor() {
                   {/* Button Style Settings */}
                   <div>
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-400 transition-colors"
                       onClick={() => toggleSetting("button")}
                     >
                       Button Style
@@ -2975,7 +2975,7 @@ export default function DashboardEditor() {
                                 setButtonStyle(style);
                                 applyBackgroundUpdate({ bgColor }); // Trigger preview update
                               }}
-                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${buttonStyle === style ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                              className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${buttonStyle === style ? 'bg-white text-black border-white' : 'bg-[#141414] text-gray-400 border-[#222] hover:border-gray-400'}`}
                             >
                               {style}
                             </button>
@@ -2988,7 +2988,7 @@ export default function DashboardEditor() {
                   {/* Profile Settings */}
                   <div>
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-400 transition-colors"
                       onClick={() => toggleSetting("profile")}
                     >
                       {t("dashboard.editor.settings.profile")}
@@ -3001,13 +3001,13 @@ export default function DashboardEditor() {
 
                         {/* Image Style Selector */}
                         <div>
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.imageShape")}</label>
+                          <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.imageShape")}</label>
                           <div className="grid grid-cols-3 gap-2">
                             {['circle', 'rounded', 'square', 'amoeba', 'star', 'hexagon'].map((style) => (
                               <button
                                 key={style}
                                 onClick={() => setImageStyle(style)}
-                                className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${imageStyle === style ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                                className={`px-2 py-2 text-[10px] font-bold uppercase rounded-lg border transition-all ${imageStyle === style ? 'bg-white text-black border-white' : 'bg-[#141414] text-gray-400 border-[#222] hover:border-gray-400'}`}
                               >
                                 {t(`dashboard.editor.settings.imageShapes.${style}`)}
                               </button>
@@ -3024,18 +3024,18 @@ export default function DashboardEditor() {
                         </div>
 
                         <div className="mt-4">
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.profileDescription")}</label>
+                          <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.profileDescription")}</label>
                           <textarea
                             rows={3}
-                            className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-[#222] bg-[#141414] text-white focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black"
                             placeholder={t("dashboard.editor.settings.profileDescriptionPlaceholder")}
                             value={profileDescription}
                             onChange={(e) => setProfileDescription(e.target.value)}
                           />
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <label className="text-xs font-medium text-gray-900 mb-2 block">{t("dashboard.editor.settings.verificationStatus")}</label>
+                        <div className="mt-4 pt-4 border-t border-[#222]">
+                          <label className="text-xs font-medium text-white mb-2 block">{t("dashboard.editor.settings.verificationStatus")}</label>
                           <button
                             onClick={() => {
                               const status = bio?.verified ? "verified" : (bio?.verificationStatus || "none");
@@ -3046,9 +3046,9 @@ export default function DashboardEditor() {
                             }}
                             disabled={bio?.verified || bio?.verificationStatus === "pending"}
                             className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${bio?.verified
-                              ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                              ? 'bg-blue-500/10 text-blue-400 border border-blue-100'
                               : bio?.verificationStatus === "pending"
-                                ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-default'
+                                ? 'bg-[#1a1a1a] text-gray-400 border border-[#222] cursor-default'
                                 : 'bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/5 hover:-translate-y-0.5'
                               }`}
                           >
@@ -3078,7 +3078,7 @@ export default function DashboardEditor() {
                   {/* Other Settings */}
                   <div>
                     <button
-                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-600 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-400 transition-colors"
                       onClick={() => toggleSetting("features")}
                     >
                       {t("dashboard.editor.settings.features")}
@@ -3086,9 +3086,9 @@ export default function DashboardEditor() {
                     </button>
                     {expandedSettings.includes("features") && (
                       <div className="space-y-3">
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                        <label className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl cursor-pointer hover:bg-[#1a1a1a] transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.emailSignup")}</span>
+                            <span className="text-sm font-medium text-white">{t("dashboard.editor.settings.emailSignup")}</span>
                             {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${enableSubscribeButton ? 'bg-black' : 'bg-gray-300'}`}>
@@ -3106,13 +3106,13 @@ export default function DashboardEditor() {
                               }}
                               className="hidden"
                             />
-                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${enableSubscribeButton ? 'left-5.5' : 'left-0.5'}`} />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-[#141414] rounded-full transition-all shadow-sm ${enableSubscribeButton ? 'left-5.5' : 'left-0.5'}`} />
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                        <label className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl cursor-pointer hover:bg-[#1a1a1a] transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-700">{t("dashboard.editor.settings.removeBranding")}</span>
+                            <span className="text-sm font-medium text-white">{t("dashboard.editor.settings.removeBranding")}</span>
                             {user?.plan === 'free' && <span className="text-[10px] text-black font-bold">{t("dashboard.editor.settings.standardPro")}</span>}
                           </div>
                           <div className={`w-10 h-5 rounded-full relative transition-colors ${user?.plan === 'free' ? 'opacity-50' : ''} ${removeBranding ? 'bg-black' : 'bg-gray-300'}`}>
@@ -3130,7 +3130,7 @@ export default function DashboardEditor() {
                               }}
                               className="hidden"
                             />
-                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${removeBranding ? 'left-5.5' : 'left-0.5'}`} />
+                            <div className={`absolute top-0.5 w-4 h-4 bg-[#141414] rounded-full transition-all shadow-sm ${removeBranding ? 'left-5.5' : 'left-0.5'}`} />
                           </div>
                         </label>
                       </div>
@@ -3146,14 +3146,14 @@ export default function DashboardEditor() {
           {/* Middle Column: Drag & Drop (Col Span 5 - ADJUSTED) */}
           <div
             data-tour="editor-drag-canvas"
-            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
+            className="col-span-12 lg:col-span-4 flex flex-col h-full bg-[#141414] rounded-2xl shadow-sm border border-[#222] overflow-hidden relative"
           >
-            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
-              <h2 className="font-bold text-gray-900 text-lg">{t("dashboard.editor.layout.title")}</h2>
-              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{t("dashboard.editor.layout.dragToReorder")}</span>
+            <div className="p-5 border-b border-[#222] flex items-center justify-between bg-[#141414] z-10">
+              <h2 className="font-bold text-white text-lg" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.layout.title")}</h2>
+              <span className="text-xs font-medium text-gray-400 bg-[#1a1a1a] px-2 py-1 rounded-md">{t("dashboard.editor.layout.dragToReorder")}</span>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/50">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-[#1a1a1a]/50">
               <div
                 className="space-y-4 min-h-[500px] pb-20"
                 onDragOver={(event) => event.preventDefault()}
@@ -3161,13 +3161,13 @@ export default function DashboardEditor() {
               >
                 {/* Empty State */}
                 {blocks.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/50">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                  <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-[#222] rounded-2xl bg-[#141414]/50">
+                    <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mb-4">
                       <div className="scale-150"><img src="/favicon.ico" className="w-6 h-6 opacity-50 grayscale" alt="" /></div>
                       {/* Using a placeholder icon since I can't easily import a specific one without checking imports */}
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-1">{t("dashboard.editor.empty.title")}</h3>
-                    <p className="text-sm text-gray-500 max-w-xs">{t("dashboard.editor.empty.body")}</p>
+                    <h3 className="font-bold text-lg text-white mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.empty.title")}</h3>
+                    <p className="text-sm text-gray-400 max-w-xs">{t("dashboard.editor.empty.body")}</p>
                   </div>
                 )}
 
@@ -3176,7 +3176,7 @@ export default function DashboardEditor() {
                   <button
                     type="button"
                     className={`w-full rounded-lg transition-all ${isTouchReorderActive
-                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold'
+                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-500/10/80 text-blue-700 text-xs font-semibold'
                       : `h-2 ${dragItem ? 'bg-blue-100 my-2' : 'bg-transparent my-0'}`
                       }`}
                     data-drop-index={0}
@@ -3195,7 +3195,7 @@ export default function DashboardEditor() {
                     {isTouchReorderActive && index > 0 && (
                       <button
                         type="button"
-                        className="w-full my-2 h-10 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold"
+                        className="w-full my-2 h-10 rounded-lg border-2 border-dashed border-blue-300 bg-blue-500/10/80 text-blue-700 text-xs font-semibold"
                         data-drop-index={index}
                         onClick={() => handleTouchReorderToIndex(index)}
                       >
@@ -3241,8 +3241,8 @@ export default function DashboardEditor() {
                   <button
                     type="button"
                     className={`w-full rounded-lg transition-all ${isTouchReorderActive
-                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-50/80 text-blue-700 text-xs font-semibold'
-                      : `h-8 ${dragItem ? 'bg-blue-50' : 'bg-transparent'}`
+                      ? 'my-2 h-10 border-2 border-dashed border-blue-300 bg-blue-500/10/80 text-blue-700 text-xs font-semibold'
+                      : `h-8 ${dragItem ? 'bg-blue-500/10' : 'bg-transparent'}`
                       }`}
                     data-drop-index={blocks.length}
                     onClick={() => handleTouchReorderToIndex(blocks.length)}
@@ -3259,7 +3259,7 @@ export default function DashboardEditor() {
           {/* Right Column: Preview (Col Span 4 - ADJUSTED) */}
           <div
             data-tour="editor-preview"
-            className="hidden lg:flex lg:col-span-4 flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden items-center relative"
+            className="hidden lg:flex lg:col-span-4 flex-col h-full bg-[#141414] rounded-2xl shadow-sm border border-[#222] overflow-hidden items-center relative"
           >
             <div className="w-full h-full">
               <iframe
@@ -3271,9 +3271,9 @@ export default function DashboardEditor() {
               />
             </div>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 backdrop-blur border border-gray-200 px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-gray-500 uppercase tracking-widest z-10 pointer-events-none">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#141414]/90 backdrop-blur border border-[#222] px-3 py-1.5 rounded-full shadow-sm text-[10px] font-bold text-gray-400 uppercase tracking-widest z-10 pointer-events-none">
               <span>{t("dashboard.editor.preview.live")}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500/100 animate-pulse"></span>
             </div>
           </div>
 
@@ -3285,7 +3285,7 @@ export default function DashboardEditor() {
         <button
           data-tour="editor-mobile-preview"
           onClick={() => setShowMobilePreview(true)}
-          className="bg-gray-900 text-white p-4 rounded-full shadow-xl hover:bg-gray-800 transition-all active:scale-95 flex items-center justify-center border border-white/20"
+          className="bg-white text-black p-4 rounded-full shadow-xl hover:bg-gray-200 transition-all active:scale-95 flex items-center justify-center border border-white/20"
           aria-label={t("dashboard.editor.preview.aria")}
         >
           <Eye className="w-6 h-6" />
@@ -3295,24 +3295,24 @@ export default function DashboardEditor() {
       {/* Mobile Preview Modal */}
       {
         showMobilePreview && (
-          <div className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-sm animate-in slide-in-from-bottom duration-300 flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shadow-sm">
-              <h3 className="font-bold text-lg flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <div className="fixed inset-0 z-[60] bg-[#141414]/95 backdrop-blur-sm animate-in slide-in-from-bottom duration-300 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-[#222] bg-[#141414] shadow-sm">
+              <h3 className="font-bold text-lg flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+                <span className="w-2 h-2 rounded-full bg-green-500/100 animate-pulse"></span>
                 {t("dashboard.editor.preview.live")}
               </h3>
               <button
                 onClick={() => setShowMobilePreview(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-[#1a1a1a] rounded-full transition-colors"
               >
-                <X className="w-6 h-6 text-gray-500" />
+                <X className="w-6 h-6 text-gray-400" />
               </button>
             </div>
-            <div className="flex-1 overflow-hidden p-4 bg-gray-100 flex items-center justify-center">
-              <div className="w-full h-full max-w-[375px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-gray-900 relative">
+            <div className="flex-1 overflow-hidden p-4 bg-[#1a1a1a] flex items-center justify-center">
+              <div className="w-full h-full max-w-[375px] bg-[#141414] rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-gray-900 relative">
                 <iframe
                   srcDoc={debouncedHtml || ""}
-                  className="w-full h-full scrollbar-hide border-none bg-white"
+                  className="w-full h-full scrollbar-hide border-none bg-[#141414]"
                   title={t("dashboard.editor.preview.mobileTitle")}
                   sandbox="allow-same-origin allow-scripts"
                 />
@@ -3335,22 +3335,22 @@ export default function DashboardEditor() {
       {
         showCreateQrModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">{t("dashboard.editor.qrModal.title")}</h3>
+            <div className="bg-[#141414] rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+              <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.qrModal.title")}</h3>
               <form onSubmit={handleCreateQrCode}>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.qrModal.destination")}</label>
+                  <label className="block text-sm font-medium text-white mb-2">{t("dashboard.editor.qrModal.destination")}</label>
                   <input
                     type="url"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-[#222] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                     placeholder={t("dashboard.editor.qrModal.placeholder")}
                     value={newQrValue}
                     onChange={e => setNewQrValue(e.target.value)}
                   />
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">{t("dashboard.editor.qrModal.cancel")}</button>
+                  <button type="button" onClick={() => setShowCreateQrModal(false)} className="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-colors">{t("dashboard.editor.qrModal.cancel")}</button>
                   <button type="submit" disabled={isCreatingQr} className="px-6 py-2 text-sm font-bold bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50">
                     {isCreatingQr ? t("dashboard.editor.qrModal.creating") : t("dashboard.editor.qrModal.create")}
                   </button>
@@ -3364,29 +3364,29 @@ export default function DashboardEditor() {
       {
         showVerificationModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200">
+            <div className="bg-[#141414] rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{t("dashboard.editor.verificationModal.title")}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{t("dashboard.editor.verificationModal.subtitle")}</p>
+                  <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.editor.verificationModal.title")}</h3>
+                  <p className="text-sm text-gray-400 mt-1">{t("dashboard.editor.verificationModal.subtitle")}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowVerificationModal(false)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-full hover:bg-[#1a1a1a] transition-colors"
                   aria-label={t("dashboard.editor.verificationModal.close")}
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmitVerification} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.name")}</label>
+                  <label className="block text-sm font-medium text-white mb-2">{t("dashboard.editor.verificationModal.name")}</label>
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-[#222] focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
                     placeholder={t("dashboard.editor.verificationModal.namePlaceholder")}
                     value={verificationForm.name}
                     onChange={(e) => setVerificationForm(prev => ({ ...prev, name: e.target.value }))}
@@ -3395,22 +3395,22 @@ export default function DashboardEditor() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.email")}</label>
+                    <label className="block text-sm font-medium text-white mb-2">{t("dashboard.editor.verificationModal.email")}</label>
                     <input
                       type="email"
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-[#222] focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
                       placeholder={t("dashboard.editor.verificationModal.emailPlaceholder")}
                       value={verificationForm.email}
                       onChange={(e) => setVerificationForm(prev => ({ ...prev, email: e.target.value }))}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.phone")}</label>
+                    <label className="block text-sm font-medium text-white mb-2">{t("dashboard.editor.verificationModal.phone")}</label>
                     <input
                       type="tel"
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-[#222] focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all"
                       placeholder={t("dashboard.editor.verificationModal.phonePlaceholder")}
                       value={verificationForm.phone}
                       onChange={(e) => setVerificationForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -3419,11 +3419,11 @@ export default function DashboardEditor() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("dashboard.editor.verificationModal.description")}</label>
+                  <label className="block text-sm font-medium text-white mb-2">{t("dashboard.editor.verificationModal.description")}</label>
                   <textarea
                     required
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-[#222] focus:ring-2 focus:ring-black/10 focus:border-black outline-none transition-all resize-none"
                     placeholder={t("dashboard.editor.verificationModal.descriptionPlaceholder")}
                     value={verificationForm.description}
                     onChange={(e) => setVerificationForm(prev => ({ ...prev, description: e.target.value }))}
@@ -3438,7 +3438,7 @@ export default function DashboardEditor() {
                   <button
                     type="button"
                     onClick={() => setShowVerificationModal(false)}
-                    className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-colors"
                   >
                     {t("dashboard.editor.verificationModal.cancel")}
                   </button>

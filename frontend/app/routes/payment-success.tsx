@@ -71,7 +71,7 @@ function SortableItem(props: any) {
 
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="mb-3 group relative touch-none">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 p-2 cursor-grab text-neutral-400 hover:text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity z-10" {...listeners}>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 p-2 cursor-grab text-muted-foreground hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity z-10" {...listeners}>
                 <GripVertical className="w-5 h-5" />
             </div>
             <div className="pl-8 sm:pl-10">
@@ -376,11 +376,11 @@ export default function PaymentSuccess() {
 
     if (!proposalId) {
         return (
-            <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+            <div className="min-h-screen bg-muted flex items-center justify-center p-4">
+                <div className="bg-surface-card p-8 rounded-xl shadow-sm text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-xl font-semibold text-neutral-900">Invalid Link</h1>
-                    <p className="text-neutral-600 mt-2">No proposal ID found in the URL.</p>
+                    <h1 className="text-xl font-semibold text-foreground">Invalid Link</h1>
+                    <p className="text-muted-foreground mt-2">No proposal ID found in the URL.</p>
                 </div>
             </div>
         );
@@ -389,10 +389,10 @@ export default function PaymentSuccess() {
     if (error === "Invalid proposal ID or not accepted yet.") {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+                <div className="bg-surface-card p-8 rounded-xl shadow-sm text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-xl font-semibold text-neutral-900">Invalid Proposal</h1>
-                    <p className="text-neutral-600 mt-2">This proposal ID is invalid or not accepted yet.</p>
+                    <h1 className="text-xl font-semibold text-foreground">Invalid Proposal</h1>
+                    <p className="text-muted-foreground mt-2">This proposal ID is invalid or not accepted yet.</p>
                 </div>
             </div>
         );
@@ -402,12 +402,12 @@ export default function PaymentSuccess() {
         <div className="min-h-screen  py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl font-bold text-neutral-900">Setup Your Advertisement</h1>
-                    <p className="mt-2 text-neutral-600">Drag and drop items to build your banner.</p>
+                    <h1 className="text-3xl font-bold text-foreground">Setup Your Advertisement</h1>
+                    <p className="mt-2 text-muted-foreground">Drag and drop items to build your banner.</p>
                 </div>
 
                 {step === 'verification' && (
-                    <div className="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-neutral-100 p-8">
+                    <div className="max-w-md mx-auto bg-surface-card rounded-2xl shadow-sm border border-border p-8">
                         {/* Verification steps */}
                         {!emailSent ? (
                             <div className="text-center">
@@ -415,13 +415,13 @@ export default function PaymentSuccess() {
                                     <CheckCircle className="w-8 h-8 text-blue-600" />
                                 </div>
                                 <h2 className="text-xl font-semibold mb-2">Payment Successful!</h2>
-                                <p className="text-neutral-600 mb-6">
+                                <p className="text-muted-foreground mb-6">
                                     To verify your identity and access the ad editor, we need to send a code to your email.
                                 </p>
                                 <button
                                     onClick={handleSendCode}
                                     disabled={loading}
-                                    className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-muted transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Access Code"}
                                 </button>
@@ -429,7 +429,7 @@ export default function PaymentSuccess() {
                         ) : (
                             <div className="text-center">
                                 <h2 className="text-xl font-semibold mb-4">Enter Verification Code</h2>
-                                <p className="text-neutral-600 mb-8 text-sm">
+                                <p className="text-muted-foreground mb-8 text-sm">
                                     We sent a 6-digit code to your email. Enter it below to continue.
                                 </p>
 
@@ -447,13 +447,13 @@ export default function PaymentSuccess() {
                                                     document.getElementById(`otp-${i - 1}`)?.focus();
                                                 }
                                             }}
-                                            className="w-12 h-14 border border-neutral-200 rounded-lg text-center text-xl font-semibold focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none transition-colors"
+                                            className="w-12 h-14 border border-border rounded-lg text-center text-xl font-semibold focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 outline-none transition-colors"
                                         />
                                     ))}
                                 </div>
 
                                 {error && (
-                                    <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center justify-center gap-2">
+                                    <div className="mb-6 p-3 bg-destructive/10 text-destructive text-sm rounded-lg flex items-center justify-center gap-2">
                                         <AlertCircle className="w-4 h-4" />
                                         {error}
                                     </div>
@@ -462,14 +462,14 @@ export default function PaymentSuccess() {
                                 <button
                                     onClick={handleVerifyCode}
                                     disabled={loading || otp.join("").length !== 6}
-                                    className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-muted transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
                                 </button>
 
                                 <button
                                     onClick={() => setEmailSent(false)}
-                                    className="mt-4 text-sm text-neutral-500 hover:text-neutral-900 underline"
+                                    className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
                                 >
                                     Resend Code
                                 </button>
@@ -483,13 +483,13 @@ export default function PaymentSuccess() {
                         {/* Editor Controls (Left & Center) */}
                         <div className="lg:col-span-7 flex flex-col lg:flex-row gap-4 items-start">
                             {/* Tools Sidebar */}
-                            <div className="w-full lg:w-14 flex-shrink-0 flex lg:flex-col flex-row gap-2 lg:gap-2 lg:sticky lg:top-8 bg-white rounded-xl shadow-sm border border-neutral-100 p-2 lg:p-1.5 lg:py-3 items-center overflow-x-auto lg:overflow-visible">
+                            <div className="w-full lg:w-14 flex-shrink-0 flex lg:flex-col flex-row gap-2 lg:gap-2 lg:sticky lg:top-8 bg-surface-card rounded-xl shadow-sm border border-border p-2 lg:p-1.5 lg:py-3 items-center overflow-x-auto lg:overflow-visible">
 
                                 {['headline', 'text', 'price', 'image', 'button', 'badge', 'social', 'divider', 'spacer'].map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => addBlock(type as any)}
-                                        className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg hover:bg-neutral-50 text-neutral-600 hover:text-neutral-900 transition-colors border border-transparent hover:border-neutral-200 group relative"
+                                        className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border group relative"
                                     >
                                         {type === 'headline' && <Type className="w-5 h-5" />}
                                         {type === 'text' && <Type className="w-4 h-4" />}
@@ -509,7 +509,7 @@ export default function PaymentSuccess() {
                             </div>
 
                             <div className="flex-1 space-y-6 min-w-0 w-full">
-                                <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6">
+                                <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6">
                                     <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
                                         <Sparkles className="w-5 h-5 text-yellow-500" />
                                         Configure Your Ad
@@ -528,9 +528,9 @@ export default function PaymentSuccess() {
                                             <div className="space-y-4">
                                                 {creative.items.map((item) => (
                                                     <SortableItem key={item.id} id={item.id}>
-                                                        <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-4 transition-colors hover:border-neutral-300">
+                                                        <div className="bg-muted rounded-xl border border-border p-4 transition-colors hover:border-border">
                                                             <div className="flex items-center justify-between mb-3">
-                                                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1">
+                                                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                                                                     {item.type === 'image' && <ImageIcon className="w-3 h-3" />}
                                                                     {item.type === 'headline' && <Type className="w-3 h-3" />}
                                                                     {item.type === 'text' && <Type className="w-3 h-3" />}
@@ -544,26 +544,26 @@ export default function PaymentSuccess() {
                                                                 <div className="flex items-center gap-1">
                                                                     <button
                                                                         onClick={() => toggleExpand(item.id)}
-                                                                        className={`p-1.5 rounded-md transition-colors ${expandedBlocks[item.id] ? 'bg-neutral-200 text-neutral-900' : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'}`}
+                                                                        className={`p-1.5 rounded-md transition-colors ${expandedBlocks[item.id] ? 'bg-neutral-200 text-foreground' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted'}`}
                                                                     >
                                                                         <Settings2 className="w-4 h-4" />
                                                                     </button>
-                                                                    <button onClick={() => removeBlock(item.id)} className="text-neutral-400 hover:text-red-500 p-1.5 rounded hover:bg-neutral-100 transition-colors">
+                                                                    <button onClick={() => removeBlock(item.id)} className="text-muted-foreground hover:text-red-500 p-1.5 rounded hover:bg-muted transition-colors">
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </button>
                                                                 </div>
                                                             </div>
 
                                                             {expandedBlocks[item.id] && (
-                                                                <div className="mb-4 p-3 bg-white rounded-lg border border-neutral-200 space-y-3 shadow-sm transition-all duration-200">
+                                                                <div className="mb-4 p-3 bg-surface-card rounded-lg border border-border space-y-3 shadow-sm transition-all duration-200">
                                                                     <div className="flex items-center justify-between">
-                                                                        <label className="text-[10px] font-bold uppercase text-neutral-400">Alignment</label>
-                                                                        <div className="flex gap-1 bg-neutral-50 p-0.5 rounded-md border border-neutral-100">
+                                                                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Alignment</label>
+                                                                        <div className="flex gap-1 bg-muted p-0.5 rounded-md border border-border">
                                                                             {['left', 'center', 'right'].map((align) => (
                                                                                 <button
                                                                                     key={align}
                                                                                     onClick={() => updateBlockStyle(item.id, { alignment: align as any })}
-                                                                                    className={`px-2 py-1 rounded text-[10px] capitalize transition-all ${(item.style?.alignment || creative.alignment) === align ? 'bg-neutral-900 text-white shadow-sm' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                                                                    className={`px-2 py-1 rounded text-[10px] capitalize transition-all ${(item.style?.alignment || creative.alignment) === align ? 'bg-neutral-900 text-white shadow-sm' : 'text-muted-foreground hover:text-muted-foreground'}`}
                                                                                 >
                                                                                     {align}
                                                                                 </button>
@@ -573,12 +573,12 @@ export default function PaymentSuccess() {
 
                                                                     {['headline', 'text', 'price', 'badge'].includes(item.type) && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <label className="text-[10px] font-bold uppercase text-neutral-400">Text Color</label>
+                                                                            <label className="text-[10px] font-bold uppercase text-muted-foreground">Text Color</label>
                                                                             <input
                                                                                 type="color"
                                                                                 value={item.style?.color || creative.textColor}
                                                                                 onChange={e => updateBlockStyle(item.id, { color: e.target.value })}
-                                                                                className="w-8 h-6 rounded cursor-pointer border border-neutral-200 p-0.5"
+                                                                                className="w-8 h-6 rounded cursor-pointer border border-border p-0.5"
                                                                             />
                                                                         </div>
                                                                     )}
@@ -586,21 +586,21 @@ export default function PaymentSuccess() {
                                                                     {item.type === 'button' && (
                                                                         <>
                                                                             <div className="flex items-center justify-between">
-                                                                                <label className="text-[10px] font-bold uppercase text-neutral-400">Button Color</label>
+                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Button Color</label>
                                                                                 <input
                                                                                     type="color"
                                                                                     value={item.props?.buttonColor || creative.buttonColor || '#000000'}
                                                                                     onChange={e => updateBlockProp(item.id, 'buttonColor', e.target.value)}
-                                                                                    className="w-8 h-6 rounded cursor-pointer border border-neutral-200 p-0.5"
+                                                                                    className="w-8 h-6 rounded cursor-pointer border border-border p-0.5"
                                                                                 />
                                                                             </div>
                                                                             <div className="flex items-center justify-between">
-                                                                                <label className="text-[10px] font-bold uppercase text-neutral-400">Label Color</label>
+                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Label Color</label>
                                                                                 <input
                                                                                     type="color"
                                                                                     value={item.props?.buttonTextColor || creative.buttonTextColor || '#ffffff'}
                                                                                     onChange={e => updateBlockProp(item.id, 'buttonTextColor', e.target.value)}
-                                                                                    className="w-8 h-6 rounded cursor-pointer border border-neutral-200 p-0.5"
+                                                                                    className="w-8 h-6 rounded cursor-pointer border border-border p-0.5"
                                                                                 />
                                                                             </div>
                                                                         </>
@@ -615,7 +615,7 @@ export default function PaymentSuccess() {
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
                                                                         placeholder="Image URL (https://...)"
-                                                                        className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                        className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                     />
                                                                 )}
                                                                 {(item.type === 'headline' || item.type === 'text') && (
@@ -624,7 +624,7 @@ export default function PaymentSuccess() {
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
                                                                         placeholder="Enter text..."
                                                                         rows={item.type === 'headline' ? 1 : 2}
-                                                                        className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white resize-none placeholder:text-neutral-400"
+                                                                        className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card resize-none placeholder:text-muted-foreground"
                                                                     />
                                                                 )}
                                                                 {item.type === 'price' && (
@@ -633,7 +633,7 @@ export default function PaymentSuccess() {
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
                                                                         placeholder="Price (e.g. $19.99)"
-                                                                        className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400 font-mono"
+                                                                        className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground font-mono"
                                                                     />
                                                                 )}
                                                                 {item.type === 'button' && (
@@ -643,14 +643,14 @@ export default function PaymentSuccess() {
                                                                             value={item.content || ''}
                                                                             onChange={e => updateBlock(item.id, { content: e.target.value })}
                                                                             placeholder="Label"
-                                                                            className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                            className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                         <input
                                                                             type="url"
                                                                             value={item.props?.url || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'url', e.target.value)}
                                                                             placeholder="URL"
-                                                                            className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                            className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                     </div>
                                                                 )}
@@ -660,7 +660,7 @@ export default function PaymentSuccess() {
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
                                                                         placeholder="Badge Text (e.g. NEW)"
-                                                                        className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                        className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                     />
                                                                 )}
                                                                 {item.type === 'social' && (
@@ -670,14 +670,14 @@ export default function PaymentSuccess() {
                                                                             value={item.props?.twitter || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'twitter', e.target.value)}
                                                                             placeholder="X (Twitter) URL"
-                                                                            className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                            className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                         <input
                                                                             type="url"
                                                                             value={item.props?.instagram || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'instagram', e.target.value)}
                                                                             placeholder="Instagram URL"
-                                                                            className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white placeholder:text-neutral-400"
+                                                                            className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                     </div>
                                                                 )}
@@ -691,7 +691,7 @@ export default function PaymentSuccess() {
                                         {/* Drag Overlay for UX */}
                                         <DragOverlay>
                                             {activeId ? (
-                                                <div className="bg-white p-4 rounded-xl shadow-xl border border-blue-500 opacity-90 cursor-grabbing">
+                                                <div className="bg-surface-card p-4 rounded-xl shadow-xl border border-blue-500 opacity-90 cursor-grabbing">
                                                     Following item
                                                 </div>
                                             ) : null}
@@ -700,14 +700,14 @@ export default function PaymentSuccess() {
                                 </div>
 
                                 {/* Card Design (Global Settings) */}
-                                <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-6">
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-500 mb-4 flex items-center gap-2">
+                                <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
                                         <Palette className="w-4 h-4" /> Card Design
                                     </h3>
 
                                     {/* Style Presets */}
-                                    <div className="mb-6 p-4 bg-neutral-50 rounded-xl border border-neutral-100 overflow-x-auto">
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-3 flex items-center gap-1">
+                                    <div className="mb-6 p-4 bg-muted rounded-xl border border-border overflow-x-auto">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1">
                                             <TrendingUp className="w-3 h-3" /> Quick Styles
                                         </label>
                                         <div className="flex gap-2 min-w-max">
@@ -726,10 +726,10 @@ export default function PaymentSuccess() {
                                                         buttonColor: preset.btn,
                                                         buttonTextColor: preset.btnText
                                                     })}
-                                                    className="flex items-center gap-2 p-2 rounded-lg bg-white border border-neutral-200 hover:border-neutral-900 transition-all group shrink-0"
+                                                    className="flex items-center gap-2 p-2 rounded-lg bg-surface-card border border-border hover:border-primary transition-all group shrink-0"
                                                 >
-                                                    <div className="w-4 h-4 rounded-full border border-neutral-100" style={{ background: preset.bg }}></div>
-                                                    <span className="text-xs font-semibold text-neutral-700 group-hover:text-neutral-900">{preset.name}</span>
+                                                    <div className="w-4 h-4 rounded-full border border-border" style={{ background: preset.bg }}></div>
+                                                    <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground">{preset.name}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -738,26 +738,26 @@ export default function PaymentSuccess() {
                                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {/* Color & Font */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">Card Base</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Card Base</h4>
                                         <div>
-                                            <label className="block text-sm font-medium text-neutral-700 mb-2">Background Color</label>
+                                            <label className="block text-sm font-medium text-muted-foreground mb-2">Background Color</label>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="color"
                                                     value={creative.backgroundColor === 'transparent' ? '#000000' : creative.backgroundColor}
                                                     onChange={e => setCreative({ ...creative, backgroundColor: e.target.value })}
-                                                    className="w-10 h-10 rounded cursor-pointer border border-neutral-200 p-0.5"
+                                                    className="w-10 h-10 rounded cursor-pointer border border-border p-0.5"
                                                 />
                                                 <div className="flex gap-1">
                                                     <button
                                                         onClick={() => setCreative({ ...creative, backgroundColor: 'transparent' })}
-                                                        className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === 'transparent' ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-200 text-neutral-600'}`}
+                                                        className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === 'transparent' ? 'bg-neutral-900 text-white' : 'bg-surface-card border border-border text-muted-foreground'}`}
                                                     >
                                                         Clear
                                                     </button>
                                                     <button
                                                         onClick={() => setCreative({ ...creative, backgroundColor: '#ffffff' })}
-                                                        className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === '#ffffff' ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-200 text-neutral-600'}`}
+                                                        className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === '#ffffff' ? 'bg-neutral-900 text-white' : 'bg-surface-card border border-border text-muted-foreground'}`}
                                                     >
                                                         White
                                                     </button>
@@ -766,11 +766,11 @@ export default function PaymentSuccess() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-neutral-700 mb-2">Font Style</label>
+                                            <label className="block text-sm font-medium text-muted-foreground mb-2">Font Style</label>
                                             <select
                                                 value={creative.fontFamily || 'Inter, sans-serif'}
                                                 onChange={e => setCreative({ ...creative, fontFamily: e.target.value })}
-                                                className="w-full p-2 text-sm border border-neutral-200 rounded-lg bg-white shadow-sm"
+                                                className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card shadow-sm"
                                             >
                                                 <option value="Inter, sans-serif">Modern (Inter)</option>
                                                 <option value="'Playfair Display', serif">Elegant (Playfair)</option>
@@ -783,20 +783,20 @@ export default function PaymentSuccess() {
 
                                     {/* Borders & Shape */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">Borders & Shape</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Borders & Shape</h4>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-medium text-neutral-500 mb-1">Color</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Color</label>
                                                 <input
                                                     type="color"
                                                     value={creative.borderColor || '#e5e7eb'}
                                                     onChange={e => setCreative({ ...creative, borderColor: e.target.value })}
-                                                    className="w-full h-8 rounded cursor-pointer border border-neutral-200 p-0.5"
+                                                    className="w-full h-8 rounded cursor-pointer border border-border p-0.5"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-neutral-500 mb-1">Width: {creative.borderWidth || 0}px</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Width: {creative.borderWidth || 0}px</label>
                                                 <input
                                                     type="range"
                                                     min="0"
@@ -809,7 +809,7 @@ export default function PaymentSuccess() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-[10px] font-medium text-neutral-500 mb-1">Radius: {creative.borderRadius || 24}px</label>
+                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">Radius: {creative.borderRadius || 24}px</label>
                                             <input
                                                 type="range"
                                                 min="0"
@@ -823,37 +823,37 @@ export default function PaymentSuccess() {
 
                                     {/* Spacing & Anim */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">Layout & Interaction</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Layout & Interaction</h4>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-medium text-neutral-500 mb-1">Padding</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Padding</label>
                                                 <input
                                                     type="number"
                                                     value={creative.padding || 24}
                                                     onChange={e => setCreative({ ...creative, padding: parseInt(e.target.value) })}
-                                                    className="w-full p-1.5 text-xs border border-neutral-200 rounded-lg bg-white"
+                                                    className="w-full p-1.5 text-xs border border-border rounded-lg bg-surface-card"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-neutral-500 mb-1">Gap</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Gap</label>
                                                 <input
                                                     type="number"
                                                     value={creative.gap || 16}
                                                     onChange={e => setCreative({ ...creative, gap: parseInt(e.target.value) })}
-                                                    className="w-full p-1.5 text-xs border border-neutral-200 rounded-lg bg-white"
+                                                    className="w-full p-1.5 text-xs border border-border rounded-lg bg-surface-card"
                                                 />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-[10px] font-medium text-neutral-500 mb-1">Hover Animation</label>
+                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">Hover Animation</label>
                                             <div className="flex gap-1">
                                                 {['none', 'pulse', 'bounce'].map((anim) => (
                                                     <button
                                                         key={anim}
                                                         onClick={() => setCreative({ ...creative, animation: anim as any })}
-                                                        className={`flex-1 py-1 rounded text-[10px] capitalize transition-colors border ${creative.animation === anim ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300'}`}
+                                                        className={`flex-1 py-1 rounded text-[10px] capitalize transition-colors border ${creative.animation === anim ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-surface-card text-muted-foreground border-border hover:border-border'}`}
                                                     >
                                                         {anim}
                                                     </button>
@@ -862,14 +862,14 @@ export default function PaymentSuccess() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 pt-4 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                        <div className={`text-sm font-medium transition-opacity ${saveSuccess ? 'text-emerald-600 opacity-100' : 'text-neutral-400 opacity-0'}`} aria-live="polite">
+                                    <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div className={`text-sm font-medium transition-opacity ${saveSuccess ? 'text-emerald-600 opacity-100' : 'text-muted-foreground opacity-0'}`} aria-live="polite">
                                             ✓ Saved
                                         </div>
                                         <button
                                             onClick={handleSave}
                                             disabled={saving}
-                                            className={`w-full sm:w-auto px-5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${saveSuccess ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500' : 'bg-white text-neutral-900 border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 focus-visible:ring-neutral-800'} disabled:opacity-60`}
+                                            className={`w-full sm:w-auto px-5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${saveSuccess ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500' : 'bg-surface-card text-foreground border-border hover:border-border hover:bg-muted focus-visible:ring-neutral-800'} disabled:opacity-60`}
                                         >
                                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saveSuccess ? "Saved" : "Save Changes"}
                                         </button>
@@ -883,15 +883,15 @@ export default function PaymentSuccess() {
 
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                                    <Eye className="w-5 h-5 text-neutral-500" />
+                                    <Eye className="w-5 h-5 text-muted-foreground" />
                                     Live Preview
                                 </h2>
-                                    <div className={`text-xs font-semibold px-2 py-1 rounded-full border ${isCardOversize ? 'border-red-200 text-red-600 bg-red-50' : 'border-emerald-200 text-emerald-700 bg-emerald-50'}`}>
+                                    <div className={`text-xs font-semibold px-2 py-1 rounded-full border ${isCardOversize ? 'border-destructive/20 text-destructive bg-destructive/10' : 'border-emerald-200 text-emerald-700 bg-emerald-50'}`}>
                                         {displayCardSize.width}×{displayCardSize.height}px
                                     </div>
                             </div>
 
-                            <div className="border border-dashed border-neutral-200 rounded-xl p-6 sm:p-8 bg-neutral-100/50 flex items-center justify-center min-h-[360px] sm:min-h-[500px] overflow-hidden">
+                            <div className="border border-dashed border-border rounded-xl p-6 sm:p-8 bg-muted/50 flex items-center justify-center min-h-[360px] sm:min-h-[500px] overflow-hidden">
                                 {/* Wrapper to simulate site context */}
                                 <div className="w-full max-w-[526px] max-h-[400px] mx-auto flex items-start justify-center">
 
@@ -945,7 +945,7 @@ export default function PaymentSuccess() {
 
                                                         {item.type === 'price' && (
                                                             <div
-                                                                className="text-4xl font-black tracking-tighter my-2 py-2 px-4 rounded-xl inline-block"
+                                                                className="text-4xl font-bold tracking-tight my-2 py-2 px-4 rounded-xl inline-block"
                                                                 style={{
                                                                     backgroundColor: itemColor + '0a',
                                                                     color: itemColor,

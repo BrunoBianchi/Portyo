@@ -162,7 +162,7 @@ export default function DashboardTemplates() {
 
     return (
         <AuthorizationGuard minPlan="pro">
-            <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
+            <div className="min-h-screen bg-muted/50 p-6 md:p-8">
                 <Joyride
                     steps={templatesTourSteps}
                     run={tourRun && !isMobile}
@@ -198,8 +198,8 @@ export default function DashboardTemplates() {
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="templates-header">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{t("dashboard.templates.title")}</h1>
-                            <p className="text-gray-500 mt-2 text-lg">{t("dashboard.templates.subtitle")}</p>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.templates.title")}</h1>
+                            <p className="text-muted-foreground mt-2 text-lg">{t("dashboard.templates.subtitle")}</p>
                         </div>
                         <button
                             data-tour="templates-create"
@@ -214,28 +214,28 @@ export default function DashboardTemplates() {
 
                     {/* Search */}
                     <div className="relative max-w-md" data-tour="templates-search">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder={t("dashboard.templates.searchPlaceholder")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                            className="w-full pl-12 pr-4 py-3 bg-surface-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                         />
                     </div>
 
                     {/* Grid */}
                     {loading ? (
                         <div className="flex justify-center py-20">
-                            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                         </div>
                     ) : filteredTemplates.length === 0 ? (
-                        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm" data-tour="templates-grid">
-                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <LayoutTemplate className="w-8 h-8 text-gray-400" />
+                        <div className="text-center py-20 bg-surface-card rounded-3xl border border-border shadow-sm" data-tour="templates-grid">
+                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                                <LayoutTemplate className="w-8 h-8 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900">{t("dashboard.templates.emptyTitle")}</h3>
-                            <p className="text-gray-500 mt-1">{t("dashboard.templates.emptySubtitle")}</p>
+                            <h3 className="text-lg font-medium text-foreground">{t("dashboard.templates.emptyTitle")}</h3>
+                            <p className="text-muted-foreground mt-1">{t("dashboard.templates.emptySubtitle")}</p>
                             <button
                                 onClick={handleCreate}
                                 className="mt-6 text-primary font-medium hover:underline"
@@ -249,16 +249,16 @@ export default function DashboardTemplates() {
                                 <div
                                     key={template.id}
                                     data-tour={index === 0 ? "templates-card" : undefined}
-                                    className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
+                                    className="group bg-surface-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
                                 >
                                     {/* Preview Placeholder */}
-                                    <div className="h-40 bg-gray-50 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
+                                    <div className="h-40 bg-muted flex items-center justify-center border-b border-border relative overflow-hidden">
                                         <LayoutTemplate className="w-12 h-12 text-gray-300 group-hover:scale-110 transition-transform duration-500" />
                                         {/* Overlay Actions */}
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                             <Link
                                                 to={`/dashboard/templates/${template.id}`}
-                                                className="p-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+                                                className="p-2 bg-surface-card text-foreground rounded-lg hover:bg-muted transition-colors"
                                                 title={t("dashboard.templates.edit")}
                                             >
                                                 <Edit2 className="w-5 h-5" />
@@ -268,15 +268,15 @@ export default function DashboardTemplates() {
 
                                     <div className="p-5 flex-1 flex flex-col">
                                         <div className="flex items-start justify-between mb-2">
-                                            <h3 className="font-semibold text-gray-900 truncate pr-4">{template.name}</h3>
+                                            <h3 className="font-semibold text-foreground truncate pr-4">{template.name}</h3>
                                             <button
                                                 onClick={() => setDeleteModal({ isOpen: true, id: template.id, name: template.name })}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                className="text-muted-foreground hover:text-red-500 transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-auto pt-4 border-t border-gray-50">
+                                        <p className="text-xs text-muted-foreground mt-auto pt-4 border-t border-gray-50">
                                             {t("dashboard.templates.lastUpdated", { date: new Date(template.updatedAt).toLocaleDateString() })}
                                         </p>
                                     </div>

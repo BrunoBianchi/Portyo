@@ -108,3 +108,7 @@ export const getPostsByBio = async (bioId: string, publicView: boolean = false):
 export const getPostsByUser = async (userId: string): Promise<Post[]> => {
     return await repository.find({ where: { user: { id: userId } } }) as unknown as Post[];
 }
+
+export const getPostBySlug = async (slug: string): Promise<Post | null> => {
+    return await repository.findOne({ where: { slug }, relations: ['user', 'bio'] }) as unknown as Post;
+}

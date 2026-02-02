@@ -256,7 +256,7 @@ export default function DashboardLeads() {
 
   return (
     <AuthorizationGuard minPlan="standard">
-      <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
+      <div className="min-h-screen bg-muted/50 p-6 md:p-8">
         <Joyride
           steps={leadsTourSteps}
           run={tourRun && !isMobile}
@@ -291,8 +291,8 @@ export default function DashboardLeads() {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="leads-header">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">{t("dashboard.leads.title")}</h1>
-              <p className="text-gray-500 mt-2 text-lg">{t("dashboard.leads.subtitle")}</p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.leads.title")}</h1>
+              <p className="text-muted-foreground mt-2 text-lg">{t("dashboard.leads.subtitle")}</p>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -304,7 +304,7 @@ export default function DashboardLeads() {
                 }}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${bio?.enableSubscribeButton
                   ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-muted text-muted-foreground hover:bg-gray-200'
                   }`}
               >
                 <div className={`w-2 h-2 rounded-full ${bio?.enableSubscribeButton ? 'bg-primary' : 'bg-gray-400'}`} />
@@ -314,7 +314,7 @@ export default function DashboardLeads() {
                 data-tour="leads-export"
                 onClick={handleExport}
                 disabled={leads.length === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-surface-card border border-border rounded-xl text-sm font-medium text-gray-700 hover:bg-muted hover:text-foreground transition-all shadow-sm disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
                 {t("dashboard.leads.exportCsv")}
@@ -324,20 +324,20 @@ export default function DashboardLeads() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-tour="leads-stats">
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
                   <Mail className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-green-50 text-green-700 rounded-full flex items-center gap-1">
+                <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-700 rounded-full flex items-center gap-1">
                   {t("dashboard.leads.active")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.totalSubscribers")}</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalLeads}</p>
+              <h3 className="text-muted-foreground text-sm font-medium">{t("dashboard.leads.totalSubscribers")}</h3>
+              <p className="text-3xl font-bold text-foreground mt-2">{totalLeads}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                   <Calendar className="w-5 h-5" />
@@ -346,50 +346,50 @@ export default function DashboardLeads() {
                   {t("dashboard.leads.today")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.newSubscribers")}</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-2">+{newLeadsToday}</p>
+              <h3 className="text-muted-foreground text-sm font-medium">{t("dashboard.leads.newSubscribers")}</h3>
+              <p className="text-3xl font-bold text-foreground mt-2">+{newLeadsToday}</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
                   <CheckSquare className="w-5 h-5" />
                 </div>
                 {/* Placeholder for future growth stat */}
-                <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                <span className="text-xs font-medium px-2 py-1 bg-muted text-muted-foreground rounded-full">
                   {t("dashboard.leads.avg")}
                 </span>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">{t("dashboard.leads.conversionRate")}</h3>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{conversionRate}</p>
+              <h3 className="text-muted-foreground text-sm font-medium">{t("dashboard.leads.conversionRate")}</h3>
+              <p className="text-3xl font-bold text-foreground mt-2">{conversionRate}</p>
             </div>
           </div>
 
           {/* Search Bar */}
           <div className="relative" data-tour="leads-search">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               placeholder={t("dashboard.leads.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+              className="w-full pl-12 pr-4 py-4 bg-surface-card border border-border rounded-2xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
               {t("dashboard.leads.results", { count: filteredLeads.length })}
             </div>
           </div>
 
           {/* Leads Table */}
-          <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden" data-tour="leads-table">
+          <div className="bg-surface-card border border-border rounded-3xl shadow-sm overflow-hidden" data-tour="leads-table">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50/40 border-b border-gray-100">
+                  <tr className="bg-muted/40 border-b border-border">
                     <th className="px-6 py-5 text-left w-16">
                       <button
                         onClick={toggleSelectAll}
-                        className="flex items-center justify-center text-gray-400 hover:text-primary transition-colors"
+                        className="flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
                       >
                         {selectedLeads.length === filteredLeads.length && filteredLeads.length > 0 ? (
                           <CheckSquare className="w-5 h-5 text-primary" />
@@ -398,16 +398,16 @@ export default function DashboardLeads() {
                         )}
                       </button>
                     </th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.subscriber")}</th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.status")}</th>
-                    <th className="px-6 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.joined")}</th>
-                    <th className="px-6 py-5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("dashboard.leads.table.actions")}</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.leads.table.subscriber")}</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.leads.table.status")}</th>
+                    <th className="px-6 py-5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.leads.table.joined")}</th>
+                    <th className="px-6 py-5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.leads.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-16 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-16 text-center text-muted-foreground">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <Loader2 className="w-8 h-8 animate-spin text-primary" />
                           <p className="font-medium animate-pulse">{t("dashboard.leads.syncing")}</p>
@@ -416,13 +416,13 @@ export default function DashboardLeads() {
                     </tr>
                   ) : filteredLeads.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-16 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-16 text-center text-muted-foreground">
                         <div className="flex flex-col items-center justify-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                             <Mail className="w-8 h-8 text-gray-300" />
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 text-lg">{t("dashboard.leads.noSubscribers")}</p>
+                            <p className="font-semibold text-foreground text-lg">{t("dashboard.leads.noSubscribers")}</p>
                             <p className="text-sm mt-1">
                               {searchTerm ? t("dashboard.leads.tryAdjustSearch") : t("dashboard.leads.shareBio")}
                             </p>
@@ -432,7 +432,7 @@ export default function DashboardLeads() {
                     </tr>
                   ) : (
                     filteredLeads.map((lead) => (
-                      <tr key={lead.id} className="group hover:bg-blue-50/30 transition-colors">
+                      <tr key={lead.id} className="group hover:bg-blue-500/10/30 transition-colors">
                         <td className="px-6 py-4">
                           <button
                             onClick={() => toggleSelectLead(lead.id)}
@@ -451,19 +451,19 @@ export default function DashboardLeads() {
                               {lead.email.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <span className="block text-sm font-semibold text-gray-900">{lead.email}</span>
-                              <span className="block text-xs text-gray-500">{t("dashboard.leads.subscriberLabel")}</span>
+                              <span className="block text-sm font-semibold text-foreground">{lead.email}</span>
+                              <span className="block text-xs text-muted-foreground">{t("dashboard.leads.subscriberLabel")}</span>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-700 border border-green-100">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500/100"></span>
                             {t("dashboard.leads.active")}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             {new Date(lead.createdAt).toLocaleDateString(undefined, {
                               year: 'numeric',
                               month: 'short',
@@ -475,14 +475,14 @@ export default function DashboardLeads() {
                           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                             <button
                               onClick={() => handleSendMessage(lead.email)}
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-muted-foreground hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                               title={t("dashboard.leads.sendEmail")}
                             >
                               <Mail className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(lead)}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                               title={t("dashboard.leads.removeSubscriber")}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -505,7 +505,7 @@ export default function DashboardLeads() {
             className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white shadow-2xl rounded-2xl px-2 py-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300 border border-gray-800"
           >
             <div className="pl-4 pr-3 py-2 border-r border-gray-700 flex items-center gap-2">
-              <span className="flex items-center justify-center bg-white text-gray-900 w-5 h-5 rounded-full text-xs font-bold">
+              <span className="flex items-center justify-center bg-surface-card text-foreground w-5 h-5 rounded-full text-xs font-bold">
                 {selectedLeads.length}
               </span>
               <span className="text-sm font-medium">{t("dashboard.leads.selected")}</span>
@@ -538,7 +538,7 @@ export default function DashboardLeads() {
 
             <button
               onClick={() => setSelectedLeads([])}
-              className="p-2 text-gray-500 hover:text-white hover:bg-gray-800 rounded-xl transition-all"
+              className="p-2 text-muted-foreground hover:text-white hover:bg-gray-800 rounded-xl transition-all"
             >
               <X className="w-4 h-4" />
             </button>

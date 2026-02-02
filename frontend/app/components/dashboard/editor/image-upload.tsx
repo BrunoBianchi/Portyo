@@ -88,10 +88,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
     return (
         <div className={`space-y-2 ${className}`}>
-            {label && <label className="text-xs font-medium text-gray-700 block">{label}</label>}
+            {label && <label className="text-xs font-medium text-muted-foreground block">{label}</label>}
 
             {value ? (
-                <div className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
+                <div className="relative group rounded-xl overflow-hidden border border-border bg-muted aspect-video flex items-center justify-center">
                     <img
                         src={value}
                         alt="Preview"
@@ -105,7 +105,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <button
                             onClick={() => onChange("")}
-                            className="p-2 bg-white/10 hover:bg-red-500/80 text-white rounded-full backdrop-blur-sm transition-all transform hover:scale-110"
+                            className="p-2 bg-surface-card/10 hover:bg-destructive/100/80 text-white rounded-full backdrop-blur-sm transition-all transform hover:scale-110"
                             title="Remove image"
                         >
                             <XIcon size={18} />
@@ -115,12 +115,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             ) : (
                 <div className="space-y-2">
                     {/* Tabs */}
-                    <div className="flex bg-gray-100 p-0.5 rounded-lg w-fit">
+                    <div className="flex bg-muted p-0.5 rounded-lg w-fit">
                         <button
                             onClick={() => setInputType("upload")}
                             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${inputType === "upload"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
+                                ? "bg-surface-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-muted-foreground"
                                 }`}
                         >
                             <UploadIcon size={12} />
@@ -129,8 +129,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                         <button
                             onClick={() => setInputType("url")}
                             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${inputType === "url"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
+                                ? "bg-surface-card text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-muted-foreground"
                                 }`}
                         >
                             <LinkIcon size={12} />
@@ -142,7 +142,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                         <div
                             className={`
                 relative border-2 border-dashed rounded-xl p-6 transition-all text-center
-                ${isDragging ? "border-primary bg-primary/5" : "border-gray-200 hover:border-primary/50 hover:bg-gray-50"}
+                ${isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted"}
                 ${isUploading ? "pointer-events-none opacity-70" : ""}
               `}
                             onDragOver={handleDragOver}
@@ -160,15 +160,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                             {isUploading ? (
                                 <div className="flex flex-col items-center gap-2 py-2">
                                     <Loader2 className="animate-spin text-primary" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">Uploading...</span>
+                                    <span className="text-xs text-muted-foreground font-medium">Uploading...</span>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-2">
-                                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mb-1">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-1">
                                         <ImageIcon size={20} />
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-xs font-medium text-gray-700">
+                                        <p className="text-xs font-medium text-muted-foreground">
                                             Drag & drop or {" "}
                                             <button
                                                 type="button"
@@ -178,7 +178,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                                                 browse
                                             </button>
                                         </p>
-                                        <p className="text-[10px] text-gray-400">Max 10MB</p>
+                                        <p className="text-[10px] text-muted-foreground">Max 10MB</p>
                                     </div>
                                 </div>
                             )}
@@ -189,7 +189,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                             value={value}
                             onChange={(e) => onChange(e.target.value)}
                             placeholder="https://example.com/image.png"
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400"
+                            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50"
                             autoFocus
                         />
                     )}

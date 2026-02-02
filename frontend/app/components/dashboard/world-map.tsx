@@ -114,7 +114,7 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
 
     if (loading) {
         return (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-6 shadow-sm ${mini ? 'h-full' : ''}`}>
+            <div className={`bg-surface-card rounded-2xl border border-border p-6 shadow-sm ${mini ? 'h-full' : ''}`}>
                 <div className={`${mini ? 'h-[300px]' : 'h-[400px]'} flex items-center justify-center`}>
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
                 </div>
@@ -124,8 +124,8 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
 
     if (error) {
         return (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                <div className={`${mini ? 'h-[300px]' : 'h-[400px]'} flex items-center justify-center text-gray-500`}>
+            <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
+                <div className={`${mini ? 'h-[300px]' : 'h-[400px]'} flex items-center justify-center text-muted-foreground`}>
                     <p>{error}</p>
                 </div>
             </div>
@@ -133,15 +133,15 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
     }
 
     return (
-        <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden ${mini ? 'h-full flex flex-col' : ''} relative`}>
+        <div className={`bg-surface-card rounded-2xl border border-border shadow-sm overflow-hidden ${mini ? 'h-full flex flex-col' : ''} relative`}>
             {/* Blocked Overlay */}
             {blocked && (
-                <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
+                <div className="absolute inset-0 z-10 bg-surface-card/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                        <Lock className="w-6 h-6 text-blue-600" />
+                        <Lock className="w-6 h-6 text-blue-400" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Visitor Locations</h3>
-                    <p className="text-sm text-gray-500 mb-4 max-w-[200px] mx-auto leading-relaxed">
+                    <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>Visitor Locations</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-[200px] mx-auto leading-relaxed">
                         Upgrade to Pro to see visitor locations.
                     </p>
                     <Link
@@ -154,25 +154,25 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
             )}
 
             {/* Header */}
-            <div className={`p-6 border-b border-gray-100 flex-shrink-0 ${blocked ? 'blur-[3px]' : ''}`}>
+            <div className={`p-6 border-b border-border flex-shrink-0 ${blocked ? 'blur-[3px]' : ''}`}>
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900">Visitor Locations</h3>
-                        {!mini && <p className="text-sm text-gray-500 mt-0.5">Geographic distribution of your visitors</p>}
+                        <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Visitor Locations</h3>
+                        {!mini && <p className="text-sm text-muted-foreground mt-0.5">Geographic distribution of your visitors</p>}
                     </div>
                     {!mini ? (
                         <div className="flex items-center gap-6 text-sm">
                             <div>
-                                <span className="text-gray-500">Total Views:</span>
-                                <span className="font-bold text-gray-900 ml-2">{data?.totalViews || 0}</span>
+                                <span className="text-muted-foreground">Total Views:</span>
+                                <span className="font-bold text-foreground ml-2">{data?.totalViews || 0}</span>
                             </div>
                             <div>
-                                <span className="text-gray-500">Countries:</span>
-                                <span className="font-bold text-gray-900 ml-2">{data?.uniqueCountries || 0}</span>
+                                <span className="text-muted-foreground">Countries:</span>
+                                <span className="font-bold text-foreground ml-2">{data?.uniqueCountries || 0}</span>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                             {data?.uniqueCountries || 0} Countries
                         </div>
                     )}
@@ -231,15 +231,15 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
                 </ComposableMap>
 
                 {/* Legend */}
-                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-100">
+                <div className="absolute bottom-4 left-4 bg-surface-card/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-border">
                     <div className="flex items-center gap-3 text-xs">
                         <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                            <span className="text-gray-600">High traffic</span>
+                            <div className="w-3 h-3 rounded-full bg-blue-500/100"></div>
+                            <span className="text-muted-foreground">High traffic</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <div className="w-3 h-3 rounded-full bg-blue-200"></div>
-                            <span className="text-gray-600">Low traffic</span>
+                            <span className="text-muted-foreground">Low traffic</span>
                         </div>
                     </div>
                 </div>
@@ -247,23 +247,23 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
 
             {/* Country List - Hidden in mini mode */}
             {!mini && data && data.countries.length > 0 && (
-                <div className="p-6 border-t border-gray-100 flex-shrink-0">
-                    <h4 className="text-sm font-bold text-gray-900 mb-4">Top Countries</h4>
+                <div className="p-6 border-t border-border flex-shrink-0">
+                    <h4 className="text-sm font-bold text-foreground mb-4">Top Countries</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {data.countries.slice(0, 8).map((country, index) => (
                             <div
                                 key={country.code}
-                                className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                                className="flex items-center gap-3 p-3 bg-muted rounded-xl"
                             >
                                 <span className="text-lg">
                                     {getFlagEmoji(country.code)}
                                 </span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900">{country.code}</p>
-                                    <p className="text-xs text-gray-500">{country.views} views</p>
+                                    <p className="text-sm font-medium text-foreground">{country.code}</p>
+                                    <p className="text-xs text-muted-foreground">{country.views} views</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs font-bold text-gray-400">#{index + 1}</span>
+                                    <span className="text-xs font-bold text-muted-foreground">#{index + 1}</span>
                                 </div>
                             </div>
                         ))}
@@ -273,14 +273,14 @@ const WorldMap: React.FC<WorldMapProps> = memo(({ bioId, mini = false, blocked =
 
             {/* Empty State */}
             {(!data || data.countries.length === 0) && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm p-6 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-card/80 backdrop-blur-sm p-6 text-center">
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-8 h-8 text-muted-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">No visitor data yet</h3>
-                    <p className="text-sm text-gray-500">Share your bio page to start tracking visitor locations</p>
+                    <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>No visitor data yet</h3>
+                    <p className="text-sm text-muted-foreground">Share your bio page to start tracking visitor locations</p>
                 </div>
             )}
         </div>

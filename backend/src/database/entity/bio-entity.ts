@@ -11,6 +11,7 @@ import { BookingEntity } from "./booking-entity";
 import { FormEntity } from "./form-entity";
 import { PortfolioItemEntity } from "./portfolio-item-entity";
 import { BioVerificationRequestEntity } from "./bio-verification-request-entity";
+import { AutoPostScheduleEntity } from "./auto-post-schedule-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -242,4 +243,7 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => BioVerificationRequestEntity, (request) => request.bio)
     verificationRequests!: BioVerificationRequestEntity[];
+
+    @OneToMany(() => AutoPostScheduleEntity, (schedule) => schedule.bio)
+    autoPostSchedules!: AutoPostScheduleEntity[];
 }

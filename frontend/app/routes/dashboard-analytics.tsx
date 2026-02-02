@@ -159,7 +159,7 @@ export default function DashboardAnalytics() {
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight">{t("dashboard.analytics.locked.title")}</h1>
+                <h1 className="text-3xl font-bold text-text-main mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.locked.title")}</h1>
                 <p className="text-text-muted mb-8 max-w-md mx-auto text-base">{t("dashboard.analytics.locked.subtitle")}</p>
                 <button className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-base hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-1">
                     {t("dashboard.analytics.locked.cta")}
@@ -169,25 +169,25 @@ export default function DashboardAnalytics() {
             {/* Google Analytics Not Connected Popup */}
             {showGAPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
+                    <div className="bg-surface-card rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
                         <button
                             onClick={() => setShowGAPopup(false)}
-                            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="absolute top-4 right-4 p-2 hover:bg-muted rounded-lg transition-colors"
                         >
-                            <X className="w-5 h-5 text-gray-400" />
+                            <X className="w-5 h-5 text-muted-foreground" />
                         </button>
 
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <BarChart3 className="w-6 h-6 text-blue-600" />
+                                <BarChart3 className="w-6 h-6 text-blue-400" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">{t("dashboard.analytics.gaPopup.title")}</h3>
-                                <p className="text-sm text-gray-500">{t("dashboard.analytics.gaPopup.subtitle")}</p>
+                                <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.gaPopup.title")}</h3>
+                                <p className="text-sm text-muted-foreground">{t("dashboard.analytics.gaPopup.subtitle")}</p>
                             </div>
                         </div>
 
-                        <p className="text-gray-600 mb-6">{t("dashboard.analytics.gaPopup.body")}</p>
+                        <p className="text-muted-foreground mb-6">{t("dashboard.analytics.gaPopup.body")}</p>
 
                         <div className="flex gap-3">
                             <Link
@@ -199,7 +199,7 @@ export default function DashboardAnalytics() {
                             </Link>
                             <button
                                 onClick={() => setShowGAPopup(false)}
-                                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                                className="px-4 py-3 bg-muted text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                             >
                                 {t("dashboard.analytics.gaPopup.close")}
                             </button>
@@ -232,7 +232,7 @@ export default function DashboardAnalytics() {
                 />
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="analytics-header">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">{t("dashboard.analytics.title")}</h1>
+                        <h1 className="text-2xl font-bold text-text-main tracking-tight mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.title")}</h1>
                         <p className="text-text-muted text-sm">{t("dashboard.analytics.subtitle")}</p>
                     </div>
                     <button
@@ -248,39 +248,39 @@ export default function DashboardAnalytics() {
 
                 <div className="space-y-6">
 
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="analytics-codes">
+                    <section className="bg-surface-card p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="analytics-codes">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
-                            <div className="p-2.5 bg-gray-100 text-gray-600 rounded-lg">
+                            <div className="p-2.5 bg-muted text-muted-foreground rounded-lg">
                                 <Settings className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.analytics.advanced.title")}</h2>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.advanced.title")}</h2>
                                 <p className="text-text-muted text-sm">{t("dashboard.analytics.advanced.subtitle")}</p>
                             </div>
                         </div>
 
                         {analyticsData && (
-                            <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100" data-tour="analytics-overview">
+                            <div className="mb-6 p-4 bg-blue-500/10 rounded-xl border border-blue-100" data-tour="analytics-overview">
                                 <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5" />
                                     {t("dashboard.analytics.overview.title")}
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                                        <p className="text-sm text-gray-500 mb-1">{t("dashboard.analytics.overview.activeUsers")}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
+                                    <div className="bg-surface-card p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-muted-foreground mb-1">{t("dashboard.analytics.overview.activeUsers")}</p>
+                                        <p className="text-2xl font-bold text-foreground">
                                             {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[0].value), 0)}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                                        <p className="text-sm text-gray-500 mb-1">{t("dashboard.analytics.overview.pageViews")}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
+                                    <div className="bg-surface-card p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-muted-foreground mb-1">{t("dashboard.analytics.overview.pageViews")}</p>
+                                        <p className="text-2xl font-bold text-foreground">
                                             {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[1].value), 0)}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                                        <p className="text-sm text-gray-500 mb-1">{t("dashboard.analytics.overview.totalTime")}</p>
-                                        <p className="text-2xl font-bold text-gray-900">
+                                    <div className="bg-surface-card p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-muted-foreground mb-1">{t("dashboard.analytics.overview.totalTime")}</p>
+                                        <p className="text-2xl font-bold text-foreground">
                                             {(() => {
                                                 const seconds = (analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[2].value), 0);
                                                 const h = Math.floor(seconds / 3600);
@@ -289,19 +289,19 @@ export default function DashboardAnalytics() {
                                             })()}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                                        <p className="text-sm text-gray-500 mb-1">{t("dashboard.analytics.overview.interactions")}</p>
+                                    <div className="bg-surface-card p-4 rounded-lg shadow-sm">
+                                        <p className="text-sm text-muted-foreground mb-1">{t("dashboard.analytics.overview.interactions")}</p>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-sm font-bold text-gray-900">
+                                            <span className="text-sm font-bold text-foreground">
                                                 {t("dashboard.analytics.overview.scrolls")}: <span className="font-normal">{(analyticsData.events?.rows || []).find((r: any) => r.dimensionValues[0].value === 'scroll')?.metricValues[0].value || 0}</span>
                                             </span>
-                                            <span className="text-sm font-bold text-gray-900">
+                                            <span className="text-sm font-bold text-foreground">
                                                 {t("dashboard.analytics.overview.clicks")}: <span className="font-normal">{(analyticsData.events?.rows || []).find((r: any) => r.dimensionValues[0].value === 'click')?.metricValues[0].value || 0}</span>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-xs text-blue-600 mt-3 flex items-center gap-1">
+                                <p className="text-xs text-blue-400 mt-3 flex items-center gap-1">
                                     <Sparkles className="w-3 h-3" />
                                     {t("dashboard.analytics.overview.note")}
                                 </p>
@@ -348,7 +348,7 @@ export default function DashboardAnalytics() {
                                             onChange={(e) => setNoIndex(e.target.checked)}
                                             className="peer sr-only"
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-card after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <div>

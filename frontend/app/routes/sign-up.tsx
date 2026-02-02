@@ -118,7 +118,7 @@ export default function Signup() {
         <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
             <AuthBackground />
             <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-white/50">
+                <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-border">
 
                     <div className="text-center mb-8">
                         <h1 className="text-2xl font-bold mb-3">
@@ -174,15 +174,15 @@ export default function Signup() {
                             <div className="mt-2 text-xs">
                                 <p className="text-text-muted mb-2 font-medium">{t("auth.signup.requirementsTitle")}</p>
                                 <ul className="space-y-1.5 pl-1">
-                                    <li className={`flex items-center gap-2 ${hasFullName ? 'text-green-600' : 'text-text-muted'}`}>
+                                    <li className={`flex items-center gap-2 ${hasFullName ? 'text-green-400' : 'text-text-muted'}`}>
                                         {hasFullName ? <CheckIcon /> : <CircleIcon />}
                                         <span>{t("auth.signup.requirements.fullName")}</span>
                                     </li>
-                                    <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-600' : 'text-text-muted'}`}>
+                                    <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-400' : 'text-text-muted'}`}>
                                         {hasUppercase ? <CheckIcon /> : <CircleIcon />}
                                         <span>{t("auth.signup.requirements.uppercase")}</span>
                                     </li>
-                                    <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-600' : 'text-text-muted'}`}>
+                                    <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-400' : 'text-text-muted'}`}>
                                         {hasMinLength ? <CheckIcon /> : <CircleIcon />}
                                         <span>{t("auth.signup.requirements.length")}</span>
                                     </li>
@@ -257,7 +257,7 @@ export default function Signup() {
                         </p>
 
                         {bioError && (
-                            <div className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                            <div className="mt-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
                                 {bioError}
                             </div>
                         )}
@@ -269,7 +269,7 @@ export default function Signup() {
                                     setShowBioModal(false);
                                     logout();
                                 }}
-                                className="w-full sm:w-40 rounded-full border border-[#E8E1D9] bg-white px-6 py-3 text-base font-semibold text-[#1F1F1F] shadow-sm hover:bg-[#F3EFE9]"
+                                className="w-full sm:w-40 rounded-full border border-border bg-surface-card px-6 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted"
                             >
                                 Voltar
                             </button>

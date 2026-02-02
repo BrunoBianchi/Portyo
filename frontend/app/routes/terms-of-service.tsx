@@ -18,7 +18,7 @@ export default function TermsOfService() {
 
             <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-24 md:py-32">
                 <header className="mb-16">
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{t("termsPage.title")}</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">{t("termsPage.title")}</h1>
                     <p className="text-lg text-text-muted">{t("termsPage.updated")}</p>
                 </header>
 

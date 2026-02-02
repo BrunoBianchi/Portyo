@@ -131,7 +131,7 @@ export default function SiteBlogPostPage() {
                         <span suppressHydrationWarning>{t("views", { count: post.views ?? 0 })}</span>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-8 tracking-tight">
+                    <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-[1.1] mb-8 tracking-tight">
                         {post.title}
                     </h1>
 

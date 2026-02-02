@@ -192,8 +192,8 @@ export default function DashboardFormsList() {
             />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10" data-tour="forms-header">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{t("dashboard.forms.title")}</h1>
-                    <p className="text-gray-500 text-medium">{t("dashboard.forms.subtitle")}</p>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.title")}</h1>
+                    <p className="text-muted-foreground text-medium">{t("dashboard.forms.subtitle")}</p>
                 </div>
                 <button
                     data-tour="forms-create"
@@ -201,12 +201,12 @@ export default function DashboardFormsList() {
                     className="group bg-gray-900 text-white pl-4 pr-5 py-3 rounded-full font-bold shadow-lg hover:bg-black hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-3 w-fit"
                     disabled={isLoading}
                 >
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-surface-card/20 flex items-center justify-center group-hover:bg-surface-card/30 transition-colors">
                         <Plus className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex flex-col items-start leading-none gap-0.5">
                         <span className="text-sm">{t("dashboard.forms.create")}</span>
-                        <span className="text-[10px] text-gray-400 font-mono">
+                        <span className="text-[10px] text-muted-foreground font-mono">
                             {forms.length} / {
                                 (() => {
                                     const plan = (user?.plan || 'free') as PlanType;
@@ -224,7 +224,7 @@ export default function DashboardFormsList() {
             />
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-medium">
+                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-lg text-destructive text-sm font-medium">
                     {error}
                 </div>
             )}
@@ -232,16 +232,16 @@ export default function DashboardFormsList() {
             {isLoading && forms.length === 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="bg-gray-50 h-48 rounded-xl animate-pulse" />
+                        <div key={i} className="bg-muted h-48 rounded-xl animate-pulse" />
                     ))}
                 </div>
             ) : forms.length === 0 ? (
-                <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 p-12 flex flex-col items-center justify-center text-center" data-tour="forms-grid">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                        <FileText className="w-8 h-8 text-gray-400" />
+                <div className="bg-muted rounded-xl border-2 border-dashed border-border p-12 flex flex-col items-center justify-center text-center" data-tour="forms-grid">
+                    <div className="w-16 h-16 bg-surface-card rounded-full flex items-center justify-center shadow-sm mb-4">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{t("dashboard.forms.emptyTitle")}</h3>
-                    <p className="text-gray-500 mb-6 max-w-sm">{t("dashboard.forms.emptySubtitle")}</p>
+                    <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.emptyTitle")}</h3>
+                    <p className="text-muted-foreground mb-6 max-w-sm">{t("dashboard.forms.emptySubtitle")}</p>
                     <button
                         onClick={createNewForm}
                         className="btn btn-primary"
@@ -256,7 +256,7 @@ export default function DashboardFormsList() {
                             key={form.id}
                             data-tour={index === 0 ? "forms-card" : undefined}
                             to={`/dashboard/forms/${form.id}`}
-                            className="group bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex flex-col h-full"
+                            className="group bg-surface-card p-6 rounded-xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex flex-col h-full"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-primary/5 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
@@ -264,7 +264,7 @@ export default function DashboardFormsList() {
                                 </div>
                                 <div className="relative">
                                     <button
-                                        className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-900 transition-colors"
+                                        className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                                         onClick={(e) => deleteForm(form, e)}
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -272,10 +272,10 @@ export default function DashboardFormsList() {
                                 </div>
                             </div>
 
-                            <h3 className="font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors">{form.title || t("dashboard.forms.defaultName")}</h3>
-                            <p className="text-sm text-gray-500 mb-6">{t("dashboard.forms.lastUpdated", { date: new Date(form.updatedAt).toLocaleDateString() })}</p>
+                            <h3 className="font-bold text-foreground mb-1 group-hover:text-primary transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{form.title || t("dashboard.forms.defaultName")}</h3>
+                            <p className="text-sm text-muted-foreground mb-6">{t("dashboard.forms.lastUpdated", { date: new Date(form.updatedAt).toLocaleDateString() })}</p>
 
-                            <div className="mt-auto flex items-center justify-between text-sm font-medium text-gray-600">
+                            <div className="mt-auto flex items-center justify-between text-sm font-medium text-muted-foreground">
                                 <div className="flex items-center gap-4">
                                     <span>{t("dashboard.forms.fieldsCount", { count: form.fields.length })}</span>
                                     <span className="w-1 h-1 bg-gray-300 rounded-full" />
@@ -299,18 +299,18 @@ export default function DashboardFormsList() {
             {/* Delete Confirmation Modal */}
             {deletingForm && typeof document !== "undefined" && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                    <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-destructive">
                             <Trash2 className="w-6 h-6" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.forms.deleteTitle")}</h3>
-                        <p className="text-gray-500 text-sm mb-6">
+                        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.deleteTitle")}</h3>
+                        <p className="text-muted-foreground text-sm mb-6">
                             {t("dashboard.forms.deleteDescription", { title: deletingForm.title || t("dashboard.forms.defaultName") })}
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeletingForm(null)}
-                                className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                                className="flex-1 py-2.5 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
                             >
                                 {t("dashboard.forms.cancel")}
                             </button>

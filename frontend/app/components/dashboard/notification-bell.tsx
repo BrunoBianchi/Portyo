@@ -168,12 +168,12 @@ export function NotificationBell() {
                     setIsOpen(!isOpen);
                     if (!isOpen) fetchNotifications();
                 }}
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="relative p-2 hover:bg-muted rounded-lg transition-colors"
                 aria-label={t("dashboard.notifications.bell")}
             >
-                <Bell className={`w-5 h-5 text-gray-600 ${unreadCount > 0 ? 'animate-pulse' : ''}`} />
+                <Bell className={`w-5 h-5 text-muted-foreground ${unreadCount > 0 ? 'animate-pulse' : ''}`} />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                    <span className="absolute -top-1 -right-1 bg-destructive/100 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -182,7 +182,7 @@ export function NotificationBell() {
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="fixed z-[9999] bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden ring-1 ring-black/5 flex flex-col"
+                    className="fixed z-[9999] bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden ring-1 ring-black/5 flex flex-col"
                     style={{
                         ...(window.innerWidth < 768 ? {
                             top: 'auto',
@@ -202,8 +202,8 @@ export function NotificationBell() {
                     }}
                 >
                     {/* Header */}
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 flex-shrink-0">
-                        <h3 className="font-bold text-gray-900">{t("dashboard.notifications.title")}</h3>
+                    <div className="p-4 border-b border-border flex items-center justify-between bg-muted flex-shrink-0">
+                        <h3 className="font-bold text-foreground">{t("dashboard.notifications.title")}</h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={handleMarkAllAsRead}
@@ -215,9 +215,9 @@ export function NotificationBell() {
                         {/* Mobile close button */}
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="md:hidden p-1 hover:bg-gray-200 rounded-full"
+                            className="md:hidden p-1 hover:bg-muted rounded-full"
                         >
-                            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -226,11 +226,11 @@ export function NotificationBell() {
                     {/* Notifications List - flexible height */}
                     <div className="overflow-y-auto flex-1 overscroll-contain">
                         {loading && notifications.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400">
+                            <div className="p-8 text-center text-muted-foreground">
                                 <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
                             </div>
                         ) : notifications.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400">
+                            <div className="p-8 text-center text-muted-foreground">
                                 <Bell className="w-12 h-12 mx-auto mb-2 opacity-30" />
                                 <p className="text-sm font-medium">{t("dashboard.notifications.empty")}</p>
                             </div>
@@ -250,7 +250,7 @@ export function NotificationBell() {
 
                     {/* Footer - fixed at bottom */}
                     {notifications.length > 0 && (
-                        <div className="p-3 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+                        <div className="p-3 border-t border-border bg-muted flex-shrink-0">
                             <Link
                                 to={withLang("/dashboard/notifications")}
                                 className="block text-center text-sm font-medium text-primary hover:text-primary-hover transition-colors"

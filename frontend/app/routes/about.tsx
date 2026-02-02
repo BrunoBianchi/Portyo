@@ -18,7 +18,7 @@ export default function About() {
         <div className="min-h-screen bg-surface-alt font-sans text-text-main selection:bg-primary selection:text-black pt-24 pb-20 px-6">
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
                     {t("aboutPage.hero.pre")} <span className="text-primary">{t("aboutPage.hero.highlight")}</span>
                 </h1>
 

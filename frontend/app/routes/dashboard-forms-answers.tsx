@@ -96,15 +96,15 @@ export default function DashboardFormsAnswers() {
         return (
             <div className="p-8 max-w-7xl mx-auto">
                 <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full animate-pulse" />
+                    <div className="w-10 h-10 bg-muted rounded-full animate-pulse" />
                     <div className="space-y-2">
-                        <div className="h-6 w-48 bg-gray-100 rounded animate-pulse" />
-                        <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-6 w-48 bg-muted rounded animate-pulse" />
+                        <div className="h-4 w-32 bg-muted rounded animate-pulse" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 p-8 space-y-4">
+                <div className="bg-surface-card rounded-xl border border-border p-8 space-y-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-16 bg-gray-50 rounded-lg animate-pulse" />
+                        <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
                     ))}
                 </div>
             </div>
@@ -120,33 +120,33 @@ export default function DashboardFormsAnswers() {
                 <div className="flex items-center gap-4">
                     <Link
                         to="/dashboard/forms"
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm shrink-0"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-card border border-border text-muted-foreground hover:text-foreground hover:border-gray-300 transition-all shadow-sm shrink-0"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-1">
-                            <span className="hover:text-gray-900 transition-colors">Forms</span>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-1">
+                            <span className="hover:text-foreground transition-colors">Forms</span>
                             <span className="text-gray-300">/</span>
-                            <span className="hover:text-gray-900 transition-colors max-w-[150px] truncate">{form.title}</span>
+                            <span className="hover:text-foreground transition-colors max-w-[150px] truncate">{form.title}</span>
                             <span className="text-gray-300">/</span>
                             <span className="font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider">{t("dashboard.formsAnswers.submissions")}</span>
                         </div>
-                        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                            {answers.length} <span className="text-lg md:text-xl font-medium text-gray-400 font-sans">{answers.length === 1 ? t("dashboard.formsAnswers.submission") : t("dashboard.formsAnswers.submissions")}</span>
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
+                            {answers.length} <span className="text-lg md:text-xl font-medium text-muted-foreground font-sans">{answers.length === 1 ? t("dashboard.formsAnswers.submission") : t("dashboard.formsAnswers.submissions")}</span>
                         </h1>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 sm:flex-none">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder={t("dashboard.formsAnswers.searchPlaceholder")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-full sm:w-64 transition-all shadow-sm"
+                            className="pl-9 pr-4 py-2.5 rounded-xl border border-border bg-surface-card focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-full sm:w-64 transition-all shadow-sm"
                         />
                     </div>
 
@@ -154,7 +154,7 @@ export default function DashboardFormsAnswers() {
                         <button
                             onClick={downloadCSV}
                             disabled={answers.length === 0}
-                            className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 rounded-xl font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                            className="flex-1 sm:flex-none px-4 py-2.5 bg-surface-card border border-border text-gray-700 hover:bg-muted hover:text-foreground hover:border-gray-300 rounded-xl font-medium text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                         >
                             <Download className="w-4 h-4" />
                             <span className="whitespace-nowrap">{t("dashboard.formsAnswers.exportCsv")}</span>
@@ -172,19 +172,19 @@ export default function DashboardFormsAnswers() {
 
             {/* Content */}
             {answers.length === 0 ? (
-                <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 p-12 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                        <FileText className="w-8 h-8 text-gray-400" />
+                <div className="bg-muted rounded-2xl border-2 border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-surface-card rounded-full flex items-center justify-center shadow-sm mb-4">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{t("dashboard.formsAnswers.emptyTitle")}</h3>
-                    <p className="text-gray-500 max-w-sm">{t("dashboard.formsAnswers.emptySubtitle")}</p>
+                    <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.formsAnswers.emptyTitle")}</h3>
+                    <p className="text-muted-foreground max-w-sm">{t("dashboard.formsAnswers.emptySubtitle")}</p>
                 </div>
             ) : (
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-surface-card border border-border rounded-2xl shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                                <tr className="bg-muted/50 border-b border-border text-xs uppercase tracking-wider text-muted-foreground font-bold">
                                     <th className="px-6 py-4 w-64 min-w-[200px]">{t("dashboard.formsAnswers.submissionInfo")}</th>
                                     {form.fields.map(field => (
                                         <th key={field.id} className="px-6 py-4 min-w-[200px]">
@@ -195,19 +195,19 @@ export default function DashboardFormsAnswers() {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredAnswers.map((answer) => (
-                                    <tr key={answer.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr key={answer.id} className="hover:bg-muted/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                                                    <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                                                     {new Date(answer.createdAt).toLocaleDateString()}
                                                 </div>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     <Clock className="w-3 h-3" />
                                                     {new Date(answer.createdAt).toLocaleTimeString()}
                                                 </div>
                                                 {answer.ipAddress && (
-                                                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 font-mono">
+                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 font-mono">
                                                         <Globe className="w-3 h-3" />
                                                         {answer.ipAddress}
                                                     </div>

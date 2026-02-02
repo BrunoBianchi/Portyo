@@ -140,7 +140,7 @@ export default function DashboardSeo() {
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight">{t("dashboard.seo.upgradeTitle")}</h1>
+                <h1 className="text-3xl font-bold text-text-main mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.seo.upgradeTitle")}</h1>
                 <p className="text-text-muted mb-8 max-w-md mx-auto text-base">{t("dashboard.seo.upgradeSubtitle")}</p>
                 <button className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-base hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-1">
                     {t("dashboard.seo.upgradeCta")}
@@ -164,7 +164,7 @@ export default function DashboardSeo() {
                 />
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="seo-header">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">{t("dashboard.seo.title")}</h1>
+                        <h1 className="text-2xl font-bold text-text-main tracking-tight mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.seo.title")}</h1>
                         <p className="text-text-muted text-sm">{t("dashboard.seo.subtitle")}</p>
                     </div>
                     <button
@@ -189,13 +189,13 @@ export default function DashboardSeo() {
 
                 <div className="space-y-6">
                     {/* Basic SEO */}
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-basic">
+                    <section className="bg-surface-card p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-basic">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
-                            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+                            <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-lg">
                                 <Search className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-text-main tracking-tight flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
                                     {t("dashboard.seo.section.search.title")}
                                     <InfoTooltip content={t("tooltips.seo.whatIsSeo")} position="right" />
                                 </h2>
@@ -257,13 +257,13 @@ export default function DashboardSeo() {
                     </section>
 
                     {/* Social Media */}
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-social">
+                    <section className="bg-surface-card p-6 rounded-xl shadow-sm border border-border space-y-6" data-tour="seo-social">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
                             <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg">
                                 <Share2 className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.seo.section.social.title")}</h2>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.seo.section.social.title")}</h2>
                                 <p className="text-text-muted text-sm">{t("dashboard.seo.section.social.subtitle")}</p>
                             </div>
                         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "~/services/api";
 import { format } from "date-fns";
-import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Share2, Home, ChevronRight } from "lucide-react";
 import { sanitizeHtml } from "~/utils/security";
 import ReactMarkdown from "react-markdown";
 
@@ -21,28 +21,33 @@ interface BlogPost {
 }
 
 interface BlogPostViewProps {
-    postId: string;
+    slug: string;
     bio: any;
     subdomain: string;
 }
 
-export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdomain }) => {
+// Remove o H1 do conteúdo markdown para evitar duplicação do título
+const removeFirstH1 = (content: string) => {
+    return content.replace(/^#\s+.+\n?/m, '');
+};
+
+export const BlogPostView: React.FC<BlogPostViewProps> = ({ slug, bio, subdomain }) => {
     const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
-        if (!postId) {
+        if (!slug) {
             setError("Post not found");
             setLoading(false);
             return;
         }
         fetchPost();
-    }, [postId]);
+    }, [slug]);
 
     const fetchPost = async () => {
         try {
-            const res = await api.get(`/public/blog/post/${postId}`);
+            const res = await api.get(`/public/blog/post/${slug}`);
             setPost(res.data);
 
             // Update page title for SEO
@@ -95,10 +100,10 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
                     <p style={{ fontSize: 20, fontWeight: 700, color: '#111', marginBottom: 8 }}>Post not found</p>
                     <p style={{ color: '#6b7280', marginBottom: 24 }}>The post you're looking for doesn't exist.</p>
                     <a
-                        href="/blog"
+                        href="/"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#111', color: '#fff', borderRadius: 12, textDecoration: 'none', fontWeight: 600 }}
                     >
-                        ← Back to Blog
+                        ← Back to Home
                     </a>
                 </div>
             </div>
@@ -111,20 +116,85 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
     const headerImage = getHeaderImage(post.content);
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
     const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
+    const processedContent = isHtmlContent ? post.content : removeFirstH1(post.content);
 
     return (
         <article style={{ minHeight: '100vh', background: '#fff' }}>
+            {/* Navigation Bar com Breadcrumb */}
+            <nav style={{ 
+                position: 'sticky', 
+                top: 0, 
+                zIndex: 100, 
+                background: 'rgba(255, 255, 255, 0.95)', 
+                backdropFilter: 'blur(10px)',
+                borderBottom: '1px solid #e5e7eb'
+            }}>
+                <div style={{ maxWidth: 720, margin: '0 auto', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {/* Breadcrumb */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+                        <a 
+                            href="/" 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 6, 
+                                color: '#6b7280', 
+                                textDecoration: 'none',
+                                transition: 'color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#111'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+                        >
+                            <Home style={{ width: 16, height: 16 }} />
+                            <span style={{ fontWeight: 500 }}>{authorName}</span>
+                        </a>
+                        <ChevronRight style={{ width: 14, height: 14, color: '#d1d5db' }} />
+                        <a 
+                            href="/blog" 
+                            style={{ 
+                                color: '#6b7280', 
+                                textDecoration: 'none',
+                                transition: 'color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#111'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+                        >
+                            Blog
+                        </a>
+                        <ChevronRight style={{ width: 14, height: 14, color: '#d1d5db' }} />
+                        <span style={{ color: '#111', fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {post.title}
+                        </span>
+                    </div>
+
+                    {/* Share Button */}
+                    <button
+                        onClick={handleShare}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 6, 
+                            padding: '8px 16px', 
+                            background: '#f3f4f6', 
+                            border: 'none', 
+                            borderRadius: 8, 
+                            cursor: 'pointer', 
+                            fontWeight: 500, 
+                            color: '#374151', 
+                            fontSize: 14,
+                            transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#e5e7eb'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                    >
+                        <Share2 style={{ width: 16, height: 16 }} />
+                        Share
+                    </button>
+                </div>
+            </nav>
+
             {/* Header */}
             <header style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 32px' }}>
-                {/* Back Button */}
-                <a
-                    href="/blog"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#6b7280', textDecoration: 'none', marginBottom: 32 }}
-                >
-                    <ArrowLeft style={{ width: 16, height: 16 }} />
-                    Back to Blog
-                </a>
-
                 {/* Title */}
                 <h1 style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 900, color: '#111', lineHeight: 1.15, letterSpacing: '-0.02em', margin: '0 0 24px' }}>
                     {post.title}
@@ -177,9 +247,33 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
                     }}
                 >
                     {isHtmlContent ? (
-                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedContent) }} />
                     ) : (
-                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                        <ReactMarkdown
+                            components={{
+                                h1: ({ children }) => <h1 style={{ fontSize: '2em', fontWeight: 700, color: '#111', margin: '1.5em 0 0.5em', lineHeight: 1.3 }}>{children}</h1>,
+                                h2: ({ children }) => <h2 style={{ fontSize: '1.5em', fontWeight: 700, color: '#111', margin: '1.5em 0 0.5em', lineHeight: 1.3 }}>{children}</h2>,
+                                h3: ({ children }) => <h3 style={{ fontSize: '1.25em', fontWeight: 700, color: '#111', margin: '1.5em 0 0.5em', lineHeight: 1.3 }}>{children}</h3>,
+                                p: ({ children }) => <p style={{ margin: '0 0 1.5em' }}>{children}</p>,
+                                a: ({ href, children }) => <a href={href} style={{ color: '#2563eb', textDecoration: 'none' }}>{children}</a>,
+                                ul: ({ children }) => <ul style={{ margin: '0 0 1.5em', paddingLeft: '1.5em' }}>{children}</ul>,
+                                ol: ({ children }) => <ol style={{ margin: '0 0 1.5em', paddingLeft: '1.5em' }}>{children}</ol>,
+                                li: ({ children }) => <li style={{ margin: '0.5em 0' }}>{children}</li>,
+                                blockquote: ({ children }) => (
+                                    <blockquote style={{ borderLeft: '4px solid #111', background: '#f9fafb', margin: '1.5em 0', padding: '1em 1.5em', borderRadius: '0 12px 12px 0', fontStyle: 'italic' }}>
+                                        {children}
+                                    </blockquote>
+                                ),
+                                code: ({ children }) => <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 4, fontSize: '0.9em', fontFamily: 'monospace' }}>{children}</code>,
+                                pre: ({ children }) => (
+                                    <pre style={{ background: '#1f2937', color: '#f3f4f6', padding: '1.5em', borderRadius: 12, overflowX: 'auto', margin: '1.5em 0' }}>
+                                        {children}
+                                    </pre>
+                                ),
+                            }}
+                        >
+                            {processedContent}
+                        </ReactMarkdown>
                     )}
                 </div>
 
@@ -210,20 +304,8 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postId, bio, subdoma
                     .blog-post-content li { margin: 0.5em 0; }
                 `}</style>
 
-                {/* Share Section */}
-                <div style={{ marginTop: 48, paddingTop: 32, borderTop: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Enjoyed this? Share it.</p>
-                    <button
-                        onClick={handleShare}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#f3f4f6', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, color: '#374151', fontSize: 14 }}
-                    >
-                        <Share2 style={{ width: 16, height: 16 }} />
-                        Share
-                    </button>
-                </div>
-
                 {/* Author Card */}
-                <div style={{ marginTop: 32, padding: 24, background: '#f9fafb', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ marginTop: 48, padding: 24, background: '#f9fafb', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
                     <img
                         src={authorImage}
                         alt={authorName}

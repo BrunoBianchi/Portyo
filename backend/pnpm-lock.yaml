@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@boundaryml/baml':
+        specifier: ^0.218.1
+        version: 0.218.1
+      '@byjohann/toon':
+        specifier: ^0.6.0
+        version: 0.6.0
       '@dotenvx/dotenvx':
         specifier: ^1.51.4
         version: 1.51.4
@@ -468,6 +474,64 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
+  '@boundaryml/baml-darwin-arm64@0.218.1':
+    resolution: {integrity: sha512-148Dkt7/WmBcWdkLW7kBQdwiHvlfSFSjx45ek6uvwbsYp0geN/fLnTARX3R+csRXHRD3JJ1asJkTkg7nnGQj9g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@boundaryml/baml-darwin-x64@0.218.1':
+    resolution: {integrity: sha512-5t/EDE42jZeHH1wHTV6+TTRhAk1f8hvmw9K9CLHTGrtMh62XD0QpvyKjaISJLWqzkK8LMsG3GIEjiXzNT9d49w==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@boundaryml/baml-linux-arm64-gnu@0.218.1':
+    resolution: {integrity: sha512-DhhhuSqt2FqHhl5zdBirkn9IDgOFijoY36Qwo2ea6ehAZDHW1gVH1OKiwTEtASeoVTN+orpEPN7eHKJ82g1+DA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-arm64-musl@0.218.1':
+    resolution: {integrity: sha512-aJxD3V75ShVtp0gVx6/lnmYctxWyy4CYn78IfNP8IkFVTyP/yE7M//O2/4af7ro7rjiKEzFJaDAoc4zrauv2jQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-gnu@0.218.1':
+    resolution: {integrity: sha512-vVeM90S9IS1PinE1CHzbkOd2FsLLgUgDSzJhJB/Ag6ftXJslZsUKPA0feR0b0EY22p1ZLpQncYumQnLahG+mCg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-musl@0.218.1':
+    resolution: {integrity: sha512-Sq+Yq2Yvkh7FIpwTRCnh5PpyilDDploiIz5YJtf0e23uXIqti1SY+BVbJ3KO10WrJgZhmTEqvpVRUzSfuE547A==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-win32-arm64-msvc@0.218.1':
+    resolution: {integrity: sha512-UtmeauttBjZaqWq3WF6TxRvlSY59lSNCd7hJDGrTqRKM+cQeCVAo4vq4IfODol8fagnpLnCgcEnXH6TZuV5I6w==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@boundaryml/baml-win32-x64-msvc@0.218.1':
+    resolution: {integrity: sha512-WriD5EUds3RJL9Y3jbYNy6/1iYS4eP2iEtMyOPfu1e8/GitMMgyD1WKx2+xXP4wa9/PhOEjFQ5oT6WPOOq3ocg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@boundaryml/baml@0.218.1':
+    resolution: {integrity: sha512-GQBfdBE+PAij+0lzUZKjhtsDB+ecust9PNwBgImHqOXqJsa5j0VPrSy0gKRVJOxUW/svG7uDQH5+f3bpBRi0oA==}
+    engines: {node: '>= 10'}
+    hasBin: true
+
+  '@byjohann/toon@0.6.0':
+    resolution: {integrity: sha512-yXvqQfVf9hyIiX3uqpxDc5rfJI2HF2uzM3efOz/GhsQnn9D6hLpnAUAtArtKVULQqECCYO+Cxjr5DxvSwAgVaw==}
+    deprecated: Moved to @toon-format organization. Use @toon-format/toon (library) and @toon-format/cli (CLI) instead.
+    hasBin: true
+
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
     engines: {node: '>=0.1.90'}
@@ -868,6 +932,9 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       '@redis/client': ^5.10.0
+
+  '@scarf/scarf@1.4.0':
+    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
   '@sinclair/typebox@0.34.47':
     resolution: {integrity: sha512-ZGIBQ+XDvO5JQku9wmwtabcVTHJsgSWAHYtVuM9pBNNR5E88v6Jcj/llpmsjivig5X8A8HHOb4/mbEKPS5EvAw==}
@@ -3880,6 +3947,45 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
+  '@boundaryml/baml-darwin-arm64@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-darwin-x64@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-gnu@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-musl@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-gnu@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-musl@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-win32-arm64-msvc@0.218.1':
+    optional: true
+
+  '@boundaryml/baml-win32-x64-msvc@0.218.1':
+    optional: true
+
+  '@boundaryml/baml@0.218.1':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+    optionalDependencies:
+      '@boundaryml/baml-darwin-arm64': 0.218.1
+      '@boundaryml/baml-darwin-x64': 0.218.1
+      '@boundaryml/baml-linux-arm64-gnu': 0.218.1
+      '@boundaryml/baml-linux-arm64-musl': 0.218.1
+      '@boundaryml/baml-linux-x64-gnu': 0.218.1
+      '@boundaryml/baml-linux-x64-musl': 0.218.1
+      '@boundaryml/baml-win32-arm64-msvc': 0.218.1
+      '@boundaryml/baml-win32-x64-msvc': 0.218.1
+
+  '@byjohann/toon@0.6.0': {}
+
   '@colors/colors@1.6.0': {}
 
   '@cspotcode/source-map-support@0.8.1':
@@ -4330,6 +4436,8 @@ snapshots:
   '@redis/time-series@5.10.0(@redis/client@5.10.0)':
     dependencies:
       '@redis/client': 5.10.0
+
+  '@scarf/scarf@1.4.0': {}
 
   '@sinclair/typebox@0.34.47': {}
 

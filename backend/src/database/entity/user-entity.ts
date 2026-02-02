@@ -5,6 +5,7 @@ import { PostEntity } from "./posts-entity";
 import * as bcrypt from "bcrypt";
 import { QRCodeEntity } from "./qrcode-entity";
 import { BillingEntity } from "./billing-entity";
+import { AutoPostScheduleEntity } from "./auto-post-schedule-entity";
 
 
 @Entity()
@@ -68,6 +69,6 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => BillingEntity, (billing) => billing.user)
     billings!: BillingEntity[];
 
-
-
+    @OneToMany(() => AutoPostScheduleEntity, (schedule) => schedule.user)
+    autoPostSchedules!: AutoPostScheduleEntity[];
 }

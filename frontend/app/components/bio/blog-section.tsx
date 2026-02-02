@@ -11,6 +11,7 @@ interface BlogPost {
     content?: string;
     category: string;
     thumbnail?: string;
+    slug?: string;
 }
 
 export default function BlogSection() {
@@ -18,36 +19,39 @@ export default function BlogSection() {
     const currentLang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
     const withLang = (to: string) => (to.startsWith("/") ? `/${currentLang}${to}` : `/${currentLang}/${to}`);
 
+    // Estilos atualizados para tema dark com melhor contraste
     const cardStyles = [
         {
-            bg: "bg-[#1A3B38]",
-            textColor: "text-white",
-            titleColor: "text-[#D4EE72]",
+            bg: "bg-surface-card",
+            textColor: "text-foreground",
+            titleColor: "text-primary",
             type: "overlay",
+            border: "border-primary/30",
+            shadow: "shadow-primary/5",
         },
         {
-            bg: "bg-gradient-to-br from-[#B4E4FF] via-[#E8D8F0] to-[#D4EE72]",
-            textColor: "text-gray-900",
-            titleColor: "text-gray-900",
+            bg: "bg-surface-elevated",
+            textColor: "text-foreground",
+            titleColor: "text-primary",
             type: "image",
+            border: "border-border",
+            shadow: "shadow-black/30",
         },
         {
-            bg: "bg-[#E8D8F0]",
-            textColor: "text-gray-800",
-            titleColor: "text-gray-900",
+            bg: "bg-surface-card",
+            textColor: "text-foreground",
+            titleColor: "text-primary",
             type: "centered",
+            border: "border-border",
+            shadow: "shadow-black/20",
         },
         {
-            bg: "bg-gradient-to-br from-[#B4E4FF] to-[#E8D8F0]",
-            textColor: "text-gray-800",
-            titleColor: "text-gray-900",
+            bg: "bg-gradient-to-br from-primary/20 to-accent-purple/20",
+            textColor: "text-foreground",
+            titleColor: "text-primary",
             type: "gradient",
-        },
-        {
-            bg: "bg-[#D4EE72]",
-            textColor: "text-gray-800",
-            titleColor: "text-gray-900",
-            type: "highlight",
+            border: "border-primary/30",
+            shadow: "shadow-primary/10",
         },
     ];
 
@@ -75,7 +79,7 @@ export default function BlogSection() {
                     title: post.title,
                     content: post.content,
                     category: post.keywords?.[0] || "",
-                    thumbnail: post.thumbnail,
+                    thumbnail: post.thumbnail || undefined,
                 }));
 
                 setPosts(mappedPosts);
@@ -89,15 +93,15 @@ export default function BlogSection() {
     if (posts.length === 0) return null;
 
     return (
-        <section className="w-full py-16 px-4 bg-surface-alt">
+        <section className="w-full py-16 px-4 bg-surface-muted">
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-10">
-                    <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
+                    <h2 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight">
                         {t("home.blogSection.title")}
                     </h2>
                     <Link
                         to={withLang("/blog")}
-                        className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-6 py-3 text-sm font-bold text-text-main shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                        className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface-card px-6 py-3 text-sm font-bold text-foreground shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-primary/5 hover:shadow-xl hover:shadow-primary/20"
                     >
                         {t("home.blogSection.cta")}
                         <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -114,15 +118,16 @@ export default function BlogSection() {
                         return (
                         <Link
                             key={post.id}
-                            to={post.id.toString().startsWith('default') ? withLang('/blog') : withLang(`/blog/${post.id}`)}
-                            className="group flex h-full flex-col rounded-[16px] border border-black/10 bg-white p-4 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_-22px_rgba(0,0,0,0.35)]"
+                            to={post.id.toString().startsWith('default') ? withLang('/blog') : withLang(`/blog/${post.slug || post.id}`)}
+                            className={`group flex h-full flex-col rounded-2xl border ${style.border} bg-surface-card p-4 shadow-lg ${style.shadow} transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/20`}
                         >
                             <div
                                 className={`
-                                    ${style.bg} rounded-[16px] overflow-hidden relative
+                                    ${style.bg} rounded-2xl overflow-hidden relative
                                     transition-all duration-300
-                                    group-hover:shadow-xl
+                                    group-hover:shadow-lg group-hover:shadow-primary/10
                                     aspect-[4/3] min-h-[220px]
+                                    border ${style.border}
                                     ${style.type === "overlay" ? "p-6 flex flex-col justify-end" : ""}
                                     ${hasThumbnail && style.type === "image" ? "bg-contain bg-no-repeat bg-center" : ""}
                                     ${hasThumbnail && style.type !== "image" ? "bg-cover bg-center" : ""}
@@ -133,59 +138,55 @@ export default function BlogSection() {
                                         : undefined
                                 }
                             >
+                                {/* Overlay escuro para melhor contraste */}
                                 {hasThumbnail && (
                                     <div
-                                        className={`absolute inset-0 ${style.type === "overlay" ? "bg-gradient-to-t from-black/50 via-black/20 to-transparent" : "bg-black/10"}`}
+                                        className={`absolute inset-0 ${style.type === "overlay" ? "bg-gradient-to-t from-background/90 via-background/50 to-transparent" : "bg-background/30"}`}
                                     />
                                 )}
 
-                                {style.type === "overlay" && (
-                                    <h3 className={`relative z-10 text-2xl font-bold leading-tight ${style.titleColor}`}>
-                                        {post.title}
-                                    </h3>
-                                )}
-
-                                {(style.type === "centered" || style.type === "gradient" || style.type === "highlight") && (
+                                {/* Conteúdo sem thumbnail - com fundo gradiente sutil */}
+                                {!hasThumbnail && (
                                     <div className="w-full h-full flex items-center justify-center p-5">
-                                        {!post.thumbnail && (
-                                            <h3 className={`text-2xl font-bold text-center leading-tight ${style.titleColor}`}>
-                                                {post.title}
-                                            </h3>
-                                        )}
-                                    </div>
-                                )}
-
-                                {style.type === "image" && !post.thumbnail && (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <h3 className="text-2xl md:text-3xl font-black text-center leading-tight text-gray-900 px-6">
+                                        <h3 className={`text-xl font-bold text-center leading-tight ${style.titleColor} drop-shadow-lg`}>
                                             {post.title}
                                         </h3>
                                     </div>
                                 )}
+
+                                {/* Título overlay quando tem thumbnail */}
+                                {hasThumbnail && style.type === "overlay" && (
+                                    <h3 className={`relative z-10 text-xl font-bold leading-tight text-foreground drop-shadow-lg`}>
+                                        {post.title}
+                                    </h3>
+                                )}
                             </div>
 
-                            <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-text-muted">
-                                <span className="rounded-full bg-primary/10 px-3 py-1 text-text-main">
+                            {/* Tags e tempo de leitura */}
+                            <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide">
+                                <span className="rounded-full bg-primary/20 px-3 py-1 text-primary border border-primary/20">
                                     {post.category || t("blogPage.categoryFallback")}
                                 </span>
-                                <span className="rounded-full border border-black/10 px-3 py-1">
+                                <span className="rounded-full border border-border bg-surface-muted px-3 py-1 text-muted-foreground">
                                     {t("blogPage.readTime", { count: readingTime })}
                                 </span>
                             </div>
 
-                            <h3 className="mt-3 text-lg font-bold text-text-main leading-snug tracking-tight line-clamp-2">
+                            {/* Título do post */}
+                            <h3 className="mt-3 text-lg font-bold text-foreground leading-snug tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
                                 {post.title}
                             </h3>
 
+                            {/* Excerpt */}
                             {excerpt && (
-                                <span className="mt-2 text-sm text-text-muted line-clamp-3 block">
+                                <span className="mt-2 text-sm text-muted-foreground line-clamp-3 block">
                                     <ReactMarkdown
                                         skipHtml
                                         allowedElements={["p", "strong", "em", "a", "code", "span", "br"]}
                                         components={{
                                             p: ({ children }) => <span>{children}</span>,
-                                            a: ({ children }) => <span className="underline underline-offset-4">{children}</span>,
-                                            code: ({ children }) => <code className="font-mono text-[0.85em]">{children}</code>,
+                                            a: ({ children }) => <span className="underline underline-offset-4 text-primary">{children}</span>,
+                                            code: ({ children }) => <code className="font-mono text-[0.85em] bg-muted px-1 rounded">{children}</code>,
                                         }}
                                     >
                                         {excerpt}

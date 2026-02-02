@@ -4,6 +4,7 @@
     "themes": "Themes",
     "manifesto": "Manifesto",
     "pricing": "Pricing",
+    "features": "Features",
     "launch": "Launch your page",
     "signIn": "Sign in",
     "startFree": "Start For Free",
@@ -12,7 +13,8 @@
     "menu": "Menu",
     "goToDashboard": "Go to Dashboard",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "dashboard": "Dashboard"
   },
   "meta": {
     "root": {
@@ -1396,6 +1398,13 @@
   },
   "home": {
     "hero": {
+      "badge": "The #1 Link-in-Bio Tool for Creators",
+      "line1": "Convert your",
+      "line2": "followers into",
+      "line3": "customers",
+      "watchDemo": "Watch Demo",
+      "socialProof": "Join 10,000+ creators",
+      "scroll": "Scroll",
       "title": {
         "pre": "Convert your followers into",
         "highlight": "customers",
@@ -1432,6 +1441,7 @@
       "label": "Everything in One Link"
     },
     "analytics": {
+      "label": "Analytics",
       "title": "Turn every interaction into opportunity",
       "subtitle": "Gain deep insights into your audience behavior. From QR scans to sales conversion, track what matters most and optimize your digital presence for real growth.",
       "cards": {
@@ -1440,6 +1450,11 @@
         "sales": "Sales",
         "conversionRate": "Conversion Rate",
         "conversionBadge": "+24%"
+      },
+      "stats": {
+        "views": "Real-time views",
+        "clicks": "Click tracking",
+        "geo": "Geographic data"
       }
     },
     "features": {
@@ -1506,10 +1521,20 @@
       }
     },
     "pricing": {
-      "billing": {
-        "monthly": "Monthly",
-        "annually": "Annually (save 25%)"
-      },
+      "badge": "Simple, transparent pricing",
+      "title": "Choose your plan",
+      "subtitle": "Start free, upgrade when you're ready. No hidden fees, cancel anytime.",
+      "monthly": "Monthly",
+      "annually": "Annually",
+      "save": "Save 25%",
+      "billedYearly": "Billed annually",
+      "cancelAnytime": "Cancel anytime",
+      "noHiddenFees": "No hidden fees",
+      "securePayment": "Secure payment",
+      "getStarted": "Get Started",
+      "startTrial": "Start Trial",
+      "goPro": "Go Pro",
+      "checkoutFailed": "Failed to initiate checkout. Please try again.",
       "showMore": "Show more",
       "showLess": "Show less",
       "alerts": {
@@ -1620,6 +1645,13 @@
         "ecommerce": "E-commerce",
         "creators": "Creators"
       }
+    },
+    "whoUses": {
+      "badge": "All-in-One Platform",
+      "title": "Share everything you create",
+      "subtitle": "One link for all your content, products, and services",
+      "ctaText": "And much more...",
+      "ctaButton": "Explore all features"
     },
     "carousel": {
       "defaultRole": "Creator",
@@ -1771,8 +1803,11 @@
     "subtitle": "No contracts, no surprise fees."
   },
   "footer": {
-    "tagline": "Turn your bio into your business. The all-in-one platform for creators to grow, monetize, and own their audience.",
+    "tagline": "The all-in-one platform for creators to showcase their work, sell products, and grow their audience.",
     "cta": "Get Started for Free",
+    "ctaTitle": "Ready to grow your audience?",
+    "ctaSubtitle": "Join 10,000+ creators who trust Portyo to power their online presence.",
+    "ctaButton": "Get Started Free",
     "product": {
       "title": "Product",
       "features": "Features",
@@ -1794,7 +1829,50 @@
       "terms": "Terms of Service",
       "contact": "Contact"
     },
-    "copyright": "© 2025 Portyo Inc. All rights reserved."
+    "copyright": "© 2025 Portyo Inc. All rights reserved.",
+    "forCreators": "for creators everywhere",
+    "status": "All systems operational",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "testimonials": {
+    "badge": "Loved by 10,000+ creators",
+    "title": "What creators are saying",
+    "subtitle": "Join thousands of creators who've transformed their online presence with Portyo",
+    "trustedBy": "Trusted by teams at"
+  },
+  "stats": {
+    "activeUsers": "Active Users",
+    "revenue": "Revenue Generated",
+    "uptime": "Uptime",
+    "rating": "Average Rating"
+  },
+  "faq": {
+    "badge": "Got questions?",
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about Portyo. Can't find the answer you're looking for? Reach out to our support team.",
+    "stillHaveQuestions": "Still have questions?",
+    "contactSupport": "Contact Support",
+    "q1": {
+      "question": "What is Portyo?",
+      "answer": "Portyo is an all-in-one platform that allows creators, entrepreneurs, and professionals to create a powerful link-in-bio page. It includes features like newsletter collection, product sales, booking scheduler, automation workflows, and much more."
+    },
+    "q2": {
+      "question": "Is Portyo free to use?",
+      "answer": "Yes! Portyo offers a free plan that includes one bio page, one form, basic analytics, and more. You can upgrade to Standard or Pro plans for additional features like custom domains, automation, and zero transaction fees."
+    },
+    "q3": {
+      "question": "Can I sell products on Portyo?",
+      "answer": "Absolutely! Portyo integrates with Stripe to let you sell digital products and services directly from your bio page. You can set up products, collect payments, and manage everything from your dashboard."
+    },
+    "q4": {
+      "question": "Do I need coding skills?",
+      "answer": "Not at all! Portyo is designed to be user-friendly with a drag-and-drop editor. You can customize your page, add content, and set up features without any coding knowledge."
+    },
+    "q5": {
+      "question": "Can I use my own domain?",
+      "answer": "Yes, Standard and Pro plans allow you to connect your own custom domain (like yourname.com) to your Portyo page. This gives your brand a more professional appearance."
+    }
   },
   "builtForEveryone": {
     "title": "Built For",

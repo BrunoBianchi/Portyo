@@ -17,42 +17,118 @@ import { CookiesProvider } from 'react-cookie';
 import { useTranslation } from "react-i18next";
 import i18n, { SUPPORTED_LANGUAGES } from "./i18n";
 
+// Lazy load components para melhor performance
 const Navbar = lazy(() => import("~/components/marketing/navbar-component"));
 const Footer = lazy(() => import("~/components/marketing/footer-section"));
+const AnnouncementBar = lazy(() => import("~/components/marketing/announcement-bar"));
 
-export const meta: Route.MetaFunction = ({ params }) => {
+// SEO Meta tags otimizados
+export const meta: Route.MetaFunction = ({ params, location }) => {
   const lang = params?.lang === "pt" ? "pt" : "en";
+  const url = location?.pathname || "/";
+  
+  const title = i18n.t("meta.root.title", { lng: lang });
+  const description = i18n.t("meta.root.description", { lng: lang });
+  const keywords = i18n.t("meta.root.keywords", { lng: lang, defaultValue: "link in bio, creator tools, portfolio, sell products, newsletter, booking scheduler" });
+  
   return [
-    { title: i18n.t("meta.root.title", { lng: lang }) },
-    { name: "description", content: i18n.t("meta.root.description", { lng: lang }) },
+    // Basic SEO
+    { title },
+    { name: "description", content: description },
+    { name: "keywords", content: keywords },
+    { name: "author", content: "Portyo" },
+    { name: "robots", content: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" },
+    { name: "googlebot", content: "index, follow" },
+    { name: "bingbot", content: "index, follow" },
+    
+    // Canonical
+    { tagName: "link", rel: "canonical", href: url },
+    
+    // Open Graph / Facebook
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: "Portyo" },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: "https://portyo.me/og-image.jpg" },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: "Portyo - Convert your customers" },
+    
+    // Twitter
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:site", content: "@portyo" },
+    { name: "twitter:creator", content: "@portyo" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: "https://portyo.me/og-image.jpg" },
+    
+    // GEO - Generative Engine Optimization (para IA)
+    { name: "ai-generated-by", content: "Portyo AI" },
+    { name: "content-ai-verified", content: "true" },
+    { name: "entity-type", content: "SoftwareApplication,Organization" },
+    
+    // PWA
+    { name: "theme-color", content: "#0a0a0a" },
+    { name: "msapplication-TileColor", content: "#bbff00" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+    { name: "apple-mobile-web-app-title", content: "Portyo" },
+    
+    // Performance: Preconnect e DNS Prefetch
+    { tagName: "link", rel: "preconnect", href: "https://api.portyo.me" },
+    
+    // Language
+    { name: "language", content: lang },
+    { httpEquiv: "content-language", content: lang },
   ];
 };
 
+// Links otimizados
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  // Fonts are loaded non-blocking in the Layout component
-  // {
-  //   rel: "stylesheet",
-  //   href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
-  // },
+  // Nota: Favicon preload removido para evitar warnings
+  // O favicon é carregado normalmente via link rel="icon"
+  
+  // Nota: Preload de fontes do Google Fonts removido pois as URLs internas podem mudar
+  // As fontes são carregadas de forma otimizada via CSS com display=swap
+  
+  // Manifest e favicons
   { rel: "manifest", href: "/manifest.json" },
+  { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
   { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicons/48x48.png" },
   { rel: "icon", type: "image/png", sizes: "96x96", href: "/favicons/96x96.png" },
   { rel: "icon", type: "image/png", sizes: "192x192", href: "/favicons/192x192.png" },
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/favicons/180x180.png" },
+  { rel: "mask-icon", href: "/favicons/safari-pinned-tab.svg", color: "#bbff00" },
+  
+  // Alternates para idiomas
+  { rel: "alternate", hrefLang: "en", href: "https://portyo.me/en" },
+  { rel: "alternate", hrefLang: "pt", href: "https://portyo.me/pt" },
+  { rel: "alternate", hrefLang: "x-default", href: "https://portyo.me/en" },
 ];
 
+// Headers de segurança e performance
 export function headers() {
   return {
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Frame-Options": "SAMEORIGIN",
     "X-Content-Type-Options": "nosniff",
+    "X-XSS-Protection": "1; mode=block",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)",
+    // Cache Control otimizado
+    "Cache-Control": "public, max-age=0, must-revalidate",
+    "CDN-Cache-Control": "public, max-age=31536000, immutable",
+    "Vercel-CDN-Cache-Control": "public, max-age=31536000, immutable",
+    // Content Security Policy - mais permissivo para desenvolvimento
+    "Content-Security-Policy": 
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "font-src 'self' data:; " +
+      "img-src 'self' data: https: blob: http://localhost:3000 http://localhost:5173; " +
+      "connect-src 'self' https://api.portyo.me http://localhost:3000 http://localhost:5173 ws://localhost:5173 ws://localhost:3000; " +
+      "frame-src 'self'; " +
+      "media-src 'self' https:;",
   };
 }
 
@@ -86,6 +162,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const fallbackLang = isLocalhost ? "en" : "en";
   const activeLang = (langMatch?.[1] || initialLang || fallbackLang) as (typeof SUPPORTED_LANGUAGES)[number];
+  
   if (typeof document === "undefined" && i18n.language !== activeLang) {
     i18n.changeLanguage(activeLang);
   }
@@ -106,6 +183,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
     navigate(`${nextPath}${search}${hash}`, { replace: true });
   }, [hash, isCustomDomain, langMatch, navigate, pathname, search]);
+
   const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
   const isLoginPage = pathnameNoLang === "/login";
   const isDashboard = pathnameNoLang.startsWith("/dashboard");
@@ -122,15 +200,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   // Hide layout if dashboard, bio page, OR custom domain
   const shouldShowLayout = !isDashboard && !isBioPage && !isCustomDomain;
+  const shouldShowAnnouncement = shouldShowLayout;
 
   return (
     <CookiesProvider>
       <AuthProvider>
-        <html lang={activeLang}>
+        <html lang={activeLang} dir="ltr">
           <head>
             <meta charSet="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <link rel="preload" as="image" href="/Street%20Life%20-%20Head.svg" media="(min-width: 768px)" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+            
+            {/* Preconnect hints - duplicado aqui para SSR */}
+            <link rel="preconnect" href="https://api.portyo.me" />
+            
+            {/* SEO Links */}
             {canRenderSeoLinks && (
               <>
                 <link rel="canonical" href={`${origin}${canonicalPath}`} />
@@ -160,25 +243,82 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 ))}
               </>
             )}
+            
+            {/* JSON-LD Structured Data Global */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "Organization",
+                      "@id": "https://portyo.me/#organization",
+                      name: "Portyo",
+                      url: "https://portyo.me",
+                      logo: {
+                        "@type": "ImageObject",
+                        url: "https://portyo.me/logo.png",
+                        width: 512,
+                        height: 512,
+                      },
+                      sameAs: [
+                        "https://twitter.com/portyo",
+                        "https://linkedin.com/company/portyo",
+                        "https://instagram.com/portyo",
+                      ],
+                      description: "The all-in-one platform for creators to showcase work, sell products, and grow their audience.",
+                    },
+                    {
+                      "@type": "WebSite",
+                      "@id": "https://portyo.me/#website",
+                      url: "https://portyo.me",
+                      name: "Portyo",
+                      publisher: {
+                        "@id": "https://portyo.me/#organization",
+                      },
+                      potentialAction: {
+                        "@type": "SearchAction",
+                        target: {
+                          "@type": "EntryPoint",
+                          urlTemplate: "https://portyo.me/search?q={search_term_string}",
+                        },
+                        "query-input": "required name=search_term_string",
+                      },
+                    },
+                  ],
+                }),
+              }}
+            />
+            
             <Meta />
             <Links />
-            <link
-              rel="stylesheet"
-              href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-              media="print"
-              onLoad={(e) => { e.currentTarget.media = 'all' }}
-            />
-            <noscript>
-              <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" />
-            </noscript>
+            
           </head>
           <body>
+            {/* Skip link para acessibilidade */}
+            <a 
+              href="#main-content" 
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] focus:px-4 focus:py-2 focus:bg-primary focus:text-background focus:rounded-lg"
+            >
+              Skip to main content
+            </a>
+            
+            {/* Announcement Bar */}
+            {shouldShowAnnouncement && (
+              <Suspense fallback={null}>
+                <AnnouncementBar variant="promo" />
+              </Suspense>
+            )}
+            
             {shouldShowLayout && (
               <Suspense fallback={null}>
                 <Navbar />
               </Suspense>
             )}
-            {children}
+            <main id="main-content" role="main">
+              {children}
+            </main>
             {shouldShowLayout && (
               <Suspense fallback={null}>
                 <Footer />
@@ -218,11 +358,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <main className="pt-24 p-4 container mx-auto">
+      <h1 className="text-4xl font-bold text-foreground">{message}</h1>
+      <p className="text-muted-foreground mt-4">{details}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
+        <pre className="w-full p-4 overflow-x-auto bg-surface-card rounded-xl mt-4 text-sm">
           <code>{stack}</code>
         </pre>
       )}
@@ -232,8 +372,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
 export function HydrateFallback() {
   return (
-    <div className="flex items-center justify-center h-screen w-screen bg-white">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-gray-800"></div>
+    <div className="flex items-center justify-center h-screen w-screen bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-muted-foreground text-sm font-medium">Loading Portyo...</p>
+      </div>
     </div>
   );
 }

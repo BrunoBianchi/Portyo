@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "./base-entity"
 import { UserEntity } from "./user-entity";
 import { BioEntity } from "./bio-entity";
+import { AutoPostLogEntity } from "./auto-post-log-entity";
 
 
 @Entity()
@@ -29,10 +30,16 @@ status!:string;
 @Column({ type: "timestamp", nullable: true })
 scheduledAt!: Date | null;
 
+@Column({ type: "varchar", nullable: true, unique: true })
+slug!: string | null;
+
 @ManyToOne(() => UserEntity, (user) => user.posts)
 user!: UserEntity;
 
 @ManyToOne(() => BioEntity, (bio) => bio.posts)
 bio!: BioEntity;
+
+@OneToMany(() => AutoPostLogEntity, (log) => log.post)
+autoPostLogs!: AutoPostLogEntity[];
 
 }

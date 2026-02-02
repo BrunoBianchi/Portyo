@@ -56,7 +56,7 @@ export default function DashboardDomains() {
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg shadow-primary/10 animate-pulse">
                     <Sparkles className="w-10 h-10 text-primary-hover" />
                 </div>
-                <h1 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight">{t("dashboard.domains.upgrade.title")}</h1>
+                <h1 className="text-3xl font-bold text-text-main mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.domains.upgrade.title")}</h1>
                 <p className="text-text-muted mb-8 max-w-md mx-auto text-base">{t("dashboard.domains.upgrade.body")}</p>
                 <button className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-base hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-1">
                     {t("dashboard.domains.upgrade.cta")}
@@ -66,20 +66,20 @@ export default function DashboardDomains() {
             <div className="p-4 md:p-6 max-w-5xl mx-auto pb-12">
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-text-main tracking-tight mb-1">{t("dashboard.domains.title")}</h1>
+                        <h1 className="text-2xl font-bold text-text-main tracking-tight mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.domains.title")}</h1>
                         <p className="text-text-muted text-sm">{t("dashboard.domains.subtitle")}</p>
                     </div>
                 </header>
 
                 <div className="space-y-6">
                     {/* Domain Configuration */}
-                    <section className="bg-white p-6 rounded-xl shadow-sm border border-border space-y-6">
+                    <section className="bg-surface-card p-6 rounded-xl shadow-sm border border-border space-y-6">
                         <div className="flex items-center gap-4 border-b border-border pb-4">
                             <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg">
                                 <Globe className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text-main tracking-tight">{t("dashboard.domains.config.title")}</h2>
+                                <h2 className="text-xl font-bold text-text-main tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.domains.config.title")}</h2>
                                 <p className="text-text-muted text-sm">{t("dashboard.domains.config.subtitle")}</p>
                             </div>
                         </div>
@@ -112,27 +112,27 @@ export default function DashboardDomains() {
                             </div>
 
                             {/* DNS Instructions */}
-                            <div className="bg-blue-50/50 rounded-xl p-5 border border-blue-100">
-                                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                            <div className="bg-blue-500/10/50 rounded-xl p-5 border border-blue-100">
+                                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
                                     <AlertCircle className="w-4 h-4" />
                                     {t("dashboard.domains.dns.title")}
                                 </h3>
                                 <div className="space-y-3 text-sm text-blue-800/80">
                                     <p>{t("dashboard.domains.dns.body")}</p>
 
-                                    <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                                    <div className="bg-surface-card p-3 rounded-lg border border-blue-100 shadow-sm">
                                         <div className="grid grid-cols-3 gap-4 text-xs">
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.type")}</span>
-                                                <span className="font-mono bg-blue-50 px-2 py-1 rounded">CNAME</span>
+                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">CNAME</span>
                                             </div>
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.nameHost")}</span>
-                                                <span className="font-mono bg-blue-50 px-2 py-1 rounded">@</span>
+                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">@</span>
                                             </div>
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.valueTarget")}</span>
-                                                <span className="font-mono bg-blue-50 px-2 py-1 rounded">portyo.me</span>
+                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">portyo.me</span>
                                             </div>
                                         </div>
                                     </div>
@@ -145,8 +145,8 @@ export default function DashboardDomains() {
 
                             {/* Verification Status - Simple placeholder for now */}
                             {originalDomain && (
-                                <div className="bg-green-50 rounded-xl p-4 border border-green-100 flex items-start gap-3">
-                                    <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="bg-green-500/10 rounded-xl p-4 border border-green-100 flex items-start gap-3">
+                                    <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
                                     <div>
                                         <h4 className="font-bold text-green-900 text-sm">{t("dashboard.domains.status.title")}</h4>
                                         <p className="text-xs text-green-700 mt-1">

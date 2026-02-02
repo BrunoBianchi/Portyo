@@ -267,8 +267,8 @@ export default function DashboardAutomationList() {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0" data-tour="automation-header">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.automationList.title")}</h1>
-                            <p className="text-gray-500 mt-1">{t("dashboard.automationList.subtitle")}</p>
+                            <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.title")}</h1>
+                            <p className="text-muted-foreground mt-1">{t("dashboard.automationList.subtitle")}</p>
                         </div>
                         <button
                             data-tour="automation-create"
@@ -283,22 +283,22 @@ export default function DashboardAutomationList() {
 
                     {/* Email Usage Card */}
                     {emailUsage && (
-                        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm" data-tour="automation-usage">
+                        <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm" data-tour="automation-usage">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-0">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                                    <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center shrink-0">
                                         <Mail className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900 text-lg">{t("dashboard.automationList.emailUsage.title")}</h3>
-                                        <p className="text-sm text-gray-500 mt-0.5">{t("dashboard.automationList.emailUsage.subtitle")}</p>
+                                        <h3 className="font-bold text-foreground text-lg">{t("dashboard.automationList.emailUsage.title")}</h3>
+                                        <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.automationList.emailUsage.subtitle")}</p>
                                     </div>
                                 </div>
                                 <div className="text-left sm:text-right">
-                                    <div className="text-2xl font-bold text-gray-900">
-                                        {emailUsage.sent} <span className="text-base font-normal text-gray-400">/ {emailUsage.limit}</span>
+                                    <div className="text-2xl font-bold text-foreground">
+                                        {emailUsage.sent} <span className="text-base font-normal text-muted-foreground">/ {emailUsage.limit}</span>
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">
+                                    <div className="text-xs text-muted-foreground mt-1 uppercase font-semibold tracking-wider">
                                         {t("dashboard.automationList.emailUsage.plan", { plan: emailUsage.plan })}
                                     </div>
                                 </div>
@@ -306,22 +306,22 @@ export default function DashboardAutomationList() {
 
                             {/* Progress Bar */}
                             <div className="mt-4">
-                                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-500 ${emailUsage.sent / emailUsage.limit >= 0.9
-                                            ? 'bg-red-500'
+                                            ? 'bg-destructive/100'
                                             : emailUsage.sent / emailUsage.limit >= 0.7
                                                 ? 'bg-yellow-500'
-                                                : 'bg-blue-500'
+                                                : 'bg-blue-500/100'
                                             }`}
                                         style={{ width: `${Math.min((emailUsage.sent / emailUsage.limit) * 100, 100)}%` }}
                                     />
                                 </div>
                                 <div className="flex items-center justify-between mt-2 text-sm">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                         {t("dashboard.automationList.emailUsage.remaining", { count: emailUsage.limit - emailUsage.sent })}
                                     </span>
-                                    <span className="text-gray-500">
+                                    <span className="text-muted-foreground">
                                         {t("dashboard.automationList.emailUsage.used", { percent: ((emailUsage.sent / emailUsage.limit) * 100).toFixed(0) })}
                                     </span>
                                 </div>
@@ -329,14 +329,14 @@ export default function DashboardAutomationList() {
 
                             {/* Upgrade CTA if close to limit */}
                             {emailUsage.sent / emailUsage.limit >= 0.8 && emailUsage.plan !== 'pro' && (
-                                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                <div className="mt-4 p-4 bg-blue-500/10 rounded-xl border border-blue-100">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-1">
                                             <h4 className="font-semibold text-blue-900 text-sm">{t("dashboard.automationList.emailUsage.lowTitle")}</h4>
                                             <p className="text-blue-700 text-sm mt-1">{t("dashboard.automationList.emailUsage.lowSubtitle", { plan: emailUsage.plan === 'free' ? t("dashboard.automationList.plan.standard") : t("dashboard.automationList.plan.pro") })}</p>
                                             <Link
                                                 to="/pricing"
-                                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 mt-2"
+                                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-400 hover:text-blue-700 mt-2"
                                             >
                                                 {t("dashboard.automationList.emailUsage.viewPlans")}
                                             </Link>
@@ -350,15 +350,15 @@ export default function DashboardAutomationList() {
                     {/* List */}
                     {loading ? (
                         <div className="flex justify-center py-12">
-                            <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
                         </div>
                     ) : automations.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center" data-tour="automation-list">
-                            <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
+                        <div className="bg-surface-card rounded-2xl p-12 text-center border border-border shadow-sm flex flex-col items-center" data-tour="automation-list">
+                            <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
                                 <Zap className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">{t("dashboard.automationList.emptyTitle")}</h3>
-                            <p className="text-gray-500 max-w-sm mt-2 mb-6">{t("dashboard.automationList.emptySubtitle")}</p>
+                            <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.emptyTitle")}</h3>
+                            <p className="text-muted-foreground max-w-sm mt-2 mb-6">{t("dashboard.automationList.emptySubtitle")}</p>
                             <button
                                 onClick={handleCreate}
                                 disabled={creating}
@@ -374,12 +374,12 @@ export default function DashboardAutomationList() {
                                 <div
                                     key={automation.id}
                                     data-tour={index === 0 ? "automation-card" : undefined}
-                                    className="group bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
+                                    className="group bg-surface-card rounded-2xl border border-border p-5 hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
                                 >
                                     {/* Icon & Info Wrapper */}
                                     <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
                                         {/* Icon */}
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${automation.isActive ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${automation.isActive ? 'bg-green-500/10 text-green-400' : 'bg-muted text-muted-foreground'
                                             }`}>
                                             <Zap className="w-6 h-6" />
                                         </div>
@@ -387,15 +387,15 @@ export default function DashboardAutomationList() {
                                         {/* Info */}
                                         <div className="flex-1 min-w-0 pointer-events-none">
                                             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                                <h3 className="font-bold text-gray-900 truncate text-lg group-hover:text-blue-600 transition-colors">
+                                                <h3 className="font-bold text-foreground truncate text-lg group-hover:text-blue-400 transition-colors">
                                                     {automation.name}
                                                 </h3>
-                                                <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${automation.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                                <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${automation.isActive ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
                                                     }`}>
                                                     {automation.isActive ? t("dashboard.automationList.status.active") : t("dashboard.automationList.status.inactive")}
                                                 </div>
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1.5">
                                                     <Activity className="w-4 h-4" />
                                                     <span>{t("dashboard.automationList.runs", { count: automation.executionCount || 0 })}</span>
@@ -415,8 +415,8 @@ export default function DashboardAutomationList() {
                                             onClick={() => handleToggle(automation.id, automation.isActive)}
                                             disabled={togglingId === automation.id}
                                             className={`flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl font-medium text-sm flex items-center gap-2 transition-colors ${automation.isActive
-                                                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                                : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                                ? 'bg-destructive/10 text-destructive hover:bg-red-100'
+                                                : 'bg-green-500/10 text-green-400 hover:bg-green-100'
                                                 }`}
                                         >
                                             {togglingId === automation.id ? (
@@ -436,7 +436,7 @@ export default function DashboardAutomationList() {
 
                                         <Link
                                             to={`/dashboard/automation/${automation.id}`}
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-muted text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                                             title={t("dashboard.automationList.edit")}
                                         >
                                             <Edit className="w-4 h-4" />
@@ -444,7 +444,7 @@ export default function DashboardAutomationList() {
 
                                         <button
                                             onClick={(e) => handleDeleteClick(automation.id, e)}
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors border border-gray-100 sm:border-0"
+                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-card text-muted-foreground hover:text-red-500 hover:bg-destructive/10 transition-colors border border-border sm:border-0"
                                             title={t("dashboard.automationList.delete")}
                                         >
                                             <Trash2 className="w-4 h-4" />

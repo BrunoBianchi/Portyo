@@ -10,6 +10,7 @@ export type Post = BaseType & {
     views: number;
     status: string;
     scheduledAt: Date | null;
+    slug?: string | null;
     user: UserType | string;
     bio: Bio | string;
 }

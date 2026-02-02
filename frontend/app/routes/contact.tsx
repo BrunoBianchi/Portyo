@@ -53,7 +53,7 @@ export default function Contact() {
             <div className="max-w-3xl mx-auto">
 
                 {/* Header */}
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
                     Get in touch
                 </h1>
 

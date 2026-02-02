@@ -98,20 +98,20 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                 >
                     <button
                         onClick={onClose}
-                        className="absolute -top-12 right-0 md:-right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors z-50"
+                        className="absolute -top-12 right-0 md:-right-4 p-2 bg-surface-card/20 hover:bg-surface-card/30 rounded-full text-white transition-colors z-50"
                     >
                         <X className="w-5 h-5" />
                     </button>
 
                     <div className="flex flex-col items-center mb-6 relative z-10">
-                        <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center mb-4 drop-shadow-sm font-sans tracking-tight">Unlock Full Power</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-4 drop-shadow-sm font-sans tracking-tight">Unlock Full Power</h2>
                         {/* Billing Toggle */}
-                        <div className="bg-white p-1 rounded-full shadow-lg inline-flex relative z-20 scale-90">
+                        <div className="bg-surface-card p-1 rounded-full shadow-lg inline-flex relative z-20 scale-90">
                             <button
                                 onClick={() => setBillingCycle('monthly')}
                                 className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${billingCycle === 'monthly'
-                                    ? 'bg-transparent text-gray-900'
-                                    : 'text-gray-400 hover:text-gray-900'
+                                    ? 'bg-transparent text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 Monthly
@@ -120,7 +120,7 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                 onClick={() => setBillingCycle('annually')}
                                 className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${billingCycle === 'annually'
                                     ? 'bg-[#0f172a] text-white shadow-md'
-                                    : 'text-gray-400 hover:text-gray-900'
+                                    : 'text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 Annually (-25%)
@@ -137,12 +137,12 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                 </div>
 
                                 <div className="text-center mt-3">
-                                    <h3 className="text-2xl font-extrabold text-black tracking-tight">Standard</h3>
+                                    <h3 className="text-2xl font-bold text-black tracking-tight">Standard</h3>
                                     <p className="text-black/70 text-xs mt-1 font-medium">For growing creators</p>
                                 </div>
                                 <div className="text-center py-1">
                                     <div className="flex items-baseline justify-center gap-0.5">
-                                        <span className="text-5xl font-extrabold text-black tracking-tighter">
+                                        <span className="text-5xl font-bold text-black tracking-tight">
                                             ${billingCycle === 'monthly' ? '5.50' : '4.12'}
                                         </span>
                                         <span className="text-black/60 text-sm font-bold">/mo</span>
@@ -208,17 +208,17 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
 
                         {/* Pro Card */}
                         {(!forcePlan || forcePlan === 'pro') && (
-                            <div className={`bg-white rounded-[1.5rem] p-6 shadow-2xl flex flex-col gap-4 relative hover:scale-[1.01] transition-transform duration-300 ${forcePlan === 'pro' ? 'max-w-md w-full' : ''}`}>
+                            <div className={`bg-surface-card rounded-[1.5rem] p-6 shadow-2xl flex flex-col gap-4 relative hover:scale-[1.01] transition-transform duration-300 ${forcePlan === 'pro' ? 'max-w-md w-full' : ''}`}>
                                 <div className="text-center mt-3">
-                                    <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">Pro</h3>
-                                    <p className="text-gray-500 text-xs mt-1 font-medium">For serious business</p>
+                                    <h3 className="text-2xl font-bold text-foreground tracking-tight">Pro</h3>
+                                    <p className="text-muted-foreground text-xs mt-1 font-medium">For serious business</p>
                                 </div>
                                 <div className="text-center py-1">
                                     <div className="flex items-baseline justify-center gap-0.5">
-                                        <span className="text-5xl font-extrabold text-gray-900 tracking-tighter">
+                                        <span className="text-5xl font-bold text-foreground tracking-tight">
                                             ${billingCycle === 'monthly' ? '15' : '11.25'}
                                         </span>
-                                        <span className="text-gray-400 text-sm font-bold">/mo</span>
+                                        <span className="text-muted-foreground text-sm font-bold">/mo</span>
                                     </div>
                                 </div>
 
@@ -228,7 +228,7 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                             <div className="p-0.5 rounded-full bg-[#d0f224]/30">
                                                 <Check className="w-3 h-3 text-[#a3c20e]" strokeWidth={3} />
                                             </div>
-                                            <span className="text-gray-600 text-[13px] font-medium">{feature}</span>
+                                            <span className="text-muted-foreground text-[13px] font-medium">{feature}</span>
                                         </div>
                                     ))}
 
@@ -239,7 +239,7 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                                     <div className="p-0.5 rounded-full bg-[#d0f224]/30">
                                                         <Check className="w-3 h-3 text-[#a3c20e]" strokeWidth={3} />
                                                     </div>
-                                                    <span className="text-gray-600 text-[13px] font-medium">{feature}</span>
+                                                    <span className="text-muted-foreground text-[13px] font-medium">{feature}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -247,7 +247,7 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
 
                                     <button
                                         onClick={() => setExpandedPro(!expandedPro)}
-                                        className="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-xs font-medium transition-colors mt-1"
+                                        className="flex items-center gap-1 text-muted-foreground hover:text-muted-foreground text-xs font-medium transition-colors mt-1"
                                     >
                                         {expandedPro ? 'Show less' : 'Show more'}
                                         <ChevronDown className={`w-3 h-3 transition-transform ${expandedPro ? 'rotate-180' : ''}`} />
@@ -257,7 +257,7 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                 <div className="mt-auto pt-4 flex flex-col gap-3">
                                     {currentPlan === 'pro' ? (
                                         <>
-                                            <button disabled className="w-full bg-gray-100 text-gray-500 font-bold py-3 px-4 rounded-xl cursor-default text-base">
+                                            <button disabled className="w-full bg-muted text-muted-foreground font-bold py-3 px-4 rounded-xl cursor-default text-base">
                                                 Current Plan
                                             </button>
                                             <button
@@ -284,15 +284,15 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                 {/* Cancel Confirmation Modal */}
                 {showCancelConfirmation && (
                     <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm rounded-[1.5rem]">
-                        <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Cancel Subscription?</h3>
-                            <p className="text-gray-500 text-sm mb-6">
+                        <div className="bg-surface-card rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                            <h3 className="text-xl font-bold text-foreground mb-2">Cancel Subscription?</h3>
+                            <p className="text-muted-foreground text-sm mb-6">
                                 Are you sure you want to cancel? You will lose access to premium features at the end of your billing cycle.
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowCancelConfirmation(false)}
-                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
                                 >
                                     Keep Plan
                                 </button>

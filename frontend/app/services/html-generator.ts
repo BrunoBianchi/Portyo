@@ -2246,7 +2246,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
 
                 return \`
-                    <div class="blog-card-item" data-index="\${index}" onclick="(function(){ window.location.href='/blog/post/\${post.id}'; })()" style="
+                    <div class="blog-card-item" data-index="\${index}" onclick="(function(){ window.location.href='/blog/post/\${post.slug || post.id}'; })()" style="
                         background:white; border-radius:24px; overflow:hidden; box-shadow:0 8px 25px -8px rgba(0,0,0,0.08); 
                         border:1px solid rgba(0,0,0,0.03); padding:20px; text-decoration:none; cursor:pointer;
                         display:flex; flex-wrap:wrap; align-items:flex-start; min-height:180px;

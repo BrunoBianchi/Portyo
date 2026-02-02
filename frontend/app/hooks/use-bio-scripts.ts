@@ -217,7 +217,7 @@ export const useBioScripts = (bio: any) => {
                     const title = post.title?.replace(/"/g, '&quot;') || '';
 
                     return `
-                        <div class="blog-card-item" data-index="${index}" onclick="(function(){ window.location.href='/blog/post/${post.id}'; })()" style="background:white; border-radius:24px; overflow:hidden; box-shadow:0 8px 25px -8px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.03); padding:20px; text-decoration:none; cursor:pointer; display:flex; flex-wrap:wrap; align-items:flex-start; min-height:180px; position: ${posts.length > 1 ? 'absolute' : 'relative'}; top:0; left:0; right:0; transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: top center; background: #ffffff;">
+                        <div class="blog-card-item" data-index="${index}" onclick="(function(){ window.location.href='/blog/post/${post.slug || post.id}'; })()" style="background:white; border-radius:24px; overflow:hidden; box-shadow:0 8px 25px -8px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.03); padding:20px; text-decoration:none; cursor:pointer; display:flex; flex-wrap:wrap; align-items:flex-start; min-height:180px; position: ${posts.length > 1 ? 'absolute' : 'relative'}; top:0; left:0; right:0; transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: top center; background: #ffffff;">
                             <div style="flex:1; min-width:200px; padding-right:16px; display:flex; flex-direction:column;">
                                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                                     <div style="width:24px; height:24px; border-radius:50%; background:#f3f4f6; overflow:hidden;">

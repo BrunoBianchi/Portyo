@@ -89,17 +89,17 @@ export default function Pricing() {
         <div className="min-h-screen  py-20 px-4 font-sans">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">{t("pricingPage.title")}</h1>
-                    <p className="text-xl text-gray-600">{t("pricingPage.subtitle")}</p>
+                    <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">{t("pricingPage.title")}</h1>
+                    <p className="text-xl text-muted-foreground">{t("pricingPage.subtitle")}</p>
                 </div>
 
                 <div className="flex justify-center mb-12">
-                    <div className="bg-white p-1.5 rounded-full shadow-sm inline-flex">
+                    <div className="bg-surface-card p-1.5 rounded-full shadow-sm inline-flex">
                         <button
                             onClick={() => setBillingCycle('monthly')}
                             className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'monthly'
                                 ? 'bg-transparent text-text-main'
-                                : 'text-gray-700 hover:text-text-main'
+                                : 'text-muted-foreground hover:text-text-main'
                                 }`}
                         >
                             {t("home.pricing.billing.monthly")}
@@ -108,7 +108,7 @@ export default function Pricing() {
                             onClick={() => setBillingCycle('annually')}
                             className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'annually'
                                 ? 'bg-text-main text-white shadow-md'
-                                : 'text-gray-700 hover:text-text-main'
+                                : 'text-muted-foreground hover:text-text-main'
                                 }`}
                         >
                             {t("home.pricing.billing.annually")}
@@ -122,7 +122,7 @@ export default function Pricing() {
                             key={index}
                             className={`relative rounded-[32px] p-8 md:p-10 transition-transform hover:-translate-y-1 duration-300 flex flex-col h-full ${plan.style === 'lime' ? 'bg-[#D7F000] text-black shadow-xl ring-0' :
                                 plan.style === 'black' ? 'bg-black text-white shadow-xl' :
-                                    'bg-white text-gray-900 shadow-lg'
+                                    'bg-surface-card text-foreground shadow-lg'
                                 }`}
                         >
                             {plan.badge && (
@@ -132,17 +132,17 @@ export default function Pricing() {
                             )}
 
                             <div className="text-center mb-8">
-                                <h3 className={`text-2xl font-bold mb-2 ${plan.style === 'black' ? 'text-white' : 'text-gray-900'}`}>{plan.name}</h3>
-                                <p className={`text-sm mb-6 ${plan.style === 'black' ? 'text-gray-400' : 'text-gray-500'}`}>{plan.description}</p>
+                                <h3 className={`text-2xl font-bold mb-2 ${plan.style === 'black' ? 'text-white' : 'text-foreground'}`}>{plan.name}</h3>
+                                <p className={`text-sm mb-6 ${plan.style === 'black' ? 'text-muted-foreground' : 'text-muted-foreground'}`}>{plan.description}</p>
 
                                 <div className="flex items-center justify-center gap-1">
-                                    <span className="text-5xl font-black tracking-tight">{plan.price}</span>
-                                    {plan.period && <span className={`text-lg font-medium ${plan.style === 'black' ? 'text-gray-400' : 'text-gray-500'}`}>{plan.period}</span>}
+                                    <span className="text-5xl font-bold tracking-tight">{plan.price}</span>
+                                    {plan.period && <span className={`text-lg font-medium ${plan.style === 'black' ? 'text-muted-foreground' : 'text-muted-foreground'}`}>{plan.period}</span>}
                                 </div>
                                 {plan.billed && (
                                     <p className={`text-xs font-bold uppercase tracking-wide mt-3 inline-block px-3 py-1 rounded-full ${plan.style === 'black' ? 'bg-gray-800 text-gray-300' :
                                         plan.style === 'lime' ? 'bg-black/10 text-black' :
-                                            'bg-gray-100 text-gray-500'
+                                            'bg-muted text-muted-foreground'
                                         }`}>
                                         {plan.billed}
                                     </p>
@@ -156,7 +156,7 @@ export default function Pricing() {
                                             plan.style === 'black' ? 'text-[#D7F000]' :
                                                 'text-green-500'
                                             }`} />
-                                        <span className={`text-sm font-medium ${plan.style === 'black' ? 'text-gray-300' : 'text-gray-700'
+                                        <span className={`text-sm font-medium ${plan.style === 'black' ? 'text-gray-300' : 'text-muted-foreground'
                                             }`}>{feature}</span>
                                     </div>
                                 ))}
@@ -165,8 +165,8 @@ export default function Pricing() {
                             <Link
                                 to={plan.ctaLink}
                                 className={`w-full py-4 px-6 rounded-2xl font-bold text-center transition-all transform active:scale-95 ${plan.style === 'lime' ? 'bg-black text-white hover:bg-gray-900' :
-                                    plan.style === 'black' ? 'bg-white text-black hover:bg-gray-100' :
-                                        'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                    plan.style === 'black' ? 'bg-surface-card text-black hover:bg-muted' :
+                                        'bg-muted text-foreground hover:bg-muted'
                                     }`}
                             >
                                 {plan.cta}

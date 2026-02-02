@@ -75,18 +75,18 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
   const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   return (
-    <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-3 w-[260px] overflow-hidden">
+    <div className="bg-surface-card rounded-xl shadow-2xl border border-border p-3 w-[260px] overflow-hidden">
       {/* Header Toggle */}
-      <div className="flex items-center justify-center bg-gray-100 p-1 rounded-lg mb-3">
+      <div className="flex items-center justify-center bg-muted p-1 rounded-lg mb-3">
         <button
           onClick={() => setView("calendar")}
-          className={`flex-1 py-1 text-[11px] font-bold rounded-md transition-all ${view === "calendar" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"}`}
+          className={`flex-1 py-1 text-[11px] font-bold rounded-md transition-all ${view === "calendar" ? "bg-surface-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
           Date
         </button>
         <button
           onClick={() => setView("time")}
-          className={`flex-1 py-1 text-[11px] font-bold rounded-md transition-all ${view === "time" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"}`}
+          className={`flex-1 py-1 text-[11px] font-bold rounded-md transition-all ${view === "time" ? "bg-surface-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
           Time
         </button>
@@ -95,20 +95,20 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
       {view === "calendar" ? (
         <>
           <div className="flex items-center justify-between mb-2 px-1">
-            <button onClick={handlePrevMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-black">
+            <button onClick={handlePrevMonth} className="p-1 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground">
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <span className="text-xs font-bold text-gray-900">
+            <span className="text-xs font-bold text-foreground">
               {MONTHS[month]} {year}
             </span>
-            <button onClick={handleNextMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-black">
+            <button onClick={handleNextMonth} className="p-1 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground">
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
           <div className="grid grid-cols-7 gap-0.5 mb-2">
             {DAYS.map(day => (
-              <div key={day} className="text-[10px] font-bold text-gray-400 text-center py-1">
+              <div key={day} className="text-[10px] font-bold text-muted-foreground text-center py-1">
                 {day}
               </div>
             ))}
@@ -131,8 +131,8 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
                         ${selected
                       ? "bg-black text-white font-bold shadow-md"
                       : disabled
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-black"
+                        ? "text-muted-foreground/50 cursor-not-allowed"
+                        : "text-foreground hover:bg-muted hover:text-foreground"
                     }
                         ${today && !selected ? "ring-1 ring-black text-black font-bold" : ""}
                     `}
@@ -147,7 +147,7 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
         <div className="h-[200px] flex gap-2">
           {/* Hours */}
           <div className="flex-1 flex flex-col">
-            <div className="text-[10px] font-bold text-gray-400 text-center mb-1 uppercase tracking-wider">Hour</div>
+            <div className="text-[10px] font-bold text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Hour</div>
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-0.5">
               {hours.map(h => (
                 <button
@@ -155,7 +155,7 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
                   onClick={() => handleTimeChange(h, selectedMinute)}
                   className={`w-full py-1.5 rounded-md text-xs font-medium transition-all ${selectedHour === h
                       ? "bg-black text-white font-bold shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "text-muted-foreground hover:bg-muted"
                     }`}
                 >
                   {h.toString().padStart(2, '0')}
@@ -164,11 +164,11 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
             </div>
           </div>
 
-          <div className="w-px bg-gray-100 my-2"></div>
+          <div className="w-px bg-border my-2"></div>
 
           {/* Minutes */}
           <div className="flex-1 flex flex-col">
-            <div className="text-[10px] font-bold text-gray-400 text-center mb-1 uppercase tracking-wider">Minute</div>
+            <div className="text-[10px] font-bold text-muted-foreground/50 text-center mb-1 uppercase tracking-wider">Minute</div>
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-0.5">
               {minutes.map(m => (
                 <button
@@ -176,7 +176,7 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
                   onClick={() => handleTimeChange(selectedHour, m)}
                   className={`w-full py-1.5 rounded-md text-xs font-medium transition-all ${selectedMinute === m
                       ? "bg-black text-white font-bold shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "text-muted-foreground hover:bg-muted"
                     }`}
                 >
                   {m.toString().padStart(2, '0')}
@@ -188,9 +188,9 @@ export function CustomDatePicker({ value, onChange, minDate, onClose }: CustomDa
       )}
 
       {/* Footer Info */}
-      <div className="border-t border-gray-100 pt-2 mt-1 flex items-center justify-between text-[10px]">
-        <span className="text-gray-400 font-medium">Selected:</span>
-        <span className="font-bold text-gray-900">
+      <div className="border-t border-border pt-2 mt-1 flex items-center justify-between text-[10px]">
+        <span className="text-muted-foreground/50 font-medium">Selected:</span>
+        <span className="font-bold text-foreground">
           {value ? value.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "None"}
         </span>
       </div>

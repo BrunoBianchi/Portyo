@@ -1,4 +1,11 @@
 {
+  "meta": {
+    "root": {
+      "title": "Portyo - Convert Your Followers Into Customers | Link in Bio Tool",
+      "description": "The all-in-one platform to showcase your work, sell products, and grow your audience with one powerful link. Join 10,000+ creators using Portyo.",
+      "keywords": "link in bio, creator tools, portfolio builder, sell digital products, newsletter platform, booking scheduler, creator monetization, bio link tool, social media tools"
+    }
+  },
   "nav": {
     "blog": "Blog",
     "manifesto": "Manifesto",
@@ -104,6 +111,12 @@
       }
     },
     "pricing": {
+      "badge": "Simple, transparent pricing",
+      "title": "Choose your plan",
+      "subtitle": "Start free, upgrade when you're ready. No hidden fees, cancel anytime.",
+      "monthly": "Monthly",
+      "annually": "Annually",
+      "save": "Save 25%",
       "billing": {
         "monthly": "Monthly",
         "annually": "Annually (save 25%)"

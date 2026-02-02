@@ -367,8 +367,8 @@ export default function DashboardIntegrations() {
           disableScrollParentFix={joyrideProps.disableScrollParentFix}
         />
         <div className="mb-8" data-tour="integrations-header">
-          <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.integrations.title")}</h1>
-          <p className="text-gray-500 mt-1">{t("dashboard.integrations.subtitle")}</p>
+          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.integrations.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("dashboard.integrations.subtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -379,7 +379,7 @@ export default function DashboardIntegrations() {
               onClick={() => setFilter(category)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${filter === category
                 ? "bg-black text-white"
-                : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                : "bg-surface-card text-muted-foreground hover:bg-muted border border-border"
                 }`}
             >
               {t(`dashboard.integrations.filters.${category}`)}
@@ -393,27 +393,27 @@ export default function DashboardIntegrations() {
             <div
               key={integration.id}
               data-tour={index === 0 ? "integrations-card" : undefined}
-              className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 flex flex-col h-full group"
+              className="bg-surface-card rounded-2xl border border-border p-6 hover:shadow-lg transition-all duration-300 flex flex-col h-full group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gray-50 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                <div className="p-3 bg-muted rounded-xl group-hover:scale-110 transition-transform duration-300">
                   {integration.icon}
                 </div>
                 {integration.status === "connected" && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium border border-green-100">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/10 text-green-700 text-xs font-medium border border-green-100">
                     <Check className="w-3 h-3" />
                     {t("dashboard.integrations.status.connected")}
                   </span>
                 )}
                 {integration.status === "coming_soon" && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium border border-border">
                     {t("dashboard.integrations.status.comingSoon")}
                   </span>
                 )}
               </div>
 
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{integration.name}</h3>
-              <p className="text-sm text-gray-500 mb-6 flex-1 leading-relaxed">
+              <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{integration.name}</h3>
+              <p className="text-sm text-muted-foreground mb-6 flex-1 leading-relaxed">
                 {integration.description}
               </p>
 
@@ -421,7 +421,7 @@ export default function DashboardIntegrations() {
                 {integration.status === "coming_soon" ? (
                   <button
                     disabled
-                    className="w-full py-2.5 px-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl border border-border bg-muted text-muted-foreground text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <AlertCircle className="w-4 h-4" />
                     {t("dashboard.integrations.actions.notAvailable")}
@@ -441,7 +441,7 @@ export default function DashboardIntegrations() {
                     }}
                     disabled={integration.id === "stripe" && isLoadingStripe}
                     className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${integration.status === "connected"
-                      ? "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? "border border-border bg-surface-card text-gray-700 hover:bg-muted hover:text-foreground"
                       : "bg-black text-white hover:bg-gray-800 shadow-md hover:shadow-lg transform active:scale-95"
                       }`}
                   >
@@ -480,11 +480,11 @@ export default function DashboardIntegrations() {
 
         {filteredIntegrations.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No integrations found</h3>
-            <p className="text-gray-500">Try selecting a different category.</p>
+            <h3 className="text-lg font-medium text-foreground">No integrations found</h3>
+            <p className="text-muted-foreground">Try selecting a different category.</p>
           </div>
         )}
       </div>

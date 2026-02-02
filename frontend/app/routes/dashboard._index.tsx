@@ -73,7 +73,7 @@ export default function DashboardHome() {
             case "PURCHASE": return <ShoppingBag className="w-5 h-5 text-green-500" />;
             case "SUBSCRIBE": return <Mail className="w-5 h-5 text-blue-500" />;
             case "CLICK": return <MousePointer2 className="w-5 h-5 text-purple-500" />;
-            case "VIEW": return <Eye className="w-5 h-5 text-gray-500" />;
+            case "VIEW": return <Eye className="w-5 h-5 text-muted-foreground" />;
             default: return <Sparkles className="w-5 h-5 text-yellow-500" />;
         }
     };
@@ -81,10 +81,10 @@ export default function DashboardHome() {
     const renderTrend = (change: number) => {
         const isPositive = change >= 0;
         return (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-green-500/10 text-green-700' : 'bg-destructive/10 text-red-700'}`}>
                 <TrendingUp className={`w-3 h-3 ${!isPositive && 'rotate-180'}`} />
                 <span>{isPositive ? '+' : ''}{change}%</span>
-                <span className={`${isPositive ? 'text-green-600/70' : 'text-red-600/70'} font-medium`}>{t("dashboard.overview.vsLastMonth")}</span>
+                <span className={`${isPositive ? 'text-green-400/70' : 'text-destructive/70'} font-medium`}>{t("dashboard.overview.vsLastMonth")}</span>
             </div>
         );
     };
@@ -101,7 +101,7 @@ export default function DashboardHome() {
                             <Sparkles className="w-3 h-3" />
                             {t("dashboard.overview.overview")}
                         </div>
-                        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.overview.title")}</h1>
+                        <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.title")}</h1>
                         <p className="text-muted-foreground">{t("dashboard.overview.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export default function DashboardHome() {
                         </div>
                         <CardContent className="p-6 relative z-10">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
                                     <BarChart3 className="w-5 h-5" />
                                 </div>
                                 <h3 className="font-semibold text-sm text-muted-foreground">{t("dashboard.overview.totalViews")}</h3>
@@ -147,7 +147,7 @@ export default function DashboardHome() {
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold tracking-tight mb-2">{analytics?.views.total || bio?.views || 0}</p>
+                                <p className="text-4xl font-bold tracking-tight mb-2">{analytics?.views.total || bio?.views || 0}</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.views.change)}
                         </CardContent>
@@ -167,7 +167,7 @@ export default function DashboardHome() {
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold tracking-tight mb-2">{analytics?.clicks.total || bio?.clicks || 0}</p>
+                                <p className="text-4xl font-bold tracking-tight mb-2">{analytics?.clicks.total || bio?.clicks || 0}</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.clicks.change)}
                         </CardContent>
@@ -187,7 +187,7 @@ export default function DashboardHome() {
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
                             ) : (
-                                <p className="text-4xl font-extrabold tracking-tight mb-2">{analytics?.ctr.average || 0}%</p>
+                                <p className="text-4xl font-bold tracking-tight mb-2">{analytics?.ctr.average || 0}%</p>
                             )}
                             {!loadingAnalytics && analytics && renderTrend(analytics.ctr.change)}
                         </CardContent>
@@ -201,11 +201,11 @@ export default function DashboardHome() {
                         <CardHeader className="pb-4">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 bg-green-500/10 text-green-400 rounded-lg flex items-center justify-center shrink-0">
                                         <DollarSign className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-lg">{t("dashboard.overview.salesRevenue")}</h3>
+                                        <h3 className="font-bold text-lg" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.salesRevenue")}</h3>
                                         <p className="text-sm text-muted-foreground">{t("dashboard.overview.salesRevenueSubtitle")}</p>
                                     </div>
                                 </div>
@@ -226,11 +226,11 @@ export default function DashboardHome() {
                                             <p className="text-2xl font-bold">{sales.sales.current}</p>
                                             <div className="mt-1 flex items-center gap-1.5 text-sm">
                                                 {sales.sales.change >= 0 ? (
-                                                    <span className="text-green-600 font-semibold flex items-center gap-0.5">
+                                                    <span className="text-green-400 font-semibold flex items-center gap-0.5">
                                                         <ArrowUpRight className="w-3 h-3" /> {sales.sales.change}%
                                                     </span>
                                                 ) : (
-                                                    <span className="text-red-600 font-semibold flex items-center gap-0.5">
+                                                    <span className="text-destructive font-semibold flex items-center gap-0.5">
                                                         <ArrowDownRight className="w-3 h-3" /> {sales.sales.change}%
                                                     </span>
                                                 )}
@@ -244,11 +244,11 @@ export default function DashboardHome() {
                                             </p>
                                             <div className="mt-1 flex items-center gap-1.5 text-sm">
                                                 {sales.revenue.change >= 0 ? (
-                                                    <span className="text-green-600 font-semibold flex items-center gap-0.5">
+                                                    <span className="text-green-400 font-semibold flex items-center gap-0.5">
                                                         <ArrowUpRight className="w-3 h-3" /> {sales.revenue.change}%
                                                     </span>
                                                 ) : (
-                                                    <span className="text-red-600 font-semibold flex items-center gap-0.5">
+                                                    <span className="text-destructive font-semibold flex items-center gap-0.5">
                                                         <ArrowDownRight className="w-3 h-3" /> {sales.revenue.change}%
                                                     </span>
                                                 )}
@@ -321,7 +321,7 @@ export default function DashboardHome() {
                     <Card className="lg:col-span-2 h-full" data-tour="dashboard-overview-activity">
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold">{t("dashboard.overview.recentActivity")}</h2>
+                                <h2 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.recentActivity")}</h2>
                                 <div className="flex items-center gap-2">
                                     <Select
                                         value={filterType}
@@ -397,7 +397,7 @@ export default function DashboardHome() {
                                     <div className="w-14 h-14 bg-background rounded-full flex items-center justify-center mb-4 shadow-sm border">
                                         <BarChart3 className="w-7 h-7 text-muted-foreground" />
                                     </div>
-                                    <h3 className="text-lg font-bold mb-1">{t("dashboard.overview.noActivityTitle")}</h3>
+                                    <h3 className="text-lg font-bold mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.noActivityTitle")}</h3>
                                     <p className="text-muted-foreground max-w-xs mx-auto text-sm">{t("dashboard.overview.noActivityBody")}</p>
                                 </div>
                             )}
@@ -407,11 +407,11 @@ export default function DashboardHome() {
                     <Card className="p-8 bg-zinc-950 text-white relative overflow-hidden border-zinc-900">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                         <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
+                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-card/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
                                 <Sparkles className="w-3 h-3 text-primary" />
                                 {t("dashboard.overview.proFeature")}
                             </div>
-                            <h2 className="text-2xl font-bold mb-3">{t("dashboard.overview.upgradeTitle")}</h2>
+                            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.upgradeTitle")}</h2>
                             <p className="text-zinc-400 mb-8 leading-relaxed text-sm">{t("dashboard.overview.upgradeBody")}</p>
                             <Button className="w-full bg-primary text-primary-foreground hover:bg-primary-hover font-bold">
                                 {t("dashboard.overview.upgradeCta")}

@@ -1,362 +1,348 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router';
-import { useCookies } from 'react-cookie';
-import { Check, ChevronDown } from "lucide-react";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router";
+import { useCookies } from "react-cookie";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, ChevronDown, Sparkles, Zap, Crown } from "lucide-react";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import { useTranslation } from "react-i18next";
+import { FadeInUp, GlowCard } from "./animation-components";
+
+const plansConfig = [
+  {
+    id: "free" as const,
+    icon: Sparkles,
+    iconBg: "bg-muted",
+    iconColor: "text-muted-foreground",
+    buttonStyle: "bg-muted text-foreground hover:bg-muted-hover",
+    popular: false,
+    features: ["onePage", "oneForm", "noBranding", "noDomain", "basicAnalytics", "storeFee3"] as const,
+    moreFeatures: ["limitedIntegrations"] as const,
+  },
+  {
+    id: "standard" as const,
+    icon: Zap,
+    iconBg: "bg-primary/20",
+    iconColor: "text-primary",
+    buttonStyle: "bg-primary text-background hover:bg-primary-hover shadow-lg shadow-primary/20",
+    popular: true,
+    features: ["twoBios", "threeForms", "branding", "domain", "email", "storeFee1", "emails150"] as const,
+    moreFeatures: ["automation2", "templates2", "seo", "analytics", "customizations"] as const,
+  },
+  {
+    id: "pro" as const,
+    icon: Crown,
+    iconBg: "bg-accent-purple/20",
+    iconColor: "text-accent-purple",
+    buttonStyle: "bg-gradient-to-r from-accent-purple to-accent-pink text-white hover:opacity-90",
+    popular: false,
+    features: ["everything", "fiveBios", "fourForms", "scheduler", "automation4", "templates4", "storeFee0", "emails500", "customizationsPro"] as const,
+    moreFeatures: [] as const,
+  }
+];
+
+function PricingCard({ plan, billingCycle, onSelect, index }: { 
+  plan: typeof plansConfig[0]; 
+  billingCycle: 'monthly' | 'annually';
+  onSelect: () => void;
+  index: number;
+}) {
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const Icon = plan.icon;
+  
+  const price = billingCycle === 'monthly' 
+    ? (plan.id === 'free' ? 0 : plan.id === 'standard' ? 5.50 : 15)
+    : (plan.id === 'free' ? 0 : plan.id === 'standard' ? 4.12 : 11.25);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.15, duration: 0.6 }}
+      whileHover={{ y: -8 }}
+      className={`relative ${plan.popular ? 'lg:-mt-4 lg:mb-4' : ''}`}
+    >
+      {/* Popular Badge */}
+      <AnimatePresence>
+        {plan.popular && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute -top-4 left-1/2 -translate-x-1/2 z-10"
+          >
+            <div className="bg-primary text-background text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              {t(`home.pricing.cards.${plan.id}.badge`)}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <GlowCard 
+        glowColor={plan.id === 'pro' ? 'rgba(168, 85, 247, 0.2)' : plan.id === 'standard' ? 'rgba(187, 255, 0, 0.2)' : 'transparent'}
+        className="h-full"
+      >
+        <div className={`h-full rounded-[2rem] p-8 flex flex-col ${
+          plan.popular 
+            ? 'bg-primary border-2 border-primary shadow-2xl shadow-primary/20' 
+            : plan.id === 'pro'
+            ? 'bg-surface-card border border-border'
+            : 'bg-surface-card border border-border shadow-xl'
+        }`}>
+          
+          {/* Icon & Name */}
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className={`w-12 h-12 rounded-2xl ${plan.iconBg} flex items-center justify-center mb-4`}>
+                <Icon className={`w-6 h-6 ${plan.iconColor}`} />
+              </div>
+              <h3 className={`text-2xl font-bold ${
+                plan.popular ? 'text-background' : 'text-foreground'
+              }`}>
+                {t(`home.pricing.cards.${plan.id}.title`)}
+              </h3>
+              <p className={`text-sm mt-1 ${
+                plan.popular ? 'text-background/70' : 'text-muted-foreground'
+              }`}>
+                {t(`home.pricing.cards.${plan.id}.subtitle`)}
+              </p>
+            </div>
+          </div>
+          
+          {/* Price */}
+          <div className="mb-8">
+            <div className="flex items-baseline gap-1">
+              <span className={`text-5xl font-bold ${
+                plan.popular ? 'text-background' : 'text-foreground'
+              }`}>
+                ${price}
+              </span>
+              <span className={`text-lg ${
+                plan.popular ? 'text-background/70' : 'text-muted-foreground'
+              }`}>
+                /mo
+              </span>
+            </div>
+            {billingCycle === 'annually' && price > 0 && (
+              <p className={`text-sm mt-2 ${
+                plan.popular ? 'text-background/70' : 'text-muted-foreground'
+              }`}>
+                {t(`home.pricing.cards.${plan.id}.billedYearly`)}
+              </p>
+            )}
+          </div>
+          
+          {/* Features */}
+          <div className="flex-1 space-y-4 mb-8">
+            {plan.features.map((featureKey, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 + i * 0.05 }}
+                className="flex items-start gap-3"
+              >
+                <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                  plan.popular ? 'bg-background/20' : 'bg-primary/20'
+                }`}>
+                  <Check className={`w-3 h-3 ${
+                    plan.popular ? 'text-background' : 'text-primary'
+                  }`} />
+                </div>
+                <span className={`text-sm ${
+                  plan.popular ? 'text-background/90' : 'text-muted-foreground'
+                }`}>
+                  {t(`home.pricing.cards.${plan.id}.features.${featureKey}`)}
+                </span>
+              </motion.div>
+            ))}
+            
+            {/* Expandable More Features */}
+            <AnimatePresence>
+              {expanded && plan.moreFeatures.map((featureKey, i) => (
+                <motion.div
+                  key={`more-${i}`}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex items-start gap-3"
+                >
+                  <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                    plan.popular ? 'bg-background/20' : 'bg-primary/20'
+                  }`}>
+                    <Check className={`w-3 h-3 ${
+                      plan.popular ? 'text-background' : 'text-primary'
+                    }`} />
+                  </div>
+                  <span className={`text-sm ${
+                    plan.popular ? 'text-background/90' : 'text-muted-foreground'
+                  }`}>
+                    {t(`home.pricing.cards.${plan.id}.more.${featureKey}`)}
+                  </span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            {/* Show More/Less */}
+            {plan.moreFeatures.length > 0 && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className={`flex items-center gap-1 text-sm font-medium transition-colors ${
+                  plan.popular ? 'text-background/70 hover:text-background' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {expanded ? t("home.pricing.showLess", "Show less") : t("home.pricing.showMore", "Show more")}
+                <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+              </button>
+            )}
+          </div>
+          
+          {/* CTA Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onSelect}
+            className={`w-full py-4 rounded-xl font-bold transition-all duration-300 ${plan.buttonStyle}`}
+          >
+            {t(`home.pricing.cards.${plan.id}.cta`)}
+          </motion.button>
+        </div>
+      </GlowCard>
+    </motion.div>
+  );
+}
 
 export default function PricingSection() {
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
-    const [expandedFree, setExpandedFree] = useState(false);
-    const [expandedStandard, setExpandedStandard] = useState(false);
-    const [expandedPro, setExpandedPro] = useState(false);
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('annually');
+  const { user } = useContext(AuthContext);
+  const [cookies] = useCookies(['@App:token']);
+  const navigate = useNavigate();
 
-    const ensureStringArray = (value: unknown, fallback: string[]) =>
-        Array.isArray(value) ? value : fallback;
+  const handleSelectPlan = async (plan: 'free' | 'standard' | 'pro') => {
+    if (plan === 'free') {
+      navigate(user ? '/dashboard' : '/sign-up');
+      return;
+    }
 
-    const { user } = useContext(AuthContext);
-    const [cookies] = useCookies(['@App:token']);
-    const navigate = useNavigate();
+    if (!user) {
+      navigate(`/sign-up?plan=${plan}`);
+      return;
+    }
 
-    const handleUpgrade = async (plan: 'standard' | 'pro') => {
-        if (!user) {
-            navigate(`/sign-up?plan=${plan}`);
-            return;
-        }
+    try {
+      const token = cookies['@App:token'];
+      if (!token) {
+        navigate(`/sign-up?plan=${plan}`);
+        return;
+      }
 
-        try {
-            const token = cookies['@App:token'];
-            if (!token) {
-                navigate(`/sign-up?plan=${plan}`);
-                return;
-            }
+      const response = await api.post('/stripe/create-checkout-session', {
+        plan,
+        interval: billingCycle
+      });
 
-            const response = await api.post('/stripe/create-checkout-session', {
-                plan,
-                interval: billingCycle
-            });
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Upgrade error:", error);
+      alert(t("home.pricing.checkoutFailed", "Failed to initiate checkout. Please try again."));
+    }
+  };
 
-            if (response.data.url) {
-                window.location.href = response.data.url;
-            } else {
-                console.error("No checkout URL received");
-                alert(t("home.pricing.alerts.checkoutMissing"));
-            }
-
-        } catch (error: any) {
-            console.error("Upgrade error:", error);
-            alert(t("home.pricing.alerts.checkoutFailed"));
-        }
-    };
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrolled = window.scrollY;
-            const section = document.getElementById('pricing-section');
-
-            if (section) {
-                const sectionTop = section.offsetTop;
-                const viewportHeight = window.innerHeight;
-                const distance = scrolled - (sectionTop - viewportHeight);
-
-                // Only animate when in view (roughly)
-                if (distance > -1000 && distance < viewportHeight + 1000) {
-                    const freeCard = document.getElementById('free-card');
-                    const standardCard = document.getElementById('standard-card');
-                    const proCard = document.getElementById('pro-card');
-
-                    if (window.innerWidth >= 1024) { // Only on desktop
-                        // New Logic: Bunch initially, Delay, then Spread with Limit
-
-                        const triggerPoint = viewportHeight * 0.25; // Start spreading when section is 25% up
-                        const initialBunch = 80; // Start 80px inwards (bunched)
-                        const maxSpread = 40; // Don't spread more than 40px outwards
-                        const speed = 0.3;
-
-                        let xOffset = initialBunch;
-                        let yOffset = 0;
-
-                        if (distance > triggerPoint) {
-                            const progress = (distance - triggerPoint) * speed;
-                            xOffset = initialBunch - progress;
-
-                            // Diagonal movement (Upwards as they spread)
-                            yOffset = -(progress * 0.2);
-                        }
-
-                        // Limit the spreading (xOffset shouldn't go too negative)
-                        if (xOffset < -maxSpread) xOffset = -maxSpread;
-
-                        // Limit vertical movement
-                        if (yOffset < -60) yOffset = -60;
-
-                        // Free (Left): Positive xOffset = Right (In), Negative = Left (Out)
-                        if (freeCard) freeCard.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-
-                        // Standard (Center): Moves up slightly slower
-                        if (standardCard) standardCard.style.transform = `translateY(${yOffset * 0.5}px)`;
-
-                        // Pro (Right): Negative xOffset = Left (In), Positive = Right (Out)
-                        // Since xOffset logic is (Positive=In, Negative=Out), we negate it for the Right card
-                        if (proCard) proCard.style.transform = `translate(${-xOffset}px, ${yOffset}px)`;
-                    } else {
-                        // Reset on mobile
-                        if (freeCard) freeCard.style.transform = 'none';
-                        if (standardCard) standardCard.style.transform = 'none';
-                        if (proCard) proCard.style.transform = 'none';
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return (
-        <section id="pricing-section" className="w-full py-32 px-4 overflow-hidden">
-            <div className="max-w-7xl mx-auto">
-
-                {/* Billing Toggle */}
-                <div className="flex justify-center mb-16">
-                    <div className="bg-white p-1.5 rounded-full shadow-sm inline-flex">
-                        <button
-                            onClick={() => setBillingCycle('monthly')}
-                            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'monthly'
-                                ? 'bg-transparent text-text-main'
-                                : 'text-gray-700 hover:text-text-main'
-                                }`}
-                        >
-                            {t("home.pricing.billing.monthly")}
-                        </button>
-                        <button
-                            onClick={() => setBillingCycle('annually')}
-                            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${billingCycle === 'annually'
-                                ? 'bg-text-main text-white shadow-md'
-                                : 'text-gray-700 hover:text-text-main'
-                                }`}
-                        >
-                            {t("home.pricing.billing.annually")}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 lg:gap-8 relative">
-
-                    {/* Free Card */}
-                    <div id="free-card" className="bg-white rounded-[2rem] p-8 w-full lg:w-1/3 shadow-lg flex flex-col gap-6 transition-transform duration-75 ease-linear z-10 border border-gray-100 min-h-[500px]">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-text-main">{t("home.pricing.cards.free.title")}</h3>
-                            <p className="text-gray-700 text-sm mt-2">{t("home.pricing.cards.free.subtitle")}</p>
-                        </div>
-                        <div className="text-center py-4">
-                            <span className="text-5xl font-bold text-text-main">$0</span>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            {ensureStringArray(
-                                t("home.pricing.cards.free.features", { returnObjects: true }),
-                                [
-                                    "Create only one page",
-                                    "Create 1 form",
-                                    "No branding removal",
-                                    "No custom domain",
-                                    "Basic analytics",
-                                    "3% store fee",
-                                ]
-                            ).map((feature, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <Check className="w-4 h-4 text-green-500" />
-                                    <span className="text-text-main text-sm font-medium">{feature}</span>
-                                </div>
-                            ))}
-
-                            {expandedFree && (
-                                <>
-                                    {ensureStringArray(
-                                        t("home.pricing.cards.free.more", { returnObjects: true }),
-                                        ["Limited integrations"]
-                                    ).map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <Check className="w-4 h-4 text-green-500" />
-                                            <span className="text-text-main text-sm font-medium">{feature}</span>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-
-                            <button
-                                onClick={() => setExpandedFree(!expandedFree)}
-                                className="flex items-center gap-1 text-gray-700 hover:text-text-main text-sm font-medium transition-colors mt-2"
-                            >
-                                {expandedFree ? t("home.pricing.showLess") : t("home.pricing.showMore")}
-                                <ChevronDown className={`w-4 h-4 transition-transform ${expandedFree ? 'rotate-180' : ''}`} />
-                            </button>
-                        </div>
-
-                        <div className="mt-auto pt-6">
-                            <button
-                                onClick={() => navigate(user ? '/dashboard' : '/sign-up')}
-                                className="w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
-                            >
-                                {t("home.pricing.cards.free.cta")}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Standard Card */}
-                    <div id="standard-card" className="bg-primary rounded-[2rem] p-8 w-full lg:w-1/3 shadow-xl flex flex-col gap-6 transition-transform duration-75 ease-linear z-20 relative min-h-[500px] border-2 border-primary">
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            <span className="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">{t("home.pricing.cards.standard.badge")}</span>
-                        </div>
-
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-primary-foreground">{t("home.pricing.cards.standard.title")}</h3>
-                            <p className="text-primary-foreground/80 text-sm mt-2">{t("home.pricing.cards.standard.subtitle")}</p>
-                        </div>
-                        <div className="text-center py-4">
-                            <div className="flex items-baseline justify-center gap-1">
-                                <span className="text-5xl font-bold text-primary-foreground">
-                                    ${billingCycle === 'monthly' ? '5.50' : '4.12'}
-                                </span>
-                                <span className="text-primary-foreground/70 text-lg">/mo</span>
-                            </div>
-                            {billingCycle === 'annually' && (
-                                <span className="text-xs font-bold text-black bg-white/20 px-2 py-1 rounded-full mt-2 inline-block">{t("home.pricing.cards.standard.billedYearly")}</span>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            {ensureStringArray(
-                                t("home.pricing.cards.standard.features", { returnObjects: true }),
-                                [
-                                    "Create up to 2 bios",
-                                    "Create 3 forms",
-                                    "Branding removal",
-                                    "Custom domain",
-                                    "Email collection",
-                                    "1% store fee",
-                                    "150 emails/month",
-                                ]
-                            ).map((feature, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <Check className="w-4 h-4 text-black" />
-                                    <span className="text-primary-foreground text-sm font-medium">{feature}</span>
-                                </div>
-                            ))}
-
-                            {expandedStandard && (
-                                <>
-                                    {ensureStringArray(
-                                        t("home.pricing.cards.standard.more", { returnObjects: true }),
-                                        [
-                                            "Automation (2 per bio)",
-                                            "Email template (2 per bio)",
-                                            "SEO settings",
-                                            "Google and Facebook analytics",
-                                            "More customizations",
-                                        ]
-                                    ).map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <Check className="w-4 h-4 text-black" />
-                                            <span className="text-primary-foreground text-sm font-medium">{feature}</span>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-
-                            <button
-                                onClick={() => setExpandedStandard(!expandedStandard)}
-                                className="flex items-center gap-1 text-primary-foreground/70 hover:text-primary-foreground text-sm font-medium transition-colors mt-2"
-                            >
-                                {expandedStandard ? t("home.pricing.showLess") : t("home.pricing.showMore")}
-                                <ChevronDown className={`w-4 h-4 transition-transform ${expandedStandard ? 'rotate-180' : ''}`} />
-                            </button>
-                        </div>
-
-                        <div className="mt-auto pt-6">
-                            <button
-                                onClick={() => handleUpgrade('standard')}
-                                className="w-full bg-black text-white hover:bg-gray-900 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
-                            >
-                                {user ? t("home.pricing.cards.standard.ctaUpgrade") : t("home.pricing.cards.standard.ctaTrial")}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Pro Card */}
-                    <div id="pro-card" className="bg-black rounded-[2rem] p-8 w-full lg:w-1/3 shadow-2xl flex flex-col gap-6 transition-transform duration-75 ease-linear z-10 min-h-[500px]">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white">{t("home.pricing.cards.pro.title")}</h3>
-                            <p className="text-gray-300 text-sm mt-2">{t("home.pricing.cards.pro.subtitle")}</p>
-                        </div>
-                        <div className="text-center py-4">
-                            <div className="flex items-baseline justify-center gap-1">
-                                <span className="text-5xl font-bold text-white">
-                                    ${billingCycle === 'monthly' ? '15' : '11.25'}
-                                </span>
-                                <span className="text-gray-300 text-lg">/mo</span>
-                            </div>
-                            {billingCycle === 'annually' && (
-                                <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded-full mt-2 inline-block">{t("home.pricing.cards.pro.billedYearly")}</span>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            {ensureStringArray(
-                                t("home.pricing.cards.pro.features", { returnObjects: true }),
-                                [
-                                    "Everything in Standard",
-                                    "Create up to 5 bios",
-                                    "Create 4 forms",
-                                    "Scheduler",
-                                    "Automation (4 per bio)",
-                                    "Email template (4 per bio)",
-                                    "0% store fee",
-                                    "500 emails/month",
-                                    "More customizations",
-                                ]
-                            ).map((feature, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <Check className="w-4 h-4 text-primary" />
-                                    <span className="text-gray-300 text-sm font-medium">{feature}</span>
-                                </div>
-                            ))}
-
-                            {expandedPro && (
-                                <>
-                                    {[].map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <Check className="w-4 h-4 text-primary" />
-                                            <span className="text-gray-300 text-sm font-medium">{feature}</span>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-
-                            <button
-                                onClick={() => setExpandedPro(!expandedPro)}
-                                className="flex items-center gap-1 text-gray-300 hover:text-gray-200 text-sm font-medium transition-colors mt-2"
-                            >
-                                {expandedPro ? t("home.pricing.showLess") : t("home.pricing.showMore")}
-                                <ChevronDown className={`w-4 h-4 transition-transform ${expandedPro ? 'rotate-180' : ''}`} />
-                            </button>
-                        </div>
-
-                        <div className="mt-auto pt-6">
-                            <button
-                                onClick={() => handleUpgrade('pro')}
-                                className="w-full bg-white text-black hover:bg-gray-100 font-bold py-3 px-6 rounded-xl transition-colors cursor-pointer"
-                            >
-                                {t("home.pricing.cards.pro.cta")}
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
+  return (
+    <section className="w-full py-24 bg-background relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-purple/5 rounded-full blur-3xl" />
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Header */}
+        <FadeInUp>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-card border border-border shadow-lg mb-6">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">
+                {t("home.pricing.badge", "Simple, transparent pricing")}
+              </span>
             </div>
-        </section>
-    );
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-6" style={{ fontFamily: 'var(--font-display)' }}>
+              {t("home.pricing.title", "Choose your plan")}
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t("home.pricing.subtitle", "Start free, upgrade when you're ready. No hidden fees, cancel anytime.")}
+            </p>
+          </div>
+        </FadeInUp>
+
+        {/* Billing Toggle */}
+        <FadeInUp delay={0.1}>
+          <div className="flex justify-center mb-16">
+            <div className="bg-surface-card p-1.5 rounded-full shadow-xl inline-flex items-center border border-border">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
+                  billingCycle === 'monthly'
+                    ? 'bg-muted text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t("home.pricing.monthly", "Monthly")}
+              </button>
+              <button
+                onClick={() => setBillingCycle('annually')}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
+                  billingCycle === 'annually'
+                    ? 'bg-primary text-background shadow-lg'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t("home.pricing.annually", "Annually")}
+                <span className="text-xs bg-background/20 text-background px-2 py-0.5 rounded-full">
+                  {t("home.pricing.save", "Save 25%")}
+                </span>
+              </button>
+            </div>
+          </div>
+        </FadeInUp>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+          {plansConfig.map((plan, index) => (
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              billingCycle={billingCycle}
+              onSelect={() => handleSelectPlan(plan.id as 'free' | 'standard' | 'pro')}
+              index={index}
+            />
+          ))}
+        </div>
+
+        {/* Trust Badges */}
+        <FadeInUp delay={0.4}>
+          <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" />
+              <span>{t("home.pricing.cancelAnytime", "Cancel anytime")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" />
+              <span>{t("home.pricing.noHiddenFees", "No hidden fees")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" />
+              <span>{t("home.pricing.securePayment", "Secure payment")}</span>
+            </div>
+          </div>
+        </FadeInUp>
+      </div>
+    </section>
+  );
 }

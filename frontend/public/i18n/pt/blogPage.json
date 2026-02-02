@@ -1,8 +1,23 @@
 {
-  "title": "Pesquisas e novidades",
-  "subtitle": "Últimas atualizações, ideias e notícias da Portyo.",
-  "empty": "Nenhum post disponível no momento.",
-  "categoryFallback": "Atualizações",
+  "title": "Insights & Histórias",
+  "subtitle": "Descubra dicas, estratégias e histórias para ajudá-lo a crescer sua presença online.",
+  "badge": "Nosso Blog",
+  "empty": "Nenhum post ainda. Volte em breve!",
+  "categoryFallback": "Artigo",
   "readTime": "{{count}} min de leitura",
-  "views": "{{count}} visualizações"
+  "views": "{{count}} visualizações",
+  "readMore": "Ler mais",
+  "backToBlog": "Voltar ao Blog",
+  "share": "Compartilhar",
+  "linkCopied": "Link copiado para a área de transferência!",
+  "author": {
+    "role": "Autor & Criador"
+  },
+  "endBadge": "Fim",
+  "thanksReading": "Obrigado por ler! Se gostou deste artigo, considere compartilhá-lo."
+  "shareArticle": "Compartilhar este artigo",
+  "notFound": {
+    "title": "Post não encontrado",
+    "description": "O post que você está procurando não existe."
+  }
 }

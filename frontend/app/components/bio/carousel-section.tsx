@@ -124,7 +124,7 @@ export default function CarouselSection() {
   const items = [...users, ...users];
 
   return (
-    <section className="w-full overflow-hidden pt-10 pb-0 bg-surface-alt top-[-102px] relative">
+    <section className="w-full overflow-hidden pt-10 pb-0">
       <div className="flex w-max animate-scroll hover:[animation-play-state:paused]">
         {items.map((user, index) => (
           <a

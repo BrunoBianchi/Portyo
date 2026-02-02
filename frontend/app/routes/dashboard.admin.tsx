@@ -258,7 +258,7 @@ export default function AdminDashboard() {
         switch (plan) {
             case 'pro': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
             case 'standard': return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white';
-            default: return 'bg-gray-100 text-gray-600';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -279,8 +279,8 @@ export default function AdminDashboard() {
                         <Shield className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-                        <p className="text-gray-500 text-sm">Manage users and platform settings</p>
+                        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Admin Panel</h1>
+                        <p className="text-muted-foreground text-sm">Manage users and platform settings</p>
                     </div>
                 </div>
             </div>
@@ -288,53 +288,53 @@ export default function AdminDashboard() {
             {/* Stats Cards */}
             {stats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                    <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                                 <Users className="w-5 h-5 text-blue-600" />
                             </div>
-                            <span className="text-sm text-gray-500 font-medium">Total Users</span>
+                            <span className="text-sm text-muted-foreground font-medium">Total Users</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                        <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                    <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
                                 <TrendingUp className="w-5 h-5 text-green-600" />
                             </div>
-                            <span className="text-sm text-gray-500 font-medium">New This Month</span>
+                            <span className="text-sm text-muted-foreground font-medium">New This Month</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.newUsersThisMonth}</p>
+                        <p className="text-3xl font-bold text-foreground">{stats.newUsersThisMonth}</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                    <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
                                 <Crown className="w-5 h-5 text-purple-600" />
                             </div>
-                            <span className="text-sm text-gray-500 font-medium">Pro Users</span>
+                            <span className="text-sm text-muted-foreground font-medium">Pro Users</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.planDistribution.pro}</p>
+                        <p className="text-3xl font-bold text-foreground">{stats.planDistribution.pro}</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                    <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
                                 <Ban className="w-5 h-5 text-red-600" />
                             </div>
-                            <span className="text-sm text-gray-500 font-medium">Banned</span>
+                            <span className="text-sm text-muted-foreground font-medium">Banned</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.bannedUsers}</p>
+                        <p className="text-3xl font-bold text-foreground">{stats.bannedUsers}</p>
                     </div>
                 </div>
             )}
 
             {/* Plan Distribution */}
             {stats && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-8">
-                    <h3 className="font-bold text-gray-900 mb-4">Plan Distribution</h3>
-                    <div className="flex gap-2 h-4 rounded-full overflow-hidden bg-gray-100">
+                <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm mb-8">
+                    <h3 className="font-bold text-foreground mb-4" style={{ fontFamily: 'var(--font-display)' }}>Plan Distribution</h3>
+                    <div className="flex gap-2 h-4 rounded-full overflow-hidden bg-muted">
                         <div
                             className="bg-gray-400 transition-all"
                             style={{ width: `${(stats.planDistribution.free / stats.totalUsers) * 100}%` }}
@@ -354,32 +354,32 @@ export default function AdminDashboard() {
                     <div className="flex gap-6 mt-3 text-sm">
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded bg-gray-400" />
-                            <span className="text-gray-600">Free ({stats.planDistribution.free})</span>
+                            <span className="text-muted-foreground">Free ({stats.planDistribution.free})</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded bg-blue-500" />
-                            <span className="text-gray-600">Standard ({stats.planDistribution.standard})</span>
+                            <span className="text-muted-foreground">Standard ({stats.planDistribution.standard})</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded bg-purple-500" />
-                            <span className="text-gray-600">Pro ({stats.planDistribution.pro})</span>
+                            <span className="text-muted-foreground">Pro ({stats.planDistribution.pro})</span>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Search */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100">
+            <div className="bg-surface-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-border">
                     <form onSubmit={handleSearch} className="flex gap-3">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder="Search by email or name..."
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
                             />
                         </div>
                         <button
@@ -399,24 +399,24 @@ export default function AdminDashboard() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-muted">
                                 <tr>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Plan</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Bios</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Provider</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Joined</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">User</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Plan</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Bios</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Provider</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Joined</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Status</th>
+                                    <th className="text-right px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {users.map(user => (
-                                    <tr key={user.id} className={`hover:bg-gray-50 ${user.isBanned ? 'bg-red-50/50' : ''}`}>
+                                    <tr key={user.id} className={`hover:bg-muted ${user.isBanned ? 'bg-red-50/50' : ''}`}>
                                         <td className="px-4 py-4">
                                             <div>
-                                                <p className="font-medium text-gray-900">{user.fullName}</p>
-                                                <p className="text-sm text-gray-500">{user.email}</p>
+                                                <p className="font-medium text-foreground">{user.fullName}</p>
+                                                <p className="text-sm text-muted-foreground">{user.email}</p>
                                             </div>
                                         </td>
                                         <td className="px-4 py-4">
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
                                                 {user.plan.toUpperCase()}
                                             </span>
                                             {user.planExpiresAt && (
-                                                <p className="text-xs text-gray-400 mt-1">
+                                                <p className="text-xs text-muted-foreground mt-1">
                                                     Expires: {formatDate(user.planExpiresAt)}
                                                 </p>
                                             )}
@@ -432,17 +432,17 @@ export default function AdminDashboard() {
                                         <td className="px-4 py-4">
                                             <button
                                                 onClick={() => handleViewBios(user)}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors text-sm"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-gray-200 text-muted-foreground font-medium transition-colors text-sm"
                                             >
                                                 <FileText className="w-4 h-4" />
                                                 {user.biosCount} Bios
                                             </button>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="text-gray-600 capitalize">{user.provider}</span>
+                                            <span className="text-muted-foreground capitalize">{user.provider}</span>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="text-gray-600 text-sm">{formatDate(user.createdAt)}</span>
+                                            <span className="text-muted-foreground text-sm">{formatDate(user.createdAt)}</span>
                                         </td>
                                         <td className="px-4 py-4">
                                             {user.isBanned ? (
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => { setSelectedUser(user); setPlanForm({ plan: user.plan, durationDays: 30 }); setShowPlanModal(true); }}
-                                                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-primary transition-colors"
+                                                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
                                                     title="Set Plan"
                                                 >
                                                     <Crown className="w-4 h-4" />
@@ -492,25 +492,25 @@ export default function AdminDashboard() {
                 )}
 
                 {/* Pagination */}
-                <div className="p-4 border-t border-gray-100 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
+                <div className="p-4 border-t border-border flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
                         Showing {users.length} of {total} users
                     </p>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <span className="text-sm text-gray-600 px-3">
+                        <span className="text-sm text-muted-foreground px-3">
                             Page {currentPage} of {pages}
                         </span>
                         <button
                             onClick={() => setCurrentPage(p => Math.min(pages, p + 1))}
                             disabled={currentPage === pages}
-                            className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -521,16 +521,16 @@ export default function AdminDashboard() {
             {/* Plan Modal */}
             {showPlanModal && selectedUser && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Set Plan for {selectedUser.fullName}</h3>
+                    <div className="bg-surface-card rounded-2xl shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: 'var(--font-display)' }}>Set Plan for {selectedUser.fullName}</h3>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Plan</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Plan</label>
                                 <select
                                     value={planForm.plan}
                                     onChange={(e) => setPlanForm({ ...planForm, plan: e.target.value })}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                 >
                                     <option value="free">Free</option>
                                     <option value="standard">Standard</option>
@@ -539,17 +539,17 @@ export default function AdminDashboard() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">
                                     Duration (days) - 0 for permanent
                                 </label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <input
                                         type="number"
                                         min="0"
                                         value={planForm.durationDays}
                                         onChange={(e) => setPlanForm({ ...planForm, durationDays: parseInt(e.target.value) || 0 })}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                     />
                                 </div>
                             </div>
@@ -558,7 +558,7 @@ export default function AdminDashboard() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => { setShowPlanModal(false); setSelectedUser(null); }}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-border font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
                                 Cancel
                             </button>
@@ -577,22 +577,22 @@ export default function AdminDashboard() {
             {/* Delete Modal */}
             {showDeleteModal && selectedUser && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+                    <div className="bg-surface-card rounded-2xl shadow-xl max-w-md w-full p-6">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                                 <AlertTriangle className="w-5 h-5 text-red-600" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">Delete User</h3>
+                            <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Delete User</h3>
                         </div>
 
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             Are you sure you want to delete <strong>{selectedUser.fullName}</strong> ({selectedUser.email})? This action cannot be undone.
                         </p>
 
                         <div className="flex gap-3">
                             <button
                                 onClick={() => { setShowDeleteModal(false); setSelectedUser(null); }}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-border font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
                                 Cancel
                             </button>
@@ -611,17 +611,17 @@ export default function AdminDashboard() {
             {/* Bios Modal */}
             {showBiosModal && selectedUser && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 max-h-[85vh] flex flex-col">
+                    <div className="bg-surface-card rounded-2xl shadow-xl max-w-3xl w-full p-6 max-h-[85vh] flex flex-col">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-foreground flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
                                 <FileText className="w-6 h-6 text-primary" />
                                 Manage Bios for {selectedUser.fullName}
                             </h3>
                             <button
                                 onClick={() => { setShowBiosModal(false); setSelectedUser(null); }}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-muted rounded-full transition-colors"
                             >
-                                <X className="w-5 h-5 text-gray-500" />
+                                <X className="w-5 h-5 text-muted-foreground" />
                             </button>
                         </div>
 
@@ -630,26 +630,26 @@ export default function AdminDashboard() {
                                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
                             </div>
                         ) : userBios.length === 0 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center py-10 text-gray-500">
+                            <div className="flex-1 flex flex-col items-center justify-center py-10 text-muted-foreground">
                                 <FileText className="w-12 h-12 mb-3 opacity-20" />
                                 <p>No bios found for this user.</p>
                             </div>
                         ) : (
                             <div className="flex-1 overflow-y-auto pr-2 space-y-3">
                                 {userBios.map(bio => (
-                                    <div key={bio.id} className="border border-gray-100 rounded-xl p-4 flex items-center gap-4 hover:shadow-sm transition-shadow bg-gray-50/50">
-                                        <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0 bg-cover bg-center" style={bio.profileImage ? { backgroundImage: `url(${bio.profileImage})` } : {}}>
-                                            {!bio.profileImage && <span className="text-lg font-bold text-gray-400">{bio.sufix.charAt(0).toUpperCase()}</span>}
+                                    <div key={bio.id} className="border border-border rounded-xl p-4 flex items-center gap-4 hover:shadow-sm transition-shadow bg-muted/50">
+                                        <div className="w-12 h-12 bg-surface-card rounded-lg border border-border flex items-center justify-center flex-shrink-0 bg-cover bg-center" style={bio.profileImage ? { backgroundImage: `url(${bio.profileImage})` } : {}}>
+                                            {!bio.profileImage && <span className="text-lg font-bold text-muted-foreground">{bio.sufix.charAt(0).toUpperCase()}</span>}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 {editingBioId === bio.id ? (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-gray-400 font-medium">portyo.me/</span>
+                                                        <span className="text-muted-foreground font-medium">portyo.me/</span>
                                                         <input
                                                             autoFocus
-                                                            className="bg-white border border-blue-500 rounded px-2 py-0.5 text-sm font-bold w-32 focus:outline-none"
+                                                            className="bg-surface-card border border-blue-500 rounded px-2 py-0.5 text-sm font-bold w-32 focus:outline-none"
                                                             value={editSuffix}
                                                             onChange={e => setEditSuffix(e.target.value)}
                                                             onKeyDown={e => e.key === 'Enter' && handleUpdateBioSuffix(bio.id)}
@@ -659,18 +659,18 @@ export default function AdminDashboard() {
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2 group">
-                                                        <a href={`https://portyo.me/p/${bio.sufix}`} target="_blank" rel="noreferrer" className="font-bold text-gray-900 hover:text-primary hover:underline flex items-center gap-1">
+                                                        <a href={`https://portyo.me/p/${bio.sufix}`} target="_blank" rel="noreferrer" className="font-bold text-foreground hover:text-primary hover:underline flex items-center gap-1">
                                                             {bio.sufix}
                                                             <ExternalLink className="w-3 h-3 opacity-50" />
                                                         </a>
-                                                        <button onClick={() => { setEditingBioId(bio.id); setEditSuffix(bio.sufix); }} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded text-gray-500 transition-opacity">
+                                                        <button onClick={() => { setEditingBioId(bio.id); setEditSuffix(bio.sufix); }} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded text-muted-foreground transition-opacity">
                                                             <Edit2 className="w-3 h-3" />
                                                         </button>
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="text-xs text-gray-500 truncate">{bio.seoTitle || "No title"}</p>
-                                            <div className="flex gap-3 mt-1 text-xs text-gray-400">
+                                            <p className="text-xs text-muted-foreground truncate">{bio.seoTitle || "No title"}</p>
+                                            <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                                                 <span>{bio.views} views</span>
                                                 <span>•</span>
                                                 <span>Created {formatDate(bio.createdAt)}</span>
@@ -682,7 +682,7 @@ export default function AdminDashboard() {
                                                 onClick={() => handleVerifyBio(bio)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors ${bio.verified
                                                     ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                                    : 'bg-muted text-muted-foreground hover:bg-gray-200'
                                                     }`}
                                             >
                                                 {bio.verified ? <Check className="w-3 h-3" /> : null}

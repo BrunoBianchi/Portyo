@@ -200,7 +200,7 @@ export default function DashboardQrCode() {
                             <QrCodeIcon className="w-3 h-3" />
                             {t("dashboard.qrcode.share")}
                         </div>
-                        <h1 className="text-4xl font-extrabold text-text-main tracking-tight mb-2">{t("dashboard.qrcode.title")}</h1>
+                        <h1 className="text-4xl font-bold text-text-main tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.title")}</h1>
                         <p className="text-lg text-text-muted">{t("dashboard.qrcode.subtitle")}</p>
                     </div>
                 </header>
@@ -210,7 +210,7 @@ export default function DashboardQrCode() {
                     <div className="lg:col-span-1 space-y-6">
                         {/* Create New */}
                         <div className="card p-6" data-tour="qrcode-create">
-                            <h3 className="text-lg font-bold text-text-main mb-4">{t("dashboard.qrcode.createTitle")}</h3>
+                            <h3 className="text-lg font-bold text-text-main mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.createTitle")}</h3>
                             <form onSubmit={handleCreate} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-text-muted uppercase mb-2">{t("dashboard.qrcode.destinationUrl")}</label>
@@ -221,7 +221,7 @@ export default function DashboardQrCode() {
                                             value={newValue}
                                             onChange={(e) => setNewValue(e.target.value)}
                                             placeholder={t("dashboard.qrcode.urlPlaceholder")}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
                                             required
                                         />
                                     </div>
@@ -240,7 +240,7 @@ export default function DashboardQrCode() {
                         {/* List */}
                         <div className="card overflow-hidden flex flex-col max-h-[600px]" data-tour="qrcode-list">
                             <div className="p-4 border-b border-border bg-surface-alt/30">
-                                <h3 className="font-bold text-text-main text-sm">{t("dashboard.qrcode.yourCodes")}</h3>
+                                <h3 className="font-bold text-text-main text-sm" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.yourCodes")}</h3>
                             </div>
                             <div className="overflow-y-auto flex-1 p-2 space-y-1 custom-scrollbar">
                                 {/* Default Bio Link Option */}
@@ -248,7 +248,7 @@ export default function DashboardQrCode() {
                                     onClick={() => setSelectedQrCode(null)}
                                     className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${!selectedQrCode ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-surface-alt'}`}
                                 >
-                                    <div className="w-10 h-10 rounded-lg bg-white border border-border flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center shrink-0">
                                         <QrCodeIcon className="w-5 h-5 text-primary" />
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -269,7 +269,7 @@ export default function DashboardQrCode() {
                                         onClick={() => setSelectedQrCode(qr)}
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${selectedQrCode?.id === qr.id ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-surface-alt'}`}
                                     >
-                                        <div className="w-10 h-10 rounded-lg bg-white border border-border flex items-center justify-center shrink-0">
+                                        <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center shrink-0">
                                             <QRCode value={qr.value} size={24} />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -299,7 +299,7 @@ export default function DashboardQrCode() {
                                 {/* Left Side: Preview */}
                                 <div className="flex-1 flex flex-col items-center justify-center space-y-6">
                                     <div className="text-center space-y-2 w-full">
-                                        <h2 className="text-2xl font-bold text-text-main">
+                                        <h2 className="text-2xl font-bold text-text-main" style={{ fontFamily: 'var(--font-display)' }}>
                                             {selectedQrCode ? t("dashboard.qrcode.custom") : t("dashboard.qrcode.profile")}
                                         </h2>
                                         <div className="flex items-center justify-center gap-2 text-text-muted bg-surface-alt/50 py-1 px-3 rounded-full inline-flex max-w-full mx-auto border border-border/50">
@@ -314,7 +314,7 @@ export default function DashboardQrCode() {
                                         </div>
                                     </div>
 
-                                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm transition-colors duration-300 w-full max-w-[300px]" style={{ backgroundColor: bgColor }}>
+                                    <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm transition-colors duration-300 w-full max-w-[300px]" style={{ backgroundColor: bgColor }}>
                                         <QRCode
                                             value={currentQrValue}
                                             size={256}

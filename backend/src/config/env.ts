@@ -60,8 +60,10 @@ const envSchema = z.object({
   REDIS_USERNAME: z.string().optional(),
   REDIS_PASSWORD: z.string().optional(),
 
-  // AI
+  // AI - Multiple API Keys for rotation/fallback
   GROQ_API_KEY: z.string().optional(),
+  GROQ_API_KEY_1: z.string().optional(),
+  GROQ_API_KEY_2: z.string().optional(),
   GROQ_MODEL: z.string().default("moonshotai/kimi-k2-instruct-0905"),
 
   // Instagram

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { BioProvider } from "~/contexts/bio.context";
 import { BlogProvider } from "~/contexts/blog.context";
 import { SiteBlogProvider } from "~/contexts/site-blog.context";
+import { AutoPostProvider } from "~/contexts/auto-post.context";
 import { Outlet, useLocation } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
 import Joyride, { type CallBackProps, EVENTS, STATUS, ACTIONS, type Step } from "react-joyride";
@@ -123,6 +124,7 @@ export default function Dashboard() {
             <BioProvider>
                 <BlogProvider>
                     <SiteBlogProvider>
+                        <AutoPostProvider>
                         <Joyride
                             steps={steps}
                             run={tourRun && !isMobile && isDashboardHome}
@@ -160,6 +162,7 @@ export default function Dashboard() {
                                 <Outlet />
                             </main>
                         </div>
+                    </AutoPostProvider>
                     </SiteBlogProvider>
                 </BlogProvider>
             </BioProvider>

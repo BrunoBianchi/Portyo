@@ -327,16 +327,16 @@ export default function DashboardMarketing() {
             <AuthorizationGuard>
                 <div className="p-6 max-w-7xl mx-auto">
                     <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl p-12 text-center text-white">
-                        <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <div className="w-20 h-20 bg-surface-card/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Sparkles className="w-10 h-10" />
                         </div>
-                        <h2 className="text-3xl font-bold mb-4">{t("dashboard.marketing.locked.title")}</h2>
+                        <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.locked.title")}</h2>
                         <p className="text-lg mb-8 opacity-90">
                             {t("dashboard.marketing.locked.subtitle")}
                         </p>
                         <a
                             href="/dashboard/settings"
-                            className="inline-block px-8 py-4 bg-white text-purple-600 rounded-full font-bold hover:bg-gray-100 transition"
+                            className="inline-block px-8 py-4 bg-surface-card text-purple-600 rounded-full font-bold hover:bg-muted transition"
                         >
                             {t("dashboard.marketing.locked.cta")}
                         </a>
@@ -377,7 +377,7 @@ export default function DashboardMarketing() {
                                 <DollarSign className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">{t("dashboard.marketing.stripe.title")}</h3>
+                                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.stripe.title")}</h3>
                                 <p className="text-amber-800">{t("dashboard.marketing.stripe.subtitle")}</p>
                             </div>
                         </div>
@@ -392,9 +392,9 @@ export default function DashboardMarketing() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="marketing-header">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.marketing.title")}</h1>
-                        <p className="text-gray-500 mt-1">{t("dashboard.marketing.subtitle", { current: slots.length, limit: maxSlots })}</p>
-                        <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.title")}</h1>
+                        <p className="text-muted-foreground mt-1">{t("dashboard.marketing.subtitle", { current: slots.length, limit: maxSlots })}</p>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             {t("dashboard.marketing.platformFee")}
                             <InfoTooltip content={t("tooltips.marketing.platformFee")} position="right" />
                         </p>
@@ -411,13 +411,13 @@ export default function DashboardMarketing() {
 
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                     </div>
                 ) : slots.length === 0 ? (
-                    <div className="bg-gray-50 rounded-3xl p-12 text-center border-2 border-dashed border-gray-200" data-tour="marketing-grid">
+                    <div className="bg-muted rounded-3xl p-12 text-center border-2 border-dashed border-border" data-tour="marketing-grid">
                         <TrendingUp className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.marketing.emptyTitle")}</h3>
-                        <p className="text-gray-500 mb-6">{t("dashboard.marketing.emptySubtitle")}</p>
+                        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.emptyTitle")}</h3>
+                        <p className="text-muted-foreground mb-6">{t("dashboard.marketing.emptySubtitle")}</p>
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
                             className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition"
@@ -431,12 +431,12 @@ export default function DashboardMarketing() {
                             <div
                                 key={slot.id}
                                 data-tour={index === 0 ? "marketing-card" : undefined}
-                                className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm hover:shadow-lg transition"
+                                className="bg-surface-card rounded-3xl border border-border p-6 shadow-sm hover:shadow-lg transition"
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-lg text-gray-900 mb-1">{slot.slotName}</h3>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <h3 className="font-bold text-lg text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{slot.slotName}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <DollarSign className="w-4 h-4" />
                                             <span>${slot.priceMin} - ${slot.priceMax}</span>
                                             <span className="text-gray-300">•</span>
@@ -449,16 +449,16 @@ export default function DashboardMarketing() {
                                             setDeletingSlot(slot);
                                         }}
                                         disabled={slot.status !== 'available'}
-                                        className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition disabled:opacity-30 disabled:cursor-not-allowed"
                                         title={slot.status !== 'available' ? t("dashboard.marketing.campaignInProgress") : t("dashboard.marketing.deleteSlot")}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
 
-                                <div className="flex items-center gap-4 py-4 border-t border-b border-gray-100 my-4">
+                                <div className="flex items-center gap-4 py-4 border-t border-b border-border my-4">
                                     <div className="flex-1">
-                                        <p className="text-xs text-gray-500 font-medium mb-1">{t("dashboard.marketing.status.label")}</p>
+                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.status.label")}</p>
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${slot.status === 'available' ? 'bg-green-100 text-green-700' :
                                             slot.status === 'occupied' ? 'bg-blue-100 text-blue-700' :
                                                 'bg-yellow-100 text-yellow-700'
@@ -467,12 +467,12 @@ export default function DashboardMarketing() {
                                         </span>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs text-gray-500 font-medium mb-1">{t("dashboard.marketing.proposals")}</p>
-                                        <p className="text-2xl font-bold text-gray-900">{slot.totalProposals}</p>
+                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.proposals")}</p>
+                                        <p className="text-2xl font-bold text-foreground">{slot.totalProposals}</p>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs text-gray-500 font-medium mb-1">{t("dashboard.marketing.revenue")}</p>
-                                        <p className="text-2xl font-bold text-green-600">${slot.totalRevenue}</p>
+                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.revenue")}</p>
+                                        <p className="text-2xl font-bold text-green-400">${slot.totalRevenue}</p>
                                     </div>
                                 </div>
 
@@ -492,15 +492,15 @@ export default function DashboardMarketing() {
                 {/* Create Modal */}
                 {isCreateModalOpen && typeof document !== "undefined" && createPortal(
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-                            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-gray-900">{t("dashboard.marketing.createModal.title")}</h3>
-                                <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
+                            <div className="p-6 border-b border-border flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.createModal.title")}</h3>
+                                <button onClick={() => setIsCreateModalOpen(false)} className="text-muted-foreground hover:text-muted-foreground">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
                             <form onSubmit={handleCreate} className="p-6 space-y-4">
-                                {createError && <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{createError}</div>}
+                                {createError && <div className="p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">{createError}</div>}
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.marketing.createModal.slotName")}</label>
@@ -508,7 +508,7 @@ export default function DashboardMarketing() {
                                         required
                                         value={formData.slotName}
                                         onChange={(e) => setFormData({ ...formData, slotName: e.target.value })}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
                                         placeholder={t("dashboard.marketing.createModal.slotPlaceholder")}
                                     />
                                 </div>
@@ -524,7 +524,7 @@ export default function DashboardMarketing() {
                                             step="0.01"
                                             value={formData.priceMin}
                                             onChange={(e) => setFormData({ ...formData, priceMin: e.target.value })}
-                                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
                                         />
                                     </div>
                                     <div>
@@ -537,7 +537,7 @@ export default function DashboardMarketing() {
                                             step="0.01"
                                             value={formData.priceMax}
                                             onChange={(e) => setFormData({ ...formData, priceMax: e.target.value })}
-                                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
                                         />
                                     </div>
                                 </div>
@@ -551,7 +551,7 @@ export default function DashboardMarketing() {
                                         max="365"
                                         value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
                                     />
                                 </div>
 
@@ -585,18 +585,18 @@ export default function DashboardMarketing() {
                 {/* Delete Modal */}
                 {deletingSlot && typeof document !== "undefined" && createPortal(
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
                             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="w-6 h-6 text-red-600" />
+                                <Trash2 className="w-6 h-6 text-destructive" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">{t("dashboard.marketing.deleteModal.title")}</h3>
-                            <p className="text-gray-500 text-sm mb-6">
+                            <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.deleteModal.title")}</h3>
+                            <p className="text-muted-foreground text-sm mb-6">
                                 {t("dashboard.marketing.deleteModal.description", { name: deletingSlot.slotName })}
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setDeletingSlot(null)}
-                                    className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
+                                    className="flex-1 py-2.5 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
                                 >
                                     {t("dashboard.marketing.cancel")}
                                 </button>
@@ -616,15 +616,15 @@ export default function DashboardMarketing() {
                 {/* Proposals Modal */}
                 {viewingProposalsFor && typeof document !== "undefined" && createPortal(
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-                            <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+                            <div className="p-6 border-b border-border flex items-center justify-between flex-shrink-0">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{t("dashboard.marketing.proposalsFor", { name: viewingProposalsFor.slotName })}</h3>
-                                    <p className="text-sm text-gray-500">
+                                    <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.proposalsFor", { name: viewingProposalsFor.slotName })}</h3>
+                                    <p className="text-sm text-muted-foreground">
                                         ${viewingProposalsFor.priceMin} - ${viewingProposalsFor.priceMax} • {t("dashboard.marketing.durationDays", { count: viewingProposalsFor.duration })}
                                     </p>
                                 </div>
-                                <button onClick={() => setViewingProposalsFor(null)} className="text-gray-400 hover:text-gray-600">
+                                <button onClick={() => setViewingProposalsFor(null)} className="text-muted-foreground hover:text-muted-foreground">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -632,31 +632,31 @@ export default function DashboardMarketing() {
                             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                                 {isLoadingProposals ? (
                                     <div className="flex justify-center py-12">
-                                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                                     </div>
                                 ) : selectedSlotProposals.length === 0 ? (
-                                    <div className="text-center py-12 text-gray-500">
+                                    <div className="text-center py-12 text-muted-foreground">
                                         <p>{t("dashboard.marketing.noProposals")}</p>
                                     </div>
                                 ) : (
                                     selectedSlotProposals.map(proposal => (
-                                        <div key={proposal.id} className="border border-gray-100 rounded-xl p-5 hover:border-gray-200 transition bg-gray-50/50">
+                                        <div key={proposal.id} className="border border-border rounded-xl p-5 hover:border-border transition bg-muted/50">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                                                         {proposal.company?.sufix?.[0]?.toUpperCase() || proposal.guestName?.[0]?.toUpperCase() || 'G'}
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-gray-900 leading-tight">
+                                                        <h4 className="font-bold text-foreground leading-tight">
                                                             {proposal.company?.sufix ? `@${proposal.company.sufix}` : proposal.guestName || t("dashboard.marketing.guest")}
                                                         </h4>
-                                                        <p className="text-xs text-gray-500">
+                                                        <p className="text-xs text-muted-foreground">
                                                             {new Date(proposal.createdAt).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-lg font-bold text-green-600">${proposal.proposedPrice}</span>
+                                                    <span className="text-lg font-bold text-green-400">${proposal.proposedPrice}</span>
                                                     <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${proposal.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                                                         proposal.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
                                                             proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700' :
@@ -668,25 +668,25 @@ export default function DashboardMarketing() {
                                             </div>
 
                                             {/* Proposal Content Preview */}
-                                            <div className="bg-white border border-gray-100 rounded-lg p-3 mb-4 flex gap-3">
+                                            <div className="bg-surface-card border border-border rounded-lg p-3 mb-4 flex gap-3">
                                                 {proposal.content.imageUrl ? (
-                                                    <img src={proposal.content.imageUrl} alt="" className="w-16 h-16 rounded-md object-cover bg-gray-100" />
+                                                    <img src={proposal.content.imageUrl} alt="" className="w-16 h-16 rounded-md object-cover bg-muted" />
                                                 ) : (
-                                                    <div className="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center text-gray-300">
+                                                    <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center text-gray-300">
                                                         <ImageIcon width={20} height={20} />
                                                     </div>
                                                 )}
                                                 <div className="flex-1 min-w-0">
-                                                    <h5 className="font-bold text-sm text-gray-900 truncate">{proposal.content.title}</h5>
-                                                    <p className="text-xs text-gray-500 line-clamp-2">{proposal.content.description}</p>
-                                                    <a href={proposal.content.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block truncate max-w-full">
+                                                    <h5 className="font-bold text-sm text-foreground truncate">{proposal.content.title}</h5>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2">{proposal.content.description}</p>
+                                                    <a href={proposal.content.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline mt-1 inline-block truncate max-w-full">
                                                         {proposal.content.linkUrl}
                                                     </a>
                                                 </div>
                                             </div>
 
                                             {proposal.message && (
-                                                <div className="text-sm text-gray-600 bg-gray-100 p-3 rounded-lg mb-4 italic">
+                                                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg mb-4 italic">
                                                     "{proposal.message}"
                                                 </div>
                                             )}
@@ -703,7 +703,7 @@ export default function DashboardMarketing() {
                                                 <button
                                                     onClick={() => handleRejectProposal(proposal.id)}
                                                     disabled={processingProposalId === proposal.id || proposal.status !== 'pending' || viewingProposalsFor?.status !== 'available'}
-                                                    className="flex-1 py-2 border border-gray-200 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 hover:text-red-600 transition disabled:opacity-50 text-sm"
+                                                    className="flex-1 py-2 border border-border text-muted-foreground font-semibold rounded-lg hover:bg-muted hover:text-destructive transition disabled:opacity-50 text-sm"
                                                     title={proposal.status !== 'pending' ? t("dashboard.marketing.proposalNotPending") : viewingProposalsFor?.status !== 'available' ? t("dashboard.marketing.campaignInProgress") : t("dashboard.marketing.reject")}
                                                 >
                                                     {t("dashboard.marketing.reject")}

@@ -8,6 +8,9 @@ export const PLAN_LIMITS = {
         removeBranding: false,
         customDomain: false,
         seoSettings: false,
+        scheduler: false,
+        autoPost: false,
+        autoPostPerMonth: 0,
         storeFee: 0.03, // 3%
         analytics: 'basic', // basic or advanced
         integrations: 'limited',
@@ -22,6 +25,9 @@ export const PLAN_LIMITS = {
         removeBranding: true,
         customDomain: true,
         seoSettings: true,
+        scheduler: false,
+        autoPost: false,
+        autoPostPerMonth: 0,
         storeFee: 0.01, // 1%
         analytics: 'advanced', // Google and Facebook analytics
         integrations: 'full', // More customizations
@@ -36,6 +42,9 @@ export const PLAN_LIMITS = {
         removeBranding: true,
         customDomain: true,
         seoSettings: true, // Everything from standard
+        scheduler: true,
+        autoPost: true,
+        autoPostPerMonth: 10,
         storeFee: 0,
         analytics: 'advanced',
         integrations: 'full',

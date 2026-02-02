@@ -1,8 +1,23 @@
 {
-  "title": "Research and news",
-  "subtitle": "Latest updates, ideas, and product news from Portyo.",
-  "empty": "No posts available right now.",
-  "categoryFallback": "Updates",
+  "title": "Insights & Stories",
+  "subtitle": "Discover tips, strategies, and stories to help you grow your online presence.",
+  "badge": "Our Blog",
+  "empty": "No posts yet. Check back soon!",
+  "categoryFallback": "Article",
   "readTime": "{{count}} min read",
-  "views": "{{count}} views"
+  "views": "{{count}} views",
+  "readMore": "Read more",
+  "backToBlog": "Back to Blog",
+  "share": "Share",
+  "linkCopied": "Link copied to clipboard!",
+  "author": {
+    "role": "Author & Creator"
+  },
+  "endBadge": "The End",
+  "thanksReading": "Thanks for reading! If you enjoyed this article, consider sharing it.",
+  "shareArticle": "Share this article",
+  "notFound": {
+    "title": "Post not found",
+    "description": "The post you're looking for doesn't exist."
+  }
 }

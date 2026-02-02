@@ -8,7 +8,7 @@ export default function CatchAll() {
       {/* <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-200/30 rounded-full blur-[120px] pointer-events-none" /> */}
 
       <div className="text-center relative z-10 max-w-lg mx-auto">
-        <h1 className="text-[150px] font-black text-gray-900 leading-none tracking-tighter opacity-10">404</h1>
+        <h1 className="text-[150px] font-bold text-gray-900 leading-none tracking-tight opacity-10">404</h1>
         <div className="mt-[-80px] mb-8">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">Page not found</h2>
           <p className="text-lg text-gray-500 font-medium">

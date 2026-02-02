@@ -71,9 +71,9 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col md:flex-row">
+            <div className="relative bg-surface-card w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col md:flex-row">
                 {/* Preview Section */}
-                <div className="flex-1 bg-gray-50 p-8 flex items-center justify-center min-h-[350px] relative">
+                <div className="flex-1 bg-muted p-8 flex items-center justify-center min-h-[350px] relative">
                     {/* Phone Frame */}
                     <div className="relative w-[240px] h-[480px] bg-gray-900 rounded-[2.5rem] p-2.5 shadow-2xl">
                         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-full z-10" />
@@ -142,23 +142,23 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                 <div className="w-full md:w-[360px] p-6 md:p-8 flex flex-col">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5 text-muted-foreground" />
                     </button>
 
                     <div className="flex items-center gap-3 mb-3">
                         <span className="text-2xl">{theme.emoji}</span>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">{theme.name}</h2>
-                            <p className="text-sm text-gray-500 capitalize">{theme.category}</p>
+                            <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{theme.name}</h2>
+                            <p className="text-sm text-muted-foreground capitalize">{theme.category}</p>
                         </div>
                     </div>
 
                     {/* Tier Badge */}
                     <div className="mb-5">
                         {theme.tier === "free" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-gray-100 text-gray-600 rounded-full">
+                            <span className="px-3 py-1 text-xs font-bold uppercase bg-muted text-muted-foreground rounded-full">
                                 {t("themes.badges.free")}
                             </span>
                         )}
@@ -174,15 +174,15 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                         )}
                     </div>
 
-                    <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">{theme.description}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{theme.description}</p>
 
                     {/* Features List */}
                     {theme.features && theme.features.length > 0 && (
                         <div className="mb-6">
-                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("themes.preview.features", "Features")}</h4>
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("themes.preview.features", "Features")}</h4>
                             <div className="flex flex-wrap gap-2">
                                 {theme.features.map((feature, i) => (
-                                    <span key={i} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-md">
+                                    <span key={i} className="px-2.5 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md">
                                         {feature}
                                     </span>
                                 ))}
@@ -192,30 +192,30 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
 
                     {/* Color Preview */}
                     <div className="space-y-3 mb-6">
-                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("themes.preview.colors")}</h4>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("themes.preview.colors")}</h4>
                         <div className="flex gap-2">
                             {theme.colors ? (
                                 theme.colors.map((color, i) => (
                                     <div
                                         key={i}
-                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
                                         style={{ backgroundColor: color }}
                                     />
                                 ))
                             ) : (
                                 <>
                                     <div
-                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
                                         style={{ backgroundColor: theme.styles.bgColor }}
                                         title={t("themes.preview.background")}
                                     />
                                     <div
-                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
                                         style={{ backgroundColor: theme.styles.cardBackgroundColor }}
                                         title={t("themes.preview.card")}
                                     />
                                     <div
-                                        className="w-10 h-10 rounded-full border border-gray-200 shadow-sm"
+                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
                                         style={{ backgroundColor: theme.styles.usernameColor }}
                                         title={t("themes.preview.text")}
                                     />
@@ -270,15 +270,15 @@ function ApplyTargetModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-            <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="relative w-full max-w-xl rounded-2xl bg-surface-card shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{t("themes.applyModal.title")}</h3>
-                        <p className="text-sm text-gray-500">{t("themes.applyModal.subtitle")}</p>
+                        <h3 className="text-lg font-semibold text-foreground">{t("themes.applyModal.title")}</h3>
+                        <p className="text-sm text-muted-foreground">{t("themes.applyModal.subtitle")}</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                        className="p-2 rounded-full hover:bg-muted transition-colors"
                         disabled={isApplying}
                     >
                         <X className="w-5 h-5" />
@@ -292,19 +292,19 @@ function ApplyTargetModal({
                                 <button
                                     key={bioItem.id}
                                     onClick={() => onSelectBio(bioItem.id)}
-                                    className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                                    className="w-full flex items-center justify-between rounded-xl border border-border px-4 py-3 text-left hover:border-primary hover:bg-primary/5 transition-colors"
                                     disabled={isApplying}
                                 >
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">/{bioItem.sufix}</p>
-                                        <p className="text-xs text-gray-500">{t("themes.actions.applyToBio")}</p>
+                                        <p className="text-sm font-semibold text-foreground">/{bioItem.sufix}</p>
+                                        <p className="text-xs text-muted-foreground">{t("themes.actions.applyToBio")}</p>
                                     </div>
-                                    <Check className="w-4 h-4 text-gray-400" />
+                                    <Check className="w-4 h-4 text-muted-foreground" />
                                 </button>
                             ))}
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-500">
+                        <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
                             {t("themes.applyModal.noBios")}
                         </div>
                     )}
@@ -535,10 +535,10 @@ function ThemesPage() {
 
                     {/* Header - Minimal & Elegant */}
                     <div className="text-center max-w-2xl mx-auto">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3" style={{ fontFamily: 'var(--font-display)' }}>
                             {t("themes.title")}
                         </h1>
-                        <p className="text-gray-500 text-lg">
+                        <p className="text-muted-foreground text-lg">
                             {t("themes.subtitle", { count: THEME_PRESETS.length })}
                         </p>
                     </div>
@@ -546,13 +546,13 @@ function ThemesPage() {
                     {/* Search - Centered & Clean */}
                     <div className="max-w-md mx-auto">
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder={t("themes.searchPlaceholder")}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all text-gray-900 placeholder:text-gray-400"
+                                className="w-full pl-12 pr-4 py-3.5 bg-surface-card border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all text-foreground placeholder:text-muted-foreground"
                             />
                         </div>
                     </div>
@@ -567,7 +567,7 @@ function ThemesPage() {
                                     onClick={() => setSelectedCategory(category.id)}
                                     className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${selectedCategory === category.id
                                         ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20"
-                                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                        : "bg-surface-card text-muted-foreground hover:bg-muted border border-border"
                                         }`}
                                 >
                                     <span>{category.emoji}</span>
@@ -576,7 +576,7 @@ function ThemesPage() {
                             ))}
                             <button
                                 onClick={() => setShowAllCategories((prev) => !prev)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                                className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 {showAllCategories ? t("themes.filters.less") : t("themes.filters.more")}
                                 {showAllCategories ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -584,7 +584,7 @@ function ThemesPage() {
                         </div>
 
                         {/* Plan Filters - Secondary */}
-                        <div className="flex items-center justify-center gap-1 bg-gray-100 rounded-full p-1 max-w-fit mx-auto">
+                        <div className="flex items-center justify-center gap-1 bg-muted rounded-full p-1 max-w-fit mx-auto">
                             {[
                                 { id: "all", label: t("themes.filters.plans.all") },
                                 { id: "free", label: t("themes.filters.plans.free") },
@@ -595,8 +595,8 @@ function ThemesPage() {
                                     key={plan.id}
                                     onClick={() => setSelectedPlanFilter(plan.id as "all" | "free" | "standard" | "pro")}
                                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${selectedPlanFilter === plan.id
-                                        ? "bg-white text-gray-900 shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700"
+                                        ? "bg-surface-card text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-gray-700"
                                         }`}
                                 >
                                     {plan.label}
@@ -613,7 +613,7 @@ function ThemesPage() {
                             return (
                                 <div
                                     key={`${theme.category}-${theme.name}`}
-                                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300"
+                                    className="group bg-surface-card rounded-2xl border border-border overflow-hidden hover:border-border hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300"
                                 >
                                     {/* Preview Thumbnail */}
                                     <div
@@ -663,7 +663,7 @@ function ThemesPage() {
                                         {/* Preview Overlay */}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                                             <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                                <div className="bg-white/95 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 shadow-lg">
+                                                <div className="bg-surface-card/95 backdrop-blur-sm text-foreground px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 shadow-lg">
                                                     <Eye className="w-4 h-4" />
                                                     {t("themes.actions.preview")}
                                                 </div>
@@ -676,7 +676,7 @@ function ThemesPage() {
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="text-base flex-shrink-0">{theme.emoji}</span>
-                                                <h3 className="font-semibold text-gray-900 truncate">{theme.name}</h3>
+                                                <h3 className="font-semibold text-foreground truncate">{theme.name}</h3>
                                             </div>
 
                                             {/* Tier Badge - Minimal */}
@@ -690,7 +690,7 @@ function ThemesPage() {
                                             )}
                                         </div>
 
-                                        <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">{theme.description}</p>
+                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{theme.description}</p>
 
                                         {/* Apply Button - Green to Black Gradient for Upgrade */}
                                         <button
@@ -723,11 +723,11 @@ function ThemesPage() {
                     {/* Empty State - Minimal */}
                     {filteredThemes.length === 0 && (
                         <div className="text-center py-24">
-                            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                                <Palette className="w-6 h-6 text-gray-400" />
+                            <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                                <Palette className="w-6 h-6 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{t("themes.empty.title")}</h3>
-                            <p className="text-gray-500 text-sm">{t("themes.empty.subtitle")}</p>
+                            <h3 className="text-lg font-semibold text-foreground mb-1">{t("themes.empty.title")}</h3>
+                            <p className="text-muted-foreground text-sm">{t("themes.empty.subtitle")}</p>
                         </div>
                     )}
                 </div>
