@@ -8,6 +8,34 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { sanitizeHtml } from "~/utils/security";
 import { useTranslation } from "react-i18next";
+import type { MetaFunction } from "react-router";
+
+// Meta tags dinâmicos para SEO
+export const meta: MetaFunction = ({ params }) => {
+    // O conteúdo real será atualizado pelo client-side
+    // Mas já definimos meta tags base para SEO
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    const title = lang === "pt" 
+        ? "Artigo do Blog | Portyo"
+        : "Blog Article | Portyo";
+    const description = lang === "pt"
+        ? "Leia artigos exclusivos sobre estratégias para criadores digitais"
+        : "Read exclusive articles about strategies for digital creators";
+    
+    return [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: "index, follow" },
+        { property: "og:type", content: "article" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:image", content: "https://portyo.me/og-image.jpg" },
+        { property: "og:site_name", content: "Portyo" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+    ];
+};
 
 export default function SiteBlogPostPage() {
     const { id } = useParams();
@@ -27,7 +55,30 @@ export default function SiteBlogPostPage() {
         getPublicSitePost(id, lang).then(fetchedPost => {
             if (fetchedPost) {
                 setPost(fetchedPost);
+                // Update document title and meta dynamically for SEO
                 document.title = `${fetchedPost.title} | Portyo Blog`;
+                
+                // Update meta description
+                const metaDesc = document.querySelector('meta[name="description"]');
+                if (metaDesc) {
+                    const excerpt = fetchedPost.content?.replace(/<[^>]*>/g, '').substring(0, 160) + '...' || '';
+                    metaDesc.setAttribute('content', excerpt);
+                }
+                
+                // Update OG tags
+                const ogTitle = document.querySelector('meta[property="og:title"]');
+                if (ogTitle) ogTitle.setAttribute('content', fetchedPost.title);
+                
+                const ogDesc = document.querySelector('meta[property="og:description"]');
+                if (ogDesc) {
+                    const excerpt = fetchedPost.content?.replace(/<[^>]*>/g, '').substring(0, 160) + '...' || '';
+                    ogDesc.setAttribute('content', excerpt);
+                }
+                
+                const ogImage = document.querySelector('meta[property="og:image"]');
+                if (ogImage && fetchedPost.thumbnail) {
+                    ogImage.setAttribute('content', fetchedPost.thumbnail);
+                }
             } else {
                 setError("Post not found");
             }
@@ -63,19 +114,19 @@ export default function SiteBlogPostPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-surface-alt">
-                <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     if (error || !post) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-surface-alt">
-                <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">404</h1>
-                <p className="text-gray-600 mb-6 font-serif italic">Post not found</p>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-surface-alt text-foreground">
+                <h1 className="text-3xl font-serif font-bold mb-2">404</h1>
+                <p className="text-muted-foreground mb-6 font-serif italic">Post not found</p>
                 <Link
                     to={`/${i18n.language === "pt" ? "pt" : "en"}/blog`}
-                    className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:underline transition-all"
+                    className="flex items-center gap-2 text-sm font-medium text-foreground hover:underline transition-all"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back to Blog
@@ -90,40 +141,35 @@ export default function SiteBlogPostPage() {
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
     const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
 
-
-
     return (
-        <article className="min-h-screen bg-surface-alt">
-            {/* Minimalist Navigation */}
-            <nav className="border-b border-gray-100 sticky top-0 bg-surface-alt/95 backdrop-blur-sm z-50">
-                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link
-                        to={`/${i18n.language === "pt" ? "pt" : "en"}/blog`}
-                        className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="font-medium">Back to Blog</span>
-                    </Link>
-
-                    <button
-                        onClick={handleShare}
-                        className="p-2 text-gray-400 hover:text-black transition-colors"
-                        title="Share"
-                    >
-                        <Share2 className="w-4 h-4" />
-                    </button>
-                </div>
-            </nav>
-
+        <article className="min-h-screen bg-surface-alt text-foreground">
             <motion.div
                 className="max-w-3xl mx-auto px-6 py-12 md:py-20"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
             >
+                {/* Inline Actions (avoid overlapping fixed navbar) */}
+                <div className="flex items-center justify-between mb-8">
+                    <Link
+                        to={`/${i18n.language === "pt" ? "pt" : "en"}/blog`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="font-medium">Back to Blog</span>
+                    </Link>
+                    <button
+                        onClick={handleShare}
+                        className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                        title="Share"
+                    >
+                        <Share2 className="w-4 h-4" />
+                    </button>
+                </div>
+
                 {/* Editorial Header */}
                 <header className="mb-12 text-center">
-                    <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-gray-400 uppercase mb-6">
+                    <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-muted-foreground uppercase mb-6">
                         <span suppressHydrationWarning>{formattedDate}</span>
                         <span>•</span>
                         <span suppressHydrationWarning>{readTime} min read</span>
@@ -131,7 +177,7 @@ export default function SiteBlogPostPage() {
                         <span suppressHydrationWarning>{t("views", { count: post.views ?? 0 })}</span>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-[1.1] mb-8 tracking-tight">
+                    <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-[1.1] mb-8 tracking-tight">
                         {post.title}
                     </h1>
 
@@ -142,8 +188,8 @@ export default function SiteBlogPostPage() {
                             className="w-10 h-10 rounded-full object-cover transition-all"
                         />
                         <div className="text-left">
-                            <p className="text-sm font-bold text-gray-900">{authorName}</p>
-                            <p className="text-xs text-gray-500 font-medium">Official Blog</p>
+                            <p className="text-sm font-bold text-foreground">{authorName}</p>
+                            <p className="text-xs text-muted-foreground font-medium">Official Blog</p>
                         </div>
                     </div>
                 </header>
@@ -169,12 +215,12 @@ export default function SiteBlogPostPage() {
                 </div>
 
                 {/* Footer Section */}
-                <div className="mt-24 pt-12 border-t border-gray-100">
+                <div className="mt-24 pt-12 border-t border-border">
                     <div className="text-center">
-                        <div className="inline-block p-4 border border-black rounded-full mb-8">
-                            <h3 className="font-bold text-xl px-4">The End.</h3>
+                        <div className="inline-block p-4 border border-border rounded-full mb-8">
+                            <h3 className="font-bold text-xl px-4 text-foreground">The End.</h3>
                         </div>
-                        <p className="text-gray-500 font-medium mb-8 max-w-md mx-auto">
+                        <p className="text-muted-foreground font-medium mb-8 max-w-md mx-auto">
                             Thanks for reading. If you enjoyed this piece, please consider sharing it.
                         </p>
                     </div>
@@ -185,7 +231,7 @@ export default function SiteBlogPostPage() {
                 .blog-markdown {
                     font-size: 1.05rem;
                     line-height: 1.9;
-                    color: #111827;
+                    color: #e5e7eb;
                 }
                 .blog-markdown > * + * { margin-top: 1.25rem; }
                 .blog-markdown h1 { font-size: 2.25rem; line-height: 1.2; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; }
@@ -193,20 +239,21 @@ export default function SiteBlogPostPage() {
                 .blog-markdown h3 { font-size: 1.4rem; line-height: 1.35; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.5rem; }
                 .blog-markdown h4 { font-size: 1.15rem; line-height: 1.4; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
                 .blog-markdown p { margin: 0 0 1rem; white-space: pre-wrap; }
-                .blog-markdown a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
-                .blog-markdown a:hover { color: #1e40af; }
+                .blog-markdown a { color: #d7f000; text-decoration: underline; text-underline-offset: 3px; }
+                .blog-markdown a:hover { color: #f3ff7a; }
                 .blog-markdown ul, .blog-markdown ol { margin: 0 0 1rem; padding-left: 1.5rem; }
                 .blog-markdown li { margin: 0.4rem 0; }
                 .blog-markdown blockquote {
-                    border-left: 4px solid #e5e7eb;
-                    background: #f9fafb;
-                    color: #374151;
+                    border-left: 4px solid #334155;
+                    background: #0f172a;
+                    color: #e2e8f0;
                     padding: 0.75rem 1rem;
                     border-radius: 0.75rem;
                     margin: 1.5rem 0;
                 }
                 .blog-markdown code {
-                    background: #f3f4f6;
+                    background: #111827;
+                    color: #e2e8f0;
                     padding: 0.15rem 0.4rem;
                     border-radius: 0.4rem;
                     font-size: 0.95em;
@@ -226,10 +273,10 @@ export default function SiteBlogPostPage() {
                     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
                     margin: 1.5rem 0;
                 }
-                .blog-markdown hr { border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
+                .blog-markdown hr { border: none; border-top: 1px solid #1f2937; margin: 2rem 0; }
                 .blog-markdown table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
-                .blog-markdown th, .blog-markdown td { border: 1px solid #e5e7eb; padding: 0.6rem 0.75rem; }
-                .blog-markdown th { background: #f9fafb; text-align: left; }
+                .blog-markdown th, .blog-markdown td { border: 1px solid #1f2937; padding: 0.6rem 0.75rem; }
+                .blog-markdown th { background: #0f172a; text-align: left; }
             `}</style>
         </article>
     );

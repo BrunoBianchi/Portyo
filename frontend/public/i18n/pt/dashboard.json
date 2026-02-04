@@ -17,7 +17,1296 @@
     "analytics": "Análises",
     "adminPanel": "Painel Admin",
     "announcements": "Anúncios",
-    "siteBlog": "Blog do site"
+    "siteBlog": "Blog do site",
+    "autoPost": "Auto Post"
+  },
+  "customDomains": {
+    "title": "Domínios Personalizados",
+    "subtitle": "Conecte seu próprio domínio ao seu Portyo para uma marca mais profissional",
+    "badge": "Pro Feature",
+    "addTitle": "Adicionar Novo Domínio",
+    "addSubtitle": "Digite o domínio que você deseja conectar",
+    "placeholder": "seudominio.com",
+    "addButton": "Adicionar Domínio",
+    "yourDomains": "Seus Domínios",
+    "empty": {
+      "title": "Nenhum domínio configurado",
+      "subtitle": "Adicione seu primeiro domínio personalizado acima"
+    },
+    "instructions": {
+      "title": "Como configurar seu domínio",
+      "step1": "Adicione seu domínio no campo acima",
+      "step2": "Configure um registro DNS A apontando seu domínio para o IP do servidor",
+      "step3": "Aguarde a propagação do DNS (pode levar até 24h)",
+      "step4": "O SSL será gerado automaticamente quando o DNS for detectado"
+    },
+    "status": {
+      "active": "Ativo",
+      "pending": "Pendente",
+      "dnsVerified": "DNS Verificado",
+      "failed": "Falhou"
+    },
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "details": {
+      "status": "Status",
+      "ssl": "SSL",
+      "expires": "SSL Expira",
+      "added": "Adicionado"
+    },
+    "verify": "Verificar",
+    "visit": "Visitar",
+    "remove": "Remover",
+    "copy": "Copiar",
+    "confirmRemove": "Tem certeza que deseja remover este domínio?",
+    "success": {
+      "added": "Domínio adicionado com sucesso!",
+      "removed": "Domínio removido com sucesso!",
+      "verificationStarted": "Verificação iniciada!"
+    },
+    "errors": {
+      "fetchFailed": "Falha ao carregar domínios",
+      "addFailed": "Falha ao adicionar domínio",
+      "removeFailed": "Falha ao remover domínio",
+      "verifyFailed": "Falha ao verificar domínio"
+    },
+    "tour": {
+      "headerTitle": "Domínios Personalizados",
+      "header": "Conecte seu próprio domínio ao seu Portyo",
+      "addTitle": "Adicionar Domínio",
+      "add": "Digite seu domínio personalizado aqui",
+      "listTitle": "Seus Domínios",
+      "list": "Acompanhe o status de todos os seus domínios"
+    }
+  },
+  "editor": {
+    "tabs": {
+      "links": "Links",
+      "design": "Design",
+      "settings": "Configurações"
+    },
+    "addLink": "Adicionar Link",
+    "defaults": {
+      "headingTitle": "Apresente-se",
+      "headingBody": "Em uma linha, diga por que as pessoas devem se conectar com você.",
+      "buttonTitle": "Link principal",
+      "newButton": "Novo botão",
+      "newHeading": "Novo título",
+      "newVideo": "Novo vídeo",
+      "newBlock": "Novo bloco",
+      "textBody": "Descreva algo aqui.",
+      "product": "Produto {{index}}",
+      "viewProduct": "Ver produto",
+      "bookCall": "Agendar chamada",
+      "mapTitle": "Nosso escritório",
+      "mapAddress": "Rua Principal 123, Cidade",
+      "featuredTitle": "Batom Glow",
+      "affiliateTitle": "Copie meu cupom",
+      "portfolioTitle": "Portfólio",
+      "experienceTitle": "Experiência",
+      "experienceRole": "Designer de Produto Sênior",
+      "experienceCompany": "Portyo Studio",
+      "experiencePeriod": "2022 — Presente",
+      "experienceLocation": "Remoto",
+      "experienceDescription": "Liderou iniciativas de design em produtos web e mobile.",
+      "whatsappTitle": "Falar no WhatsApp",
+      "whatsappMessage": "Olá! Gostaria de falar com você."
+    },
+    "sections": {
+      "content": "Conteúdo",
+      "design": "Design"
+    },
+    "blockIntegration": {
+      "forms": {
+        "title": "Formulário",
+        "select": "Selecionar formulário",
+        "empty": "Nenhum formulário encontrado",
+        "create": "Criar formulário",
+        "manage": "Gerenciar formulários",
+        "fields": "campos",
+        "responses": "respostas",
+        "error": "Erro ao carregar formulários"
+      },
+      "portfolio": {
+        "title": "Portfólio",
+        "select": "Selecionar itens do portfólio",
+        "empty": "Nenhum projeto no portfólio",
+        "create": "Criar projeto",
+        "manage": "Gerenciar portfólio",
+        "allCategories": "Todas as categorias",
+        "selected": "Itens selecionados",
+        "items": "itens",
+        "remove": "Remover",
+        "add": "Adicionar itens",
+        "noSelection": "Nenhum item selecionado",
+        "itemId": "Projeto {{id}}",
+        "error": "Erro ao carregar portfólio",
+        "layout": {
+          "label": "Layout da galeria",
+          "grid": "Grade",
+          "masonry": "Masonry",
+          "carousel": "Carrossel"
+        },
+        "columns": {
+          "label": "Colunas",
+          "suffix": "colunas"
+        },
+        "showTitles": "Mostrar títulos",
+        "showDescriptions": "Mostrar descrições"
+      },
+      "products": {
+        "title": "Produtos",
+        "select": "Selecionar produtos",
+        "empty": "Nenhum produto encontrado",
+        "create": "Criar produto",
+        "manage": "Gerenciar produtos",
+        "selected": "Produtos selecionados",
+        "items": "itens",
+        "remove": "Remover",
+        "add": "Adicionar produtos",
+        "noSelection": "Nenhum produto selecionado",
+        "productId": "Produto {{id}}",
+        "error": "Erro ao carregar produtos",
+        "showPrices": "Mostrar preços",
+        "showDescriptions": "Mostrar descrições",
+        "layout": {
+          "grid": "Grade",
+          "list": "Lista",
+          "carousel": "Carrossel"
+        }
+      },
+      "marketing": {
+        "title": "Marketing",
+        "select": "Selecionar slot de marketing",
+        "empty": "Nenhum slot de marketing",
+        "create": "Criar slot",
+        "manage": "Gerenciar slots",
+        "error": "Erro ao carregar slots"
+      },
+      "blog": {
+        "title": "Blog",
+        "select": "Selecionar posts do blog",
+        "empty": "Nenhum post encontrado",
+        "create": "Criar post",
+        "manage": "Gerenciar blog",
+        "postsSelected": "posts selecionados",
+        "max": "máx {{max}}",
+        "selectedCount": "{{count}} de {{max}} posts selecionados",
+        "error": "Erro ao carregar posts"
+      }
+    },
+    "blockTypes": {
+      "heading": "Título",
+      "text": "Texto",
+      "button": "Botão de Link",
+      "button_grid": "Grade de Botões",
+      "image": "Imagem",
+      "video": "Vídeo",
+      "socials": "Links Sociais",
+      "whatsapp": "Botão WhatsApp",
+      "divider": "Divisor",
+      "qrcode": "QR Code",
+      "spotify": "Spotify",
+      "instagram": "Feed do Instagram",
+      "youtube": "YouTube",
+      "blog": "Posts do Blog",
+      "product": "Produtos",
+      "tour": "Datas de Turnê",
+      "event": "Contagem Regressiva",
+      "calendar": "Agendamento",
+      "map": "Mapa de Localização",
+      "form": "Formulário de Contato",
+      "portfolio": "Portfólio",
+      "marketing": "Slot de Marketing",
+      "experience": "Experiência Profissional",
+      "featured": "Produto em Destaque",
+      "affiliate": "Oferta de Afiliado",
+      "add": "Adicionar Bloco"
+    },
+    "event": {
+      "defaultTitle": "Webinar ao vivo",
+      "defaultButton": "Inscreva-se agora",
+      "started": "Evento iniciado",
+      "days": "Dias",
+      "hours": "Horas",
+      "mins": "Min",
+      "secs": "Seg"
+    },
+    "blog": {
+      "author": "Por você",
+      "placeholderTitlePrimary": "Desenvolvedor Sênior",
+      "placeholderTitle": "Título do post {{index}}",
+      "placeholderSubtitlePrimary": "Tech4Humans • São Paulo, SP - Remoto",
+      "placeholderSubtitle": "Categoria • Local",
+      "placeholderContent": "Desenvolvedor FullStack na Tech4Humans, trabalhando em projetos para grandes seguradoras. Tive a chance de participar do desenvolvimento de novas funcionalidades...",
+      "placeholderTag1": "FullStack",
+      "placeholderTag2": "Soft Skills",
+      "placeholderTag3": "Hard Skills",
+      "category": "Blog",
+      "readTime": "5 min de leitura",
+      "readMore": "Ler mais →"
+    },
+    "tour": {
+      "title": "TURNÊS",
+      "empty": "Nenhuma data de turnê adicionada",
+      "soldOut": "Esgotado",
+      "sellingFast": "Esgotando"
+    },
+    "spotify": {
+      "empty": "Adicione um link do Spotify para exibir o player",
+      "invalidUrl": "URL do Spotify inválida"
+    },
+    "youtube": {
+      "channel": "Canal do YouTube",
+      "videoAlt": "Vídeo do YouTube"
+    },
+    "instagram": {
+      "postAlt": "Post do Instagram"
+    },
+    "qr": {
+      "defaultUrl": "https://exemplo.com",
+      "empty": "Adicione códigos QR para exibir"
+    },
+    "marketing": {
+      "activeTitle": "Anúncio ativo",
+      "activeSubtitle": "O anúncio da empresa aparecerá aqui",
+      "viewDetails": "Ver detalhes",
+      "slotTitle": "Espaço de marketing",
+      "slotHintLine1": "Configure este espaço no painel de Marketing",
+      "slotHintLine2": "Empresas podem enviar propostas de anúncios",
+      "createSlot": "Criar espaço"
+    },
+    "blockItem": {
+      "general": {
+        "dropHere": "Solte aqui",
+        "removeBlock": "Remover bloco",
+        "campaignInProgress": "Campanha em andamento"
+      },
+      "common": {
+        "background": "Fundo",
+        "textColor": "Cor do texto",
+        "text": "Texto",
+        "accent": "Destaque",
+        "animation": "Animação",
+        "alignment": "Alinhamento",
+        "layout": "Layout",
+        "style": "Estilo",
+        "shape": "Forma",
+        "label": "Rótulo",
+        "url": "URL",
+        "title": "Título",
+        "description": "Descrição",
+        "buttonText": "Texto do botão",
+        "image": "Imagem",
+        "backgroundImage": "Imagem de fundo",
+        "icon": "Ícone",
+        "selectIcon": "Selecionar ícone",
+        "address": "Endereço",
+        "displayType": "Tipo de exibição",
+        "textPosition": "Posição do texto"
+      },
+      "sections": {
+        "content": "Conteúdo",
+        "design": "Design",
+        "options": "Opções",
+        "colors": "Cores"
+      },
+      "heading": {
+        "title": "Título",
+        "titlePlaceholder": "Título",
+        "subtitle": "Subtítulo",
+        "subtitlePlaceholder": "Subtítulo"
+      },
+      "text": {
+        "content": "Conteúdo",
+        "placeholder": "Escreva seu texto"
+      },
+      "typography": {
+        "title": "Tipografia",
+        "fontSize": "Tamanho da fonte",
+        "fontWeight": "Peso da fonte"
+      },
+      "size": {
+        "small": "Pequeno",
+        "normal": "Normal",
+        "medium": "Médio",
+        "large": "Grande",
+        "xl": "XL"
+      },
+      "weight": {
+        "light": "Leve",
+        "normal": "Normal",
+        "medium": "Médio",
+        "semibold": "Semibold",
+        "bold": "Negrito",
+        "extraBold": "Extra negrito",
+        "black": "Black"
+      },
+      "align": {
+        "left": "Esquerda",
+        "center": "Centro",
+        "right": "Direita",
+        "justify": "Justificar"
+      },
+      "animation": {
+        "none": "Nenhuma",
+        "bounce": "Saltar",
+        "pulse": "Pulsar",
+        "shake": "Tremer",
+        "wobble": "Oscilar",
+        "loop": "Loop",
+        "once": "Uma vez",
+        "hover": "Ao passar"
+      },
+      "buttonGrid": {
+        "labelPlaceholder": "Texto do botão",
+        "newLink": "Novo link",
+        "addButton": "Adicionar botão"
+      },
+      "button": {
+        "labelPlaceholder": "Texto do botão",
+        "imageOptional": "Imagem (opcional)",
+        "secondaryShadow": "Secundária / Sombra",
+        "sensitiveContent": "Conteúdo sensível",
+        "mark18": "Marcar como conteúdo +18"
+      },
+      "whatsapp": {
+        "helper": "Crie um botão de contato que abre o WhatsApp com mensagem pré-preenchida.",
+        "label": "Texto do botão",
+        "labelPlaceholder": "Falar no WhatsApp",
+        "number": "Número do WhatsApp",
+        "numberPlaceholder": "ex.: 5511999999999",
+        "message": "Mensagem padrão",
+        "messagePlaceholder": "Olá! Gostaria de falar com você.",
+        "style": "Estilo",
+        "previewTitle": "Pré-visualização",
+        "htmlLabel": "HTML gerado",
+        "defaultLabel": "Falar no WhatsApp",
+        "defaultMessage": "Olá! Gostaria de falar com você.",
+        "styles": {
+          "solid": "Sólido",
+          "outline": "Contorno",
+          "gradient": "Gradiente",
+          "glass": "Vidro",
+          "neon": "Neon",
+          "minimal": "Minimal",
+          "soft": "Suave",
+          "dark": "Escuro"
+        }
+      },
+      "buttonStyles": {
+        "solid": "Sólido",
+        "outline": "Contorno",
+        "ghost": "Fantasma",
+        "retro": "Retrô",
+        "softShadow": "Sombra suave",
+        "threeD": "3D",
+        "glass": "Vidro",
+        "gradient": "Gradiente",
+        "neon": "Neon",
+        "architect": "Arquitetura",
+        "material": "Material",
+        "brutalist": "Brutalista",
+        "outlineThick": "Contorno grosso",
+        "imageCard": "Card de imagem"
+      },
+      "shapes": {
+        "pill": "Pílula",
+        "rounded": "Arredondado",
+        "square": "Quadrado"
+      },
+      "socials": {
+        "helper": "Adicione seus links de redes sociais abaixo.",
+        "inlineRow": "Inline (Linha)",
+        "listColumn": "Lista (Coluna)",
+        "showText": "Mostrar texto",
+        "showLabels": "Mostrar labels",
+        "platforms": {
+          "instagram": "Instagram",
+          "twitter": "X / Twitter",
+          "tiktok": "TikTok",
+          "youtube": "YouTube",
+          "linkedin": "LinkedIn",
+          "github": "GitHub",
+          "facebook": "Facebook"
+        }
+      },
+      "calendar": {
+        "bookingSettings": "Configurações de agendamento",
+        "bookingHint": "A disponibilidade e as configurações de agendamento são gerenciadas na aba",
+        "scheduler": "Agenda",
+        "tabSuffix": ".",
+        "titlePlaceholder": "Agendar horário",
+        "descriptionPlaceholder": "Breve descrição"
+      },
+      "video": {
+        "youtubeUrl": "URL do YouTube",
+        "youtubePlaceholder": "https://youtube.com/watch?v=..."
+      },
+      "product": {
+        "layoutGrid": "Grade",
+        "layoutList": "Lista",
+        "layoutCarousel": "Carrossel",
+        "cardStyle": "Estilo do card",
+        "cardDefault": "Padrão",
+        "cardMinimal": "Minimalista",
+        "accentColor": "Cor de destaque",
+        "buttonPlaceholder": "ex.: Comprar agora",
+        "products": "Produtos",
+        "removeProduct": "Remover produto",
+        "addFromStripe": "Adicionar produto do Stripe",
+        "selectToAdd": "Selecione um produto para adicionar...",
+        "emptyTitle": "Nenhum produto encontrado",
+        "emptyBody": "Crie um novo produto para adicioná-lo aqui.",
+        "createNew": "Criar novo produto",
+        "createTitle": "Criar produto",
+        "productTitle": "Título do produto",
+        "productTitlePlaceholder": "ex.: Guia digital",
+        "price": "Preço",
+        "currency": "Moeda",
+        "imageOptional": "Imagem do produto (opcional)",
+        "creating": "Criando...",
+        "createAction": "Criar produto"
+      },
+      "map": {
+        "locationName": "Nome do local",
+        "locationPlaceholder": "ex.: Nosso escritório",
+        "addressPlaceholder": "ex.: Rua Principal 123, Cidade"
+      },
+      "featured": {
+        "productTitle": "Título do produto",
+        "productTitlePlaceholder": "Nome do produto",
+        "productImage": "Imagem do produto",
+        "productUrl": "URL do produto"
+      },
+      "affiliate": {
+        "titlePlaceholder": "Copie meu cupom",
+        "couponCode": "Código do cupom",
+        "couponPlaceholder": "CODIGO123",
+        "affiliateUrl": "URL de afiliado"
+      },
+      "event": {
+        "eventTitle": "Título do evento",
+        "eventTitlePlaceholder": "Webinar ao vivo",
+        "dateTime": "Data e hora",
+        "buttonPlaceholder": "Inscrever-se",
+        "buttonUrl": "URL do botão"
+      },
+      "spotify": {
+        "url": "URL do Spotify",
+        "placeholder": "https://open.spotify.com/track/...",
+        "helper": "Suporta faixas, álbuns e playlists",
+        "compactPlayer": "Player compacto"
+      },
+      "instagram": {
+        "username": "Usuário do Instagram",
+        "usernamePlaceholder": "usuario",
+        "displayGrid": "Grade (3 colunas)",
+        "displayList": "Lista (Vertical)",
+        "showUsername": "Mostrar usuário"
+      },
+      "youtube": {
+        "channelUrl": "URL do canal do YouTube",
+        "channelPlaceholder": "https://youtube.com/@...",
+        "displayGrid": "Grade (2 colunas)",
+        "displayList": "Lista (Vertical)",
+        "showChannelName": "Mostrar nome do canal"
+      },
+      "tour": {
+        "sectionTitle": "Título da seção",
+        "sectionPlaceholder": "TURNÊS",
+        "tourDates": "Datas da turnê",
+        "date": "Data",
+        "datePlaceholder": "1 AGO",
+        "location": "Local",
+        "locationPlaceholder": "Cidade, País",
+        "image": "Imagem da turnê",
+        "ticketLink": "Link de ingressos",
+        "sellingFast": "Esgotando",
+        "soldOut": "Esgotado",
+        "defaultDate": "A definir",
+        "defaultLocation": "Cidade",
+        "addTourDate": "Adicionar data"
+      },
+      "position": {
+        "top": "Topo",
+        "bottom": "Base"
+      },
+      "qr": {
+        "layout": {
+          "single": "Único",
+          "multiple": "Múltiplo",
+          "grid": "Grade"
+        },
+        "selectQr": "Selecionar QR",
+        "selectQrOption": "Selecione um QR",
+        "createNew": "Criar novo QR",
+        "helper": "Selecione um QR existente ou crie um novo.",
+        "qrCodes": "QR Codes",
+        "newLabel": "Novo QR",
+        "addItem": "Adicionar item de QR",
+        "foreground": "Frente"
+      },
+      "divider": {
+        "helper": "Linha divisória simples."
+      },
+      "preview": {
+        "noUrl": "Nenhuma URL configurada",
+        "mediaAttached": "Mídia anexada",
+        "noMedia": "Nenhuma mídia selecionada",
+        "links": "{{count}} links",
+        "noLinks": "Nenhum link adicionado",
+        "qrConfigured": "QR code configurado",
+        "noQrValue": "Nenhum conteúdo QR definido",
+        "noWhatsappNumber": "Nenhum número de telefone",
+        "spotifyConfigured": "Link do Spotify definido",
+        "noSpotify": "Nenhuma URL do Spotify",
+        "youtubeConfigured": "Canal do YouTube definido",
+        "noYoutube": "Nenhuma URL do YouTube",
+        "noInstagram": "Nenhum usuário definido",
+        "mapFallback": "Mapa de localização",
+        "calendarFallback": "Calendário de reservas",
+        "tourFallback": "Datas de turnê",
+        "eventFallback": "Próximo evento",
+        "formSelected": "Formulário conectado",
+        "noFormSelected": "Nenhum formulário selecionado",
+        "portfolioFallback": "Portfólio",
+        "experienceCount": "{{count}} experiências",
+        "noExperience": "Nenhuma experiência adicionada",
+        "slotConnected": "Slot de marketing ativo",
+        "noSlotSelected": "Nenhum slot selecionado",
+        "productsCount": "{{count}} produtos",
+        "noProducts": "Nenhum produto adicionado",
+        "featuredFallback": "Item em destaque",
+        "affiliateFallback": "Oferta de afiliado",
+        "blogFallback": "Feed do blog",
+        "dividerFallback": "Separador visual",
+        "gridItemsCount": "{{count}} itens na grade",
+        "emptyGrid": "Grade vazia"
+      },
+      "form": {
+        "helper": "Selecione um formulário para exibir na sua bio.",
+        "selectLabel": "Selecionar formulário",
+        "loading": "Carregando formulários...",
+        "empty": "Nenhum formulário encontrado. Crie um formulário na aba \"Formulários\" primeiro.",
+        "placeholder": "Selecione um formulário..."
+      },
+      "marketing": {
+        "helper": "Conecte este bloco a um slot de marketing no seu dashboard. As empresas poderão anunciar aqui.",
+        "locked": "Campanha em andamento. Este bloco está bloqueado e não pode ser editado ou movido.",
+        "selectLabel": "Selecionar slot de marketing",
+        "loading": "Carregando slots...",
+        "empty": "Nenhum slot encontrado para esta bio.",
+        "createCta": "Criar um →",
+        "noneSelected": "Nenhum slot selecionado",
+        "manageCta": "Gerenciar slots →",
+        "days": "dias"
+      },
+      "portfolio": {
+        "helper": "Exiba seus itens de portfólio na sua bio. Adicione e gerencie itens na aba Portfólio.",
+        "emptyTitle": "Nenhum projeto encontrado",
+        "emptyBody": "Você ainda não criou nenhum projeto no portfólio. Eles aparecerão aqui após serem criados.",
+        "createCta": "Criar meu primeiro projeto →",
+        "sectionTitle": "Título da seção",
+        "defaultTitle": "Portfólio",
+        "placeholder": "Portfólio"
+      },
+      "experience": {
+        "sectionTitle": "Título da seção",
+        "sectionPlaceholder": "Experiência",
+        "items": "Experiências",
+        "role": "Cargo",
+        "company": "Empresa",
+        "period": "Período",
+        "location": "Local",
+        "description": "Descrição",
+        "rolePlaceholder": "Designer Sênior",
+        "companyPlaceholder": "Nome da empresa",
+        "periodPlaceholder": "2022 — Presente",
+        "locationPlaceholder": "Remoto",
+        "descriptionPlaceholder": "Descreva suas responsabilidades e conquistas...",
+        "defaultRole": "Designer de Produto",
+        "defaultCompany": "Acme Inc",
+        "defaultPeriod": "2020 — 2022",
+        "defaultLocation": "São Paulo, SP",
+        "defaultDescription": "Desenhou e entregou funcionalidades-chave do produto.",
+        "addExperience": "Adicionar experiência",
+        "roleColor": "Cor do Cargo",
+        "textColor": "Cor do Texto",
+        "lineColor": "Cor da Linha"
+      },
+      "top": {
+        "editor": "Editor",
+        "undoTitle": "Desfazer última alteração",
+        "undo": "Desfazer",
+        "share": "Compartilhar",
+        "openPage": "Abrir página",
+        "saving": "Salvando...",
+        "saveBio": "Salvar bio"
+      },
+      "blockTypes": {
+        "heading": "Título",
+        "text": "Texto",
+        "button": "Botão de Link",
+        "button_grid": "Grade de Botões",
+        "image": "Imagem",
+        "video": "Vídeo",
+        "socials": "Links Sociais",
+        "whatsapp": "Botão WhatsApp",
+        "divider": "Divisor",
+        "qrcode": "QR Code",
+        "spotify": "Spotify",
+        "instagram": "Feed do Instagram",
+        "youtube": "YouTube",
+        "blog": "Posts do Blog",
+        "product": "Produtos",
+        "tour": "Datas de Turnê",
+        "event": "Contagem Regressiva",
+        "calendar": "Agendamento",
+        "map": "Mapa de Localização",
+        "form": "Formulário de Contato",
+        "portfolio": "Portfólio",
+        "marketing": "Slot de Marketing",
+        "experience": "Experiência Profissional",
+        "featured": "Produto em Destaque",
+        "affiliate": "Oferta de Afiliado",
+        "add": "Adicionar Bloco"
+      },
+      "design": {
+        "profileImage": "Foto de Perfil",
+        "uploadImage": "Enviar Foto",
+        "imageHint": "PNG, JPG ou GIF (máx 5MB)",
+        "imageUploadSuccess": "Foto atualizada!",
+        "imageUploadError": "Erro ao enviar foto",
+        "socialLinks": "Redes Sociais",
+        "socialPlaceholder": "usuario",
+        "youtubePlaceholder": "youtube.com/canal/...",
+        "linkedinPlaceholder": "linkedin.com/in/...",
+        "facebookPlaceholder": "facebook.com/...",
+        "socialUpdateSuccess": "Redes sociais atualizadas!",
+        "socialUpdateError": "Erro ao atualizar redes sociais"
+      },
+      "blockStyle": {
+        "styled": "Estilizado",
+        "animation": "Animação"
+      },
+      "errors": {
+        "bioNotFound": "Bio não encontrada"
+      },
+      "undoSuccess": "Desfeito",
+      "linkCopied": "Link copiado para a área de transferência!",
+      "askAI": "Perguntar à IA",
+      "togglePreview": "Alternar pré-visualização",
+      "profileImage": "Foto de perfil",
+      "previewAlt": "Pré-visualização"
+    },
+    "editorPage": {
+      "design": {
+        "title": "Personalize sua página",
+        "bodyLine1": "Temas, fontes e fundos chegarão na próxima atualização.",
+        "bodyLine2": "Por enquanto, sua página usa o sistema \"Bold\" automaticamente.",
+        "profileImage": "Foto de Perfil",
+        "uploadImage": "Enviar Foto",
+        "imageHint": "PNG, JPG ou GIF (máx 5MB)",
+        "imageUploadSuccess": "Foto atualizada!",
+        "imageUploadError": "Erro ao enviar foto",
+        "socialLinks": "Redes Sociais",
+        "socialPlaceholder": "usuario",
+        "youtubePlaceholder": "youtube.com/canal/...",
+        "linkedinPlaceholder": "linkedin.com/in/...",
+        "facebookPlaceholder": "facebook.com/...",
+        "socialUpdateSuccess": "Redes sociais atualizadas!",
+        "socialUpdateError": "Erro ao atualizar redes sociais"
+      },
+      "settings": {
+        "title": "Configurações da página",
+        "body": "Configurações de SEO, análises e domínios personalizados ficarão aqui.",
+        "seoTitle": "SEO & Mídias Sociais",
+        "seoSubtitle": "Otimize sua página para mecanismos de busca e compartilhamento social",
+        "upgradeTitle": "SEO é um recurso Pro",
+        "upgradeSubtitle": "Faça upgrade para o plano Standard ou Pro para desbloquear otimização de SEO, meta tags personalizadas, favicon e prévias para redes sociais.",
+        "upgradeCta": "Fazer Upgrade",
+        "basicSeo": "Otimização para Buscas",
+        "basicSeoSubtitle": "Melhore sua visibilidade no Google",
+        "socialMedia": "Prévia para Redes Sociais",
+        "socialMediaSubtitle": "Como sua página aparece ao ser compartilhada",
+        "pageTitle": "Título da Página",
+        "metaDescription": "Descrição Meta",
+        "keywords": "Palavras-chave",
+        "favicon": "Favicon",
+        "faviconHint": "Envie um ícone pequeno (32x32px recomendado) para as abas do navegador",
+        "socialTitle": "Título para Redes Sociais",
+        "socialDescription": "Descrição para Redes Sociais",
+        "socialImage": "Imagem para Redes Sociais",
+        "socialImageHint": "Tamanho recomendado: 1200x630px",
+        "characters": "caracteres recomendado",
+        "keywordsHint": "Separe as palavras-chave com vírgulas",
+        "aiGenerate": "Gerar com IA",
+        "generating": "Gerando...",
+        "saveChanges": "Salvar Alterações",
+        "saving": "Salvando...",
+        "aiSuccess": "Conteúdo gerado com sucesso!",
+        "aiError": "Erro ao gerar conteúdo",
+        "saveSuccess": "Configurações de SEO salvas com sucesso!",
+        "saveError": "Erro ao salvar configurações de SEO",
+        "pageTitlePlaceholder": "Digite o título da página...",
+        "metaDescriptionPlaceholder": "Digite a descrição meta...",
+        "keywordsPlaceholder": "portfolio, links, profissional...",
+        "socialTitlePlaceholder": "Título para redes sociais...",
+        "socialDescriptionPlaceholder": "Descrição para redes sociais..."
+      },
+      "preview": {
+        "iframeTitle": "Pré-visualização",
+        "mobileHeader": "Pré-visualização",
+        "mobileIframeTitle": "Pré-visualização no mobile"
+      },
+      "liveUpdate": "Atualização ao vivo",
+      "editDrawer": {
+        "title": "Editar {{type}}",
+        "subtitle": "Configuração",
+        "fields": {
+          "titleLabel": "Título",
+          "titlePlaceholder": "Digite o título...",
+          "urlLabel": "URL de destino",
+          "urlPlaceholder": "https://...",
+          "youtubeLabel": "URL do YouTube",
+          "youtubePlaceholder": "https://youtube.com/watch?v=..."
+        },
+        "save": "Salvar alterações"
+      }
+    },
+    "subscribeThanks": "Obrigado por se inscrever!",
+    "noBioTitle": "Nenhuma bio selecionada",
+    "noBioBody": "Crie ou selecione uma bio para começar a editar.",
+    "top": {
+      "editor": "Editor",
+      "undoTitle": "Desfazer a última alteração",
+      "undo": "Desfazer",
+      "share": "Compartilhar",
+      "openPage": "Abrir página",
+      "saving": "Salvando...",
+      "saveBio": "Salvar bio"
+    },
+    "tabs": {
+      "links": "Links",
+      "design": "Design",
+      "settings": "Configurações"
+    },
+    "searchPlaceholder": "Pesquisar blocos...",
+    "noBlocks": "Nenhum bloco encontrado",
+    "settings": {
+      "typography": "Tipografia",
+      "fontFamily": "Fonte",
+      "uploadFont": "Enviar fonte personalizada",
+      "fontSupport": "Suporta .ttf, .otf, .woff, .woff2 (máx. 10MB)",
+      "customFontUrl": "URL da fonte personalizada",
+      "fontUploadError": "Falha ao enviar a fonte. Tente um arquivo válido (ttf, otf, woff, woff2).",
+      "background": "Fundo",
+      "overlayColor": "Cor de sobreposição",
+      "cardStyle": "Estilo do card",
+      "cardType": "Tipo de card",
+      "cardColor": "Cor do card",
+      "opacity": "Opacidade",
+      "blur": "Desfoque",
+      "profile": "Perfil",
+      "imageShape": "Forma da imagem",
+      "usernameColor": "Cor do nome de usuário",
+      "profileDescription": "Descrição do perfil",
+      "profileDescriptionPlaceholder": "Escreva uma descrição curta para aparecer abaixo do @",
+      "verificationStatus": "Status de verificação",
+      "verified": "Verificado",
+      "verificationPending": "Pendente",
+      "getVerified": "Obter verificação",
+      "features": "Recursos",
+      "emailSignup": "Inscrição por e-mail",
+      "removeBranding": "Remover marca",
+      "standardPro": "STANDARD / PRO",
+      "imageShapes": {
+        "circle": "Círculo",
+        "rounded": "Arredondado",
+        "square": "Quadrado",
+        "amoeba": "Ameba",
+        "star": "Estrela",
+        "hexagon": "Hexágono"
+      },
+      "cardTypes": {
+        "none": "Nenhum",
+        "solid": "Sólido",
+        "frosted": "Fosco"
+      },
+      "backgroundTypes": {
+        "color": "Cor",
+        "image": "Imagem",
+        "video": "Vídeo",
+        "grid": "Grade",
+        "dots": "Pontos",
+        "waves": "Ondas",
+        "abstract": "Abstrato",
+        "polka": "Poá",
+        "stripes": "Listras",
+        "zigzag": "Zigue-zague",
+        "mesh": "Malha",
+        "particles": "Partículas",
+        "noise": "Ruído",
+        "dynamic-blur": "Desfoque dinâmico",
+        "palm-leaves": "Folhas de palmeira",
+        "wheat": "Trigo",
+        "gradient": "Degradê",
+        "mesh-gradient": "Degradê em malha",
+        "gradient-animated": "Degradê animado",
+        "aurora": "Aurora",
+        "particles-float": "Partículas flutuantes",
+        "geometric": "Geométrico",
+        "bubbles": "Bolhas",
+        "confetti": "Confete",
+        "starfield": "Campo de estrelas",
+        "rain": "Chuva",
+        "blueprint": "Blueprint",
+        "marble": "Mármore",
+        "wood-grain": "Textura de madeira",
+        "brick": "Tijolo",
+        "frosted-glass": "Vidro fosco",
+        "steel": "Aço",
+        "concrete": "Concreto",
+        "terracotta": "Terracota"
+      }
+    },
+    "categories": {
+      "Content": "Conteúdo",
+      "Social": "Social",
+      "Shop": "Loja",
+      "Music": "Música",
+      "Blog": "Blog",
+      "Marketing": "Marketing",
+      "Layout": "Layout",
+      "Professional": "Profissional"
+    },
+    "palette": {
+      "heading": "Título",
+      "qrcode": "QR Code",
+      "text": "Texto",
+      "button": "Botão",
+      "buttonGrid": "Grade de botões",
+      "image": "Imagem",
+      "socials": "Redes sociais",
+      "video": "Vídeo",
+      "blog": "Blog",
+      "productList": "Lista de produtos",
+      "calendar": "Calendário",
+      "map": "Mapa",
+      "featured": "Destaque",
+      "affiliateCode": "Código de afiliado",
+      "event": "Evento",
+      "tourDates": "Datas de tour",
+      "spotify": "Spotify",
+      "instagramFeed": "Feed do Instagram",
+      "youtubeFeed": "Feed do YouTube",
+      "divider": "Divisor",
+      "form": "Formulário",
+      "portfolio": "Portfólio",
+      "whatsapp": "WhatsApp",
+      "experience": "Experiência"
+    },
+    "layout": {
+      "title": "Layout",
+      "dragToReorder": "Arraste para reorganizar"
+    },
+    "empty": {
+      "title": "Sua bio está vazia",
+      "body": "Arraste blocos da barra lateral esquerda para começar a montar sua página."
+    },
+    "preview": {
+      "live": "Pré-visualização ao vivo",
+      "aria": "Pré-visualizar bio",
+      "title": "Pré-visualização da bio",
+      "mobileTitle": "Pré-visualização no mobile",
+      "noUrl": "Nenhuma URL configurada",
+      "mediaAttached": "Mídia anexada",
+      "noMedia": "Nenhuma mídia selecionada",
+      "links": "{{count}} links",
+      "noLinks": "Nenhum link adicionado",
+      "qrConfigured": "QR code configurado",
+      "noQrValue": "Nenhum conteúdo QR definido",
+      "noWhatsappNumber": "Nenhum número de telefone",
+      "spotifyConfigured": "Link do Spotify definido",
+      "noSpotify": "Nenhuma URL do Spotify",
+      "youtubeConfigured": "Canal do YouTube definido",
+      "noYoutube": "Nenhuma URL do YouTube",
+      "noInstagram": "Nenhum usuário definido",
+      "mapFallback": "Mapa de localização",
+      "calendarFallback": "Calendário de reservas",
+      "tourFallback": "Datas de turnê",
+      "eventFallback": "Próximo evento",
+      "formSelected": "Formulário conectado",
+      "noFormSelected": "Nenhum formulário selecionado",
+      "portfolioFallback": "Portfólio",
+      "experienceCount": "{{count}} experiências",
+      "noExperience": "Nenhuma experiência adicionada",
+      "slotConnected": "Slot de marketing ativo",
+      "noSlotSelected": "Nenhum slot selecionado",
+      "productsCount": "{{count}} produtos",
+      "noProducts": "Nenhum produto adicionado",
+      "featuredFallback": "Item em destaque",
+      "affiliateFallback": "Oferta de afiliado",
+      "blogFallback": "Feed do blog",
+      "dividerFallback": "Separador visual",
+      "gridItemsCount": "{{count}} itens na grade",
+      "emptyGrid": "Grade vazia"
+    },
+    "qrModal": {
+      "title": "Criar novo código QR",
+      "destination": "URL de destino",
+      "placeholder": "https://exemplo.com",
+      "cancel": "Cancelar",
+      "creating": "Criando...",
+      "create": "Criar QR"
+    },
+    "verificationModal": {
+      "title": "Solicitar verificação",
+      "subtitle": "Fale sobre sua bio para agilizar a verificação.",
+      "name": "Nome completo",
+      "namePlaceholder": "Seu nome completo",
+      "email": "E-mail",
+      "emailPlaceholder": "voce@email.com",
+      "phone": "Telefone",
+      "phonePlaceholder": "+55 11 99999-9999",
+      "description": "Descrição da bio",
+      "descriptionPlaceholder": "Explique sobre o que é sua bio e quem você é.",
+      "submit": "Enviar solicitação",
+      "submitting": "Enviando...",
+      "cancel": "Cancelar",
+      "close": "Fechar",
+      "error": "Não foi possível enviar sua solicitação. Tente novamente."
+    },
+    "siteAutoPost": {
+      "confirmDelete": "Tem certeza que deseja excluir a automação?",
+      "header": {
+        "title": "Posts Automáticos - Site Blog",
+        "subtitle": "Configure posts automáticos para o seu blog institucional",
+        "edit": "Editar",
+        "cancel": "Cancelar",
+        "processing": "Processando...",
+        "pause": "Pausar",
+        "activate": "Ativar"
+      },
+      "toast": {
+        "updateSuccess": "Configurações atualizadas com sucesso!",
+        "createSuccess": "Automação criada com sucesso!",
+        "saveError": "Erro ao salvar configurações",
+        "pausedSuccess": "Automação pausada",
+        "activatedSuccess": "Automação ativada",
+        "statusError": "Erro ao alterar status",
+        "deleteSuccess": "Automação excluída com sucesso",
+        "deleteError": "Erro ao excluir",
+        "previewSuccess": "Preview gerado com sucesso!",
+        "previewError": "Erro ao gerar preview"
+      },
+      "status": {
+        "status": "Status",
+        "active": "Ativo",
+        "paused": "Pausado",
+        "frequency": "Frequência",
+        "postsThisMonth": "Posts este mês",
+        "nextPost": "Próximo post",
+        "notScheduled": "Não agendado",
+        "avgSeoScore": "Média SEO"
+      },
+      "config": {
+        "editTitle": "Editar Configuração",
+        "createTitle": "Criar Automação",
+        "preview": "Gerar Preview",
+        "generating": "Gerando...",
+        "frequency": "Frequência de Postagem",
+        "postLength": "Tamanho do Post",
+        "tone": "Tom de Voz",
+        "preferredTime": "Horário Preferido",
+        "topics": "Tópicos/Temas *",
+        "topicsPlaceholder": "Ex: Marketing Digital, SEO, Redes Sociais, Empreendedorismo...",
+        "keywords": "Palavras-chave (separadas por vírgula)",
+        "keywordsPlaceholder": "Ex: marketing digital, SEO, estratégia de conteúdo...",
+        "targetAudience": "Público-alvo",
+        "targetAudiencePlaceholder": "Ex: Empreendedores digitais, profissionais de marketing...",
+        "bilingual": "Gerar conteúdo bilíngue (Português + Inglês)"
+      },
+      "frequency": {
+        "5hours": "A cada 5 horas",
+        "daily": "Diariamente",
+        "weekly": "Semanalmente",
+        "biweekly": "A cada 2 semanas",
+        "monthly": "Mensalmente"
+      },
+      "length": {
+        "short": "Curto (~800 palavras)",
+        "medium": "Médio (~1500 palavras)",
+        "long": "Longo (~2500 palavras)"
+      },
+      "tones": {
+        "professional": "Profissional",
+        "casual": "Casual",
+        "friendly": "Amigável",
+        "authoritative": "Autoritativo",
+        "creative": "Criativo"
+      },
+      "actions": {
+        "saving": "Salvando...",
+        "save": "Salvar Alterações",
+        "create": "Criar Automação",
+        "delete": "Excluir"
+      },
+      "preview": {
+        "title": "Preview do Post",
+        "portugueseVersion": "Versão em Português",
+        "englishVersion": "Versão em Inglês",
+        "keywords": "Palavras-chave",
+        "suggestions": "Sugestões de Melhoria"
+      },
+      "logs": {
+        "title": "Posts Recentes",
+        "wordCount_one": "{{count}} palavra",
+        "wordCount_other": "{{count}} palavras",
+        "status": {
+          "published": "Publicado",
+          "failed": "Falhou",
+          "generated": "Gerado"
+        }
+      }
+    },
+    "addLink": "Adicionar Link",
+    "editDrawer": {
+      "tabs": {
+        "content": "Conteúdo",
+        "style": "Aparência"
+      },
+      "fields": {
+        "titleLabel": "Título",
+        "titlePlaceholder": "Digite um título...",
+        "urlLabel": "URL",
+        "urlPlaceholder": "https://...",
+        "contentLabel": "Conteúdo",
+        "contentPlaceholder": "Digite seu texto aqui...",
+        "headingLabel": "Título",
+        "headingPlaceholder": "Seu título...",
+        "subtitleLabel": "Subtítulo",
+        "subtitlePlaceholder": "Subtítulo opcional...",
+        "imageUrlLabel": "URL da Imagem",
+        "imageUrlPlaceholder": "https://...",
+        "videoUrlLabel": "URL do Vídeo",
+        "videoPlaceholder": "URL do YouTube, Vimeo ou arquivo de vídeo...",
+        "youtubeLabel": "URL do YouTube",
+        "youtubePlaceholder": "https://youtube.com/watch?v=...",
+        "whatsappNumberLabel": "Número do WhatsApp",
+        "whatsappNumberPlaceholder": "+5511999999999",
+        "whatsappMessageLabel": "Mensagem Padrão",
+        "whatsappMessagePlaceholder": "Olá! Gostaria de saber mais sobre...",
+        "spotifyUrlLabel": "URL do Spotify",
+        "spotifyPlaceholder": "https://open.spotify.com/...",
+        "instagramUsernameLabel": "Usuário do Instagram",
+        "instagramPlaceholder": "usuario",
+        "mapLocationLabel": "Nome do Local",
+        "mapLocationPlaceholder": "Meu Escritório",
+        "mapAddressLabel": "Endereço",
+        "mapAddressPlaceholder": "Rua Principal 123, Cidade, País",
+        "calendarTitleLabel": "Título do Calendário",
+        "calendarTitlePlaceholder": "Agende um Horário",
+        "calendarDescriptionLabel": "Descrição",
+        "calendarDescriptionPlaceholder": "Marque um horário comigo...",
+        "eventTitleLabel": "Título do Evento",
+        "eventTitlePlaceholder": "Meu Evento",
+        "eventDateLabel": "Data e Hora do Evento",
+        "eventButtonLabel": "Texto do Botão",
+        "eventButtonPlaceholder": "Inscreva-se Agora",
+        "eventUrlLabel": "URL de Inscrição",
+        "featuredTitleLabel": "Título do Produto",
+        "featuredTitlePlaceholder": "Nome do Produto",
+        "featuredPriceLabel": "Preço",
+        "featuredImageLabel": "Imagem do Produto",
+        "featuredUrlLabel": "URL do Produto",
+        "affiliateTitleLabel": "Título da Oferta",
+        "affiliateTitlePlaceholder": "Oferta Especial",
+        "affiliateCodeLabel": "Código do Cupom",
+        "affiliateCodePlaceholder": "CUPOM20",
+        "affiliateImageLabel": "Imagem da Oferta",
+        "affiliateUrlLabel": "URL da Oferta",
+        "tourTitleLabel": "Título da Seção de Turnês",
+        "tourTitlePlaceholder": "Próximos Shows",
+        "qrValueLabel": "Conteúdo do QR Code",
+        "qrFgColorLabel": "Cor do Primeiro Plano",
+        "qrBgColorLabel": "Cor do Fundo",
+        "tourDatesLabel": "Datas da Turnê (JSON)",
+        "tourDatesPlaceholder": "[{\"date\": \"25 Dez\", \"location\": \"São Paulo, SP\", \"ticketUrl\": \"https://...\"}]",
+        "experienceSectionTitleLabel": "Título da Seção",
+        "experienceSectionTitlePlaceholder": "ex: Experiência Profissional",
+        "experiencesLabel": "Experiências (JSON)",
+        "experiencesPlaceholder": "[{\"role\": \"Cargo\", \"company\": \"Empresa\", \"period\": \"2020-2023\"}]",
+        "gridItemsLabel": "Itens da Grade (JSON)",
+        "gridItemsPlaceholder": "[{\"title\": \"Minha Loja\"}]"
+      },
+      "buttonStyleLabel": "Estilo do Botão",
+      "buttonShapeLabel": "Formato do Botão",
+      "animationLabel": "Animação",
+      "animationTriggerLabel": "Gatilho da Animação",
+      "nsfwLabel": "Conteúdo Sensível",
+      "nsfwHint": "Marcar como conteúdo +18",
+      "socialPlatformLabel": "Link do {{platform}}",
+      "whatsappStyleLabel": "Estilo do WhatsApp",
+      "whatsappShapeLabel": "Formato do Botão"
+    },
+    "dividerHelper": "Um divisor visual para separar seções de conteúdo.",
+    "advancedBlockHelper": "Este é um bloco avançado de {{type}}. Configure-o no editor detalhado.",
+    "advancedBlockHint": "Mais opções disponíveis na visualização completa do editor."
+  },
+  "blockStyle": {
+    "sections": {
+      "colors": "Cores",
+      "container": "Container",
+      "border": "Borda",
+      "shadow": "Sombra",
+      "animation": "Animação"
+    },
+    "background": "Fundo",
+    "textColor": "Cor do texto",
+    "opacity": "Opacidade",
+    "borderRadius": "Arredondamento",
+    "padding": "Espaçamento interno",
+    "borderWidth": "Largura da borda",
+    "borderColor": "Cor da borda",
+    "shadow": "Sombra",
+    "shadowColor": "Cor da sombra",
+    "entranceAnimation": "Animação de entrada",
+    "entranceDelay": "Atraso da animação",
+    "shadows": {
+      "none": "Nenhuma",
+      "sm": "Pequena",
+      "md": "Média",
+      "lg": "Grande",
+      "xl": "Extra grande",
+      "2xl": "Máxima",
+      "glow": "Brilho"
+    },
+    "animations": {
+      "none": "Nenhuma",
+      "fadeIn": "Aparecer",
+      "slideUp": "Deslizar de baixo",
+      "slideDown": "Deslizar de cima",
+      "slideLeft": "Deslizar da esquerda",
+      "slideRight": "Deslizar da direita",
+      "zoomIn": "Zoom",
+      "bounceIn": "Pular",
+      "flipIn": "Girar"
+    },
+    "styled": "Estilizado",
+    "animation": "Animação",
+    "buttonStyles": {
+      "solid": "Sólido",
+      "outline": "Contorno",
+      "ghost": "Fantasma",
+      "hard-shadow": "Sombra Forte",
+      "soft-shadow": "Sombra Suave",
+      "3d": "3D",
+      "glass": "Vidro",
+      "gradient": "Gradiente",
+      "neumorphism": "Neumorfismo",
+      "clay": "Argila",
+      "cyberpunk": "Cyberpunk",
+      "pixel": "Pixel",
+      "neon": "Neon",
+      "sketch": "Esboço",
+      "gradient-border": "Borda Gradient",
+      "minimal-underline": "Linha Minimal",
+      "architect": "Arquiteto",
+      "material": "Material",
+      "brutalist": "Brutalista",
+      "outline-thick": "Contorno Grosso"
+    },
+    "buttonShapes": {
+      "pill": "Pílula",
+      "rounded": "Arredondado",
+      "square": "Quadrado"
+    },
+    "animationTriggers": {
+      "loop": "Loop",
+      "once": "Uma vez",
+      "hover": "Ao passar"
+    },
+    "whatsappStyles": {
+      "solid": "Sólido",
+      "outline": "Contorno",
+      "glass": "Vidro",
+      "gradient": "Gradiente",
+      "neon": "Neon",
+      "minimal": "Minimal",
+      "soft": "Suave",
+      "dark": "Escuro"
+    }
+  },
+  "design": {
+    "profileImage": "Foto de Perfil",
+    "uploadImage": "Enviar Foto",
+    "imageHint": "PNG, JPG ou GIF (máx 5MB)",
+    "imageUploadSuccess": "Foto atualizada!",
+    "imageUploadError": "Erro ao enviar foto",
+    "socialLinks": "Redes Sociais",
+    "socialPlaceholder": "usuario",
+    "youtubePlaceholder": "youtube.com/canal/...",
+    "linkedinPlaceholder": "linkedin.com/in/...",
+    "facebookPlaceholder": "facebook.com/...",
+    "socialUpdateSuccess": "Redes sociais atualizadas!",
+    "socialUpdateError": "Erro ao atualizar redes sociais"
+  },
+  "errors": {
+    "bioNotFound": "Bio não encontrada"
+  },
+  "undoSuccess": "Desfeito",
+  "linkCopied": "Link copiado para a área de transferência!",
+  "askAI": "Perguntar à IA",
+  "togglePreview": "Alternar pré-visualização",
+  "profileImage": "Foto de perfil",
+  "previewAlt": "Pré-visualização",
+  "addBlock": {
+    "title": "Adicionar ao seu Portyo",
+    "searchPlaceholder": "Pesquisar por tudo",
+    "sidebar": "Categorias",
+    "categories": {
+      "suggested": "Sugeridos",
+      "essentials": "Essenciais",
+      "media": "Mídia",
+      "commerce": "Comércio",
+      "grow": "Crescimento"
+    },
+    "blocks": {
+      "link": "Link",
+      "linkDesc": "Link para qualquer URL",
+      "image": "Imagem",
+      "imageDesc": "Enviar fotos",
+      "tipJar": "Cofrinho",
+      "tipJarDesc": "Receber apoio",
+      "header": "Cabeçalho",
+      "headerDesc": "Organize seus links",
+      "tour": "Mapa / Tour",
+      "tourDesc": "Compartilhar locais",
+      "video": "Vídeo",
+      "videoDesc": "Embed YouTube/TikTok",
+      "music": "Música",
+      "musicDesc": "Spotify & SoundCloud",
+      "gallery": "Galeria",
+      "galleryDesc": "Mostrar fotos",
+      "store": "Loja",
+      "storeDesc": "Vender produtos",
+      "form": "Formulário",
+      "formDesc": "Coletar e-mails",
+      "share": "Compartilhar",
+      "shareDesc": "Botões de compartilhamento"
+    },
+    "noResults": "Nenhum bloco encontrado para \"{{query}}\""
+  },
+  "top": {
+    "editor": "Editor",
+    "undoTitle": "Desfazer última alteração",
+    "undo": "Desfazer",
+    "share": "Compartilhar",
+    "openPage": "Abrir Página",
+    "saving": "Salvando...",
+    "saveBio": "Salvar Bio"
   },
   "portfolio": {
     "title": "Portfólio",
@@ -397,6 +1686,16 @@
     }
   },
   "sidebar": {
+    "groups": {
+      "myPortyo": "Meu Portyo",
+      "earn": "Monetizar",
+      "audience": "Audiência",
+      "tools": "Ferramentas"
+    },
+    "groupMyPortyo": "Meu Portyo",
+    "groupEarn": "Ganhar",
+    "groupAudience": "Audiência",
+    "groupTools": "Ferramentas",
     "newPage": "Nova página",
     "claimTitle": "Garanta seu link",
     "claimSubtitle": "Escolha um nome de usuário único para sua nova página.",
@@ -418,7 +1717,9 @@
     "livePage": "Página ao vivo",
     "userFallback": "Usuário",
     "logout": "Sair",
-    "createError": "Falha ao criar página. O nome de usuário pode já estar em uso."
+    "createError": "Falha ao criar página. O nome de usuário pode já estar em uso.",
+    "setup": "Configuração",
+    "finishSetup": "Finalizar Configuração"
   },
   "notifications": {
     "bell": "Notificações",
@@ -442,6 +1743,7 @@
     "totalRevenue": "Receita total",
     "avgOrderValue": "Ticket médio",
     "revenueTrend": "Tendência de receita (30 dias)",
+    "noRevenueData": "Sem dados de vendas nos últimos 30 dias",
     "connectStripeHint": "Conecte o Stripe para ver suas análises de vendas",
     "connectStripe": "Conectar Stripe",
     "recentActivity": "Atividade recente",
@@ -498,6 +1800,34 @@
         "cardStyle": "Defina cor, opacidade e efeitos dos cards para sua marca.",
         "preview": "Prévia ao vivo do resultado final. Suas edições aparecem aqui.",
         "mobilePreview": "Use o preview mobile para ver no celular."
+      },
+      "tabs": {
+        "links": "Links",
+        "design": "Design",
+        "settings": "Configurações"
+      },
+      "addLink": "Adicionar Link",
+      "defaults": {
+        "headingTitle": "Apresente-se",
+        "headingBody": "Em uma linha, diga por que as pessoas devem se conectar com você.",
+        "buttonTitle": "Link principal",
+        "newButton": "Novo botão",
+        "newHeading": "Novo título",
+        "newVideo": "Novo vídeo",
+        "newBlock": "Novo bloco",
+        "textBody": "Descreva algo aqui.",
+        "product": "Produto {{index}}",
+        "viewProduct": "Ver Produto",
+        "bookCall": "Agendar Call",
+        "mapTitle": "Nosso Escritório",
+        "mapAddress": "Rua Principal 123, Cidade",
+        "featuredTitle": "Batom Glow",
+        "affiliateTitle": "Copie meu cupom",
+        "portfolioTitle": "Portfólio",
+        "experienceTitle": "Experiência",
+        "experienceRole": "Designer de Produto Sênior",
+        "experienceCompany": "Portyo Studio",
+        "experiencePeriod": "2022 — Presente"
       }
     },
     "leads": {
@@ -729,6 +2059,8 @@
     }
   },
   "products": {
+    "metaTitle": "Produtos | Portyo",
+    "metaDescription": "Gerencie seu catálogo de produtos.",
     "title": "Catálogo de produtos",
     "subtitle": "Gerencie seus produtos digitais e serviços.",
     "addProduct": "Adicionar produto",
@@ -1024,6 +2356,285 @@
     "createError": "Falha ao criar formulário. Tente novamente.",
     "deleteError": "Falha ao excluir formulário. Tente novamente."
   },
+  "autoPost": {
+    "confirmDelete": "Tem certeza que deseja excluir este agendamento de auto post?",
+    "emptyBioTitle": "Selecione uma bio primeiro",
+    "emptyBioSubtitle": "Selecione uma bio na barra lateral para configurar o auto post.",
+    "header": {
+      "proFeature": "Recurso Pro",
+      "title": "Auto Post",
+      "subtitle": "Conteúdo com IA e otimização avançada de SEO, GEO e AEO",
+      "pause": "Pausar",
+      "resume": "Retomar",
+      "edit": "Editar",
+      "cancelEdit": "Cancelar"
+    },
+    "frequencies": {
+      "daily": {
+        "label": "Diário",
+        "description": "Novo post todos os dias"
+      },
+      "weekly": {
+        "label": "Semanal",
+        "description": "Novo post toda semana"
+      },
+      "biweekly": {
+        "label": "Quinzenal",
+        "description": "Novo post a cada 2 semanas"
+      },
+      "monthly": {
+        "label": "Mensal",
+        "description": "Novo post todo mês"
+      }
+    },
+    "tones": {
+      "professional": "Profissional",
+      "casual": "Casual",
+      "friendly": "Amigável",
+      "technical": "Técnico",
+      "creative": "Criativo",
+      "authoritative": "Autoritativo"
+    },
+    "lengths": {
+      "short": {
+        "label": "Curto",
+        "description": "600-800 palavras"
+      },
+      "medium": {
+        "label": "Médio",
+        "description": "1000-1500 palavras"
+      },
+      "long": {
+        "label": "Longo",
+        "description": "1800-2500 palavras"
+      }
+    },
+    "stats": {
+      "postsThisMonth": "Posts deste mês",
+      "remainingOf": "{{remaining}} restantes de {{limit}}",
+      "nextPost": "Próximo post",
+      "today": "Hoje",
+      "notScheduled": "Não agendado",
+      "overdue": "Atrasado",
+      "lastPost": "Último post",
+      "never": "Nunca",
+      "noPostsYet": "Nenhum post ainda",
+      "status": "Status",
+      "active": "Ativo",
+      "paused": "Pausado",
+      "notConfigured": "Não configurado",
+      "avgScores": "Médias",
+      "basedOnPosts_one": "Baseado em {{count}} post",
+      "basedOnPosts_other": "Baseado em {{count}} posts"
+    },
+    "config": {
+      "title": "Configuração",
+      "subtitle": "Personalize como a IA gera seus posts",
+      "postFrequency": "Frequência",
+      "postingTime": "Horário de postagem",
+      "publishAtTime": "Os posts serão publicados neste horário",
+      "startDateOptional": "Data de início (opcional)",
+      "cronStarts": "O cron inicia nesta data (deixe vazio para hoje)",
+      "postLength": "Tamanho do post",
+      "topicsLabel": "Tópicos e temas",
+      "aiAnalyzing": "A IA está analisando...",
+      "topicsPlaceholder": "Descreva os tópicos sobre os quais você quer escrever (ex.: 'Desenvolvimento web, tutoriais de React, dicas de carreira'). A IA irá gerar palavras‑chave e público‑alvo automaticamente.",
+      "aiSuggestionsTitle": "Sugestões da IA",
+      "suggestedKeywords": "Palavras-chave sugeridas:",
+      "targetAudience": "Público-alvo:",
+      "applySuggestions": "Aplicar sugestões",
+      "ignore": "Ignorar",
+      "seoKeywords": "Palavras-chave de SEO",
+      "aiGenerated": "Gerado por IA",
+      "keywordsPlaceholder": "Informe palavras‑chave separadas por vírgulas (ou deixe a IA gerar a partir dos tópicos)",
+      "writingTone": "Tom de escrita",
+      "targetAudienceLabel": "Público-alvo",
+      "targetAudiencePlaceholder": "Para quem você está escrevendo? (A IA sugerirá com base nos tópicos)",
+      "geoTargetLabel": "Alvo geográfico e idioma",
+      "geoTargetEmpty": "Selecione um país para otimizar conteúdo para SEO local, referências culturais e preferências regionais",
+      "editToChange": "Edite para alterar",
+      "targetLanguage": "Alvo: {{target}} • Idioma: {{language}}"
+    },
+    "actions": {
+      "saving": "Salvando...",
+      "saveUpdate": "Atualizar agendamento",
+      "saveCreate": "Criar agendamento",
+      "generating": "Gerando...",
+      "previewWithMetrics": "Prévia com métricas",
+      "cancel": "Cancelar",
+      "previewNextPost": "Prévia do próximo post",
+      "delete": "Excluir"
+    }
+  },
+  "bioSummary": {
+    "title": "Entendimento da IA sobre sua bio",
+    "refresh": "Atualizar"
+  },
+  "admin": {
+    "broadcast": {
+      "title": "Notificação Global",
+      "subtitle": "Enviar notificação para todos os usuários.",
+      "caution": "Cuidado",
+      "form": {
+        "title": "Título",
+        "placeholder": {
+          "title": "Novidade no ar! 🚀",
+          "icon": "Megaphone",
+          "message": "Digite sua mensagem aqui...",
+          "link": "/dashboard/feature-nova"
+        },
+        "icon": "Ícone (Nome Lucide)",
+        "message": "Mensagem",
+        "link": "Link de Ação (Opcional)"
+      },
+      "submit": "Enviar Notificação",
+      "sending": "Enviando...",
+      "sent": "Enviado!",
+      "alignment": {
+        "label": "Alinhamento do Texto",
+        "left": "Esquerda",
+        "center": "Centro"
+      },
+      "visibility": "Visibilidade do Anúncio"
+    }
+  },
+  "editorStatus": {
+    "updating": "Atualizando..."
+  },
+  "editorBadges": {
+    "beta": "BETA"
+  },
+  "sidebar": {
+    "recentAutoPosts": "Posts automáticos recentes",
+    "viewDetails": "Ver detalhes",
+    "noAutoPosts": "Nenhum post automático ainda"
+  },
+  "info": {
+    "title": "Como funciona",
+    "bullet1": "A IA analisa sua bio para um entendimento profundo",
+    "bullet2": "Gera conteúdo otimizado para SEO + GEO + AEO + AIO",
+    "bullet3": "Métricas detalhadas para cada post",
+    "bullet4": "Publica automaticamente no agendamento"
+  },
+  "preview": {
+    "title": "Prévia do post",
+    "subtitle": "Métricas completas de otimização para este post gerado",
+    "close": "Fechar",
+    "createSchedule": "Criar agendamento"
+  },
+  "metricsModal": {
+    "title": "Métricas do post",
+    "seoScore": "Pontuação SEO",
+    "geoScore": "Pontuação GEO",
+    "aeoScore": "Pontuação AEO",
+    "aioScore": "Pontuação AIO",
+    "readability": "Legibilidade",
+    "titleChars": "Caracteres do título",
+    "keywords": "Palavras-chave",
+    "primary": "Principal",
+    "contentStructure": "Estrutura do conteúdo",
+    "headings": "Títulos",
+    "paragraphs": "Parágrafos",
+    "lists": "Listas",
+    "words": "Palavras",
+    "seoSuggestions": "Sugestões de SEO",
+    "geoSuggestions": "Sugestões de GEO",
+    "aeoSuggestions": "Sugestões de AEO",
+    "aioSuggestions": "Sugestões de AIO",
+    "close": "Fechar"
+  },
+  "siteAutoPost": {
+    "confirmDelete": "Tem certeza que deseja excluir a automação?",
+    "header": {
+      "title": "Posts Automáticos - Site Blog",
+      "subtitle": "Configure posts automáticos para o seu blog institucional",
+      "edit": "Editar",
+      "cancel": "Cancelar",
+      "processing": "Processando...",
+      "pause": "Pausar",
+      "activate": "Ativar"
+    },
+    "toast": {
+      "updateSuccess": "Configurações atualizadas com sucesso!",
+      "createSuccess": "Automação criada com sucesso!",
+      "saveError": "Erro ao salvar configurações",
+      "pausedSuccess": "Automação pausada",
+      "activatedSuccess": "Automação ativada",
+      "statusError": "Erro ao alterar status",
+      "deleteSuccess": "Automação excluída com sucesso",
+      "deleteError": "Erro ao excluir",
+      "previewSuccess": "Preview gerado com sucesso!",
+      "previewError": "Erro ao gerar preview"
+    },
+    "status": {
+      "status": "Status",
+      "active": "Ativo",
+      "paused": "Pausado",
+      "frequency": "Frequência",
+      "postsThisMonth": "Posts este mês",
+      "nextPost": "Próximo post",
+      "notScheduled": "Não agendado"
+    },
+    "config": {
+      "editTitle": "Editar Configuração",
+      "createTitle": "Criar Automação",
+      "preview": "Gerar Preview",
+      "generating": "Gerando...",
+      "frequency": "Frequência de Postagem",
+      "postLength": "Tamanho do Post",
+      "tone": "Tom de Voz",
+      "preferredTime": "Horário Preferido",
+      "topics": "Tópicos/Temas *",
+      "topicsPlaceholder": "Ex: Marketing Digital, SEO, Redes Sociais, Empreendedorismo...",
+      "keywords": "Palavras-chave (separadas por vírgula)",
+      "keywordsPlaceholder": "Ex: marketing digital, SEO, estratégia de conteúdo...",
+      "targetAudience": "Público-alvo",
+      "targetAudiencePlaceholder": "Ex: Empreendedores digitais, profissionais de marketing...",
+      "bilingual": "Gerar conteúdo bilíngue (Português + Inglês)"
+    },
+    "frequency": {
+      "5hours": "A cada 5 horas",
+      "daily": "Diariamente",
+      "weekly": "Semanalmente",
+      "biweekly": "A cada 2 semanas",
+      "monthly": "Mensalmente"
+    },
+    "length": {
+      "short": "Curto (~800 palavras)",
+      "medium": "Médio (~1500 palavras)",
+      "long": "Longo (~2500 palavras)"
+    },
+    "tones": {
+      "professional": "Profissional",
+      "casual": "Casual",
+      "friendly": "Amigável",
+      "authoritative": "Autoritativo",
+      "creative": "Criativo"
+    },
+    "actions": {
+      "saving": "Salvando...",
+      "save": "Salvar Alterações",
+      "create": "Criar Automação",
+      "delete": "Excluir"
+    },
+    "preview": {
+      "title": "Preview do Post",
+      "portugueseVersion": "Versão em Português",
+      "englishVersion": "Versão em Inglês",
+      "keywords": "Palavras-chave",
+      "suggestions": "Sugestões de Melhoria"
+    },
+    "logs": {
+      "title": "Posts Recentes",
+      "wordCount_one": "{{count}} palavra",
+      "wordCount_other": "{{count}} palavras",
+      "status": {
+        "published": "Publicado",
+        "failed": "Falhou",
+        "generated": "Gerado"
+      }
+    }
+  },
   "formsAnswers": {
     "submission": "resposta",
     "submissions": "respostas",
@@ -1037,615 +2648,5 @@
     "emptyTitle": "Nenhuma resposta ainda",
     "emptySubtitle": "Compartilhe seu formulário para começar a receber respostas.",
     "emptyValue": "Sem resposta"
-  },
-  "editor": {
-    "defaults": {
-      "headingTitle": "Apresente-se",
-      "headingBody": "Em uma linha, diga por que as pessoas devem se conectar com você.",
-      "buttonTitle": "Link principal",
-      "newButton": "Novo botão",
-      "newHeading": "Novo título",
-      "newVideo": "Novo vídeo",
-      "newBlock": "Novo bloco",
-      "textBody": "Descreva algo aqui.",
-      "product": "Produto {{index}}",
-      "viewProduct": "Ver produto",
-      "bookCall": "Agendar chamada",
-      "mapTitle": "Nosso escritório",
-      "mapAddress": "Rua Principal 123, Cidade",
-      "featuredTitle": "Batom Glow",
-      "affiliateTitle": "Copie meu cupom",
-      "portfolioTitle": "Portfólio",
-      "experienceTitle": "Experiência",
-      "experienceRole": "Designer de Produto Sênior",
-      "experienceCompany": "Portyo Studio",
-      "experiencePeriod": "2022 — Presente",
-      "experienceLocation": "Remoto",
-      "experienceDescription": "Liderou iniciativas de design em produtos web e mobile.",
-      "whatsappTitle": "Falar no WhatsApp",
-      "whatsappMessage": "Olá! Gostaria de falar com você."
-    },
-    "event": {
-      "defaultTitle": "Webinar ao vivo",
-      "defaultButton": "Inscreva-se agora",
-      "started": "Evento iniciado",
-      "days": "Dias",
-      "hours": "Horas",
-      "mins": "Min",
-      "secs": "Seg"
-    },
-    "blog": {
-      "author": "Por você",
-      "placeholderTitlePrimary": "Desenvolvedor Sênior",
-      "placeholderTitle": "Título do post {{index}}",
-      "placeholderSubtitlePrimary": "Tech4Humans • São Paulo, SP - Remoto",
-      "placeholderSubtitle": "Categoria • Local",
-      "placeholderContent": "Desenvolvedor FullStack na Tech4Humans, trabalhando em projetos para grandes seguradoras. Tive a chance de participar do desenvolvimento de novas funcionalidades...",
-      "placeholderTag1": "FullStack",
-      "placeholderTag2": "Soft Skills",
-      "placeholderTag3": "Hard Skills",
-      "category": "Blog",
-      "readTime": "5 min de leitura",
-      "readMore": "Ler mais →"
-    },
-    "tour": {
-      "title": "TURNÊS",
-      "empty": "Nenhuma data de turnê adicionada",
-      "soldOut": "Esgotado",
-      "sellingFast": "Esgotando"
-    },
-    "spotify": {
-      "empty": "Adicione um link do Spotify para exibir o player",
-      "invalidUrl": "URL do Spotify inválida"
-    },
-    "youtube": {
-      "channel": "Canal do YouTube",
-      "videoAlt": "Vídeo do YouTube"
-    },
-    "instagram": {
-      "postAlt": "Post do Instagram"
-    },
-    "qr": {
-      "defaultUrl": "https://exemplo.com",
-      "empty": "Adicione códigos QR para exibir"
-    },
-    "marketing": {
-      "activeTitle": "Anúncio ativo",
-      "activeSubtitle": "O anúncio da empresa aparecerá aqui",
-      "viewDetails": "Ver detalhes",
-      "slotTitle": "Espaço de marketing",
-      "slotHintLine1": "Configure este espaço no painel de Marketing",
-      "slotHintLine2": "Empresas podem enviar propostas de anúncios",
-      "createSlot": "Criar espaço"
-    },
-    "blockItem": {
-      "general": {
-        "dropHere": "Solte aqui",
-        "removeBlock": "Remover bloco",
-        "campaignInProgress": "Campanha em andamento"
-      },
-      "common": {
-        "background": "Fundo",
-        "textColor": "Cor do texto",
-        "text": "Texto",
-        "accent": "Destaque",
-        "animation": "Animação",
-        "alignment": "Alinhamento",
-        "layout": "Layout",
-        "style": "Estilo",
-        "shape": "Forma",
-        "label": "Rótulo",
-        "url": "URL",
-        "title": "Título",
-        "description": "Descrição",
-        "buttonText": "Texto do botão",
-        "image": "Imagem",
-        "backgroundImage": "Imagem de fundo",
-        "icon": "Ícone",
-        "selectIcon": "Selecionar ícone",
-        "address": "Endereço",
-        "displayType": "Tipo de exibição",
-        "textPosition": "Posição do texto"
-      },
-      "sections": {
-        "content": "Conteúdo",
-        "design": "Design",
-        "options": "Opções",
-        "colors": "Cores"
-      },
-      "heading": {
-        "title": "Título",
-        "titlePlaceholder": "Título",
-        "subtitle": "Subtítulo",
-        "subtitlePlaceholder": "Subtítulo"
-      },
-      "text": {
-        "content": "Conteúdo",
-        "placeholder": "Escreva seu texto"
-      },
-      "typography": {
-        "title": "Tipografia",
-        "fontSize": "Tamanho da fonte",
-        "fontWeight": "Peso da fonte"
-      },
-      "size": {
-        "small": "Pequeno",
-        "normal": "Normal",
-        "medium": "Médio",
-        "large": "Grande",
-        "xl": "XL"
-      },
-      "weight": {
-        "light": "Leve",
-        "normal": "Normal",
-        "medium": "Médio",
-        "semibold": "Semibold",
-        "bold": "Negrito",
-        "extraBold": "Extra negrito",
-        "black": "Black"
-      },
-      "align": {
-        "left": "Esquerda",
-        "center": "Centro",
-        "right": "Direita",
-        "justify": "Justificar"
-      },
-      "animation": {
-        "none": "Nenhuma",
-        "bounce": "Saltar",
-        "pulse": "Pulsar",
-        "shake": "Tremer",
-        "wobble": "Oscilar",
-        "loop": "Loop",
-        "once": "Uma vez",
-        "hover": "Ao passar"
-      },
-      "buttonGrid": {
-        "labelPlaceholder": "Texto do botão",
-        "newLink": "Novo link",
-        "addButton": "Adicionar botão"
-      },
-      "button": {
-        "labelPlaceholder": "Texto do botão",
-        "imageOptional": "Imagem (opcional)",
-        "secondaryShadow": "Secundária / Sombra",
-        "sensitiveContent": "Conteúdo sensível",
-        "mark18": "Marcar como conteúdo +18"
-      },
-      "whatsapp": {
-        "helper": "Crie um botão de contato que abre o WhatsApp com mensagem pré-preenchida.",
-        "label": "Texto do botão",
-        "labelPlaceholder": "Falar no WhatsApp",
-        "number": "Número do WhatsApp",
-        "numberPlaceholder": "ex.: 5511999999999",
-        "message": "Mensagem padrão",
-        "messagePlaceholder": "Olá! Gostaria de falar com você.",
-        "style": "Estilo",
-        "previewTitle": "Pré-visualização",
-        "htmlLabel": "HTML gerado",
-        "defaultLabel": "Falar no WhatsApp",
-        "defaultMessage": "Olá! Gostaria de falar com você.",
-        "styles": {
-          "solid": "Sólido",
-          "outline": "Contorno",
-          "gradient": "Gradiente",
-          "glass": "Vidro",
-          "neon": "Neon",
-          "minimal": "Minimal",
-          "soft": "Suave",
-          "dark": "Escuro"
-        }
-      },
-      "buttonStyles": {
-        "solid": "Sólido",
-        "outline": "Contorno",
-        "ghost": "Fantasma",
-        "retro": "Retrô",
-        "softShadow": "Sombra suave",
-        "threeD": "3D",
-        "glass": "Vidro",
-        "gradient": "Gradiente",
-        "neon": "Neon",
-        "architect": "Arquitetura",
-        "material": "Material",
-        "brutalist": "Brutalista",
-        "outlineThick": "Contorno grosso",
-        "imageCard": "Card de imagem"
-      },
-      "shapes": {
-        "pill": "Pílula",
-        "rounded": "Arredondado",
-        "square": "Quadrado"
-      },
-      "socials": {
-        "helper": "Adicione seus links de redes sociais abaixo.",
-        "inlineRow": "Inline (Linha)",
-        "listColumn": "Lista (Coluna)",
-        "showText": "Mostrar texto"
-      },
-      "calendar": {
-        "bookingSettings": "Configurações de agendamento",
-        "bookingHint": "A disponibilidade e as configurações de agendamento são gerenciadas na aba",
-        "scheduler": "Agenda",
-        "tabSuffix": ".",
-        "titlePlaceholder": "Agendar horário",
-        "descriptionPlaceholder": "Breve descrição"
-      },
-      "video": {
-        "youtubeUrl": "URL do YouTube",
-        "youtubePlaceholder": "https://youtube.com/watch?v=..."
-      },
-      "product": {
-        "layoutGrid": "Grade",
-        "layoutList": "Lista",
-        "layoutCarousel": "Carrossel",
-        "cardStyle": "Estilo do card",
-        "cardDefault": "Padrão",
-        "cardMinimal": "Minimalista",
-        "accentColor": "Cor de destaque",
-        "buttonPlaceholder": "ex.: Comprar agora",
-        "products": "Produtos",
-        "removeProduct": "Remover produto",
-        "addFromStripe": "Adicionar produto do Stripe",
-        "selectToAdd": "Selecione um produto para adicionar...",
-        "emptyTitle": "Nenhum produto encontrado",
-        "emptyBody": "Crie um novo produto para adicioná-lo aqui.",
-        "createNew": "Criar novo produto",
-        "createTitle": "Criar produto",
-        "productTitle": "Título do produto",
-        "productTitlePlaceholder": "ex.: Guia digital",
-        "price": "Preço",
-        "currency": "Moeda",
-        "imageOptional": "Imagem do produto (opcional)",
-        "creating": "Criando...",
-        "createAction": "Criar produto"
-      },
-      "map": {
-        "locationName": "Nome do local",
-        "locationPlaceholder": "ex.: Nosso escritório",
-        "addressPlaceholder": "ex.: Rua Principal 123, Cidade"
-      },
-      "featured": {
-        "productTitle": "Título do produto",
-        "productTitlePlaceholder": "Nome do produto",
-        "productImage": "Imagem do produto",
-        "productUrl": "URL do produto"
-      },
-      "affiliate": {
-        "titlePlaceholder": "Copie meu cupom",
-        "couponCode": "Código do cupom",
-        "couponPlaceholder": "CODIGO123",
-        "affiliateUrl": "URL de afiliado"
-      },
-      "event": {
-        "eventTitle": "Título do evento",
-        "eventTitlePlaceholder": "Webinar ao vivo",
-        "dateTime": "Data e hora",
-        "buttonPlaceholder": "Inscrever-se",
-        "buttonUrl": "URL do botão"
-      },
-      "spotify": {
-        "url": "URL do Spotify",
-        "placeholder": "https://open.spotify.com/track/...",
-        "helper": "Suporta faixas, álbuns e playlists",
-        "compactPlayer": "Player compacto"
-      },
-      "instagram": {
-        "username": "Usuário do Instagram",
-        "usernamePlaceholder": "usuario",
-        "displayGrid": "Grade (3 colunas)",
-        "displayList": "Lista (Vertical)",
-        "showUsername": "Mostrar usuário"
-      },
-      "youtube": {
-        "channelUrl": "URL do canal do YouTube",
-        "channelPlaceholder": "https://youtube.com/@...",
-        "displayGrid": "Grade (2 colunas)",
-        "displayList": "Lista (Vertical)",
-        "showChannelName": "Mostrar nome do canal"
-      },
-      "tour": {
-        "sectionTitle": "Título da seção",
-        "sectionPlaceholder": "TURNÊS",
-        "tourDates": "Datas da turnê",
-        "date": "Data",
-        "datePlaceholder": "1 AGO",
-        "location": "Local",
-        "locationPlaceholder": "Cidade, País",
-        "image": "Imagem da turnê",
-        "ticketLink": "Link de ingressos",
-        "sellingFast": "Esgotando",
-        "soldOut": "Esgotado",
-        "defaultDate": "A definir",
-        "defaultLocation": "Cidade",
-        "addTourDate": "Adicionar data"
-      },
-      "position": {
-        "top": "Topo",
-        "bottom": "Base"
-      },
-      "qr": {
-        "layout": {
-          "single": "Único",
-          "multiple": "Múltiplo",
-          "grid": "Grade"
-        },
-        "selectQr": "Selecionar QR",
-        "selectQrOption": "Selecione um QR",
-        "createNew": "Criar novo QR",
-        "helper": "Selecione um QR existente ou crie um novo.",
-        "qrCodes": "QR Codes",
-        "newLabel": "Novo QR",
-        "addItem": "Adicionar item de QR",
-        "foreground": "Frente"
-      },
-      "divider": {
-        "helper": "Linha divisória simples."
-      },
-      "preview": {
-        "noUrl": "Nenhuma URL definida",
-        "mediaAttached": "Mídia anexada",
-        "noMedia": "Sem mídia",
-        "links_one": "{{count}} link",
-        "links_other": "{{count}} links",
-        "noLinks": "Nenhum link",
-        "qrConfigured": "QR configurado",
-        "noQrValue": "Sem valor de QR",
-        "formSelected": "Formulário selecionado",
-        "noFormSelected": "Nenhum formulário selecionado",
-        "portfolioFallback": "Portfólio",
-        "experienceCount_one": "{{count}} experiência",
-        "experienceCount_other": "{{count}} experiências",
-        "noExperience": "Sem experiências",
-        "slotConnected": "Slot conectado",
-        "noSlotSelected": "Nenhum slot selecionado",
-        "noWhatsappNumber": "Sem número do WhatsApp"
-      },
-      "form": {
-        "helper": "Selecione um formulário para exibir na sua bio.",
-        "selectLabel": "Selecionar formulário",
-        "loading": "Carregando formulários...",
-        "empty": "Nenhum formulário encontrado. Crie um formulário na aba \"Formulários\" primeiro.",
-        "placeholder": "Selecione um formulário..."
-      },
-      "marketing": {
-        "helper": "Conecte este bloco a um slot de marketing no seu dashboard. As empresas poderão anunciar aqui.",
-        "locked": "Campanha em andamento. Este bloco está bloqueado e não pode ser editado ou movido.",
-        "selectLabel": "Selecionar slot de marketing",
-        "loading": "Carregando slots...",
-        "empty": "Nenhum slot encontrado para esta bio.",
-        "createCta": "Criar um →",
-        "noneSelected": "Nenhum slot selecionado",
-        "manageCta": "Gerenciar slots →",
-        "days": "dias"
-      },
-      "portfolio": {
-        "helper": "Exiba seus itens de portfólio na sua bio. Adicione e gerencie itens na aba Portfólio.",
-        "emptyTitle": "Nenhum projeto encontrado",
-        "emptyBody": "Você ainda não criou nenhum projeto no portfólio. Eles aparecerão aqui após serem criados.",
-        "createCta": "Criar meu primeiro projeto →",
-        "sectionTitle": "Título da seção",
-        "defaultTitle": "Portfólio",
-        "placeholder": "Portfólio"
-      },
-      "experience": {
-        "sectionTitle": "Título da seção",
-        "sectionPlaceholder": "Experiência",
-        "items": "Experiências",
-        "role": "Cargo",
-        "company": "Empresa",
-        "period": "Período",
-        "location": "Local",
-        "description": "Descrição",
-        "rolePlaceholder": "Designer Sênior",
-        "companyPlaceholder": "Nome da empresa",
-        "periodPlaceholder": "2022 — Presente",
-        "locationPlaceholder": "Remoto",
-        "descriptionPlaceholder": "Descreva suas responsabilidades e conquistas...",
-        "defaultRole": "Designer de Produto",
-        "defaultCompany": "Acme Inc",
-        "defaultPeriod": "2020 — 2022",
-        "defaultLocation": "São Paulo, SP",
-        "defaultDescription": "Desenhou e entregou funcionalidades-chave do produto.",
-        "addExperience": "Adicionar experiência",
-        "roleColor": "Cor do Cargo",
-        "textColor": "Cor do Texto",
-        "lineColor": "Cor da Linha"
-      },
-      "blockTypes": {
-        "heading": "Título",
-        "text": "Texto",
-        "button": "Botão",
-        "button_grid": "Grade de botões",
-        "image": "Imagem",
-        "video": "Vídeo",
-        "socials": "Redes sociais",
-        "whatsapp": "WhatsApp",
-        "divider": "Divisor",
-        "qrcode": "QR code",
-        "spotify": "Spotify",
-        "instagram": "Instagram",
-        "youtube": "YouTube",
-        "blog": "Blog",
-        "product": "Produto",
-        "tour": "Tour",
-        "event": "Evento",
-        "calendar": "Calendário",
-        "map": "Mapa",
-        "form": "Formulário",
-        "portfolio": "Portfólio",
-        "marketing": "Marketing",
-        "experience": "Experiência"
-      }
-    },
-    "subscribeThanks": "Obrigado por se inscrever!",
-    "noBioTitle": "Nenhuma bio selecionada",
-    "noBioBody": "Crie ou selecione uma bio para começar a editar.",
-    "top": {
-      "editor": "Editor",
-      "undoTitle": "Desfazer a última alteração",
-      "undo": "Desfazer",
-      "share": "Compartilhar",
-      "openPage": "Abrir página",
-      "saving": "Salvando...",
-      "saveBio": "Salvar bio"
-    },
-    "tabs": {
-      "blocks": "Blocos",
-      "settings": "Configurações"
-    },
-    "searchPlaceholder": "Pesquisar blocos...",
-    "noBlocks": "Nenhum bloco encontrado",
-    "settings": {
-      "typography": "Tipografia",
-      "fontFamily": "Fonte",
-      "uploadFont": "Enviar fonte personalizada",
-      "fontSupport": "Suporta .ttf, .otf, .woff, .woff2 (máx. 10MB)",
-      "fontUploadError": "Falha ao enviar a fonte. Tente um arquivo válido (ttf, otf, woff, woff2).",
-      "background": "Fundo",
-      "overlayColor": "Cor de sobreposição",
-      "cardStyle": "Estilo do card",
-      "cardType": "Tipo de card",
-      "cardColor": "Cor do card",
-      "opacity": "Opacidade",
-      "blur": "Desfoque",
-      "profile": "Perfil",
-      "imageShape": "Forma da imagem",
-      "usernameColor": "Cor do nome de usuário",
-      "profileDescription": "Descrição do perfil",
-      "profileDescriptionPlaceholder": "Escreva uma descrição curta para aparecer abaixo do @",
-      "verificationStatus": "Status de verificação",
-      "verified": "Verificado",
-      "verificationPending": "Pendente",
-      "getVerified": "Obter verificação",
-      "features": "Recursos",
-      "emailSignup": "Inscrição por e-mail",
-      "removeBranding": "Remover marca",
-      "standardPro": "STANDARD / PRO",
-      "imageShapes": {
-        "circle": "Círculo",
-        "rounded": "Arredondado",
-        "square": "Quadrado",
-        "amoeba": "Ameba",
-        "star": "Estrela",
-        "hexagon": "Hexágono"
-      },
-      "cardTypes": {
-        "none": "Nenhum",
-        "solid": "Sólido",
-        "frosted": "Fosco"
-      },
-      "backgroundTypes": {
-        "color": "Cor",
-        "image": "Imagem",
-        "video": "Vídeo",
-        "grid": "Grade",
-        "dots": "Pontos",
-        "waves": "Ondas",
-        "abstract": "Abstrato",
-        "polka": "Poá",
-        "stripes": "Listras",
-        "zigzag": "Zigue-zague",
-        "mesh": "Malha",
-        "particles": "Partículas",
-        "noise": "Ruído",
-        "dynamic-blur": "Desfoque dinâmico",
-        "palm-leaves": "Folhas de palmeira",
-        "wheat": "Trigo",
-        "gradient": "Degradê",
-        "mesh-gradient": "Degradê em malha",
-        "gradient-animated": "Degradê animado",
-        "aurora": "Aurora",
-        "particles-float": "Partículas flutuantes",
-        "geometric": "Geométrico",
-        "bubbles": "Bolhas",
-        "confetti": "Confete",
-        "starfield": "Campo de estrelas",
-        "rain": "Chuva",
-        "blueprint": "Blueprint",
-        "marble": "Mármore",
-        "wood-grain": "Textura de madeira",
-        "brick": "Tijolo",
-        "frosted-glass": "Vidro fosco",
-        "steel": "Aço",
-        "concrete": "Concreto",
-        "terracotta": "Terracota"
-      }
-    },
-    "categories": {
-      "Content": "Conteúdo",
-      "Social": "Social",
-      "Shop": "Loja",
-      "Music": "Música",
-      "Blog": "Blog",
-      "Marketing": "Marketing",
-      "Layout": "Layout",
-      "Professional": "Profissional"
-    },
-    "palette": {
-      "heading": "Título",
-      "qrcode": "QR Code",
-      "text": "Texto",
-      "button": "Botão",
-      "buttonGrid": "Grade de botões",
-      "image": "Imagem",
-      "socials": "Redes sociais",
-      "video": "Vídeo",
-      "blog": "Blog",
-      "productList": "Lista de produtos",
-      "calendar": "Calendário",
-      "map": "Mapa",
-      "featured": "Destaque",
-      "affiliateCode": "Código de afiliado",
-      "event": "Evento",
-      "tourDates": "Datas de tour",
-      "spotify": "Spotify",
-      "instagramFeed": "Feed do Instagram",
-      "youtubeFeed": "Feed do YouTube",
-      "divider": "Divisor",
-      "form": "Formulário",
-      "portfolio": "Portfólio",
-      "whatsapp": "WhatsApp",
-      "experience": "Experiência"
-    },
-    "layout": {
-      "title": "Layout",
-      "dragToReorder": "Arraste para reorganizar"
-    },
-    "empty": {
-      "title": "Sua bio está vazia",
-      "body": "Arraste blocos da barra lateral esquerda para começar a montar sua página."
-    },
-    "preview": {
-      "live": "Pré-visualização ao vivo",
-      "aria": "Pré-visualizar bio",
-      "title": "Pré-visualização da bio",
-      "mobileTitle": "Pré-visualização no mobile"
-    },
-    "qrModal": {
-      "title": "Criar novo código QR",
-      "destination": "URL de destino",
-      "placeholder": "https://exemplo.com",
-      "cancel": "Cancelar",
-      "creating": "Criando...",
-      "create": "Criar QR"
-    },
-    "verificationModal": {
-      "title": "Solicitar verificação",
-      "subtitle": "Fale sobre sua bio para agilizar a verificação.",
-      "name": "Nome completo",
-      "namePlaceholder": "Seu nome completo",
-      "email": "E-mail",
-      "emailPlaceholder": "voce@email.com",
-      "phone": "Telefone",
-      "phonePlaceholder": "+55 11 99999-9999",
-      "description": "Descrição da bio",
-      "descriptionPlaceholder": "Explique sobre o que é sua bio e quem você é.",
-      "submit": "Enviar solicitação",
-      "submitting": "Enviando...",
-      "cancel": "Cancelar",
-      "close": "Fechar",
-      "error": "Não foi possível enviar sua solicitação. Tente novamente."
-    }
   }
 }

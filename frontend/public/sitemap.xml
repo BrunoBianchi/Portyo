@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  
+  <!-- ==================== HOMEPAGE ==================== -->
   
   <!-- Homepage - English -->
   <url>
     <loc>https://portyo.me/en</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en"/>
@@ -15,13 +18,14 @@
     <image:image>
       <image:loc>https://portyo.me/og-image.jpg</image:loc>
       <image:title>Portyo - Convert Your Followers Into Customers</image:title>
+      <image:caption>All-in-one platform for creators and entrepreneurs</image:caption>
     </image:image>
   </url>
   
   <!-- Homepage - Portuguese -->
   <url>
     <loc>https://portyo.me/pt</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en"/>
@@ -29,144 +33,196 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://portyo.me/en"/>
   </url>
   
-  <!-- Pricing Page - English -->
+  <!-- Root redirect -->
+  <url>
+    <loc>https://portyo.me/</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- ==================== PRICING ==================== -->
+  
   <url>
     <loc>https://portyo.me/en/pricing</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/pricing"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/pricing"/>
   </url>
   
-  <!-- Pricing Page - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/pricing</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/pricing"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/pricing"/>
   </url>
   
-  <!-- Themes Page - English -->
+  <!-- ==================== THEMES ==================== -->
+  
   <url>
     <loc>https://portyo.me/en/themes</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/themes"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/themes"/>
   </url>
   
-  <!-- Themes Page - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/themes</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/themes"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/themes"/>
   </url>
   
-  <!-- Blog Page - English -->
+  <!-- ==================== BLOG ==================== -->
+  
   <url>
     <loc>https://portyo.me/en/blog</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/blog"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/blog"/>
   </url>
   
-  <!-- Blog Page - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/blog</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/blog"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/blog"/>
   </url>
   
-  <!-- About Page - English -->
+  <!-- ==================== ABOUT ==================== -->
+  
   <url>
     <loc>https://portyo.me/en/about</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/about"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/about"/>
   </url>
   
-  <!-- About Page - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/about</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/about"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/about"/>
   </url>
   
-  <!-- Contact Page - English -->
+  <!-- ==================== CONTACT ==================== -->
+  
   <url>
     <loc>https://portyo.me/en/contact</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/contact"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/contact"/>
   </url>
   
-  <!-- Contact Page - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/contact</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/contact"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/contact"/>
   </url>
   
-  <!-- Privacy Policy - English -->
+  <!-- ==================== FEATURES ==================== -->
+  
+  <url>
+    <loc>https://portyo.me/en/features</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/features"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/features"/>
+  </url>
+  
+  <url>
+    <loc>https://portyo.me/pt/features</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/features"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/features"/>
+  </url>
+  
+  <!-- ==================== LEGAL PAGES ==================== -->
+  
+  <!-- Privacy Policy -->
   <url>
     <loc>https://portyo.me/en/privacy-policy</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/privacy-policy"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/privacy-policy"/>
   </url>
   
-  <!-- Privacy Policy - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/privacy-policy</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/privacy-policy"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/privacy-policy"/>
   </url>
   
-  <!-- Terms of Service - English -->
+  <!-- Terms of Service -->
   <url>
     <loc>https://portyo.me/en/terms-of-service</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/terms-of-service"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/terms-of-service"/>
   </url>
   
-  <!-- Terms of Service - Portuguese -->
   <url>
     <loc>https://portyo.me/pt/terms-of-service</loc>
-    <lastmod>2025-02-01</lastmod>
+    <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://portyo.me/en/terms-of-service"/>
     <xhtml:link rel="alternate" hreflang="pt" href="https://portyo.me/pt/terms-of-service"/>
+  </url>
+  
+  <!-- Security Policy -->
+  <url>
+    <loc>https://portyo.me/en/security-policy</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- ==================== STATIC FILES ==================== -->
+  
+  <url>
+    <loc>https://portyo.me/llms.txt</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://portyo.me/humans.txt</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
   </url>
 
 </urlset>

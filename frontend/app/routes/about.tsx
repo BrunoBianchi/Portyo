@@ -15,7 +15,7 @@ export default function About() {
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-surface-alt font-sans text-text-main selection:bg-primary selection:text-black pt-24 pb-20 px-6">
+        <div className="min-h-screen bg-surface-alt font-sans text-text-main selection:bg-primary selection:text-black pt-32 pb-20 px-6">
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">

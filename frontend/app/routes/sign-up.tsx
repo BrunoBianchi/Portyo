@@ -6,10 +6,19 @@ import AuthContext from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
 import { api } from "~/services/api";
+import { AuthLayoutBold } from "~/components/auth/auth-layout-bold";
 
 export function meta({ params }: Route.MetaArgs) {
     const lang = params?.lang === "pt" ? "pt" : "en";
-    return [{ title: i18n.t("meta.signUp.title", { lng: lang }) }];
+    const title = i18n.t("meta.signUp.title", { lng: lang, defaultValue: lang === "pt" ? "Criar Conta | Portyo" : "Sign Up | Portyo" });
+    const description = lang === "pt"
+        ? "Crie sua conta gratuita no Portyo. Comece a criar sua bio page profissional e monetize seu público."
+        : "Create your free Portyo account. Start building your professional bio page and monetize your audience.";
+    return [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: "noindex, follow" },
+    ];
 }
 
 export default function Signup() {
@@ -43,11 +52,11 @@ export default function Signup() {
     const isFormValid = hasFullName && isPasswordValid && email.length > 0;
 
     const CheckIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check w-4 h-4"><path d="M20 6 9 17l-5-5" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M20 6 9 17l-5-5" /></svg>
     );
 
     const CircleIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle w-4 h-4"><circle cx="12" cy="12" r="10" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><circle cx="12" cy="12" r="10" /></svg>
     );
 
 
@@ -115,177 +124,189 @@ export default function Signup() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
-            <AuthBackground />
-            <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-border">
-
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold mb-3">
-                            {t("auth.signup.titleStep1")}
-                        </h1>
-                        <p className="text-text-muted text-sm px-4">
-                            {t("auth.signup.subtitleStep1")}
-                        </p>
+        <AuthLayoutBold
+            title={t("auth.signup.titleStep1", "Crie sua Portyo")}
+            subtitle={t("auth.signup.subtitleStep1", "Comece grátis, sem cartão de crédito.")}
+        >
+            <form className="space-y-6" onSubmit={handleContinue}>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
+                            {t("auth.signup.fullNamePlaceholder", "Nome de usuário")}
+                        </label>
+                        <input
+                            type="text"
+                            value={username}
+                            placeholder="ex: portyo"
+                            autoComplete="username"
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-6 py-4 rounded-xl bg-[#F3F3F1] border-2 border-transparent focus:bg-white focus:border-[#1A1A1A] outline-none transition-all font-medium text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                            required
+                        />
                     </div>
 
-                    <form className="space-y-5" onSubmit={handleContinue}>
-                        <>
-                            <div>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    placeholder={t("auth.signup.fullNamePlaceholder")}
-                                    autoComplete="name"
-                                    className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
-                                    required
-                                    onChange={(e) => setUsername(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder={t("auth.signup.emailPlaceholder")}
-                                    autoComplete="email"
-                                    className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
-                                    required
-                                />
-                            </div>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder={t("auth.signup.passwordPlaceholder")}
-                                    autoComplete="new-password"
-                                    className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-text-main hover:text-primary transition-colors"
-                                >
-                                    {showPassword ? t("auth.signup.hide") : t("auth.signup.show")}
-                                </button>
-                            </div>
-                            <div className="mt-2 text-xs">
-                                <p className="text-text-muted mb-2 font-medium">{t("auth.signup.requirementsTitle")}</p>
-                                <ul className="space-y-1.5 pl-1">
-                                    <li className={`flex items-center gap-2 ${hasFullName ? 'text-green-400' : 'text-text-muted'}`}>
-                                        {hasFullName ? <CheckIcon /> : <CircleIcon />}
-                                        <span>{t("auth.signup.requirements.fullName")}</span>
-                                    </li>
-                                    <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-400' : 'text-text-muted'}`}>
-                                        {hasUppercase ? <CheckIcon /> : <CircleIcon />}
-                                        <span>{t("auth.signup.requirements.uppercase")}</span>
-                                    </li>
-                                    <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-400' : 'text-text-muted'}`}>
-                                        {hasMinLength ? <CheckIcon /> : <CircleIcon />}
-                                        <span>{t("auth.signup.requirements.length")}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </>
-
-                        <div className="flex gap-3">
-                            <button
-                                type="submit"
-                                disabled={!isFormValid}
-                                className="flex-1 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {t("auth.signup.submit")}
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className="mt-8">
-                        <div className="relative flex items-center justify-center mb-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-border"></div>
-                            </div>
-                            <span className="relative bg-surface px-3 text-xs text-text-main font-semibold uppercase tracking-wider">{t("auth.signup.or")}</span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                            <button
-                                onClick={handleGoogleLogin}
-                                className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group"
-                            >
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.google")}</span>
-                            </button>
-                            <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform"></span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.apple")}</span>
-                            </button>
-                            <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform">f</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.signup.facebook")}</span>
-                            </button>
-                        </div>
+                    <div>
+                        <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
+                            {t("auth.signup.emailPlaceholder", "Email")}
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="ex: bruno@portyo.me"
+                            autoComplete="email"
+                            className="w-full px-6 py-4 rounded-xl bg-[#F3F3F1] border-2 border-transparent focus:bg-white focus:border-[#1A1A1A] outline-none transition-all font-medium text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                            required
+                        />
                     </div>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-xs text-text-muted font-medium">
-                            <>{t("auth.signup.haveAccount")} <Link to={withLang("/login")} className="font-bold text-text-main hover:underline ml-1">{t("auth.signup.signIn")}</Link></>
-                        </p>
+                    <div className="relative">
+                        <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
+                            {t("auth.signup.passwordPlaceholder", "Senha")}
+                        </label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="********"
+                            autoComplete="new-password"
+                            className="w-full px-6 py-4 rounded-xl bg-[#F3F3F1] border-2 border-transparent focus:bg-white focus:border-[#1A1A1A] outline-none transition-all font-medium text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-[3.2rem] text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity"
+                        >
+                            {showPassword ? t("auth.signup.hide") : t("auth.signup.show")}
+                        </button>
+                    </div>
+
+                    <div className="pt-2 pl-1">
+                        <p className="text-xs font-bold text-[#1A1A1A]/60 uppercase tracking-wider mb-3">Requisitos da senha:</p>
+                        <ul className="space-y-2">
+                            <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasFullName ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
+                                {hasFullName ? <CheckIcon /> : <CircleIcon />}
+                                <span>{t("auth.signup.requirements.fullName", "Nome de usuário preenchido")}</span>
+                            </li>
+                            <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasUppercase ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
+                                {hasUppercase ? <CheckIcon /> : <CircleIcon />}
+                                <span>{t("auth.signup.requirements.uppercase", "Pelo menos 1 letra maiúscula")}</span>
+                            </li>
+                            <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasMinLength ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
+                                {hasMinLength ? <CheckIcon /> : <CircleIcon />}
+                                <span>{t("auth.signup.requirements.length", "Mínimo de 8 caracteres")}</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-            </main>
 
+                <div className="space-y-4 pt-4">
+                    <button
+                        type="submit"
+                        disabled={!isFormValid}
+                        className="w-full bg-[#1A1A1A] text-white font-display font-bold text-lg py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#1A1A1A]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {t("auth.signup.submit", "Criar conta")}
+                    </button>
+                </div>
+            </form>
+
+            <div className="mt-6">
+                <div className="relative flex items-center justify-center mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-[#1A1A1A]/10"></div>
+                    </div>
+                    <span className="relative bg-white px-4 text-xs font-bold text-[#1A1A1A]/40 uppercase tracking-widest">
+                        {t("auth.signup.or", "OU")}
+                    </span>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                    {/* Google */}
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        className="flex-1 flex items-center justify-center p-4 border-2 border-[#1A1A1A]/10 rounded-2xl hover:bg-[#F3F3F1] hover:border-[#1A1A1A] transition-all group"
+                        title="Google"
+                    >
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                        </svg>
+                    </button>
+
+                    {/* Apple */}
+                    <button type="button" className="flex-1 flex items-center justify-center p-4 border-2 border-[#1A1A1A]/10 rounded-2xl hover:bg-[#F3F3F1] hover:border-[#1A1A1A] transition-all group" title="Apple">
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#1A1A1A]" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-.36-.16-.7-.33-1.1-.33-.35 0-.69.16-1.07.35-1.06.49-2.17.56-3.12-.41-2.12-2.17-3-6.3.36-9.03 1.39-1.12 3.12-1 4.31-.03.22.18.44.33.64.33.19 0 .41-.14.63-.33 1.34-1.14 3.73-.86 4.88.54-2.61 1.25-2.17 4.79.46 5.86-.53 1.12-1.06 2.07-1.57 2.58-.52.5-1.29.56-1.34.07zm-1.78-14.7c.48-1.55 1.76-2.58 3.03-2.58.12 1.39-.46 2.86-1.52 3.65-1.06.77-2.47 1.01-3.08.97-.05-1.28.61-2.82 1.57-2.04z" />
+                        </svg>
+                    </button>
+
+                    {/* Facebook */}
+                    <button type="button" className="flex-1 flex items-center justify-center p-4 border-2 border-[#1A1A1A]/10 rounded-2xl hover:bg-[#F3F3F1] hover:border-[#1A1A1A] transition-all group" title="Facebook">
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#1877F2]" fill="currentColor">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div className="text-center pt-8">
+                <p className="text-sm font-medium text-[#1A1A1A]/60">
+                    <>{t("auth.signup.haveAccount")} <Link to={withLang("/login")} className="ml-1 font-bold text-[#1A1A1A] underline decoration-2 underline-offset-4 hover:text-[#0047FF] hover:decoration-[#0047FF] transition-colors">{t("auth.signup.signIn")}</Link></>
+                </p>
+            </div>
+
+            {/* Bio Claim Modal - Updated for Bold Theme */}
             {showBioModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-                    <div className="w-full max-w-[620px] rounded-[2.5rem] bg-[#FBF7F1] shadow-2xl border border-white/60 p-10 sm:p-12 text-center">
-                        <h2 className="text-3xl font-bold text-[#1F1F1F]">Escolha seu usuário</h2>
-                        <p className="mt-2 text-base text-[#7A7A7A]">Garanta seu espaço único no Portyo</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1A1A]/80 backdrop-blur-md px-4">
+                    <div className="w-full max-w-[580px] rounded-[2.5rem] bg-white p-10 sm:p-12 text-center shadow-2xl relative overflow-hidden">
+                        {/* Decorative Background Blob */}
+                        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#D2E823] rounded-full blur-[60px] opacity-20"></div>
 
-                        <div className="mt-8 rounded-[1.5rem] border border-[#E8E1D9] bg-white/80 px-6 py-5 text-lg font-semibold text-[#1F1F1F] shadow-sm">
-                            <div className="flex items-center justify-center gap-1 flex-wrap">
-                                <span className="text-[#9A9A9A]">portyo.me/p/</span>
+                        <h2 className="font-display font-black text-4xl text-[#1A1A1A] mb-3 relative z-10">Escolha seu link</h2>
+                        <p className="font-body text-lg text-[#1A1A1A]/60 font-medium relative z-10">Garanta seu espaço único no Portyo.</p>
+
+                        <div className="mt-10 mb-8 relative z-10">
+                            <div className="group flex items-center justify-center flex-wrap bg-[#F3F3F1] border-2 border-transparent focus-within:border-[#1A1A1A] focus-within:bg-white rounded-[1.5rem] px-6 py-6 transition-all duration-300">
+                                <span className="font-display font-bold text-2xl text-[#1A1A1A]/40 tracking-tight">portyo.me/</span>
                                 <input
                                     value={bioSufix}
                                     onChange={(e) => setBioSufix(e.target.value)}
-                                    className="bg-transparent text-[#1F1F1F] outline-none text-lg font-semibold min-w-[4ch] text-left"
+                                    className="bg-transparent text-[#1A1A1A] outline-none font-display font-black text-2xl min-w-[4ch] tracking-tight placeholder:text-[#1A1A1A]/20"
                                     autoFocus
                                     spellCheck={false}
+                                    placeholder="voce"
                                 />
                             </div>
                         </div>
 
-                        <p className="mt-4 text-sm text-[#8C8C8C]">
-                            Este será o URL do seu perfil público. Você não poderá alterá-lo depois!
-                        </p>
-
-                        {bioError && (
-                            <div className="mt-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                                {bioError}
-                            </div>
-                        )}
-
-                        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <button
+                                type="button"
+                                onClick={handleCreateBio}
+                                disabled={!bioSufix.trim() || bioLoading}
+                                className="w-full rounded-full bg-[#D2E823] text-[#1A1A1A] font-display font-black text-lg py-4 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                            >
+                                {bioLoading ? "Criando..." : "Confirmar meu link"}
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => {
                                     setShowBioModal(false);
                                     logout();
                                 }}
-                                className="w-full sm:w-40 rounded-full border border-border bg-surface-card px-6 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted"
+                                className="text-sm font-bold text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest"
                             >
                                 Voltar
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCreateBio}
-                                disabled={!bioSufix.trim() || bioLoading}
-                                className="w-full sm:w-48 rounded-full bg-[#CBEA1A] px-6 py-3 text-base font-semibold text-[#1F1F1F] shadow-lg hover:bg-[#BADD18] disabled:opacity-60"
-                            >
-                                {bioLoading ? "Criando..." : "Criar conta"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-        </div>
+        </AuthLayoutBold>
     );
 }

@@ -14,7 +14,8 @@
     "goToDashboard": "Go to Dashboard",
     "signOut": "Sign out",
     "language": "Language",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "autoPost": "Auto Post"
   },
   "meta": {
     "root": {
@@ -154,7 +155,232 @@
       "analytics": "Analytics",
       "adminPanel": "Admin Panel",
       "announcements": "Announcements",
-      "siteBlog": "Site Blog"
+      "siteBlog": "Site Blog",
+      "autoPost": "Auto Post"
+    },
+    "autoPost": {
+      "confirmDelete": "Are you sure you want to delete this auto-post schedule?",
+      "emptyBioTitle": "Select a Bio First",
+      "emptyBioSubtitle": "Please select a bio from the sidebar to configure auto-post.",
+      "header": {
+        "proFeature": "Pro Feature",
+        "title": "Auto Post",
+        "subtitle": "AI-powered content with advanced SEO, GEO & AEO optimization",
+        "pause": "Pause",
+        "resume": "Resume",
+        "edit": "Edit",
+        "cancelEdit": "Cancel"
+      },
+      "frequencies": {
+        "daily": { "label": "Daily", "description": "New post every day" },
+        "weekly": { "label": "Weekly", "description": "New post every week" },
+        "biweekly": { "label": "Bi-weekly", "description": "New post every 2 weeks" },
+        "monthly": { "label": "Monthly", "description": "New post every month" }
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "friendly": "Friendly",
+        "technical": "Technical",
+        "creative": "Creative",
+        "authoritative": "Authoritative"
+      },
+      "lengths": {
+        "short": { "label": "Short", "description": "600-800 words" },
+        "medium": { "label": "Medium", "description": "1000-1500 words" },
+        "long": { "label": "Long", "description": "1800-2500 words" }
+      },
+      "stats": {
+        "postsThisMonth": "Posts This Month",
+        "remainingOf": "{{remaining}} remaining of {{limit}}",
+        "nextPost": "Next Post",
+        "today": "Today",
+        "notScheduled": "Not scheduled",
+        "overdue": "Overdue",
+        "lastPost": "Last Post",
+        "never": "Never",
+        "noPostsYet": "No posts yet",
+        "status": "Status",
+        "active": "Active",
+        "paused": "Paused",
+        "notConfigured": "Not configured",
+        "avgScores": "Avg Scores",
+        "basedOnPosts_one": "Based on {{count}} post",
+        "basedOnPosts_other": "Based on {{count}} posts"
+      },
+      "config": {
+        "title": "Configuration",
+        "subtitle": "Customize how AI generates your blog posts",
+        "postFrequency": "Post Frequency",
+        "postingTime": "Posting Time",
+        "publishAtTime": "Posts will be published at this time",
+        "startDateOptional": "Start Date (Optional)",
+        "cronStarts": "Cron starts from this date (leave empty for today)",
+        "postLength": "Post Length",
+        "topicsLabel": "Topics & Themes",
+        "aiAnalyzing": "AI is analyzing...",
+        "topicsPlaceholder": "Describe the topics you want to write about (e.g., 'Web development, React tutorials, Career advice'). AI will generate keywords and target audience automatically.",
+        "aiSuggestionsTitle": "AI Suggestions",
+        "suggestedKeywords": "Suggested Keywords:",
+        "targetAudience": "Target Audience:",
+        "applySuggestions": "Apply Suggestions",
+        "ignore": "Ignore",
+        "seoKeywords": "SEO Keywords",
+        "aiGenerated": "AI Generated",
+        "keywordsPlaceholder": "Enter keywords separated by commas (or let AI generate them from your topics)",
+        "writingTone": "Writing Tone",
+        "targetAudienceLabel": "Target Audience",
+        "targetAudiencePlaceholder": "Who are you writing for? (AI will suggest based on your topics)",
+        "geoTargetLabel": "Geographic Target & Language",
+        "geoTargetEmpty": "Select a country to optimize content for local SEO, cultural references, and regional preferences",
+        "editToChange": "Edit to change",
+        "targetLanguage": "Target: {{target}} • Language: {{language}}"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "saveUpdate": "Update Schedule",
+        "saveCreate": "Create Schedule",
+        "generating": "Generating...",
+        "previewWithMetrics": "Preview with Metrics",
+        "cancel": "Cancel",
+        "previewNextPost": "Preview Next Post",
+        "delete": "Delete"
+      },
+      "bioSummary": {
+        "title": "AI Understanding of Your Bio",
+        "refresh": "Refresh"
+      },
+      "sidebar": {
+        "recentAutoPosts": "Recent Auto Posts",
+        "viewDetails": "View Details",
+        "noAutoPosts": "No auto posts yet"
+      },
+      "info": {
+        "title": "How it works",
+        "bullet1": "AI analyzes your bio for deep understanding",
+        "bullet2": "Generates SEO + GEO + AEO + AIO optimized content",
+        "bullet3": "Detailed metrics for every post",
+        "bullet4": "Publishes automatically on schedule"
+      },
+      "preview": {
+        "title": "Post Preview",
+        "subtitle": "Complete optimization metrics for this generated post",
+        "close": "Close",
+        "createSchedule": "Create Schedule"
+      },
+      "metricsModal": {
+        "title": "Post Metrics",
+        "seoScore": "SEO Score",
+        "geoScore": "GEO Score",
+        "aeoScore": "AEO Score",
+        "aioScore": "AIO Score",
+        "readability": "Readability",
+        "titleChars": "Title Chars",
+        "keywords": "Keywords",
+        "primary": "Primary",
+        "contentStructure": "Content Structure",
+        "headings": "Headings",
+        "paragraphs": "Paragraphs",
+        "lists": "Lists",
+        "words": "Words",
+        "seoSuggestions": "SEO Suggestions",
+        "geoSuggestions": "GEO Suggestions",
+        "aeoSuggestions": "AEO Suggestions",
+        "aioSuggestions": "AIO Suggestions",
+        "close": "Close"
+      }
+    },
+    "siteAutoPost": {
+      "confirmDelete": "Are you sure you want to delete this automation?",
+      "header": {
+        "title": "Auto Posts - Site Blog",
+        "subtitle": "Configure automatic posts for your institutional blog",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "pause": "Pause",
+        "activate": "Activate"
+      },
+      "toast": {
+        "updateSuccess": "Settings updated successfully!",
+        "createSuccess": "Automation created successfully!",
+        "saveError": "Failed to save settings",
+        "pausedSuccess": "Automation paused",
+        "activatedSuccess": "Automation activated",
+        "statusError": "Failed to update status",
+        "deleteSuccess": "Automation deleted successfully",
+        "deleteError": "Failed to delete",
+        "previewSuccess": "Preview generated successfully!",
+        "previewError": "Failed to generate preview"
+      },
+      "status": {
+        "status": "Status",
+        "active": "Active",
+        "paused": "Paused",
+        "frequency": "Frequency",
+        "postsThisMonth": "Posts this month",
+        "nextPost": "Next post",
+        "notScheduled": "Not scheduled"
+      },
+      "config": {
+        "editTitle": "Edit Configuration",
+        "createTitle": "Create Automation",
+        "preview": "Generate Preview",
+        "generating": "Generating...",
+        "frequency": "Posting Frequency",
+        "postLength": "Post Length",
+        "tone": "Tone of Voice",
+        "preferredTime": "Preferred Time",
+        "topics": "Topics/Themes *",
+        "topicsPlaceholder": "Ex: Digital Marketing, SEO, Social Media, Entrepreneurship...",
+        "keywords": "Keywords (comma separated)",
+        "keywordsPlaceholder": "Ex: digital marketing, SEO, content strategy...",
+        "targetAudience": "Target audience",
+        "targetAudiencePlaceholder": "Ex: Digital entrepreneurs, marketing professionals...",
+        "bilingual": "Generate bilingual content (Portuguese + English)"
+      },
+      "frequency": {
+        "5hours": "Every 5 hours",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "biweekly": "Every 2 weeks",
+        "monthly": "Monthly"
+      },
+      "length": {
+        "short": "Short (~800 words)",
+        "medium": "Medium (~1500 words)",
+        "long": "Long (~2500 words)"
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "friendly": "Friendly",
+        "authoritative": "Authoritative",
+        "creative": "Creative"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Changes",
+        "create": "Create Automation",
+        "delete": "Delete"
+      },
+      "preview": {
+        "title": "Post Preview",
+        "portugueseVersion": "Portuguese Version",
+        "englishVersion": "English Version",
+        "keywords": "Keywords",
+        "suggestions": "Improvement Suggestions"
+      },
+      "logs": {
+        "title": "Recent Posts",
+        "wordCount_one": "{{count}} word",
+        "wordCount_other": "{{count}} words",
+        "status": {
+          "published": "Published",
+          "failed": "Failed",
+          "generated": "Generated"
+        }
+      }
     },
     "sidebar": {
       "newPage": "New Page",
@@ -747,6 +973,12 @@
       }
     },
     "editor": {
+      "tabs": {
+        "links": "Links",
+        "design": "Design",
+        "settings": "Settings"
+      },
+      "addLink": "Add Link",
       "defaults": {
         "headingTitle": "Introduce yourself",
         "headingBody": "In one line, tell people why they should connect with you.",

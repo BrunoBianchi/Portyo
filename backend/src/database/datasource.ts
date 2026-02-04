@@ -26,9 +26,11 @@ import { ThemeEntity } from "./entity/theme-entity"
 import { NotificationEntity } from "./entity/notification-entity"
 import { AutoPostLogEntity } from "./entity/auto-post-log-entity"
 import { AutoPostScheduleEntity } from "./entity/auto-post-schedule-entity"
-
+import { SiteAutoPostScheduleEntity } from "./entity/site-auto-post-schedule-entity"
+import { SiteAutoPostLogEntity } from "./entity/site-auto-post-log-entity"
 import { env } from "../config/env"
 import { SystemSettings } from "../entities/system-settings.entity"
+import { CustomDomainEntity } from "./entity/custom-domain-entity"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -37,7 +39,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity, SiteAutoPostScheduleEntity, SiteAutoPostLogEntity, CustomDomainEntity],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? {

@@ -1,0 +1,81 @@
+/* TEAM */
+
+    Founder & CEO: Portyo Team
+    Contact: hello@portyo.me
+    From: Brazil
+
+    Development Team:
+    - Backend: Node.js, TypeScript, PostgreSQL
+    - Frontend: React, Remix/React Router v7, TailwindCSS
+    - AI Integration: Groq, Llama 3.3
+    - Infrastructure: AWS/Vercel, Redis
+
+/* THANKS */
+
+    Open Source Community
+    - React Router Team
+    - TypeScript Team
+    - Node.js Community
+    - TailwindCSS Team
+    
+    Beta Testers & Early Adopters
+    - Thank you for your feedback and patience
+
+/* SITE */
+
+    Last update: 2025-02-02
+    Standards: HTML5, CSS3, JavaScript (ES2022+)
+    Components: React 18+, React Router v7
+    Software: Node.js, Express, TypeORM
+    
+/* TECHNOLOGY */
+
+    Backend:
+    - Node.js
+    - Express.js
+    - TypeScript
+    - PostgreSQL
+    - Redis
+    - TypeORM
+    
+    Frontend:
+    - React 18
+    - React Router v7 (Remix)
+    - TypeScript
+    - TailwindCSS
+    - Vite
+    
+    AI/ML:
+    - Groq API
+    - Llama 3.3 70B
+    - Custom prompt engineering
+    
+    Infrastructure:
+    - AWS / Vercel
+    - Cloudflare (DNS/CDN)
+    - GitHub Actions (CI/CD)
+
+/* BUILT WITH */
+
+    ❤️ in Brazil
+    ☕ Lots of coffee
+    🎯 Focus on creators and entrepreneurs
+
+/* CONNECT */
+
+    Website: https://portyo.me
+    Twitter: @portyo
+    Instagram: @portyo
+    LinkedIn: https://linkedin.com/company/portyo
+    GitHub: https://github.com/portyo
+
+/* MANIFESTO */
+
+    Portyo was built to help creators turn their passion into business.
+    We believe everyone deserves powerful tools to grow their online presence,
+    regardless of technical skills or budget.
+
+/* SPECIAL THANKS */
+
+    To all creators who trust Portyo with their online presence.
+    You inspire us to keep building better tools every day.

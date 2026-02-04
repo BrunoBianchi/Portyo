@@ -10,8 +10,8 @@ import { Link } from "react-router";
 import { Lock, Sparkles } from "lucide-react";
 import { api } from "~/services/api";
 
-// TopoJSON for world map
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// TopoJSON for world map - using local file to avoid CSP issues
+const geoUrl = "/world-atlas-countries-110m.json";
 
 interface GeoStats {
     totalViews: number;

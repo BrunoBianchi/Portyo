@@ -12,7 +12,6 @@ import {
     ChevronDown,
     Plus,
     Check,
-    ExternalLink,
     X,
     Sparkles,
     BarChart3,
@@ -22,7 +21,6 @@ import {
     CreditCard,
     ShoppingBag,
     FileText,
-    UserCog,
     QrCode,
     Bell,
     Calendar,
@@ -30,16 +28,21 @@ import {
     Lock,
     Megaphone,
     Shield,
-    Briefcase,
     TrendingUp,
-    Bot
+    Bot,
+    ChevronRight,
+    Briefcase,
+    Store,
+    Home,
+    MessageSquare,
+    Mail,
+    Globe2
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
-import { NotificationBell } from "./notification-bell";
-
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -47,7 +50,44 @@ interface SidebarProps {
     handleChangeBio?: () => void;
 }
 
-export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarProps) {
+// Donut Chart Component for Setup Widget
+function DonutChart({ progress, size = 60, strokeWidth = 6, color = "#C6F035" }: { progress: number; size?: number; strokeWidth?: number; color?: string }) {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (progress / 100) * circumference;
+
+    return (
+        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+            <svg width={size} height={size} className="transform -rotate-90">
+                {/* Background Circle */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="#E5E7EB"
+                    strokeWidth={strokeWidth}
+                    fill="transparent"
+                />
+                {/* Progress Circle */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke={color}
+                    strokeWidth={strokeWidth}
+                    fill="transparent"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000 ease-out"
+                />
+            </svg>
+            <span className="absolute text-[10px] font-bold text-gray-900">{progress}%</span>
+        </div>
+    );
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const location = useLocation();
     const { user, logout } = useContext(AuthContext);
     const { bio, bios, createBio, selectBio } = useContext(BioContext);
@@ -59,10 +99,24 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
     const [forcedPlan, setForcedPlan] = useState<'standard' | 'pro' | undefined>(undefined);
+
+    // Collapsible sections state
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+        myPortyo: true,
+        earn: true,
+        audience: false,
+        tools: false,
+        admin: true
+    });
+
+    const toggleGroup = (groupKey: string) => {
+        setOpenGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
+    };
+
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const pathnameNoLang = location.pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
-    const isActive = (path: string) => pathnameNoLang === path;
+    const isActive = (path: string) => pathnameNoLang === path || pathnameNoLang.startsWith(path + "/");
     const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1] || i18n.resolvedLanguage || i18n.language || "en";
 
     const withLang = (to: string) => {
@@ -117,30 +171,62 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const navItems = [
-        { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
-        { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
-        { name: t("dashboard.nav.leads"), path: "/dashboard/leads", icon: Users, isPro: true },
-        { name: t("dashboard.nav.products"), path: "/dashboard/products", icon: ShoppingBag, tourId: "dashboard-nav-products" },
-        { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
-        { name: t("dashboard.nav.blog"), path: "/dashboard/blog", icon: FileText },
-        { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
-        { name: t("dashboard.nav.marketing"), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
-        { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
-        { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
-        { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
-        { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
-        { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
-        { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: FileText, tourId: "dashboard-nav-forms" },
-        { name: t("dashboard.nav.seoSettings"), path: "/dashboard/seo", icon: Settings, isPro: true },
-        { name: t("dashboard.nav.analytics"), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
+    const navGroups = [
+        {
+            key: "myPortyo",
+            label: t("dashboard.sidebar.groupMyPortyo", { defaultValue: "MY PORTYO" }),
+            items: [
+                { name: t("dashboard.nav.editor", { defaultValue: "Editor" }), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
+                { name: t("dashboard.nav.portfolio", { defaultValue: "Portfolio" }), path: "/dashboard/portfolio", icon: Briefcase },
+                { name: t("dashboard.nav.blog", { defaultValue: "Blog" }), path: "/dashboard/blog", icon: FileText },
+                { name: t("dashboard.nav.products", { defaultValue: "Products" }), path: "/dashboard/products", icon: Store, tourId: "dashboard-nav-products" },
+            ]
+        },
+        {
+            key: "earn",
+            label: t("dashboard.sidebar.groupEarn", { defaultValue: "EARN" }),
+            items: [
+                { name: t("dashboard.nav.marketing", { defaultValue: "Marketing" }), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
+                { name: t("dashboard.nav.scheduler", { defaultValue: "Scheduler" }), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
+            ]
+        },
+        {
+            key: "audience",
+            label: t("dashboard.sidebar.groupAudience", { defaultValue: "AUDIENCE" }),
+            items: [
+                { name: t("dashboard.nav.overview", { defaultValue: "Overview" }), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
+                { name: t("dashboard.nav.analytics", { defaultValue: "Analytics" }), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
+                { name: t("dashboard.nav.leads", { defaultValue: "Leads" }), path: "/dashboard/leads", icon: Users, isPro: true },
+                { name: t("dashboard.nav.forms", { defaultValue: "Forms" }), path: "/dashboard/forms", icon: MessageSquare, tourId: "dashboard-nav-forms" },
+            ]
+        },
+        {
+            key: "tools",
+            label: t("dashboard.sidebar.groupTools", { defaultValue: "TOOLS" }),
+            items: [
+                { name: t("dashboard.nav.autoPost", { defaultValue: "Auto Post" }), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.emailTemplates", { defaultValue: "Email Templates" }), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.automation", { defaultValue: "Automation" }), path: "/dashboard/automation", icon: Zap, isPro: true },
+                { name: t("dashboard.nav.integrations", { defaultValue: "Integrations" }), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
+                { name: t("dashboard.nav.qrCode", { defaultValue: "QR Codes" }), path: "/dashboard/qrcode", icon: QrCode },
+                { name: t("dashboard.nav.customDomains", { defaultValue: "Custom Domains" }), path: "/dashboard/custom-domains", icon: Globe2, isPro: true },
+                { name: t("dashboard.nav.seoSettings", { defaultValue: "SEO" }), path: "/dashboard/seo", icon: Settings, isPro: true },
+            ]
+        }
     ];
 
     if (user?.email?.toLowerCase() === "bruno2002.raiado@gmail.com") {
-        // Feature flag for admin
-        navItems.push({ name: t("dashboard.nav.adminPanel"), path: "/dashboard/admin", icon: Shield });
-        navItems.push({ name: t("dashboard.nav.announcements"), path: "/dashboard/announcements", icon: Megaphone });
-        navItems.push({ name: t("dashboard.nav.siteBlog"), path: "/dashboard/site-blog", icon: Globe });
+        // @ts-ignore
+        navGroups.push({
+            key: "admin",
+            label: "ADMIN",
+            // @ts-ignore
+            items: [
+                { name: t("dashboard.nav.adminPanel", { defaultValue: "Admin Panel" }), path: "/dashboard/admin", icon: Shield },
+                { name: t("dashboard.nav.announcements", { defaultValue: "Announcements" }), path: "/dashboard/announcements", icon: Megaphone },
+                { name: t("dashboard.nav.siteBlog", { defaultValue: "Site Blog" }), path: "/dashboard/site-blog", icon: Globe },
+            ]
+        });
     }
 
     return (
@@ -148,12 +234,10 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/20 z-[45] md:hidden backdrop-blur-sm transition-opacity"
+                    className="fixed inset-0 bg-black/40 z-[45] md:hidden backdrop-blur-sm transition-opacity"
                     onClick={onClose}
                 />
             )}
-
-
 
             <UpgradePopup
                 isOpen={isUpgradePopupOpen}
@@ -164,38 +248,36 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                 forcePlan={forcedPlan}
             />
 
-            {/* Create Bio Modal */}
+            {/* Create Bio Modal - Keeping functionality */}
             {isCreateModalOpen && typeof document !== 'undefined' && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsCreateModalOpen(false)} />
-                    <div className="bg-surface-card w-full max-w-[480px] rounded-xl p-6 relative z-10 shadow-2xl border border-border">
-                        <div className="flex items-start justify-between mb-6">
+                    <div className="bg-white w-full max-w-[480px] rounded-[32px] p-8 relative z-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] border-4 border-black">
+                        <div className="flex items-start justify-between mb-8">
                             <div>
-                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-3">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#D2E823] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase tracking-wider mb-4">
                                     <Sparkles className="w-3 h-3" />
                                     {t("dashboard.sidebar.newPage")}
                                 </div>
-                                <h2 className="text-2xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.sidebar.claimTitle")}</h2>
-                                <p className="text-muted-foreground mt-1 text-sm">{t("dashboard.sidebar.claimSubtitle")}</p>
+                                <h2 className="text-4xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.sidebar.claimTitle")}</h2>
+                                <p className="text-gray-500 mt-2 text-base font-bold">{t("dashboard.sidebar.claimSubtitle")}</p>
                             </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground" aria-label={t("dashboard.sidebar.closeModal")}>
-                                <X className="w-5 h-5" />
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-black border-2 border-transparent hover:border-black">
+                                <X className="w-6 h-6" strokeWidth={3} />
                             </button>
                         </div>
-
                         {createError && (
-                            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg text-sm">
+                            <div className="mb-6 p-4 bg-red-50 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex items-center gap-2">
+                                <X className="w-4 h-4" strokeWidth={3} />
                                 {createError}
                             </div>
                         )}
-
                         <div className="space-y-6">
                             <div className="relative group">
-                                <div className="flex items-center bg-surface-card rounded-full h-16 px-6 border border-border shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 hover:shadow-md">
-                                    <Globe className="w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors shrink-0 mr-4" />
-
+                                <div className="flex items-center bg-white rounded-2xl h-[72px] px-6 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus-within:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus-within:translate-x-[-2px] focus-within:translate-y-[-2px] transition-all duration-200">
+                                    <Globe className="w-6 h-6 text-black shrink-0 mr-4 stroke-[2.5px]" />
                                     <div className="flex-1 flex items-center h-full relative">
-                                        <span className="text-xl md:text-2xl font-bold text-muted-foreground select-none tracking-tight shrink-0 pl-1">portyo.me/p/</span>
+                                        <span className="text-xl md:text-2xl font-black text-gray-400 select-none tracking-tight shrink-0 pl-1">portyo.me/p/</span>
                                         <input
                                             type="text"
                                             value={newUsername}
@@ -204,33 +286,27 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                                                 setCreateError(null);
                                             }}
                                             placeholder={t("dashboard.sidebar.usernamePlaceholder")}
-                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-bold text-foreground placeholder:text-muted-foreground h-full text-left pl-0.5 tracking-tight w-full min-w-0"
+                                            className="flex-1 bg-transparent border-none outline-none text-xl md:text-2xl font-black text-[#1A1A1A] placeholder:text-gray-200 h-full text-left pl-0.5 tracking-tight w-full min-w-0"
                                             autoFocus
                                             spellCheck={false}
                                         />
                                     </div>
-
                                     <div className={`ml-4 transition-all duration-300 ${isUsernameValid || createError ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
                                         {createError ? (
-                                            <div className="bg-red-500 rounded-full p-1 text-white shadow-sm">
-                                                <X className="w-4 h-4" strokeWidth={3} />
-                                            </div>
+                                            <div className="bg-red-500 rounded-full p-1 text-white shadow-sm border-2 border-black"><X className="w-4 h-4" strokeWidth={3} /></div>
                                         ) : (
-                                            <div className="bg-green-500 rounded-full p-1 text-white shadow-sm">
-                                                <Check className="w-4 h-4" strokeWidth={3} />
-                                            </div>
+                                            <div className="bg-[#D2E823] rounded-full p-1 text-black shadow-sm border-2 border-black"><Check className="w-4 h-4" strokeWidth={4} /></div>
                                         )}
                                     </div>
                                 </div>
                             </div>
-
                             <button
                                 disabled={!isUsernameValid}
                                 onClick={handleCreateBio}
-                                className="btn btn-primary w-full justify-center gap-2"
+                                className="w-full h-[60px] bg-[#1A1A1A] text-white hover:bg-black rounded-2xl flex items-center justify-center gap-3 font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
                             >
                                 <span>{t("dashboard.sidebar.createPage")}</span>
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-6 h-6" />
                             </button>
                         </div>
                     </div>
@@ -240,227 +316,184 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
             <aside
                 data-tour="dashboard-sidebar"
                 className={`
-                w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-surface-card
-                transition-transform duration-300 ease-out border-r border-border
-                ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
-                md:translate-x-0 md:shadow-none
-            `}
+                    w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
+                    transition-transform duration-300 ease-out border-r border-[#E5E5E5]
+                    ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+                    md:translate-x-0 md:shadow-none font-sans
+                `}
             >
-                {/* Logo Area */}
-                <div className="p-4 pb-2 flex items-center justify-between">
-                    <Link to={withLang("/")} className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
-                            P
-                        </div>
-                        <span className="font-bold text-xl tracking-tight text-foreground">Portyo</span>
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <NotificationBell />
-                        <button onClick={onClose} className="md:hidden text-muted-foreground hover:text-foreground p-2 hover:bg-muted rounded-lg transition-colors" aria-label={t("dashboard.sidebar.closeSidebar")}>
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Workspace Switcher */}
-                <div className="px-4 mb-2 mt-2" ref={dropdownRef}>
-                    <div className="relative">
+                {/* Header: Profile & Notifications */}
+                <div className="p-5 flex items-center justify-between">
+                    <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full bg-muted hover:bg-muted-hover text-foreground p-3 rounded-xl transition-all flex items-center justify-between border ${isDropdownOpen ? 'border-primary ring-2 ring-primary/10' : 'border-border hover:border-border-hover'}`}
-                            aria-label={t("dashboard.sidebar.switchWorkspace")}
-                            aria-expanded={isDropdownOpen}
+                            className="flex items-center gap-3 hover:bg-black/5 p-2 rounded-2xl transition-all group"
                         >
-                            <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center text-primary shrink-0 shadow-sm">
-                                    <Globe className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col items-start overflow-hidden min-w-0 flex-1">
-                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-0.5">{t("dashboard.sidebar.currentPage")}</span>
-                                    <span className="text-sm font-bold truncate w-full text-left text-foreground">
-                                        {bio?.sufix || t("dashboard.sidebar.selectPage")}
-                                    </span>
-                                </div>
+                            <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-500 overflow-hidden shadow-sm group-hover:border-gray-300 transition-colors">
+                                {user?.fullname?.[0]?.toUpperCase() || <Globe className="w-5 h-5" />}
                             </div>
-                            <div className="w-6 h-6 flex items-center justify-center rounded-md text-muted-foreground">
-                                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            <div className="flex flex-col items-start min-w-0">
+                                <span className="text-sm font-bold truncate w-24 text-left text-[#1a1a1a]">
+                                    {user?.fullname || user?.email?.split('@')[0]}
+                                </span>
+                                <span className="text-[10px] text-gray-500 truncate w-full text-left font-medium">
+                                    {bio?.sufix ? `@${bio.sufix}` : t("dashboard.sidebar.selectPage")}
+                                </span>
                             </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Dropdown Menu */}
-                        {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden z-20 ring-1 ring-black/5 p-2">
-                                <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                    {t("dashboard.sidebar.yourPages")}
-                                </div>
-                                <div className="max-h-[240px] overflow-y-auto space-y-1 custom-scrollbar">
-                                    {bios.length > 0 && bios.map((b) => (
-                                        <button
-                                            key={b.id}
-                                            onClick={() => {
-                                                selectBio(b);
-                                                setIsDropdownOpen(false);
-                                            }}
-                                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${bio?.id === b.id ? 'bg-primary/10 text-foreground font-bold' : 'hover:bg-muted text-muted-foreground hover:text-foreground font-medium'}`}
-                                        >
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-surface-card text-primary shadow-sm' : 'bg-muted text-muted-foreground'}`}>
-                                                <Globe className="w-4 h-4" />
-                                            </div>
-                                            <span className="text-sm truncate flex-1">{b.sufix}</span>
-                                            {bio?.id === b.id && (
-                                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-primary/30">
-                                                    <Check className="w-3 h-3 text-white shrink-0" />
-                                                </div>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="h-px bg-border my-2 mx-2" />
-
-                                <button
-                                    onClick={() => {
-                                        setIsDropdownOpen(false);
-                                        setIsCreateModalOpen(true);
-                                    }}
-                                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted text-left transition-colors group text-muted-foreground hover:text-foreground"
-                                    aria-label={t("dashboard.sidebar.createNewPage")}
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-hidden z-50 p-2"
                                 >
-                                    <div className="w-8 h-8 rounded-lg bg-muted group-hover:bg-muted-hover flex items-center justify-center transition-colors text-muted-foreground group-hover:text-foreground">
-                                        {canCreateBio ? <Plus className="w-4 h-4" /> : <Lock className="w-3 h-3" />}
+                                    <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                        {t("dashboard.sidebar.yourPages")}
                                     </div>
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-bold text-sm">{t("dashboard.sidebar.createNewPage")}</span>
-                                        {!canCreateBio && <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">{t("dashboard.sidebar.limitReached")}</span>}
+                                    <div className="max-h-[200px] overflow-y-auto space-y-1 custom-scrollbar">
+                                        {bios.length > 0 && bios.map((b) => (
+                                            <button
+                                                key={b.id}
+                                                onClick={() => {
+                                                    selectBio(b);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${bio?.id === b.id ? 'bg-[#C6F035]/20 text-black font-bold' : 'hover:bg-gray-50 text-gray-600'}`}
+                                            >
+                                                <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${bio?.id === b.id ? 'bg-[#C6F035] text-black' : 'bg-gray-100 text-gray-400'}`}>
+                                                    <span className="text-xs font-bold">{b.sufix[0].toUpperCase()}</span>
+                                                </div>
+                                                <span className="text-sm truncate flex-1">{b.sufix}</span>
+                                                {bio?.id === b.id && <Check className="w-3 h-3 text-black shrink-0" />}
+                                            </button>
+                                        ))}
                                     </div>
-                                </button>
-                            </div>
-                        )}
+                                    <div className="h-px bg-gray-100 my-2 mx-2" />
+                                    <button
+                                        onClick={() => { setIsDropdownOpen(false); setIsCreateModalOpen(true); }}
+                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-left transition-colors text-gray-500 hover:text-black"
+                                    >
+                                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Plus className="w-3 h-3" /></div>
+                                        <span className="font-medium text-sm">{t("dashboard.sidebar.createNewPage")}</span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsDropdownOpen(false); logout(); }}
+                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 text-left transition-colors text-gray-500 hover:text-red-600 mt-1"
+                                    >
+                                        <div className="w-6 h-6 rounded bg-gray-100 group-hover:bg-red-100 flex items-center justify-center text-gray-400"><LogOut className="w-3 h-3" /></div>
+                                        <span className="font-medium text-sm">{t("dashboard.sidebar.logout")}</span>
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
+
+                    <button className="p-2.5 rounded-full hover:bg-black/5 text-gray-500 transition-colors relative group">
+                        <Bell className="w-5 h-5 stroke-[2px]" />
+                        <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#F3F3F1]"></span>
+                    </button>
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-3 space-y-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                    <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        {t("dashboard.sidebar.menu")}
-                    </div>
+                <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     {bio ? (
-                        navItems.map((item) => {
-                            // @ts-ignore
-                            const isLocked = item.isProOnly ? userPlan !== 'pro' : (item.isPro && userPlan === 'free');
-                            // @ts-ignore  
-                            const badgeText = item.isProOnly ? t("dashboard.sidebar.proBadge") : t("dashboard.sidebar.standardBadge");
-
-                            return (
-                                <Link
-                                    key={item.path}
-                                    to={withLang(item.path)}
-                                    data-tour={item.tourId}
-                                    onClick={(e) => {
-                                        if (isLocked) {
-                                            e.preventDefault();
-                                            if (item.isProOnly) {
-                                                setForcedPlan('pro');
-                                            } else {
-                                                setForcedPlan(undefined);
-                                            }
-                                            setIsUpgradePopupOpen(true);
-                                        }
-                                    }}
-                                    className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 group relative ${isActive(item.path)
-                                        ? "bg-primary/15 text-foreground font-bold"
-                                        : "text-muted-foreground hover:bg-muted hover:text-foreground font-medium"
-                                        }`}
+                        navGroups.map((group) => (
+                            <div key={group.key} className="space-y-1">
+                                <button
+                                    onClick={() => toggleGroup(group.key)}
+                                    className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-900 transition-colors py-2 px-3 group"
                                 >
-                                    <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"} transition-colors`} />
-                                    <span className="flex-1 text-sm">{item.name}</span>
-                                    {isLocked && (
-                                        <span className={`px-1.5 py-0.5 text-[8px] md:text-[9px] font-bold rounded-md uppercase tracking-wider ${isActive(item.path) ? 'bg-surface-card text-foreground shadow-sm' : 'bg-muted text-foreground'}`}>
-                                            {badgeText}
-                                        </span>
+                                    <span>{group.label}</span>
+                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${openGroups[group.key] ? '' : '-rotate-90'}`} />
+                                </button>
+
+                                <AnimatePresence initial={false}>
+                                    {openGroups[group.key] && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="space-y-1">
+                                                {group.items.map((item) => {
+                                                    // @ts-ignore
+                                                    const isLocked = item.isProOnly ? userPlan !== 'pro' : (item.isPro && userPlan === 'free');
+                                                    const isActiveItem = isActive(item.path);
+
+                                                    return (
+                                                        <Link
+                                                            key={item.path}
+                                                            to={withLang(item.path)}
+                                                            // @ts-ignore
+                                                            data-tour={item.tourId}
+                                                            onClick={(e) => {
+                                                                if (isLocked) {
+                                                                    e.preventDefault();
+                                                                    if (item.isProOnly) { setForcedPlan('pro'); } else { setForcedPlan(undefined); }
+                                                                    setIsUpgradePopupOpen(true);
+                                                                }
+                                                            }}
+                                                            className={`
+                                                                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
+                                                                ${isActiveItem
+                                                                    ? "bg-[#C6F035]/20 text-black font-bold shadow-sm" // Light Lime bg for active
+                                                                    : "text-gray-500 hover:bg-black/5 hover:text-black font-medium"
+                                                                }
+                                                            `}
+                                                        >
+                                                            <item.icon className={`w-4 h-4 shrink-0 stroke-[2px] ${isActiveItem ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
+                                                            <span className="flex-1 text-sm">{item.name}</span>
+                                                            {isLocked && <Lock className="w-3 h-3 text-gray-300" />}
+                                                        </Link>
+                                                    )
+                                                })}
+                                            </div>
+                                        </motion.div>
                                     )}
-                                </Link>
-                            )
-                        })
+                                </AnimatePresence>
+                            </div>
+                        ))
                     ) : (
-                        <div className="px-3 py-4 text-center">
-                            <p className="text-sm text-muted-foreground mb-3">{t("dashboard.sidebar.selectOrCreate")}</p>
+                        <div className="px-3 py-6 text-center">
+                            <p className="text-sm text-gray-500 mb-4">{t("dashboard.sidebar.selectOrCreate")}</p>
                             <button
-                                onClick={() => {
-                                    if (canCreateBio) {
-                                        setIsCreateModalOpen(true);
-                                    } else {
-                                        setIsUpgradePopupOpen(true);
-                                    }
-                                }}
-                                className="btn btn-primary w-full justify-center text-xs"
+                                onClick={() => { canCreateBio ? setIsCreateModalOpen(true) : setIsUpgradePopupOpen(true); }}
+                                className="bg-[#1A1A1A] text-white hover:bg-black w-full py-3 rounded-xl text-sm font-bold shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
                             >
-                                {canCreateBio ? <Plus className="w-3 h-3 mr-1" /> : <Lock className="w-3 h-3 mr-1" />}
+                                <Plus className="w-4 h-4" />
                                 {canCreateBio ? t("dashboard.sidebar.createPage") : t("dashboard.sidebar.unlockMorePages")}
                             </button>
                         </div>
                     )}
-                </nav>
-
-                {/* Footer Actions */}
-                <div className="border-t border-border bg-surface-card flex flex-col">
-                    {bio && (
-                        <div className="p-3 pb-0">
-                            <a
-                                href={`https://portyo.me/p/${bio.sufix}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-between w-full p-2 rounded-lg bg-muted border border-transparent hover:border-primary/30 hover:shadow-sm transition-all group"
-                            >
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-8 h-8 rounded-md bg-surface-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors shadow-sm border border-border">
-                                        <ExternalLink className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.sidebar.livePage")}</span>
-                                        <span className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                                            portyo.me/p/{bio.sufix}
-                                        </span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    )}
-
-                    <Link
-                        to={withLang("/dashboard/settings")}
-                        data-tour="dashboard-nav-settings"
-                        className="w-full flex items-center gap-3 p-4 hover:bg-muted transition-colors group cursor-pointer"
-                    >
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border-2 border-white ring-1 ring-gray-100">
-                            {user?.fullname?.[0]?.toUpperCase() || "U"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold truncate text-foreground">{user?.fullname || t("dashboard.sidebar.userFallback")}</p>
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${userPlan === 'free'
-                                    ? 'bg-muted text-muted-foreground border-border'
-                                    : 'bg-gradient-to-br from-emerald-500 to-black text-white border-transparent shadow-sm'
-                                    }`}>
-                                    {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)}
-                                </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                        </div>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                logout();
-                            }}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                            title={t("dashboard.sidebar.logout")}
-                            aria-label={t("dashboard.sidebar.logout")}
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
-                    </Link>
                 </div>
+
+                {/* Setup Widget (Donut Chart) */}
+                {bio && (
+                    <div className="p-4 bg-[#F3F3F1] border-t border-[#E5E5E5]">
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-4">
+                            <div className="flex items-start justify-between">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup", { defaultValue: "SETUP" })}</span>
+                                    <span className="text-sm font-bold text-black leading-tight">{t("dashboard.sidebar.checklist", { defaultValue: "Onboarding" })}</span>
+                                </div>
+                                <DonutChart progress={85} size={42} strokeWidth={5} color="#C6F035" />
+                            </div>
+
+                            <button className="w-full py-2.5 bg-[#1A1A1A] hover:bg-black text-white hover:text-[#C6F035] rounded-full text-xs font-bold transition-all hover:scale-[1.02] shadow-md flex items-center justify-center gap-2">
+                                {t("dashboard.sidebar.finishSetup", { defaultValue: "Finish Setup" })}
+                                <ChevronRight className="w-3 h-3" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </aside>
         </>
     );

@@ -1,0 +1,38 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+# Portyo Security Policy
+# Contact information for security researchers
+
+Contact: mailto:security@portyo.me
+Contact: https://portyo.me/contact
+Expires: 2026-02-02T00:00:00.000Z
+
+# Preferred languages for communication
+Preferred-Languages: en, pt
+
+# Policy URL
+Policy: https://portyo.me/security-policy
+
+# Acknowledgments/Hall of Fame
+Acknowledgments: https://portyo.me/security/hall-of-fame
+
+# Hiring
+Hiring: https://portyo.me/careers
+
+# Canonical location
+Canonical: https://portyo.me/.well-known/security.txt
+
+# Encryption
+Encryption: https://portyo.me/pgp-key.txt
+
+# Security Team
+# We aim to respond to security reports within 48 hours
+# Critical vulnerabilities are typically patched within 7 days
+
+-----BEGIN PGP SIGNATURE-----
+
+# Note: Replace with actual PGP signature when available
+# This is a placeholder for the security.txt format compliance
+
+-----END PGP SIGNATURE-----

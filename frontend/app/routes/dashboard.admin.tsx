@@ -258,7 +258,7 @@ export default function AdminDashboard() {
         switch (plan) {
             case 'pro': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
             case 'standard': return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white';
-            default: return 'bg-muted text-muted-foreground';
+            default: return 'bg-white/10 text-white/70';
         }
     };
 
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Admin Panel</h1>
-                        <p className="text-muted-foreground text-sm">Manage users and platform settings</p>
+                        <p className="text-white/70 text-sm">Manage users and platform settings</p>
                     </div>
                 </div>
             </div>
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
                             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                                 <Users className="w-5 h-5 text-blue-600" />
                             </div>
-                            <span className="text-sm text-muted-foreground font-medium">Total Users</span>
+                            <span className="text-sm text-white/70 font-medium">Total Users</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
                     </div>
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
                             <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
                                 <TrendingUp className="w-5 h-5 text-green-600" />
                             </div>
-                            <span className="text-sm text-muted-foreground font-medium">New This Month</span>
+                            <span className="text-sm text-white/70 font-medium">New This Month</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{stats.newUsersThisMonth}</p>
                     </div>
@@ -313,7 +313,7 @@ export default function AdminDashboard() {
                             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
                                 <Crown className="w-5 h-5 text-purple-600" />
                             </div>
-                            <span className="text-sm text-muted-foreground font-medium">Pro Users</span>
+                            <span className="text-sm text-white/70 font-medium">Pro Users</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{stats.planDistribution.pro}</p>
                     </div>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
                             <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
                                 <Ban className="w-5 h-5 text-red-600" />
                             </div>
-                            <span className="text-sm text-muted-foreground font-medium">Banned</span>
+                            <span className="text-sm text-white/70 font-medium">Banned</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{stats.bannedUsers}</p>
                     </div>
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                     <h3 className="font-bold text-foreground mb-4" style={{ fontFamily: 'var(--font-display)' }}>Plan Distribution</h3>
                     <div className="flex gap-2 h-4 rounded-full overflow-hidden bg-muted">
                         <div
-                            className="bg-gray-400 transition-all"
+                            className="bg-white/40 transition-all"
                             style={{ width: `${(stats.planDistribution.free / stats.totalUsers) * 100}%` }}
                             title={`Free: ${stats.planDistribution.free}`}
                         />
@@ -346,23 +346,23 @@ export default function AdminDashboard() {
                             title={`Standard: ${stats.planDistribution.standard}`}
                         />
                         <div
-                            className="bg-purple-500 transition-all"
+                            className="bg-primary transition-all"
                             style={{ width: `${(stats.planDistribution.pro / stats.totalUsers) * 100}%` }}
                             title={`Pro: ${stats.planDistribution.pro}`}
                         />
                     </div>
                     <div className="flex gap-6 mt-3 text-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded bg-gray-400" />
-                            <span className="text-muted-foreground">Free ({stats.planDistribution.free})</span>
+                            <div className="w-3 h-3 rounded bg-white/40" />
+                            <span className="text-white/70">Free ({stats.planDistribution.free})</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded bg-blue-500" />
-                            <span className="text-muted-foreground">Standard ({stats.planDistribution.standard})</span>
+                            <span className="text-white/70">Standard ({stats.planDistribution.standard})</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded bg-purple-500" />
-                            <span className="text-muted-foreground">Pro ({stats.planDistribution.pro})</span>
+                            <div className="w-3 h-3 rounded bg-primary" />
+                            <span className="text-white/70">Pro ({stats.planDistribution.pro})</span>
                         </div>
                     </div>
                 </div>
@@ -373,13 +373,13 @@ export default function AdminDashboard() {
                 <div className="p-4 border-b border-border">
                     <form onSubmit={handleSearch} className="flex gap-3">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                             <input
                                 type="text"
                                 placeholder="Search by email or name..."
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none text-sm"
                             />
                         </div>
                         <button
@@ -401,13 +401,13 @@ export default function AdminDashboard() {
                         <table className="w-full">
                             <thead className="bg-muted">
                                 <tr>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">User</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Plan</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Bios</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Provider</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Joined</th>
-                                    <th className="text-left px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Status</th>
-                                    <th className="text-right px-4 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Actions</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">User</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Plan</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Bios</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Provider</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Joined</th>
+                                    <th className="text-left px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Status</th>
+                                    <th className="text-right px-4 py-3 text-xs font-bold text-white/80 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
                                         <td className="px-4 py-4">
                                             <div>
                                                 <p className="font-medium text-foreground">{user.fullName}</p>
-                                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                                                <p className="text-sm text-white/70">{user.email}</p>
                                             </div>
                                         </td>
                                         <td className="px-4 py-4">
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
                                                 {user.plan.toUpperCase()}
                                             </span>
                                             {user.planExpiresAt && (
-                                                <p className="text-xs text-muted-foreground mt-1">
+                                                <p className="text-xs text-white/50 mt-1">
                                                     Expires: {formatDate(user.planExpiresAt)}
                                                 </p>
                                             )}
@@ -432,17 +432,17 @@ export default function AdminDashboard() {
                                         <td className="px-4 py-4">
                                             <button
                                                 onClick={() => handleViewBios(user)}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-gray-200 text-muted-foreground font-medium transition-colors text-sm"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 font-medium transition-colors text-sm"
                                             >
                                                 <FileText className="w-4 h-4" />
                                                 {user.biosCount} Bios
                                             </button>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="text-muted-foreground capitalize">{user.provider}</span>
+                                            <span className="text-white/70 capitalize">{user.provider}</span>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="text-muted-foreground text-sm">{formatDate(user.createdAt)}</span>
+                                            <span className="text-white/70 text-sm">{formatDate(user.createdAt)}</span>
                                         </td>
                                         <td className="px-4 py-4">
                                             {user.isBanned ? (
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => { setSelectedUser(user); setPlanForm({ plan: user.plan, durationDays: 30 }); setShowPlanModal(true); }}
-                                                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                                                    className="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-primary transition-colors"
                                                     title="Set Plan"
                                                 >
                                                     <Crown className="w-4 h-4" />
@@ -493,7 +493,7 @@ export default function AdminDashboard() {
 
                 {/* Pagination */}
                 <div className="p-4 border-t border-border flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/70">
                         Showing {users.length} of {total} users
                     </p>
                     <div className="flex items-center gap-2">
@@ -504,7 +504,7 @@ export default function AdminDashboard() {
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <span className="text-sm text-muted-foreground px-3">
+                        <span className="text-sm text-white/70 px-3">
                             Page {currentPage} of {pages}
                         </span>
                         <button
@@ -530,7 +530,7 @@ export default function AdminDashboard() {
                                 <select
                                     value={planForm.plan}
                                     onChange={(e) => setPlanForm({ ...planForm, plan: e.target.value })}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none"
                                 >
                                     <option value="free">Free</option>
                                     <option value="standard">Standard</option>
@@ -549,7 +549,7 @@ export default function AdminDashboard() {
                                         min="0"
                                         value={planForm.durationDays}
                                         onChange={(e) => setPlanForm({ ...planForm, durationDays: parseInt(e.target.value) || 0 })}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none"
                                     />
                                 </div>
                             </div>
@@ -663,7 +663,7 @@ export default function AdminDashboard() {
                                                             {bio.sufix}
                                                             <ExternalLink className="w-3 h-3 opacity-50" />
                                                         </a>
-                                                        <button onClick={() => { setEditingBioId(bio.id); setEditSuffix(bio.sufix); }} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded text-muted-foreground transition-opacity">
+                                                        <button onClick={() => { setEditingBioId(bio.id); setEditSuffix(bio.sufix); }} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/20 rounded text-muted-foreground transition-opacity">
                                                             <Edit2 className="w-3 h-3" />
                                                         </button>
                                                     </div>
@@ -682,7 +682,7 @@ export default function AdminDashboard() {
                                                 onClick={() => handleVerifyBio(bio)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors ${bio.verified
                                                     ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                                    : 'bg-muted text-muted-foreground hover:bg-gray-200'
+                                                    : 'bg-muted text-muted-foreground hover:bg-white/20'
                                                     }`}
                                             >
                                                 {bio.verified ? <Check className="w-3 h-3" /> : null}

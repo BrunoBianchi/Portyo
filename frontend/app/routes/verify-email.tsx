@@ -10,7 +10,15 @@ import i18n from "~/i18n";
 
 export function meta({ params }: Route.MetaArgs) {
     const lang = params?.lang === "pt" ? "pt" : "en";
-    return [{ title: i18n.t("meta.verifyEmail.title", { lng: lang }) }];
+    const title = i18n.t("meta.verifyEmail.title", { lng: lang, defaultValue: lang === "pt" ? "Verificar Email | Portyo" : "Verify Email | Portyo" });
+    const description = lang === "pt"
+        ? "Verifique seu email para completar o cadastro na Portyo."
+        : "Verify your email to complete your Portyo registration.";
+    return [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: "noindex, nofollow" },
+    ];
 }
 
 export default function VerifyEmail() {
@@ -151,7 +159,7 @@ export default function VerifyEmail() {
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
-                                className="w-12 h-14 rounded-xl border-2 border-border bg-surface text-center text-xl font-bold focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+                                className="w-12 h-14 rounded-xl border-2 border-border bg-surface text-center text-xl font-bold focus:outline-none focus:border-white/50 focus:ring-2 focus:ring-white/30 transition-all"
                             />
                         ))}
                     </div>

@@ -73,7 +73,7 @@ export default function DashboardHome() {
             case "PURCHASE": return <ShoppingBag className="w-5 h-5 text-green-500" />;
             case "SUBSCRIBE": return <Mail className="w-5 h-5 text-blue-500" />;
             case "CLICK": return <MousePointer2 className="w-5 h-5 text-purple-500" />;
-            case "VIEW": return <Eye className="w-5 h-5 text-muted-foreground" />;
+            case "VIEW": return <Eye className="w-5 h-5 text-white/50" />;
             default: return <Sparkles className="w-5 h-5 text-yellow-500" />;
         }
     };
@@ -102,7 +102,7 @@ export default function DashboardHome() {
                             {t("dashboard.overview.overview")}
                         </div>
                         <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.title")}</h1>
-                        <p className="text-muted-foreground">{t("dashboard.overview.subtitle")}</p>
+                        <p className="text-white/70">{t("dashboard.overview.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {bio && (
@@ -142,7 +142,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
                                     <BarChart3 className="w-5 h-5" />
                                 </div>
-                                <h3 className="font-semibold text-sm text-muted-foreground">{t("dashboard.overview.totalViews")}</h3>
+                                <h3 className="font-bold text-sm text-white/80">{t("dashboard.overview.totalViews")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
@@ -162,7 +162,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                     <MousePointer2 className="w-5 h-5" />
                                 </div>
-                                <h3 className="font-semibold text-sm text-muted-foreground">{t("dashboard.overview.totalClicks")}</h3>
+                                <h3 className="font-bold text-sm text-white/80">{t("dashboard.overview.totalClicks")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
@@ -182,7 +182,7 @@ export default function DashboardHome() {
                                 <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
                                     <ArrowUpRight className="w-5 h-5" />
                                 </div>
-                                <h3 className="font-semibold text-sm text-muted-foreground">{t("dashboard.overview.avgCtr")}</h3>
+                                <h3 className="font-bold text-sm text-white/80">{t("dashboard.overview.avgCtr")}</h3>
                             </div>
                             {loadingAnalytics ? (
                                 <Skeleton className="h-10 w-24 mb-2" />
@@ -206,7 +206,7 @@ export default function DashboardHome() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.salesRevenue")}</h3>
-                                        <p className="text-sm text-muted-foreground">{t("dashboard.overview.salesRevenueSubtitle")}</p>
+                                        <p className="text-sm text-white/70">{t("dashboard.overview.salesRevenueSubtitle")}</p>
                                     </div>
                                 </div>
                             </div>
@@ -222,7 +222,7 @@ export default function DashboardHome() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         <div>
-                                            <p className="text-sm text-muted-foreground mb-1">{t("dashboard.overview.totalSales")}</p>
+                                            <p className="text-sm text-white/70 mb-1">{t("dashboard.overview.totalSales")}</p>
                                             <p className="text-2xl font-bold">{sales.sales.current}</p>
                                             <div className="mt-1 flex items-center gap-1.5 text-sm">
                                                 {sales.sales.change >= 0 ? (
@@ -234,11 +234,11 @@ export default function DashboardHome() {
                                                         <ArrowDownRight className="w-3 h-3" /> {sales.sales.change}%
                                                     </span>
                                                 )}
-                                                <span className="text-muted-foreground text-xs">{t("dashboard.overview.vsLastMonth")}</span>
+                                                <span className="text-white/50 text-xs">{t("dashboard.overview.vsLastMonth")}</span>
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-muted-foreground mb-1">{t("dashboard.overview.totalRevenue")}</p>
+                                            <p className="text-sm text-white/70 mb-1">{t("dashboard.overview.totalRevenue")}</p>
                                             <p className="text-2xl font-bold">
                                                 {sales.revenue.currency} ${sales.revenue.current.toFixed(2)}
                                             </p>
@@ -252,7 +252,7 @@ export default function DashboardHome() {
                                                         <ArrowDownRight className="w-3 h-3" /> {sales.revenue.change}%
                                                     </span>
                                                 )}
-                                                <span className="text-muted-foreground text-xs">{t("dashboard.overview.vsLastMonth")}</span>
+                                                <span className="text-white/50 text-xs">{t("dashboard.overview.vsLastMonth")}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -260,7 +260,7 @@ export default function DashboardHome() {
                                     <div className="pt-4 border-t">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-sm text-muted-foreground mb-1">{t("dashboard.overview.avgOrderValue")}</p>
+                                                <p className="text-sm text-white/70 mb-1">{t("dashboard.overview.avgOrderValue")}</p>
                                                 <p className="text-xl font-bold">
                                                     {sales.revenue.currency} ${sales.averageOrderValue.toFixed(2)}
                                                 </p>
@@ -273,7 +273,7 @@ export default function DashboardHome() {
 
                                     {sales.dailyRevenue && sales.dailyRevenue.length > 0 && (
                                         <div className="pt-4 border-t">
-                                            <p className="text-sm text-muted-foreground mb-3">{t("dashboard.overview.revenueTrend")}</p>
+                                            <p className="text-sm text-white/70 mb-3">{t("dashboard.overview.revenueTrend")}</p>
                                             <div className="h-16 flex items-end gap-[2px]">
                                                 {sales.dailyRevenue.map((day) => {
                                                     const maxAmount = Math.max(...sales.dailyRevenue.map(d => d.amount), 1);
@@ -298,9 +298,9 @@ export default function DashboardHome() {
                             ) : (
                                 <div className="text-center py-8">
                                     <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <CreditCard className="w-7 h-7 text-muted-foreground" />
+                                        <CreditCard className="w-7 h-7 text-white/50" />
                                     </div>
-                                    <p className="text-sm text-muted-foreground mb-4">{t("dashboard.overview.connectStripeHint")}</p>
+                                    <p className="text-sm text-white/70 mb-4">{t("dashboard.overview.connectStripeHint")}</p>
                                     <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
                                         <Link to="/dashboard/integrations">
                                             {t("dashboard.overview.connectStripe")}
@@ -341,7 +341,7 @@ export default function DashboardHome() {
                                             <SelectItem value="VIEW">{t("dashboard.overview.filters.views")}</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <div className="text-xs text-muted-foreground font-medium px-2">{t("dashboard.overview.pageOf", { page, totalPages })}</div>
+                                    <div className="text-xs text-white/70 font-medium px-2">{t("dashboard.overview.pageOf", { page, totalPages })}</div>
                                 </div>
                             </div>
                         </CardHeader>
@@ -361,7 +361,7 @@ export default function DashboardHome() {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-medium truncate">{activity.description}</p>
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="text-xs text-white/70">
                                                         {new Date(activity.createdAt).toLocaleDateString()} {t("dashboard.overview.at")} {new Date(activity.createdAt).toLocaleTimeString()}
                                                     </p>
                                                 </div>
@@ -395,10 +395,10 @@ export default function DashboardHome() {
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-xl bg-accent/20">
                                     <div className="w-14 h-14 bg-background rounded-full flex items-center justify-center mb-4 shadow-sm border">
-                                        <BarChart3 className="w-7 h-7 text-muted-foreground" />
+                                        <BarChart3 className="w-7 h-7 text-white/50" />
                                     </div>
                                     <h3 className="text-lg font-bold mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.noActivityTitle")}</h3>
-                                    <p className="text-muted-foreground max-w-xs mx-auto text-sm">{t("dashboard.overview.noActivityBody")}</p>
+                                    <p className="text-white/70 max-w-xs mx-auto text-sm">{t("dashboard.overview.noActivityBody")}</p>
                                 </div>
                             )}
                         </CardContent>

@@ -60,31 +60,31 @@ const makeId = () =>
 // Block type accent colors for visual differentiation
 const getBlockTypeAccent = (type: string): { bg: string; text: string; border: string } => {
   const accents: Record<string, { bg: string; text: string; border: string }> = {
-    heading: { bg: "bg-violet-50", text: "text-violet-600", border: "border-violet-200" },
+    heading: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
     text: { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200" },
     button: { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-200" },
     button_grid: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
     image: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
     video: { bg: "bg-destructive/10", text: "text-destructive", border: "border-red-200" },
     socials: { bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200" },
-    divider: { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" },
+    divider: { bg: "bg-white/10", text: "text-white/70", border: "border-border" },
     qrcode: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200" },
     spotify: { bg: "bg-green-500/10", text: "text-green-400", border: "border-green-200" },
     instagram: { bg: "bg-fuchsia-50", text: "text-fuchsia-600", border: "border-fuchsia-200" },
     youtube: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
     blog: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
     product: { bg: "bg-teal-50", text: "text-teal-600", border: "border-teal-200" },
-    tour: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
+    tour: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
     event: { bg: "bg-cyan-50", text: "text-cyan-600", border: "border-cyan-200" },
     calendar: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
     map: { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" },
     form: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200" },
     portfolio: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
-    marketing: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
+    marketing: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
     whatsapp: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
     experience: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
   };
-  return accents[type] || { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
+  return accents[type] || { bg: "bg-white/10", text: "text-white/70", border: "border-border" };
 };
 
 // Get a preview snippet for block content
@@ -120,6 +120,8 @@ const getBlockPreview = (block: BioBlock, t: TFunction): string => {
         ? t("dashboard.editor.blockItem.preview.experienceCount", { count })
         : t("dashboard.editor.blockItem.preview.noExperience");
     }
+    case 'map':
+      return block.mapTitle || block.mapAddress || t("dashboard.editor.blockItem.preview.mapFallback");
     case 'marketing':
       return block.marketingId
         ? t("dashboard.editor.blockItem.preview.slotConnected")
@@ -155,12 +157,12 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">{t("dashboard.editor.blockItem.form.helper")}</p>
+      <p className="text-xs text-white/70">{t("dashboard.editor.blockItem.form.helper")}</p>
 
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.form.selectLabel")}</label>
+        <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.form.selectLabel")}</label>
         {loading ? (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+          <div className="flex items-center gap-2 text-xs text-white/70 py-2">
             <div className="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
             {t("dashboard.editor.blockItem.form.loading")}
           </div>
@@ -172,7 +174,7 @@ const FormBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onChange
           <select
             value={block.formId || ""}
             onChange={(e) => onChange("formId", e.target.value)}
-            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-muted focus:bg-surface-card"
+            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card"
           >
             <option value="">{t("dashboard.editor.blockItem.form.placeholder")}</option>
             {forms.map(form => (
@@ -227,21 +229,21 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
 
   return (
     <div className="space-y-3 pt-3">
-      <p className="text-xs text-muted-foreground">{t("dashboard.editor.blockItem.marketing.helper")}</p>
+      <p className="text-xs text-white/70">{t("dashboard.editor.blockItem.marketing.helper")}</p>
       {isLocked && (
         <div className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
           {t("dashboard.editor.blockItem.marketing.locked")}
         </div>
       )}
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.marketing.selectLabel")}</label>
+        <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.marketing.selectLabel")}</label>
         {loading ? (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+          <div className="flex items-center gap-2 text-xs text-white/70 py-2">
             <div className="w-4 h-4 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
             {t("dashboard.editor.blockItem.marketing.loading")}
           </div>
         ) : slots.length === 0 ? (
-          <p className="text-xs text-muted-foreground mt-1.5">
+          <p className="text-xs text-white/50 mt-1.5">
             {t("dashboard.editor.blockItem.marketing.empty")} <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">{t("dashboard.editor.blockItem.marketing.createCta")}</a>
           </p>
         ) : (
@@ -249,7 +251,7 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
             value={block.marketingId || ""}
             onChange={(e) => onChange("marketingId", e.target.value)}
             disabled={isLocked}
-            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-muted focus:bg-surface-card disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <option value="">{t("dashboard.editor.blockItem.marketing.noneSelected")}</option>
             {slots.map(slot => (
@@ -258,7 +260,7 @@ const MarketingBlockConfig = ({ block, onChange, bioId, isLocked }: { block: Bio
           </select>
         )}
         {slots.length > 0 && (
-          <p className="text-xs text-muted-foreground/50 mt-1.5">
+          <p className="text-xs text-white/50 mt-1.5">
             <a href="/dashboard/marketing" target="_blank" className="text-blue-600 hover:underline">{t("dashboard.editor.blockItem.marketing.manageCta")}</a>
           </p>
         )}
@@ -283,7 +285,7 @@ const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
 
   return (
     <div className="space-y-3 pt-3">
-      <p className="text-xs text-muted-foreground">{t("dashboard.editor.blockItem.portfolio.helper")}</p>
+      <p className="text-xs text-white/70">{t("dashboard.editor.blockItem.portfolio.helper")}</p>
 
 
       {!loading && (itemCount === 0 || itemCount === null) && (
@@ -297,12 +299,12 @@ const PortfolioBlockConfig = ({ block, onChange, bioId }: { block: BioBlock; onC
       )}
 
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.portfolio.sectionTitle")}</label>
+        <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.portfolio.sectionTitle")}</label>
         <input
           type="text"
           value={block.portfolioTitle || t("dashboard.editor.blockItem.portfolio.defaultTitle")}
           onChange={(e) => onChange("portfolioTitle", e.target.value)}
-          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-muted focus:bg-surface-card"
+          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card"
           placeholder={t("dashboard.editor.blockItem.portfolio.placeholder")}
         />
       </div>
@@ -613,7 +615,7 @@ const BlockItem = memo((props: BlockItemProps) => {
             }}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`p-1 shrink-0 ${isMarketingLocked ? 'text-gray-200 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground'}`}>
+              <div className={`p-1 shrink-0 ${isMarketingLocked ? 'text-white/50 cursor-not-allowed' : 'cursor-grab active:cursor-grabbing text-white/50 hover:text-white/70'}`}>
                 <div
                   onTouchStart={(e) => {
                     if (isMarketingLocked) return;
@@ -654,7 +656,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     try {
                       const preview = getBlockPreview(block, t);
                       return preview ? (
-                        <span className="text-xs text-muted-foreground/50 truncate">{preview}</span>
+                        <span className="text-xs text-white/50 truncate">{preview}</span>
                       ) : null;
                     } catch {
                       return null;
@@ -665,7 +667,7 @@ const BlockItem = memo((props: BlockItemProps) => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                className="p-2 text-muted-foreground/50 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2 text-white/50 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isMarketingLocked) return;
@@ -707,7 +709,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   onChange={(value) => handleFieldChange("textColor", value)}
                 />
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Animation</label>
+                  <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Animation</label>
                   <div className="flex gap-2">
                     <FormSelect
                       label=""
@@ -739,12 +741,12 @@ const BlockItem = memo((props: BlockItemProps) => {
                 </div>
 
                 <div className="pt-4 border-t border-border space-y-3">
-                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                  <div className="text-xs font-bold text-white/80 uppercase tracking-wider">
                     Typography
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Alignment</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Alignment</label>
                     <div className="flex bg-muted p-1 rounded-xl">
                       {(['left', 'center', 'right', 'justify'] as const).map((align) => (
                         <button
@@ -752,7 +754,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                           onClick={() => handleFieldChange("align", align)}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${(block.align || 'left') === align
                             ? 'bg-surface-card text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-muted-foreground'
+                            : 'text-white/70 hover:text-white'
                             }`}
                           title={align.charAt(0).toUpperCase() + align.slice(1)}
                         >
@@ -817,7 +819,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   onChange={(value) => handleFieldChange("textColor", value)}
                 />
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.animation")}</label>
+                  <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.animation")}</label>
                   <div className="flex gap-2">
                     <FormSelect
                       label=""
@@ -849,12 +851,12 @@ const BlockItem = memo((props: BlockItemProps) => {
                 </div>
 
                 <div className="pt-4 border-t border-border space-y-3">
-                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                  <div className="text-xs font-bold text-white/80 uppercase tracking-wider">
                     {t("dashboard.editor.blockItem.typography.title")}
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.alignment")}</label>
                     <div className="flex bg-muted p-1 rounded-xl">
                       {(['left', 'center', 'right', 'justify'] as const).map((align) => (
                         <button
@@ -862,7 +864,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                           onClick={() => handleFieldChange("align", align)}
                           className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${(block.align || 'left') === align
                             ? 'bg-surface-card text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-muted-foreground'
+                            : 'text-white/70 hover:text-white'
                             }`}
                           title={t(`dashboard.editor.blockItem.align.${align}`)}
                         >
@@ -923,14 +925,14 @@ const BlockItem = memo((props: BlockItemProps) => {
                           newItems.splice(i, 1);
                           handleFieldChange("gridItems", newItems);
                         }}
-                        className="absolute top-2 right-2 p-1 text-muted-foreground/50 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 p-1 text-white/50 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <TrashIcon width={14} height={14} />
                       </button>
 
                       <div className="grid gap-3">
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.label")}</label>
+                          <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.label")}</label>
                           <input
                             value={item.title}
                             onChange={(e) => {
@@ -938,12 +940,12 @@ const BlockItem = memo((props: BlockItemProps) => {
                               newItems[i] = { ...item, title: e.target.value };
                               handleFieldChange("gridItems", newItems);
                             }}
-                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                             placeholder={t("dashboard.editor.blockItem.buttonGrid.labelPlaceholder")}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.url")}</label>
+                          <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.url")}</label>
                           <input
                             value={item.url}
                             onChange={(e) => {
@@ -951,7 +953,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                               newItems[i] = { ...item, url: e.target.value };
                               handleFieldChange("gridItems", newItems);
                             }}
-                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                             placeholder="https://"
                           />
                         </div>
@@ -967,7 +969,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.icon")}</label>
+                          <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.icon")}</label>
                           <select
                             value={item.icon}
                             onChange={(e) => {
@@ -975,7 +977,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                               newItems[i] = { ...item, icon: e.target.value };
                               handleFieldChange("gridItems", newItems);
                             }}
-                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none"
                           >
                             <option value="">{t("dashboard.editor.blockItem.common.selectIcon")}</option>
                             <option value="https://cdn.simpleicons.org/instagram/E4405F">Instagram</option>
@@ -1010,7 +1012,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     });
                     handleFieldChange("gridItems", newItems);
                   }}
-                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2 border-2 border-dashed border-border rounded-xl text-sm font-medium text-white/70 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
                 >
                   <PlusIcon width={16} height={16} />
                   {t("dashboard.editor.blockItem.buttonGrid.addButton")}
@@ -1027,7 +1029,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.label")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.label")}</label>
                       <input
                         value={block.title || ""}
                         onChange={(event) => handleFieldChange("title", event.target.value)}
@@ -1036,7 +1038,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.url")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.url")}</label>
                       <input
                         value={block.href || ""}
                         onChange={(event) => handleFieldChange("href", event.target.value)}
@@ -1045,7 +1047,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">
                         {block.buttonStyle as any === 'image-grid' ? t("dashboard.editor.blockItem.common.icon") : t("dashboard.editor.blockItem.button.imageOptional")}
                       </label>
                       {block.buttonStyle as any === 'image-grid' ? (
@@ -1093,7 +1095,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.textAlignment")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.textAlignment")}</label>
                       <div className="flex bg-muted p-1 rounded-xl">
                         {(['left', 'center', 'right'] as const).map((align) => (
                           <button
@@ -1101,7 +1103,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                             onClick={() => handleFieldChange("buttonTextAlign", align)}
                             className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${(block.buttonTextAlign || 'center') === align
                               ? 'bg-surface-card text-foreground shadow-sm'
-                              : 'text-muted-foreground hover:text-muted-foreground'
+                              : 'text-white/70 hover:text-white'
                               }`}
                           >
                             {t(`dashboard.editor.blockItem.align.${align}`)}
@@ -1111,11 +1113,11 @@ const BlockItem = memo((props: BlockItemProps) => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.style")}</label>
+                        <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.style")}</label>
                         <select
                           value={block.buttonStyle || "solid"}
                           onChange={(event) => handleFieldChange("buttonStyle", event.target.value)}
-                          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-muted focus:bg-surface-card"
+                          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card"
                         >
                           <option value="solid">{t("dashboard.editor.blockItem.buttonStyles.solid")}</option>
                           <option value="outline">{t("dashboard.editor.blockItem.buttonStyles.outline")}</option>
@@ -1134,11 +1136,11 @@ const BlockItem = memo((props: BlockItemProps) => {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.shape")}</label>
+                        <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.shape")}</label>
                         <select
                           value={block.buttonShape || "rounded"}
                           onChange={(event) => handleFieldChange("buttonShape", event.target.value)}
-                          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none bg-muted focus:bg-surface-card"
+                          className="w-full rounded-xl border border-border px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card"
                         >
                           <option value="pill">{t("dashboard.editor.blockItem.shapes.pill")}</option>
                           <option value="rounded">{t("dashboard.editor.blockItem.shapes.rounded")}</option>
@@ -1150,7 +1152,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-xs font-semibold text-muted-foreground block">{t("dashboard.editor.blockItem.sections.colors")}</label>
+                  <label className="text-xs font-bold text-white/80 uppercase tracking-wider block">{t("dashboard.editor.blockItem.sections.colors")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <ColorPicker
                       label={t("dashboard.editor.blockItem.common.background")}
@@ -1188,12 +1190,12 @@ const BlockItem = memo((props: BlockItemProps) => {
                         className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
                       />
                       <div>
-                        <span className="text-sm font-medium text-muted-foreground">{t("dashboard.editor.blockItem.button.sensitiveContent")}</span>
-                        <p className="text-xs text-muted-foreground/50">{t("dashboard.editor.blockItem.button.mark18")}</p>
+                        <span className="text-sm font-medium text-white/70">{t("dashboard.editor.blockItem.button.sensitiveContent")}</span>
+                        <p className="text-xs text-white/50">{t("dashboard.editor.blockItem.button.mark18")}</p>
                       </div>
                     </label>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.animation")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.animation")}</label>
                       <div className="flex gap-2">
                         <select
                           value={block.animation || "none"}
@@ -1234,7 +1236,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.label")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.whatsapp.label")}</label>
                       <input
                         value={block.title || ""}
                         onChange={(event) => handleFieldChange("title", event.target.value)}
@@ -1243,7 +1245,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.number")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.whatsapp.number")}</label>
                       <input
                         value={block.whatsappNumber || ""}
                         onChange={(event) => handleFieldChange("whatsappNumber", event.target.value)}
@@ -1252,7 +1254,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.message")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.whatsapp.message")}</label>
                       <textarea
                         value={block.whatsappMessage || ""}
                         onChange={(event) => handleFieldChange("whatsappMessage", event.target.value)}
@@ -1270,7 +1272,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.whatsapp.style")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.whatsapp.style")}</label>
                       <select
                         value={block.whatsappStyle || "solid"}
                         onChange={(event) => handleFieldChange("whatsappStyle", event.target.value)}
@@ -1287,7 +1289,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("dashboard.editor.blockItem.common.shape")}</label>
+                      <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">{t("dashboard.editor.blockItem.common.shape")}</label>
                       <select
                         value={block.whatsappShape || "pill"}
                         onChange={(event) => handleFieldChange("whatsappShape", event.target.value)}
@@ -1302,7 +1304,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-xs font-semibold text-muted-foreground block">{t("dashboard.editor.blockItem.sections.colors")}</label>
+                  <label className="text-xs font-bold text-white/80 uppercase tracking-wider block">{t("dashboard.editor.blockItem.sections.colors")}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <ColorPicker
                       label={t("dashboard.editor.blockItem.common.background")}
@@ -1330,7 +1332,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     <select
                       value={block.socialsLayout || "row"}
                       onChange={(event) => handleFieldChange("socialsLayout", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     >
                       <option value="row">{t("dashboard.editor.blockItem.socials.inlineRow")}</option>
                       <option value="column">{t("dashboard.editor.blockItem.socials.listColumn")}</option>
@@ -1339,12 +1341,12 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.style")}</label>
                     <div className="flex items-center h-[38px]">
-                      <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+                      <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={block.socialsLabel || false}
                           onChange={(event) => handleFieldChange("socialsLabel", event.target.checked as any)}
-                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-white/30"
                         />
                         {t("dashboard.editor.blockItem.socials.showText")}
                       </label>
@@ -1361,7 +1363,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         const newSocials = { ...block.socials, [platform]: event.target.value };
                         handleFieldChange("socials", newSocials as any);
                       }}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                       placeholder={`https://${platform}.com/...`}
                     />
                   </div>
@@ -1375,49 +1377,13 @@ const BlockItem = memo((props: BlockItemProps) => {
               </div>
             )}
 
-            {block.type === "calendar" && (
-              <div className="pt-3 space-y-3">
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600 shrink-0">
-                    <CalendarIcon size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-blue-900">{t("dashboard.editor.blockItem.calendar.bookingSettings")}</h4>
-                    <p className="text-xs text-blue-700 mt-1">
-                      {t("dashboard.editor.blockItem.calendar.bookingHint")}
-                      <a href="/dashboard/scheduler" target="_blank" className="underline font-bold ml-1 hover:text-blue-900">{t("dashboard.editor.blockItem.calendar.scheduler")}</a>
-                      {t("dashboard.editor.blockItem.calendar.tabSuffix")}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.title")}</label>
-                  <input
-                    value={block.title || ""}
-                    onChange={(event) => handleFieldChange("title", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder={t("dashboard.editor.blockItem.calendar.titlePlaceholder")}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.description")}</label>
-                  <input
-                    value={block.body || ""}
-                    onChange={(event) => handleFieldChange("body", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder={t("dashboard.editor.blockItem.calendar.descriptionPlaceholder")}
-                  />
-                </div>
-              </div>
-            )}
-
             {block.type === "video" && (
               <div className="pt-3">
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.video.youtubeUrl")}</label>
                 <input
                   value={block.mediaUrl || ""}
                   onChange={(event) => handleFieldChange("mediaUrl", event.target.value)}
-                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   placeholder={t("dashboard.editor.blockItem.video.youtubePlaceholder")}
                 />
               </div>
@@ -1450,7 +1416,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="200"
                       value={block.imageScale || 100}
                       onChange={(e) => handleFieldChange("imageScale", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1466,7 +1432,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="180"
                       value={block.imageRotation || 0}
                       onChange={(e) => handleFieldChange("imageRotation", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1482,13 +1448,13 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="50"
                       value={block.imageBorderRadius || 0}
                       onChange={(e) => handleFieldChange("imageBorderRadius", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
                   {/* Shadow */}
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Shadow</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Shadow</label>
                     <select
                       value={block.imageShadow || "none"}
                       onChange={(e) => handleFieldChange("imageShadow", e.target.value)}
@@ -1516,7 +1482,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         max="10"
                         value={block.imageBorderWidth || 0}
                         onChange={(e) => handleFieldChange("imageBorderWidth", parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
                     </div>
                     <ColorPicker
@@ -1545,7 +1511,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="200"
                       value={block.imageBrightness || 100}
                       onChange={(e) => handleFieldChange("imageBrightness", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1561,7 +1527,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="200"
                       value={block.imageContrast || 100}
                       onChange={(e) => handleFieldChange("imageContrast", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1577,7 +1543,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="200"
                       value={block.imageSaturation || 100}
                       onChange={(e) => handleFieldChange("imageSaturation", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1593,7 +1559,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="20"
                       value={block.imageBlur || 0}
                       onChange={(e) => handleFieldChange("imageBlur", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
 
@@ -1627,7 +1593,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Hover Effect</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Hover Effect</label>
                     <select
                       value={block.imageHoverEffect || "none"}
                       onChange={(e) => handleFieldChange("imageHoverEffect", e.target.value)}
@@ -1642,7 +1608,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Entrance Animation</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Entrance Animation</label>
                     <select
                       value={block.entranceAnimation || "none"}
                       onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
@@ -1687,7 +1653,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <select
                     value={block.productLayout || "grid"}
                     onChange={(event) => handleFieldChange("productLayout", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   >
                     <option value="grid">{t("dashboard.editor.blockItem.product.layoutGrid")}</option>
                     <option value="list">{t("dashboard.editor.blockItem.product.layoutList")}</option>
@@ -1700,7 +1666,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <select
                     value={block.productCardStyle || "default"}
                     onChange={(event) => handleFieldChange("productCardStyle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   >
                     <option value="default">{t("dashboard.editor.blockItem.product.cardDefault")}</option>
                     <option value="minimal">{t("dashboard.editor.blockItem.product.cardMinimal")}</option>
@@ -1878,7 +1844,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         required
                         value={newProductData.title}
                         onChange={(e) => setNewProductData({ ...newProductData, title: e.target.value })}
-                        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                         placeholder={t("dashboard.editor.blockItem.product.productTitlePlaceholder")}
                       />
                     </div>
@@ -1896,7 +1862,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                             step="0.01"
                             value={newProductData.price}
                             onChange={(e) => setNewProductData({ ...newProductData, price: e.target.value })}
-                            className="w-full rounded-lg border border-border pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            className="w-full rounded-lg border border-border pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none transition-all"
                             placeholder="0.00"
                           />
                         </div>
@@ -1906,7 +1872,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         <select
                           value={newProductData.currency}
                           onChange={(e) => setNewProductData({ ...newProductData, currency: e.target.value })}
-                          className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                         >
                           <option value="usd">USD ($)</option>
                           <option value="eur">EUR (€)</option>
@@ -1946,16 +1912,53 @@ const BlockItem = memo((props: BlockItemProps) => {
 
             {block.type === "calendar" && (
               <div className="pt-3 space-y-3">
+                {/* Info Banner */}
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600 shrink-0">
+                    <CalendarIcon size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-blue-900">{t("dashboard.editor.blockItem.calendar.bookingSettings")}</h4>
+                    <p className="text-xs text-blue-700 mt-1">
+                      {t("dashboard.editor.blockItem.calendar.bookingHint")}
+                      <a href="/dashboard/scheduler" target="_blank" className="underline font-bold ml-1 hover:text-blue-900">{t("dashboard.editor.blockItem.calendar.scheduler")}</a>
+                      {t("dashboard.editor.blockItem.calendar.tabSuffix")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Basic Info */}
                 <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.title")}</label>
                   <input
+                    value={block.title || ""}
+                    onChange={(event) => handleFieldChange("title", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
+                    placeholder={t("dashboard.editor.blockItem.calendar.titlePlaceholder")}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.common.description")}</label>
+                  <input
+                    value={block.body || ""}
+                    onChange={(event) => handleFieldChange("body", event.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
+                    placeholder={t("dashboard.editor.blockItem.calendar.descriptionPlaceholder")}
+                  />
+                </div>
+
+                {/* Calendar Specific Title */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">{t("dashboard.editor.blockItem.calendar.calendarTitle")}</label>
+                  <input
                     value={block.calendarTitle || ""}
                     onChange={(event) => handleFieldChange("calendarTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.calendar.titlePlaceholder")}
                   />
                 </div>
 
+                {/* Color Pickers */}
                 <div className="grid grid-cols-3 gap-2">
                   <ColorPicker
                     label={t("dashboard.editor.blockItem.common.background")}
@@ -1983,7 +1986,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.mapTitle || ""}
                     onChange={(event) => handleFieldChange("mapTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.map.locationPlaceholder")}
                   />
                 </div>
@@ -1992,7 +1995,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.mapAddress || ""}
                     onChange={(event) => handleFieldChange("mapAddress", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.map.addressPlaceholder")}
                   />
                 </div>
@@ -2006,7 +2009,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.featuredTitle || ""}
                     onChange={(event) => handleFieldChange("featuredTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.featured.productTitlePlaceholder")}
                   />
                 </div>
@@ -2016,7 +2019,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     <input
                       value={block.featuredPrice || ""}
                       onChange={(event) => handleFieldChange("featuredPrice", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                       placeholder="$19.99"
                     />
                   </div>
@@ -2033,7 +2036,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.featuredUrl || ""}
                     onChange={(event) => handleFieldChange("featuredUrl", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder="https://..."
                   />
                 </div>
@@ -2059,7 +2062,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.affiliateTitle || ""}
                     onChange={(event) => handleFieldChange("affiliateTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.affiliate.titlePlaceholder")}
                   />
                 </div>
@@ -2068,7 +2071,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.affiliateCode || ""}
                     onChange={(event) => handleFieldChange("affiliateCode", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.affiliate.couponPlaceholder")}
                   />
                 </div>
@@ -2084,7 +2087,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.affiliateUrl || ""}
                     onChange={(event) => handleFieldChange("affiliateUrl", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder="https://..."
                   />
                 </div>
@@ -2110,7 +2113,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.eventTitle || ""}
                     onChange={(event) => handleFieldChange("eventTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.event.eventTitlePlaceholder")}
                   />
                 </div>
@@ -2120,7 +2123,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     type="datetime-local"
                     value={block.eventDate || ""}
                     onChange={(event) => handleFieldChange("eventDate", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -2129,7 +2132,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     <input
                       value={block.eventButtonText || ""}
                       onChange={(event) => handleFieldChange("eventButtonText", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                       placeholder={t("dashboard.editor.blockItem.event.buttonPlaceholder")}
                     />
                   </div>
@@ -2138,7 +2141,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     <input
                       value={block.eventButtonUrl || ""}
                       onChange={(event) => handleFieldChange("eventButtonUrl", event.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                       placeholder="https://..."
                     />
                   </div>
@@ -2165,7 +2168,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.spotifyUrl || ""}
                     onChange={(event) => handleFieldChange("spotifyUrl", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.spotify.placeholder")}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1">{t("dashboard.editor.blockItem.spotify.helper")}</p>
@@ -2192,7 +2195,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     <input
                       value={block.instagramUsername || ""}
                       onChange={(event) => handleFieldChange("instagramUsername", event.target.value)}
-                      className="w-full rounded-lg border border-border pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-lg border border-border pl-7 pr-3 py-2 text-sm focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none transition-all"
                       placeholder={t("dashboard.editor.blockItem.instagram.usernamePlaceholder")}
                     />
                   </div>
@@ -2202,7 +2205,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <select
                     value={block.instagramDisplayType || "grid"}
                     onChange={(event) => handleFieldChange("instagramDisplayType", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   >
                     <option value="grid">{t("dashboard.editor.blockItem.instagram.displayGrid")}</option>
                     <option value="list">{t("dashboard.editor.blockItem.instagram.displayList")}</option>
@@ -2259,7 +2262,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.youtubeUrl || ""}
                     onChange={(event) => handleFieldChange("youtubeUrl", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.youtube.channelPlaceholder")}
                   />
                 </div>
@@ -2268,7 +2271,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <select
                     value={block.youtubeDisplayType || "grid"}
                     onChange={(event) => handleFieldChange("youtubeDisplayType", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                   >
                     <option value="grid">{t("dashboard.editor.blockItem.youtube.displayGrid")}</option>
                     <option value="list">{t("dashboard.editor.blockItem.youtube.displayList")}</option>
@@ -2325,7 +2328,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.tourTitle || ""}
                     onChange={(event) => handleFieldChange("tourTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.tour.sectionPlaceholder")}
                   />
                 </div>
@@ -2411,7 +2414,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                               newTours[index] = { ...tour, sellingFast: e.target.checked, soldOut: e.target.checked ? false : tour.soldOut };
                               handleFieldChange("tours", newTours);
                             }}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className="rounded border-gray-300 text-primary focus:ring-white/30"
                           />
                           <span className="text-xs text-muted-foreground">{t("dashboard.editor.blockItem.tour.sellingFast")}</span>
                         </label>
@@ -2424,7 +2427,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                               newTours[index] = { ...tour, soldOut: e.target.checked, sellingFast: e.target.checked ? false : tour.sellingFast };
                               handleFieldChange("tours", newTours);
                             }}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className="rounded border-gray-300 text-primary focus:ring-white/30"
                           />
                           <span className="text-xs text-muted-foreground">{t("dashboard.editor.blockItem.tour.soldOut")}</span>
                         </label>
@@ -2460,7 +2463,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                   <input
                     value={block.experienceTitle || ""}
                     onChange={(event) => handleFieldChange("experienceTitle", event.target.value)}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm text-white placeholder:text-white/40 focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none bg-surface-card transition-all"
                     placeholder={t("dashboard.editor.blockItem.experience.sectionPlaceholder")}
                   />
                 </div>
@@ -2624,7 +2627,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         onClick={() => handleFieldChange("qrCodeLayout", layout)}
                         className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.qrCodeLayout || 'single') === layout
                           ? 'bg-surface-card text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-muted-foreground'
+                          : 'text-white/70 hover:text-white'
                           }`}
                       >
                         {t(`dashboard.editor.blockItem.qr.layout.${layout}`)}
@@ -2641,7 +2644,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         <select
                           value={block.qrCodeValue || ""}
                           onChange={(event) => handleFieldChange("qrCodeValue", event.target.value)}
-                          className="w-full appearance-none rounded-lg border border-border bg-surface-card px-3 py-2 pr-8 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          className="w-full appearance-none rounded-lg border border-border bg-surface-card px-3 py-2 pr-8 text-sm focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none transition-all"
                         >
                           <option value="">{t("dashboard.editor.blockItem.qr.selectQrOption")}</option>
                           {availableQrCodes.map((qr) => (
@@ -2686,7 +2689,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                             newItems[idx] = { ...newItems[idx], label: e.target.value };
                             handleFieldChange("qrCodeItems", newItems);
                           }}
-                          className="w-full rounded border border-border px-2 py-1.5 text-xs focus:border-primary outline-none"
+                          className="w-full rounded border border-border px-2 py-1.5 text-xs focus:ring-1 focus:ring-white/30 focus:border-white/50 outline-none"
                           placeholder={t("dashboard.editor.blockItem.common.label")}
                         />
                         <div className="flex gap-2 items-center">
@@ -2698,7 +2701,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                                 newItems[idx] = { ...newItems[idx], value: e.target.value };
                                 handleFieldChange("qrCodeItems", newItems);
                               }}
-                              className="w-full appearance-none rounded border border-border bg-surface-card px-2 py-1.5 pr-6 text-xs focus:border-primary outline-none"
+                              className="w-full appearance-none rounded border border-border bg-surface-card px-2 py-1.5 pr-6 text-xs focus:ring-1 focus:ring-white/30 focus:border-white/50 outline-none"
                             >
                               <option value="">{t("dashboard.editor.blockItem.qr.selectQrOption")}</option>
                               {availableQrCodes.map((qr) => (
@@ -2770,7 +2773,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       onClick={() => handleFieldChange("align", align)}
                       className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${(block.align || 'center') === align
                         ? 'bg-surface-card text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-muted-foreground'
+                        : 'text-white/70 hover:text-white'
                         }`}
                     >
                       {t(`dashboard.editor.blockItem.align.${align}`)}
@@ -2806,7 +2809,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                     max="100"
                     value={block.blockOpacity ?? 100}
                     onChange={(e) => handleFieldChange("blockOpacity", parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                 </div>
 
@@ -2822,13 +2825,13 @@ const BlockItem = memo((props: BlockItemProps) => {
                     max="40"
                     value={block.blockBorderRadius || 0}
                     onChange={(e) => handleFieldChange("blockBorderRadius", parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                 </div>
 
                 {/* Shadow */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Container Shadow</label>
+                  <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Container Shadow</label>
                   <select
                     value={block.blockShadow || "none"}
                     onChange={(e) => handleFieldChange("blockShadow", e.target.value)}
@@ -2865,7 +2868,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                       max="8"
                       value={block.blockBorderWidth || 0}
                       onChange={(e) => handleFieldChange("blockBorderWidth", parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                      className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                   </div>
                   <ColorPicker
@@ -2887,14 +2890,14 @@ const BlockItem = memo((props: BlockItemProps) => {
                     max="40"
                     value={block.blockPadding || 0}
                     onChange={(e) => handleFieldChange("blockPadding", parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                 </div>
 
                 {/* Entrance Animation */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Entrance Animation</label>
+                    <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">Entrance Animation</label>
                     <select
                       value={block.entranceAnimation || "none"}
                       onChange={(e) => handleFieldChange("entranceAnimation", e.target.value)}
@@ -2924,7 +2927,7 @@ const BlockItem = memo((props: BlockItemProps) => {
                         step="50"
                         value={block.entranceDelay || 0}
                         onChange={(e) => handleFieldChange("entranceDelay", parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
                     </div>
                   )}

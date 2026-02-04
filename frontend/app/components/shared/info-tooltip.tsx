@@ -59,7 +59,7 @@ export function InfoTooltip({ content, position = "top", size = "sm" }: InfoTool
                 onClick={() => setIsVisible(!isVisible)}
                 onMouseEnter={() => setIsVisible(true)}
                 onMouseLeave={() => setIsVisible(false)}
-                className={`${buttonSize} flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
+                className={`${buttonSize} flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-white/30`}
                 aria-label="More information"
             >
                 <HelpCircle className={iconSize} />

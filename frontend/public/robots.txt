@@ -1,28 +1,130 @@
 User-agent: *
 Allow: /
 
-# Allow all search engines to crawl public pages
-Allow: /en/
-Allow: /pt/
-Allow: /p/
-Allow: /blog/
+# ==================== ALLOWED PATHS ====================
 
-# Disallow dashboard and private areas
+# Homepage and language variants
+Allow: /en
+Allow: /en/
+Allow: /pt
+Allow: /pt/
+
+# Public bio pages (user profiles)
+Allow: /p/
+Allow: /p/*
+
+# Public blog
+Allow: /blog
+Allow: /blog/
+Allow: /blog/*
+
+# Marketing pages
+Allow: /pricing
+Allow: /pricing/
+Allow: /themes
+Allow: /themes/
+Allow: /features
+Allow: /features/
+Allow: /about
+Allow: /about/
+Allow: /contact
+Allow: /contact/
+
+# Legal pages
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /security-policy
+
+# Static files for crawlers
+Allow: /llms.txt
+Allow: /llms-bio.txt
+Allow: /humans.txt
+Allow: /.well-known/security.txt
+
+# Assets
+Allow: /sitemap.xml
+Allow: /manifest.json
+Allow: /favicon.ico
+Allow: /favicon.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.svg
+
+# ==================== DISALLOWED PATHS ====================
+
+# Dashboard and admin areas
 Disallow: /dashboard
 Disallow: /dashboard/
+Disallow: /dashboard/*
+
+# Admin routes
+Disallow: /admin
+Disallow: /admin/
+
+# Authentication pages
 Disallow: /login
 Disallow: /sign-up
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
+
+# Onboarding (user setup)
 Disallow: /onboarding
+Disallow: /onboarding/
+
+# API endpoints (data only)
 Disallow: /api/
+Disallow: /api/*
+
+# Internal services
+Disallow: /.well-known/ 
+Disallow: /internal/
+Disallow: /webhook/
+Disallow: /stripe/
+
+# User content that shouldn't be indexed
+Disallow: /users-photos/
+Disallow: /uploads/
+
+# ==================== CRAWL SETTINGS ====================
 
 # Crawl-delay to prevent server overload
 Crawl-delay: 1
 
-# Sitemap location
+# Request rate for specific bots
+User-agent: GPTBot
+Crawl-delay: 2
+
+User-agent: ChatGPT-User
+Crawl-delay: 2
+
+User-agent: Google-Extended
+Crawl-delay: 1
+
+User-agent: anthropic-ai
+Crawl-delay: 2
+
+User-agent: Claude-Web
+Crawl-delay: 2
+
+User-agent: PerplexityBot
+Crawl-delay: 2
+
+# ==================== SITEMAP ====================
+
 Sitemap: https://portyo.me/sitemap.xml
 
-# Host
+# ==================== HOST ====================
+
 Host: https://portyo.me
+
+# ==================== NOTES ====================
+
+# This robots.txt file is optimized for:
+# - Search engines (Google, Bing, etc.)
+# - AI crawlers (OpenAI, Anthropic, Perplexity, etc.)
+# - Social media crawlers (Facebook, Twitter, LinkedIn)
+
+# For questions about crawling policy, contact: support@portyo.me
+# Last updated: 2025-02-02

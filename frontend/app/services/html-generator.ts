@@ -44,6 +44,76 @@ const normalizeBackgroundImageSrc = (input: string | null | undefined, userId: s
   return '';
 };
 
+const getBlockShadowStyle = (shadow?: string): string => {
+  const shadowMap: Record<string, string> = {
+    'none': '',
+    'sm': 'box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);',
+    'md': 'box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);',
+    'lg': 'box-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);',
+    'xl': 'box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);',
+    '2xl': 'box-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);',
+    'glow': 'box-shadow:0 0 20px rgba(99, 102, 241, 0.4), 0 0 40px rgba(99, 102, 241, 0.2);',
+  };
+  return shadowMap[shadow || 'none'] || '';
+};
+
+const wrapWithBlockStyles = (block: BioBlock, content: string, animationStyle: string, animationClass: string): string => {
+  // Se não houver estilos de bloco customizados, retorna o conteúdo original
+  const hasCustomStyle = block.blockBackground || 
+    block.blockBorderWidth || 
+    block.blockShadow || 
+    block.blockPadding !== undefined ||
+    block.blockOpacity !== undefined ||
+    block.entranceAnimation;
+
+  if (!hasCustomStyle) {
+    return content;
+  }
+
+  // Construir os estilos do container
+  const bgColor = block.blockBackground || 'transparent';
+  const textColor = block.textColor || 'inherit';
+  const opacity = (block.blockOpacity ?? 100) / 100;
+  const borderRadius = block.blockBorderRadius ?? 12;
+  const borderWidth = block.blockBorderWidth ?? 0;
+  const borderColor = block.blockBorderColor || '#E5E7EB';
+  const padding = block.blockPadding ?? 0;
+  const shadow = getBlockShadowStyle(block.blockShadow);
+
+  // Estilos do wrapper
+  const wrapperStyles = [
+    `background-color: ${bgColor}`,
+    `color: ${textColor}`,
+    `border-radius: ${borderRadius}px`,
+    borderWidth > 0 ? `border: ${borderWidth}px solid ${borderColor}` : '',
+    `padding: ${padding}px`,
+    `opacity: ${opacity}`,
+    shadow,
+    'transition: all 0.2s ease',
+  ].filter(Boolean).join('; ');
+
+  // Animação de entrada
+  let entranceHtml = '';
+  if (block.entranceAnimation && block.entranceAnimation !== 'none') {
+    const delay = block.entranceDelay || 0;
+    const animationCss = `${block.entranceAnimation} 0.6s ease-out ${delay}ms both`;
+    entranceHtml = `<style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes flipIn { from { opacity: 0; transform: perspective(400px) rotateY(90deg); } to { opacity: 1; transform: perspective(400px) rotateY(0deg); } }
+</style>`;
+    
+    // Envolver o conteúdo com animação
+    return `${entranceHtml}<div class="${animationClass}" style="${wrapperStyles}; animation: ${animationCss}">${content}</div>`;
+  }
+
+  return `<div class="${animationClass}" style="${wrapperStyles}; ${animationStyle}">${content}</div>`;
+};
+
 export const blockToHtml = (block: BioBlock, bio: any): string => {
   const align = block.align || "left";
   
@@ -64,15 +134,20 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     }
   }
 
+  // Helper to wrap content with block styles
+  const wrap = (content: string): string => {
+    return wrapWithBlockStyles(block, content, animationStyle, animationClass);
+  };
+
   if (block.type === "heading") {
     const titleColor = block.textColor || "#0f172a";
     const bodyColor = block.textColor ? `${block.textColor}b3` : "#475569";
     const fontSize = block.fontSize || "32px";
     const fontWeight = block.fontWeight || "800";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:${fontSize}; font-weight:${fontWeight}; color:${titleColor}; line-height:1.2; letter-spacing:-0.8px;">${escapeHtml(
-      block.title || "Heading"
-    )}</h2>\n  ${block.body ? `<p style="margin:12px 0 0; color:${bodyColor}; font-size:16px; line-height:1.6; font-weight:500;">${escapeHtml(block.body)}</p>` : ""}\n</section>`;
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <h2 style="margin:0; font-size:${fontSize}; font-weight:${fontWeight}; color:${titleColor}; line-height:1.2; letter-spacing:-0.8px;">${escapeHtml(
+      block.title || "Título"
+    )}</h2>\n  ${block.body ? `<p style="margin:12px 0 0; color:${bodyColor}; font-size:16px; line-height:1.6; font-weight:500;">${escapeHtml(block.body)}</p>` : ""}\n</section>`);
   }
 
   if (block.type === "text") {
@@ -80,9 +155,9 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const fontSize = block.fontSize || "16px";
     const fontWeight = block.fontWeight || "500";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.7; font-size:${fontSize}; font-weight:${fontWeight};">${escapeHtml(
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <p style="margin:0; color:${textColor}; line-height:1.7; font-size:${fontSize}; font-weight:${fontWeight};">${escapeHtml(
       block.body || ""
-    )}</p>\n</section>`;
+    )}</p>\n</section>`);
   }
 
   if (block.type === "qrcode") {
@@ -93,11 +168,11 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     if (layout === "single") {
       const value = block.qrCodeValue || "https://example.com";
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}&color=${fgColor}&bgcolor=${bgColor}`;
-      return `\n${extraHtml}<section class="${animationClass}" style="text-align:center; padding:12px 0; ${animationStyle}">\n  <div style="display:inline-block; padding:16px; background-color:#${bgColor}; border-radius:24px; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">\n    <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:200px; height:auto;" />\n  </div>\n</section>`;
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="text-align:center; padding:12px 0; ${animationStyle}">\n  <div style="display:inline-block; padding:16px; background-color:#${bgColor}; border-radius:24px; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">\n    <img src="${qrUrl}" alt="QR Code" style="display:block; width:100%; max-width:200px; height:auto;" />\n  </div>\n</section>`);
     }
 
     const items = block.qrCodeItems || [];
-    if (items.length === 0) return "";
+    if (items.length === 0) return wrap("");
 
     const gridStyle = layout === 'grid' 
       ? "display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;" 
@@ -113,7 +188,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       `;
     }).join("");
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`;
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">\n  <div style="${gridStyle}">\n    ${itemHtml}\n  </div>\n</section>`);
   }
 
   if (block.type === "whatsapp") {
@@ -153,7 +228,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>`;
     const targetAttr = phone ? " target=\"_blank\" rel=\"noopener noreferrer\"" : "";
 
-    return `\n${extraHtml}<section style="padding:12px 0;">\n  <a href="${escapeHtml(href)}"${targetAttr} class="${animationClass}" style="${css} ${animationStyle}">${icon}<span>${escapeHtml(label)}</span></a>\n</section>`;
+    return wrap(`\n${extraHtml}<section style="padding:12px 0;">\n  <a href="${escapeHtml(href)}"${targetAttr} class="${animationClass}" style="${css} ${animationStyle}">${icon}<span>${escapeHtml(label)}</span></a>\n</section>`);
   }
 
 
@@ -236,7 +311,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       const cleanHref = isValidUrl(normalized) ? normalized : '#';
       const targetAttr = (cleanHref !== '#') ? ' target="_blank" rel="noopener noreferrer"' : '';
       const hrefAttr = block.href ? ` href="${escapeHtml(cleanHref)}"${targetAttr}` : ' role="button"';
-      return `\n${extraHtml}<section style="padding:6px; display:inline-block; width:50%; box-sizing:border-box; vertical-align:top;">
+      return wrap(`\n${extraHtml}<section style="padding:6px; display:inline-block; width:50%; box-sizing:border-box; vertical-align:top;">
         <${tag}${hrefAttr} class="${animationClass}" style="position: relative; display: block; aspect-ratio: 261 / 151; width: 100%; border-radius: 20px; overflow: hidden; text-decoration: none; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1); ${cursorStyle}" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" ${nsfwAttr}>
           <div style="position:absolute; inset:0; background-color:#1f2937;">
             <img src="${escapeHtml(bgImg)}" data-src-debug="${escapeHtml(bgImg)}" alt="${escapeHtml(label)}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s;" onerror="if(this.dataset.srcDebug && this.src !== this.dataset.srcDebug && !this.dataset.retried){this.dataset.retried='true'; this.src=this.dataset.srcDebug;}" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
@@ -248,26 +323,26 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
             <span style="font-size:13px; font-weight:700; letter-spacing:0.01em; text-shadow:0 2px 4px rgba(0,0,0,0.3); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center;">${label}</span>
           </div>
         </${tag}>
-      </section>`;
+      </section>`);
     } else {
       // Default / Standard / Solid
       css += ` background:${bg}; color:${color}; border:1px solid rgba(0,0,0,0.06); box-shadow:0 4px 12px -2px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);`;
     }
 
-    const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="${escapeHtml(block.title || "Button image")}" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
+    const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="${escapeHtml(block.title || "Imagem do botão")}" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
     
     const textPadding = block.buttonImage ? "padding-left:66px;" : "";
     const textStyle = `flex:1; text-align:${textAlign}; ${textPadding}`;
 
     const shareButtonHtml = `
-      <button data-nsfw-ignore="true" aria-label="Share link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(isValidUrl(block.href) ? block.href : "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
+      <button data-nsfw-ignore="true" aria-label="Compartilhar link" onclick="event.preventDefault(); event.stopPropagation(); window.openShare(event, '${escapeHtml(isValidUrl(block.href) ? block.href : "")}', '${escapeHtml(block.title || "")}')" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:8px; border-radius:50%; color:inherit; z-index:10;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
       </button>
     `;
 
-    return `\n${extraHtml}<section style="padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
-      block.title || "Open link"
-    )}</span>${shareButtonHtml}</${tag}>\n</section>`;
+    return wrap(`\n${extraHtml}<section style="padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
+      block.title || "Abrir link"
+    )}</span>${shareButtonHtml}</${tag}>\n</section>`);
   }
 
   if (block.type === "image") {
@@ -324,7 +399,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     const imgStyle = `max-width:100%; border-radius:${borderRadius}px; ${borderStyle} ${shadowStyle} ${transformStyle} ${filterStyle} transition:all 0.3s ease;`;
     
-    return `\n${extraHtml}${hoverCss}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img class="${hoverId}" src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="${imgStyle}" />\n</section>`;
+    return wrap(`\n${extraHtml}${hoverCss}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <img class="${hoverId}" src="${escapeHtml(block.mediaUrl || "")}" alt="${escapeHtml(block.title || "")}" style="${imgStyle}" />\n</section>`);
   }
 
   if (block.type === "socials") {
@@ -359,13 +434,13 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
         ? `display:flex; flex-direction:column; gap:12px; align-items:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; ${animationStyle}`
         : `display:flex; gap:12px; justify-content:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; flex-wrap:wrap; ${animationStyle}`;
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0;">\n  <div style="${containerStyle}">${icons}</div>\n</section>`;
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0;">\n  <div style="${containerStyle}">${icons}</div>\n</section>`);
   }
 
   if (block.type === "video") {
     const videoId = block.mediaUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
     if (!videoId) return "";
-    return `\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:24px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n</section>`;
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="text-align:${align}; padding:12px 0; ${animationStyle}">\n  <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:24px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>\n</section>`);
   }
 
   if (block.type === "blog") {
@@ -387,16 +462,22 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
   if (block.type === "marketing") {
     const slotId = block.marketingId;
-    if (!slotId) return "";
+    if (!slotId) {
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+        <div style="padding:24px; text-align:center; background:#f3f4f6; border:2px dashed #d1d5db; border-radius:16px; color:#6b7280; font-size:14px;">
+          Nenhum slot de marketing configurado. Edite este bloco para adicionar um ID de slot.
+        </div>
+      </section>`);
+    }
     
     // We render a placeholder that React will hydrate via BioLayout -> MarketingWidget
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div class="custom-marketing-block" data-marketing-id="${escapeHtml(slotId)}" data-bio-id="${bio.id}">
          <div style="padding:24px; text-align:center; background:rgba(255,255,255,0.5); border:2px dashed #9ca3af; border-radius:12px; color:#4b5563; font-family:inherit;">
            <div style="font-weight:600;">Marketing Slot</div>
          </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "form") {
@@ -404,28 +485,28 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     if (!formId) return "";
     
     // We render a placeholder that React will hydrate
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div class="custom-form-block" data-form-id="${escapeHtml(formId)}" data-bg-color="${escapeHtml(block.formBackgroundColor || "#ffffff")}" data-text-color="${escapeHtml(block.formTextColor || "#1f2937")}">
          <!-- Loading State for SSR/No-JS -->
          <div style="padding:24px; text-align:center; background:${escapeHtml(block.formBackgroundColor || "#ffffff")}; border-radius:24px; color:${escapeHtml(block.formTextColor || "#1f2937")}; border:1px solid rgba(0,0,0,0.1);">
-           Loading form...
+           Carregando formulário...
          </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "portfolio") {
     const title = block.portfolioTitle || "Portfólio";
     
     // We render a placeholder that React will hydrate with PortfolioWidget
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div class="custom-portfolio-block" data-title="${escapeHtml(title)}" data-bio-id="${bio.id}">
          <!-- Loading State for SSR/No-JS -->
          <div style="padding:24px; text-align:center; background:#ffffff; border-radius:24px; color:#1f2937; border:1px solid rgba(0,0,0,0.1);">
-           Loading portfolio...
+           Carregando portfólio...
          </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "experience") {
@@ -474,10 +555,10 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       .join("");
 
     const emptyHtml = experiences.length === 0
-      ? `<div style="padding:16px; border:1px dashed ${lineColor}; border-radius:16px; color:${textColor}80; font-size:13px; text-align:center;">Add your first experience</div>`
+      ? `<div style="padding:16px; border:1px dashed ${lineColor}; border-radius:16px; color:${textColor}80; font-size:13px; text-align:center;">Adicione sua primeira experiência</div>`
       : "";
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="padding:16px 20px;">
         <h3 style="margin:0 0 24px 0; font-size:20px; font-weight:800; color:${roleColor}; letter-spacing:-0.5px;">${escapeHtml(title)}</h3>
         
@@ -486,11 +567,11 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
            ${itemsHtml || emptyHtml}
         </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "calendar") {
-    const title = block.calendarTitle || "Book a Call";
+    const title = block.calendarTitle || "Agendar Chamada";
     const url = block.calendarUrl || "#";
     const bgColor = block.calendarColor || "#ffffff";
     const textColor = block.calendarTextColor || "#1f2937";
@@ -510,7 +591,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     // Header row (Su Mo Tu...)
     const weekHeader = `
       <div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-left:4px; padding-right:4px;">
-         ${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<div style="width:36px; text-align:center; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">${d}</div>`).join('')}
+         ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => `<div style="width:36px; text-align:center; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">${d}</div>`).join('')}
       </div>
     `;
 
@@ -537,7 +618,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
          }
     }
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div class="custom-booking-block" data-title="${escapeHtml(title)}" data-description="${escapeHtml(block.body || "")}" data-bio-id="${bio.id}" style="cursor:pointer; background:${bgColor}; border-radius:24px; padding:20px; border:1px solid #e5e7eb; box-shadow:0 2px 4px -2px rgba(0,0,0,0.05);">
          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
            <h3 style="margin:0; font-size:18px; font-weight:700; color:${textColor};">${escapeHtml(title)}</h3>
@@ -556,15 +637,15 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
              <div>${calendarGridRows}</div>
          </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "map") {
-    const title = block.mapTitle || "Our Office";
+    const title = block.mapTitle || "Nosso Escritório";
     const address = block.mapAddress || "123 Main St, City";
     const encodedAddress = encodeURIComponent(address);
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="position:relative; border-radius:24px; overflow:hidden; height:200px; background:#f1f5f9; border:1px solid #e5e7eb;">
         <iframe 
           width="100%" 
@@ -583,18 +664,18 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
           <p style="margin:2px 0 0; font-size:12px; color:#6b7280;">${escapeHtml(address)}</p>
         </div>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "featured") {
-    const title = block.featuredTitle || "Glow lipstick";
+    const title = block.featuredTitle || "Item em Destaque";
     const price = block.featuredPrice || "$19.99";
     const image = block.featuredImage || "/base-img/card_base_image.png";
     const url = isValidUrl(block.featuredUrl) ? block.featuredUrl : "#";
     const bgColor = block.featuredColor || "#1f4d36";
     const textColor = block.featuredTextColor || "#ffffff";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <a href="${escapeHtml(url)}" style="display:block; text-decoration:none; background:${bgColor}; border-radius:24px; overflow:hidden; position:relative; color:${textColor};">
         <!-- Top Badge -->
         <div style="position:absolute; top:12px; right:-30px; background:white; color:black; padding:4px 30px; transform:rotate(45deg); font-size:10px; font-weight:800; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:10;">
@@ -625,41 +706,41 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
           <span style="font-size:18px; font-weight:500;">Buy now for ${escapeHtml(price)}</span>
         </div>
       </a>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "affiliate") {
-    const title = block.affiliateTitle || "Copy my coupon code";
+    const title = block.affiliateTitle || "Copie meu cupom";
     const code = block.affiliateCode || "CODE123";
     const image = block.affiliateImage || "/base-img/card_base_image.png";
     const url = isValidUrl(block.affiliateUrl) ? block.affiliateUrl : "#";
     const bgColor = block.affiliateColor || "#ffffff";
     const textColor = block.affiliateTextColor || "#374151";
     
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="background:${bgColor}; border-radius:24px; padding:24px; text-align:center; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1); border:1px solid #e5e7eb;">
         <a href="${escapeHtml(url)}" style="display:block; margin-bottom:16px;">
           <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" style="width:120px; height:120px; object-fit:cover; border-radius:16px; margin:0 auto; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);" />
         </a>
         <p style="margin:0 0 12px 0; font-size:14px; font-weight:600; color:${textColor};">${escapeHtml(title)}</p>
-        <button onclick="navigator.clipboard.writeText('${escapeHtml(code)}').then(() => { this.innerHTML = 'Copied!'; setTimeout(() => { this.innerHTML = '${escapeHtml(code)} <svg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\' style=\'display:inline-block; vertical-align:middle; margin-left:4px;\'><rect width=\'14\' height=\'14\' x=\'8\' y=\'8\' rx=\'2\' ry=\'2\'/><path d=\'M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\'/></svg>'; }, 2000); })" style="width:100%; border:2px dashed #cbd5e1; border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:rgba(255,255,255,0.5); font-family:monospace; font-size:16px; font-weight:700; color:${textColor}; transition:all 0.2s;">
+        <button onclick="navigator.clipboard.writeText('${escapeHtml(code)}').then(() => { this.innerHTML = 'Copiado!'; setTimeout(() => { this.innerHTML = '${escapeHtml(code)} <svg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\' style=\'display:inline-block; vertical-align:middle; margin-left:4px;\'><rect width=\'14\' height=\'14\' x=\'8\' y=\'8\' rx=\'2\' ry=\'2\'/><path d=\'M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\'/></svg>'; }, 2000); })" style="width:100%; border:2px dashed #cbd5e1; border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:rgba(255,255,255,0.5); font-family:monospace; font-size:16px; font-weight:700; color:${textColor}; transition:all 0.2s;">
           ${escapeHtml(code)}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
         </button>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "event") {
-    const title = block.eventTitle || "Live Webinar";
+    const title = block.eventTitle || "Evento ao Vivo";
     const date = block.eventDate || new Date(Date.now() + 86400000 * 7).toISOString();
     const bgColor = block.eventColor || "#111827";
     const textColor = block.eventTextColor || "#ffffff";
-    const btnText = block.eventButtonText || "Register Now";
+    const btnText = block.eventButtonText || "Inscrever-se";
     const btnUrl = isValidUrl(block.eventButtonUrl) ? block.eventButtonUrl : "#";
     const uniqueId = `countdown-${block.id}`;
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="background:${bgColor}; border-radius:24px; padding:20px; text-align:center; color:${textColor}; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:700;">${escapeHtml(title)}</h3>
         
@@ -684,7 +765,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
         ${btnText ? `<a href="${escapeHtml(btnUrl)}" style="display:inline-block; background:white; color:${bgColor}; padding:10px 24px; border-radius:99px; font-weight:700; text-decoration:none; font-size:14px; transition:transform 0.2s;">${escapeHtml(btnText)}</a>` : ''}
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "tour") {
@@ -692,21 +773,28 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const title = block.tourTitle || "TOURS";
     const uniqueId = `tour-${block.id}`;
 
-    if (tours.length === 0) return "";
+    if (tours.length === 0) {
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+        <h3 style="text-align:center; font-size:14px; font-weight:700; letter-spacing:0.1em; margin:0 0 16px 0; color:#111827;">${escapeHtml(title.toUpperCase())}</h3>
+        <div style="padding:24px; text-align:center; background:#f3f4f6; border:2px dashed #d1d5db; border-radius:16px; color:#6b7280; font-size:14px;">
+          Nenhuma data de turnê adicionada. Edite este bloco para adicionar shows.
+        </div>
+      </section>`);
+    }
 
     const cards = tours.map(tour => {
       const bgImage = tour.image || "";
       const date = tour.date || "TBA";
-      const location = tour.location || "Location";
+      const location = tour.location || "Local";
       const ticketUrl = isValidUrl(tour.ticketUrl) ? tour.ticketUrl : "#";
       const isSoldOut = tour.soldOut;
       const isSellingFast = tour.sellingFast;
 
       let badgeHtml = "";
       if (isSoldOut) {
-        badgeHtml = `<span style="background:#dc2626; color:white; font-size:10px; font-weight:700; padding:4px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em;">Sold Out</span>`;
+        badgeHtml = `<span style="background:#dc2626; color:white; font-size:10px; font-weight:700; padding:4px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em;">Esgotado</span>`;
       } else if (isSellingFast) {
-        badgeHtml = `<span style="background:rgba(0,0,0,0.8); color:white; font-size:10px; font-weight:700; padding:4px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; border:1px solid rgba(255,255,255,0.2);">Selling fast</span>`;
+        badgeHtml = `<span style="background:rgba(0,0,0,0.8); color:white; font-size:10px; font-weight:700; padding:4px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; border:1px solid rgba(255,255,255,0.2);">Acabando</span>`;
       }
 
       return `
@@ -730,7 +818,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       `;
     }).join("");
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <h3 style="text-align:center; font-size:14px; font-weight:700; letter-spacing:0.1em; margin:0 0 16px 0; color:#111827;">${escapeHtml(title.toUpperCase())}</h3>
       <div style="position:relative;">
         <div id="${uniqueId}" style="display:flex; overflow-x:auto; gap:12px; padding:0 4px 16px 4px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
@@ -743,12 +831,18 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "button_grid") {
     const items = block.gridItems || [];
-    if (items.length === 0) return "";
+    if (items.length === 0) {
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+        <div style="padding:24px; text-align:center; background:#f3f4f6; border:2px dashed #d1d5db; border-radius:16px; color:#6b7280; font-size:14px;">
+          Nenhum item na grade. Edite este bloco para adicionar itens.
+        </div>
+      </section>`);
+    }
 
     const gridHtml = items.map(item => {
       const bgImg = item.image || item.icon || "";
@@ -772,11 +866,11 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       `;
     }).join("");
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; width:100%;">
         ${gridHtml}
       </div>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "spotify") {
@@ -805,9 +899,9 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     if (!embedUrl) return "";
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; overflow:hidden; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; overflow:hidden; ${animationStyle}">
       <iframe style="border-radius:24px; overflow:hidden; border:0;" src="${embedUrl}" width="100%" height="${isCompact ? "80" : "152"}" frameBorder="0" scrolling="no" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "instagram") {
@@ -846,13 +940,13 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     ` : '';
 
     // We add 'custom-instagram-feed' class and data attributes for the BioRenderer to pick up
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
       <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
       </div>
       ${textPosition === 'bottom' ? textHtml : ''}
-    </section>`;
+    </section>`);
   }
 
   if (block.type === "youtube") {
@@ -887,19 +981,20 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
         </a>
       </div>` : '';
 
-    return `\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
       <div class="custom-youtube-feed" data-url="${escapeHtml(url)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
       </div>
       ${textPosition === 'bottom' ? textHtml : ''}
-    </section>`;
+    </section>`);
   }
 
   return "\n<hr style=\"border:none; border-top:1px solid #E5E7EB; margin:18px 0;\" />";
 };
 
 export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: string = "") => {
+  if (!bio) bio = {};
   const shareUrl = bio.customDomain ? `https://${bio.customDomain}` : `https://portyo.me/p/${bio.sufix}`;
   const encodedShareUrl = encodeURIComponent(shareUrl);
 
@@ -1785,13 +1880,13 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
       <div id="shop-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
         <div id="shop-products-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:16px;">
-          <div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">Loading products...</div>
+          <div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">Carregando produtos...</div>
         </div>
       </div>
 
       <div id="blog-feed" style="display:none; animation:fadeIn 0.3s ease-out;">
         <div id="blog-posts-container" style="display:flex; flex-direction:column; gap:16px;">
-          <div style="text-align:center; padding:40px; color:#6b7280;">Loading posts...</div>
+          <div style="text-align:center; padding:40px; color:#6b7280;">Carregando posts...</div>
         </div>
       </div>
 

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Main site sitemap -->
+  <sitemap>
+    <loc>https://portyo.me/sitemap.xml</loc>
+    <lastmod>2025-02-02</lastmod>
+  </sitemap>
+  
+  <!-- Dynamic sitemap for public bios (if available) -->
+  <!-- 
+  <sitemap>
+    <loc>https://portyo.me/api/sitemap/bios</loc>
+    <lastmod>2025-02-02</lastmod>
+  </sitemap>
+  -->
+  
+  <!-- Dynamic sitemap for blog posts (if available) -->
+  <!--
+  <sitemap>
+    <loc>https://portyo.me/api/sitemap/blog</loc>
+    <lastmod>2025-02-02</lastmod>
+  </sitemap>
+  -->
+
+</sitemapindex>

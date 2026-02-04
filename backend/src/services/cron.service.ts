@@ -5,7 +5,10 @@ import { BillingEntity } from "../database/entity/billing-entity";
 import { notificationService } from "./notification.service";
 import { MailService } from "../shared/services/mail.service";
 import { IsNull, Between, LessThan, MoreThan } from "typeorm";
-import { runAutoPostJob } from "./auto-post.service";
+import { processAutoPostQueue, runAutoPostJob } from "./auto-post.service";
+import { processSiteAutoPostQueue, runSiteAutoPostJob } from "./site-auto-post.service";
+import { CustomDomainService } from "../shared/services/custom-domain.service";
+import { logger } from "../shared/utils/logger";
 
 export class CronService {
     
@@ -20,9 +23,34 @@ export class CronService {
             this.checkPlanExpiration();
         });
         
-        // Run auto-post job every minute (testing)
-        schedule.scheduleJob("* * * * *", () => {
+        // Run auto-post job every hour (enqueue)
+        schedule.scheduleJob("0 */1 * * *", () => {
             runAutoPostJob();
+        });
+
+        // Process queued auto-posts every minute
+        schedule.scheduleJob("* * * * *", () => {
+            processAutoPostQueue();
+        });
+
+        // Run site auto-post job every hour (enqueue)
+        schedule.scheduleJob("0 */1 * * *", () => {
+            runSiteAutoPostJob();
+        });
+
+        // Process queued site auto-posts every minute
+        schedule.scheduleJob("* * * * *", () => {
+            processSiteAutoPostQueue();
+        });
+
+        // Check custom domains health every hour
+        schedule.scheduleJob("0 */1 * * *", () => {
+            this.checkCustomDomainsHealth();
+        });
+
+        // Renew SSL certificates daily at 3 AM
+        schedule.scheduleJob("0 3 * * *", () => {
+            this.renewSSLCertificates();
         });
         
         console.log("✅ Cron Jobs scheduled.");
@@ -113,6 +141,34 @@ export class CronService {
 
         } catch (error) {
             console.error("❌ Error in checkPlanExpiration:", error);
+        }
+    }
+
+    /**
+     * Check health of all custom domains
+     */
+    static async checkCustomDomainsHealth() {
+        logger.info("🔄 Running Custom Domains Health Check...");
+        
+        try {
+            await CustomDomainService.checkAllDomainsHealth();
+            logger.info("✅ Custom domains health check completed");
+        } catch (error) {
+            logger.error("❌ Error in checkCustomDomainsHealth:", error);
+        }
+    }
+
+    /**
+     * Renew SSL certificates nearing expiration
+     */
+    static async renewSSLCertificates() {
+        logger.info("🔄 Running SSL Certificate Renewal...");
+        
+        try {
+            await CustomDomainService.renewExpiringCertificates();
+            logger.info("✅ SSL certificate renewal completed");
+        } catch (error) {
+            logger.error("❌ Error in renewSSLCertificates:", error);
         }
     }
 }

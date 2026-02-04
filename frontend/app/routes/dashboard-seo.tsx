@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import type { Route } from "../+types/root";
@@ -10,13 +10,17 @@ import {
     Image as ImageIcon,
     Globe,
     Sparkles,
-    FileIcon
+    FileIcon,
+    Wand2,
+    Loader2
 } from "lucide-react";
 import { ImageUpload } from "~/components/dashboard/editor/image-upload";
 import { useTranslation } from "react-i18next";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
+import { api } from "~/services/api";
+import toast from "react-hot-toast";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -37,10 +41,57 @@ export default function DashboardSeo() {
     const [ogImage, setOgImage] = useState("");
     const [customDomain, setCustomDomain] = useState("");
     const [isSaving, setIsSaving] = useState(false);
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
+    const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:seo-tour-done" });
+
+    // AI Generation states
+    const [generatingField, setGeneratingField] = useState<string | null>(null);
+
+    const generateWithAI = async (field: "seoTitle" | "seoDescription" | "seoKeywords" | "ogTitle" | "ogDescription") => {
+        if (!bio?.id) {
+            toast.error("Bio not found");
+            return;
+        }
+
+        setGeneratingField(field);
+        try {
+            const response = await api.post(`/bio/generate-seo?bioId=${bio.id}`, {
+                field,
+                bioDescription: bio?.description || "",
+                fullName: bio?.sufix || "",
+                profession: ""
+            });
+
+            const { content } = response.data;
+
+            // Update the corresponding field
+            switch (field) {
+                case "seoTitle":
+                    setSeoTitle(content);
+                    break;
+                case "seoDescription":
+                    setSeoDescription(content);
+                    break;
+                case "seoKeywords":
+                    setSeoKeywords(content);
+                    break;
+                case "ogTitle":
+                    setOgTitle(content);
+                    break;
+                case "ogDescription":
+                    setOgDescription(content);
+                    break;
+            }
+
+            toast.success("Content generated successfully!");
+        } catch (error: any) {
+            console.error("Failed to generate SEO content:", error);
+            toast.error(error.response?.data?.error || "Failed to generate content");
+        } finally {
+            setGeneratingField(null);
+        }
+    };
 
     useEffect(() => {
         if (bio) {
@@ -59,11 +110,6 @@ export default function DashboardSeo() {
         if (typeof window === "undefined") return;
         if (isMobile) return;
 
-        const hasSeenTour = window.localStorage.getItem("portyo:seo-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
-
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
         if (primaryFromTheme) {
@@ -71,47 +117,38 @@ export default function DashboardSeo() {
         }
     }, [isMobile]);
 
-    const seoTourSteps: Step[] = [
-        {
-            target: "[data-tour=\"seo-header\"]",
-            content: t("dashboard.tours.seo.steps.header"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"seo-save\"]",
-            content: t("dashboard.tours.seo.steps.save"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"seo-basic\"]",
-            content: t("dashboard.tours.seo.steps.basic"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"seo-social\"]",
-            content: t("dashboard.tours.seo.steps.social"),
-            placement: "top",
-        },
-    ];
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (isMobile) return;
 
-    const handleSeoTourCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
-
-        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
+        const hasSeenTour = window.localStorage.getItem("portyo:seo-tour-done");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                startTour(seoTourSteps);
+            }, 500);
+            return () => clearTimeout(timer);
         }
+    }, [isMobile, startTour]);
 
-        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:seo-tour-done", "true");
-            }
-        }
-    };
+    const seoTourSteps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"seo-header\"]",
+            popover: { title: t("dashboard.tours.seo.steps.header"), description: t("dashboard.tours.seo.steps.header"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"seo-save\"]",
+            popover: { title: t("dashboard.tours.seo.steps.save"), description: t("dashboard.tours.seo.steps.save"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"seo-basic\"]",
+            popover: { title: t("dashboard.tours.seo.steps.basic"), description: t("dashboard.tours.seo.steps.basic"), side: "top", align: "start" },
+        },
+        {
+            element: "[data-tour=\"seo-social\"]",
+            popover: { title: t("dashboard.tours.seo.steps.social"), description: t("dashboard.tours.seo.steps.social"), side: "top", align: "start" },
+        },
+    ], [t]);
+
 
     const handleSave = async () => {
         if (!bio) return;
@@ -148,20 +185,7 @@ export default function DashboardSeo() {
             </div>
         }>
             <div className="p-4 md:p-6 max-w-5xl mx-auto pb-12">
-                <Joyride
-                    steps={seoTourSteps}
-                    run={tourRun && !isMobile}
-                    stepIndex={tourStepIndex}
-                    continuous
-                    showSkipButton
-                    spotlightClicks
-                    scrollToFirstStep
-                    callback={handleSeoTourCallback}
-                    styles={joyrideStyles}
-                    scrollOffset={joyrideProps.scrollOffset}
-                    spotlightPadding={joyrideProps.spotlightPadding}
-                    disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                />
+
                 <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4" data-tour="seo-header">
                     <div>
                         <h1 className="text-2xl font-bold text-text-main tracking-tight mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.seo.title")}</h1>
@@ -171,7 +195,7 @@ export default function DashboardSeo() {
                         data-tour="seo-save"
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary-hover transition-all active:scale-95 shadow-lg shadow-primary/20 hover:shadow-primary/30 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+                        className="px-6 py-2.5 bg-white text-[#0a0a0f] rounded-xl font-semibold text-sm hover:bg-white/90 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
                     >
                         {isSaving ? (
                             <>
@@ -205,12 +229,27 @@ export default function DashboardSeo() {
 
                         <div className="grid gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.pageTitle")}</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-bold text-text-main uppercase tracking-wider">{t("dashboard.seo.fields.pageTitle")}</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => generateWithAI("seoTitle")}
+                                        disabled={generatingField === "seoTitle"}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {generatingField === "seoTitle" ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <Wand2 className="w-3.5 h-3.5" />
+                                        )}
+                                        {generatingField === "seoTitle" ? "Generating..." : "Generate with AI"}
+                                    </button>
+                                </div>
                                 <input
                                     type="text"
                                     value={seoTitle}
                                     onChange={(e) => setSeoTitle(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all text-sm"
                                     placeholder={t("dashboard.seo.placeholders.pageTitle")}
                                 />
                                 <p className="mt-2 text-xs text-text-muted font-medium flex items-center gap-1">
@@ -219,12 +258,27 @@ export default function DashboardSeo() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.metaDescription")}</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-bold text-text-main uppercase tracking-wider">{t("dashboard.seo.fields.metaDescription")}</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => generateWithAI("seoDescription")}
+                                        disabled={generatingField === "seoDescription"}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {generatingField === "seoDescription" ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <Wand2 className="w-3.5 h-3.5" />
+                                        )}
+                                        {generatingField === "seoDescription" ? "Generating..." : "Generate with AI"}
+                                    </button>
+                                </div>
                                 <textarea
                                     value={seoDescription}
                                     onChange={(e) => setSeoDescription(e.target.value)}
                                     rows={3}
-                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none text-sm"
+                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all resize-none text-sm"
                                     placeholder={t("dashboard.seo.placeholders.metaDescription")}
                                 />
                                 <p className="mt-2 text-xs text-text-muted font-medium flex items-center gap-1">
@@ -233,12 +287,27 @@ export default function DashboardSeo() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.keywords")}</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-xs font-bold text-text-main uppercase tracking-wider">{t("dashboard.seo.fields.keywords")}</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => generateWithAI("seoKeywords")}
+                                        disabled={generatingField === "seoKeywords"}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {generatingField === "seoKeywords" ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                            <Wand2 className="w-3.5 h-3.5" />
+                                        )}
+                                        {generatingField === "seoKeywords" ? "Generating..." : "Generate with AI"}
+                                    </button>
+                                </div>
                                 <input
                                     type="text"
                                     value={seoKeywords}
                                     onChange={(e) => setSeoKeywords(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                                    className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all text-sm"
                                     placeholder={t("dashboard.seo.placeholders.keywords")}
                                 />
                             </div>
@@ -271,23 +340,53 @@ export default function DashboardSeo() {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.socialTitle")}</label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-xs font-bold text-text-main uppercase tracking-wider">{t("dashboard.seo.fields.socialTitle")}</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => generateWithAI("ogTitle")}
+                                            disabled={generatingField === "ogTitle"}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {generatingField === "ogTitle" ? (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <Wand2 className="w-3.5 h-3.5" />
+                                            )}
+                                            {generatingField === "ogTitle" ? "Generating..." : "Generate with AI"}
+                                        </button>
+                                    </div>
                                     <input
                                         type="text"
                                         value={ogTitle}
                                         onChange={(e) => setOgTitle(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all text-sm"
                                         placeholder={t("dashboard.seo.placeholders.socialTitle")}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-text-main mb-2 uppercase tracking-wider">{t("dashboard.seo.fields.socialDescription")}</label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-xs font-bold text-text-main uppercase tracking-wider">{t("dashboard.seo.fields.socialDescription")}</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => generateWithAI("ogDescription")}
+                                            disabled={generatingField === "ogDescription"}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {generatingField === "ogDescription" ? (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <Wand2 className="w-3.5 h-3.5" />
+                                            )}
+                                            {generatingField === "ogDescription" ? "Generating..." : "Generate with AI"}
+                                        </button>
+                                    </div>
                                     <textarea
                                         value={ogDescription}
                                         onChange={(e) => setOgDescription(e.target.value)}
                                         rows={3}
-                                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none text-sm"
+                                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all resize-none text-sm"
                                         placeholder={t("dashboard.seo.placeholders.socialDescription")}
                                     />
                                 </div>

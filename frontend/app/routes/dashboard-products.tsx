@@ -1,5 +1,5 @@
 import type { MetaFunction } from "react-router";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Search, ShoppingBag, MoreVertical, Image as ImageIcon, DollarSign, Link as LinkIcon, Loader2, X, Edit2, Trash2, ExternalLink, CreditCard } from "lucide-react";
 import { api } from "~/services/api";
@@ -9,13 +9,13 @@ import AuthContext from "~/contexts/auth.context";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Products | Portyo" },
-    { name: "description", content: "Manage your product catalog." },
+    { title: "Produtos | Portyo" },
+    { name: "description", content: "Gerencie seu catálogo de produtos." },
   ];
 };
 
@@ -30,7 +30,7 @@ interface Product {
 }
 
 export default function DashboardProducts() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("dashboard");
   const { bio } = useContext(BioContext);
   const { user } = useContext(AuthContext);
   const userPlan = (user?.plan || 'free') as PlanType;
@@ -39,10 +39,9 @@ export default function DashboardProducts() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [tourRun, setTourRun] = useState(false);
-  const [tourStepIndex, setTourStepIndex] = useState(0);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-  const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+  const isMobile = useIsMobile();
+  const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:products-tour-done" });
 
   // Create State
   const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
@@ -335,50 +334,38 @@ export default function DashboardProducts() {
 
   return (
     <AuthorizationGuard>
-      <div className="p-6 max-w-7xl mx-auto">
-        <Joyride
-          steps={productsTourSteps}
-          run={tourRun && !isMobile}
-          stepIndex={tourStepIndex}
-          continuous
-          showSkipButton
-          spotlightClicks
-          scrollToFirstStep
-          callback={handleProductsTourCallback}
-          styles={joyrideStyles}
-          scrollOffset={joyrideProps.scrollOffset}
-          spotlightPadding={joyrideProps.spotlightPadding}
-          disableScrollParentFix={joyrideProps.disableScrollParentFix}
-        />
-        {/* ... (Header and Banner code unchanged) ... */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="products-header">
+      <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-12">
+
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-black/5 pb-8" data-tour="products-header">
           <div>
-            <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.title")}</h1>
-            <p className="text-muted-foreground mt-1">{t("dashboard.products.subtitle")}</p>
+            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.title")}</h1>
+            <p className="text-xl text-gray-500 font-medium">{t("dashboard.products.subtitle")}</p>
           </div>
           <button
             data-tour="products-add"
             onClick={() => setIsCreateProductModalOpen(true)}
-            className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg shadow-gray-200"
+            className="px-8 py-4 bg-[#1A1A1A] text-white rounded-full font-black text-lg hover:bg-black hover:scale-105 transition-all flex items-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
           >
-            <Plus className="w-5 h-5" /> {t("dashboard.products.addProduct")}
+            <Plus className="w-6 h-6" strokeWidth={3} /> {t("dashboard.products.addProduct")}
           </button>
         </div>
 
-        {/* ... (Store Fee Banner and Search) ... */}
+        {/* Store Fee Banner */}
         {storeFee > 0 && (
-          <div className="mb-8 bg-blue-500/10 border border-blue-100 rounded-2xl p-4 flex items-center justify-between" data-tour="products-fee">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-400">
-                <DollarSign className="w-5 h-5" />
+          <div className="bg-[#E0F2FE] border-2 border-[#0284C7] rounded-[24px] p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-[4px_4px_0px_0px_rgba(2,132,199,1)]" data-tour="products-fee">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white border-2 border-[#0284C7] rounded-xl flex items-center justify-center text-[#0284C7]">
+                <DollarSign className="w-6 h-6" strokeWidth={3} />
               </div>
               <div>
-                <h3 className="font-bold text-blue-900" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.fee.title", { fee: storeFeePercent })}</h3>
-                <p className="text-sm text-blue-700">{t("dashboard.products.fee.subtitle")}</p>
+                <h3 className="text-xl font-black text-[#0C4A6E]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.fee.title", { fee: storeFeePercent })}</h3>
+                <p className="text-sm font-bold text-[#0284C7]">{t("dashboard.products.fee.subtitle")}</p>
               </div>
             </div>
             <button
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition"
+              className="px-6 py-3 bg-white text-[#0C4A6E] text-sm font-black rounded-xl border-2 border-[#0284C7] hover:bg-[#F0F9FF] transition-all shadow-sm"
               onClick={() => window.open('/dashboard/settings', '_self')}
             >
               {t("dashboard.products.fee.upgrade")}
@@ -386,16 +373,17 @@ export default function DashboardProducts() {
           </div>
         )}
 
-        <div className="bg-surface-card p-4 rounded-3xl border border-border shadow-sm mb-8 flex items-center gap-4" data-tour="products-search">
+        {/* Search & Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-12" data-tour="products-search">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder={t("dashboard.products.searchPlaceholder")}
-              className="w-full pl-12 pr-6 py-3 bg-muted border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all"
+              className="w-full pl-14 pr-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-black transition-all text-lg font-bold placeholder:text-gray-300"
             />
           </div>
-          <select className="px-6 py-3 bg-muted border border-border rounded-full text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black cursor-pointer">
+          <select className="px-8 py-4 bg-white border-2 border-gray-200 rounded-2xl text-base font-bold text-[#1A1A1A] focus:outline-none focus:border-black cursor-pointer appearance-none min-w-[200px]">
             <option value="all">{t("dashboard.products.status.all")}</option>
             <option value="active">{t("dashboard.products.status.active")}</option>
             <option value="draft">{t("dashboard.products.status.draft")}</option>
@@ -403,80 +391,79 @@ export default function DashboardProducts() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 animate-spin text-gray-300" />
           </div>
         ) : (
           /* Products Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20" data-tour="products-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20" data-tour="products-grid">
             {products.map((product, index) => (
               <div
                 key={product.id}
                 data-tour={index === 0 ? "products-card" : undefined}
-                className="bg-surface-card rounded-3xl border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col overflow-hidden relative"
+                className="bg-white rounded-[32px] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200 group flex flex-col overflow-hidden relative"
               >
-                {/* ... (Product Card content unchanged) ... */}
-                <div className="p-2">
-                  <div className="aspect-square relative bg-muted rounded-2xl overflow-hidden border border-border">
+                <div className="p-3">
+                  <div className="aspect-square relative bg-[#F3F3F1] rounded-[24px] overflow-hidden border-2 border-transparent group-hover:border-black transition-all">
                     {product.image ? (
                       <img src={product.image} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300 bg-muted/50">
-                        <ImageIcon className="w-12 h-12 opacity-20" />
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
+                        <ImageIcon className="w-16 h-16 opacity-30" />
                       </div>
                     )}
-                    <div className="absolute top-3 left-3">
-                      <span className={`pl-2 pr-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-xl border shadow-sm flex items-center gap-1.5 ${product.status === 'active'
-                        ? 'bg-surface-card/80 text-green-700 border-green-100'
-                        : 'bg-surface-card/80 text-muted-foreground border-border'
+                    <div className="absolute top-4 left-4">
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border-2 shadow-sm flex items-center gap-1.5 ${product.status === 'active'
+                        ? 'bg-[#E5F6E3] text-[#356233] border-[#356233]'
+                        : 'bg-white text-gray-500 border-gray-200'
                         }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${product.status === 'active' ? 'bg-green-500/100' : 'bg-gray-400'}`}></span>
+                        <span className={`w-2 h-2 rounded-full ${product.status === 'active' ? 'bg-[#356233]' : 'bg-gray-400'}`}></span>
                         {product.status === 'active' ? t("dashboard.products.status.active") : t("dashboard.products.status.draft")}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-4 pb-4 pt-1 flex flex-col flex-1">
-                  <div className="mb-3">
-                    <h3 className="font-bold text-foreground text-base mb-0.5 truncate tracking-tight" style={{ fontFamily: 'var(--font-display)' }} title={product.title}>{product.title}</h3>
-                    <p className="text-xs text-muted-foreground font-medium">{t("dashboard.products.digitalProduct")}</p>
+                <div className="px-6 pb-6 pt-2 flex flex-col flex-1">
+                  <div className="mb-4">
+                    <h3 className="font-black text-[#1A1A1A] text-xl mb-1 truncate tracking-tight leading-tight" style={{ fontFamily: 'var(--font-display)' }} title={product.title}>{product.title}</h3>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{t("dashboard.products.digitalProduct")}</p>
                   </div>
 
                   <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-px">{t("dashboard.products.price")}</span>
-                      <span className="text-lg font-bold text-foreground tracking-tight">
+                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-px">{t("dashboard.products.price")}</span>
+                      <span className="text-2xl font-black text-[#1A1A1A] tracking-tighter">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: product.currency }).format(product.price)}
                       </span>
                     </div>
 
-                    <div className="flex gap-1.5 relative">
+                    <div className="flex gap-2 relative">
                       <button
                         onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === product.id ? null : product.id); }}
-                        className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-gray-300 hover:bg-muted transition-all focus:outline-none"
+                        className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-200 text-gray-400 hover:text-black hover:border-black hover:bg-gray-50 transition-all focus:outline-none"
                         aria-label="More options"
                       >
-                        <MoreVertical className="w-4 h-4" />
+                        <MoreVertical className="w-5 h-5" />
                       </button>
 
                       {/* Dropdown Menu */}
                       {openMenuId === product.id && (
-                        <div ref={menuRef} className="absolute bottom-11 right-0 w-32 bg-surface-card rounded-xl shadow-xl border border-border overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
+                        <div ref={menuRef} className="absolute bottom-12 right-0 w-40 bg-white rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
                           <button
                             onClick={() => { setDeletingProduct(product); setOpenMenuId(null); }}
-                            className="w-full text-left px-4 py-2.5 text-xs font-semibold text-destructive hover:bg-destructive/10 flex items-center gap-2"
+                            className="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 uppercase tracking-wide"
                           >
-                            <Trash2 className="w-3.5 h-3.5" /> {t("dashboard.products.remove")}
+                            <Trash2 className="w-4 h-4" /> {t("dashboard.products.remove")}
                           </button>
                         </div>
                       )}
 
                       <button
                         onClick={() => openEditModal(product)}
-                        className="h-9 px-4 bg-black text-white rounded-full text-xs font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                        className="h-10 px-5 bg-[#1A1A1A] text-white rounded-full text-xs font-bold hover:bg-black transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                       >
-                        {t("dashboard.products.edit")}
+                        <Edit2 className="w-3.5 h-3.5" /> {t("dashboard.products.edit")}
                       </button>
                     </div>
                   </div>
@@ -488,14 +475,14 @@ export default function DashboardProducts() {
             <button
               data-tour="products-add-placeholder"
               onClick={() => setIsCreateProductModalOpen(true)}
-              className="border-2 border-dashed border-border rounded-3xl flex flex-col items-center justify-center gap-3 p-6 hover:border-black/20 hover:bg-muted/50 transition-all group h-full min-h-[320px]"
+              className="border-4 border-dashed border-gray-200 rounded-[32px] flex flex-col items-center justify-center gap-4 p-6 hover:border-black hover:bg-gray-50 transition-all group h-full min-h-[360px]"
             >
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-surface-card group-hover:text-black group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 border border-border">
-                <Plus className="w-6 h-6" />
+              <div className="w-20 h-20 rounded-full bg-[#F3F3F1] flex items-center justify-center text-gray-400 group-hover:bg-[#1A1A1A] group-hover:text-white group-hover:shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] group-hover:scale-110 transition-all duration-300 border-2 border-gray-200 group-hover:border-black">
+                <Plus className="w-8 h-8" strokeWidth={3} />
               </div>
               <div className="text-center">
-                <p className="font-bold text-foreground text-base mb-0.5">{t("dashboard.products.addNew")}</p>
-                <p className="text-xs text-muted-foreground">{t("dashboard.products.addNewSubtitle")}</p>
+                <p className="font-black text-[#1A1A1A] text-xl mb-1">{t("dashboard.products.addNew")}</p>
+                <p className="text-sm text-gray-400 font-bold">{t("dashboard.products.addNewSubtitle")}</p>
               </div>
             </button>
           </div>
@@ -504,37 +491,37 @@ export default function DashboardProducts() {
         {/* Create Product Modal */}
         {isCreateProductModalOpen && typeof document !== "undefined" && createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="p-6 border-b border-border flex items-center justify-between">
-                <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.create.title")}</h3>
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border-4 border-black">
+              <div className="p-8 border-b-2 border-black/5 flex items-center justify-between">
+                <h3 className="text-2xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.create.title")}</h3>
                 <button
                   onClick={() => setIsCreateProductModalOpen(false)}
-                  className="text-muted-foreground hover:text-muted-foreground transition-colors"
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors text-black border-2 border-transparent hover:border-black"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={handleCreateProduct} className="p-6 space-y-4">
+              <form onSubmit={handleCreateProduct} className="p-8 space-y-6">
                 {createError && (
-                  <div className="p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">
+                  <div className="p-4 bg-red-100 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold">
                     {createError}
                   </div>
                 )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productTitle")}</label>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.productTitle")}</label>
                   <input
                     required
                     value={newProductData.title}
                     onChange={(e) => setNewProductData({ ...newProductData, title: e.target.value })}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-400"
                     placeholder={t("dashboard.products.form.productTitlePlaceholder")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.price")}</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">
                         {newProductData.currency === 'usd' ? '$' : newProductData.currency === 'eur' ? '€' : newProductData.currency === 'gbp' ? '£' : newProductData.currency.toUpperCase()}
                       </span>
                       <input
@@ -544,17 +531,17 @@ export default function DashboardProducts() {
                         step="0.01"
                         value={newProductData.price}
                         onChange={(e) => setNewProductData({ ...newProductData, price: e.target.value })}
-                        className="w-full rounded-lg border border-border pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] pl-8 pr-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-400"
                         placeholder="0.00"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.currency")}</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.currency")}</label>
                     <select
                       value={newProductData.currency}
                       onChange={(e) => setNewProductData({ ...newProductData, currency: e.target.value })}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all cursor-pointer"
                     >
                       <option value="usd">USD ($)</option>
                       <option value="eur">EUR (€)</option>
@@ -563,35 +550,37 @@ export default function DashboardProducts() {
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productImage")}</label>
-                  <div className="border border-border rounded-lg p-2 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-muted rounded-md overflow-hidden flex-shrink-0">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.productImage")}</label>
+                  <div className="border-2 border-transparent bg-[#F3F3F1] rounded-xl p-3 flex items-center gap-4 hover:bg-white hover:border-black transition-all cursor-pointer group relative">
+                    <div className="w-14 h-14 bg-white border-2 border-gray-200 rounded-lg overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center">
                       {createImagePreview ? (
                         <img src={createImagePreview} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          <ImageIcon className="w-5 h-5" />
-                        </div>
+                        <ImageIcon className="w-6 h-6 text-gray-300" />
                       )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#1A1A1A] truncate">{createImageFile ? createImageFile.name : "Select Image"}</p>
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">JPG, PNG, WEBP</p>
                     </div>
                     <input
                       type="file"
                       onChange={handleCreateFileChange}
                       accept="image/*"
-                      className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-gray-700 hover:file:bg-gray-200"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
                 </div>
-                <div className="pt-2">
+                <div className="pt-4">
                   <button
                     type="submit"
                     disabled={isCreatingProduct}
-                    className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full bg-[#1A1A1A] text-white rounded-full py-4 text-base font-black hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                   >
                     {isCreatingProduct ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         {t("dashboard.products.create.creating")}
                       </>
                     ) : (
@@ -608,36 +597,36 @@ export default function DashboardProducts() {
         {/* Edit Product Modal */}
         {editingProduct && typeof document !== "undefined" && createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="p-6 border-b border-border flex items-center justify-between">
-                <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.editModal.title")}</h3>
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border-4 border-black">
+              <div className="p-8 border-b-2 border-black/5 flex items-center justify-between">
+                <h3 className="text-2xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.editModal.title")}</h3>
                 <button
                   onClick={() => setEditingProduct(null)}
-                  className="text-muted-foreground hover:text-muted-foreground transition-colors"
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors text-black border-2 border-transparent hover:border-black"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
+              <form onSubmit={handleUpdateProduct} className="p-8 space-y-6">
                 {editError && (
-                  <div className="p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">
+                  <div className="p-4 bg-red-100 border-2 border-red-500 text-red-600 rounded-xl text-sm font-bold">
                     {editError}
                   </div>
                 )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productTitle")}</label>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.productTitle")}</label>
                   <input
                     required
                     value={editFormData.title}
                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-400"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.price")}</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">
                         {editFormData.currency === 'usd' ? '$' : editFormData.currency === 'eur' ? '€' : editFormData.currency === 'gbp' ? '£' : editFormData.currency.toUpperCase()}
                       </span>
                       <input
@@ -647,16 +636,16 @@ export default function DashboardProducts() {
                         step="0.01"
                         value={editFormData.price}
                         onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })}
-                        className="w-full rounded-lg border border-border pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] pl-8 pr-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-400"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.currency")}</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.currency")}</label>
                     <select
                       value={editFormData.currency}
                       onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value })}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                      className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all cursor-pointer"
                     >
                       <option value="usd">USD ($)</option>
                       <option value="eur">EUR (€)</option>
@@ -665,35 +654,37 @@ export default function DashboardProducts() {
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.products.form.productImage")}</label>
-                  <div className="border border-border rounded-lg p-2 flex items-center gap-3">
-                    <div className="w-12 h-12 bg-muted rounded-md overflow-hidden flex-shrink-0">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.productImage")}</label>
+                  <div className="border-2 border-transparent bg-[#F3F3F1] rounded-xl p-3 flex items-center gap-4 hover:bg-white hover:border-black transition-all cursor-pointer group relative">
+                    <div className="w-14 h-14 bg-white border-2 border-gray-200 rounded-lg overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center">
                       {editImagePreview ? (
                         <img src={editImagePreview} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          <ImageIcon className="w-5 h-5" />
-                        </div>
+                        <ImageIcon className="w-6 h-6 text-gray-300" />
                       )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-[#1A1A1A] truncate">{editImageFile ? editImageFile.name : "Change Image"}</p>
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">JPG, PNG, WEBP</p>
                     </div>
                     <input
                       type="file"
                       onChange={handleEditFileChange}
                       accept="image/*"
-                      className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-gray-700 hover:file:bg-gray-200"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
                 </div>
-                <div className="pt-2">
+                <div className="pt-4">
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full bg-[#1A1A1A] text-white rounded-full py-4 text-base font-black hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                   >
                     {isUpdating ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         {t("dashboard.products.editModal.saving")}
                       </>
                     ) : (
@@ -710,27 +701,27 @@ export default function DashboardProducts() {
         {/* Delete Confirmation Modal */}
         {deletingProduct && typeof document !== "undefined" && createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-destructive">
-                <Trash2 className="w-6 h-6" />
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-8 text-center border-4 border-black">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-red-600 border-2 border-red-200">
+                <Trash2 className="w-8 h-8" strokeWidth={2.5} />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.delete.title")}</h3>
-              <p className="text-muted-foreground text-sm mb-6">
+              <h3 className="text-2xl font-black text-[#1A1A1A] mb-2 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.delete.title")}</h3>
+              <p className="text-gray-500 text-base font-medium mb-8">
                 {t("dashboard.products.delete.body", { title: deletingProduct.title })}
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <button
                   onClick={() => setDeletingProduct(null)}
-                  className="flex-1 py-2.5 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-3.5 bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-full hover:border-black hover:text-black transition-colors"
                 >
                   {t("dashboard.products.delete.cancel")}
                 </button>
                 <button
                   onClick={handleDeleteProduct}
                   disabled={isDeleting}
-                  className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-3.5 bg-red-600 text-white font-black rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
-                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.products.delete.action")}
+                  {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : t("dashboard.products.delete.action")}
                 </button>
               </div>
             </div>
@@ -741,39 +732,39 @@ export default function DashboardProducts() {
         {/* Stripe Not Connected Popup */}
         {showStripePopup && typeof document !== "undefined" && createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-surface-card rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-[32px] shadow-2xl max-w-lg w-full p-8 relative animate-in zoom-in-95 duration-200 border-4 border-black">
               <button
                 onClick={() => setShowStripePopup(false)}
-                className="absolute top-4 right-4 p-2 hover:bg-muted rounded-lg transition-colors"
+                className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors text-black border-2 border-transparent hover:border-black"
               >
-                <X className="w-5 h-5 text-muted-foreground" />
+                <X className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-purple-600" />
+              <div className="flex items-center gap-5 mb-6">
+                <div className="w-16 h-16 bg-[#635BFF]/10 rounded-2xl flex items-center justify-center border-2 border-[#635BFF]/20">
+                  <CreditCard className="w-8 h-8 text-[#635BFF]" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.stripe.title")}</h3>
-                  <p className="text-sm text-muted-foreground">{t("dashboard.products.stripe.subtitle")}</p>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.stripe.title")}</h3>
+                  <p className="text-base text-gray-500 font-bold">{t("dashboard.products.stripe.subtitle")}</p>
                 </div>
               </div>
 
-              <p className="text-muted-foreground mb-6">
+              <p className="text-gray-600 font-medium text-lg leading-relaxed mb-8">
                 {t("dashboard.products.stripe.body")}
               </p>
 
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <a
                   href="/dashboard/integrations"
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors"
+                  className="flex-[2] flex items-center justify-center gap-2 px-6 py-4 bg-[#635BFF] text-white rounded-full font-black text-lg hover:bg-[#635BFF]/90 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                 >
                   {t("dashboard.products.stripe.cta")}
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-5 h-5" />
                 </a>
                 <button
                   onClick={() => setShowStripePopup(false)}
-                  className="px-4 py-3 bg-muted text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-6 py-4 bg-white border-2 border-gray-200 text-gray-500 rounded-full font-bold hover:text-black hover:border-black transition-colors"
                 >
                   {t("dashboard.products.stripe.close")}
                 </button>

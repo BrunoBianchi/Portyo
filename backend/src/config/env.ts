@@ -61,6 +61,12 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional(),
 
   // AI - Multiple API Keys for rotation/fallback
+  // Primary: Z.AI (GLM 4.7)
+  Z_AI_API_KEY: z.string().optional(),
+  Z_AI_MODEL: z.string().default("glm-4.7"),
+  Z_AI_BASE_URL: z.string().default("https://api.z.ai/v1"),
+  
+  // Fallback: Groq
   GROQ_API_KEY: z.string().optional(),
   GROQ_API_KEY_1: z.string().optional(),
   GROQ_API_KEY_2: z.string().optional(),

@@ -140,7 +140,7 @@ export const CountrySelector = ({ selectedCountry, onSelectCountry, disabled = f
                             placeholder="Search country or region..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-3 py-2 bg-muted rounded-lg text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full px-3 py-2 bg-muted rounded-lg text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-white/30"
                         />
                     </div>
                     

@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router";
 import { api } from "../services/api";
 import { format } from "date-fns";
 import { ArrowLeft, Share2, Clock, Calendar, Eye } from "lucide-react";
-import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { sanitizeHtml } from "~/utils/security";
 import { useTranslation } from "react-i18next";
@@ -82,34 +81,28 @@ export default function BlogPostPage() {
         return Math.max(1, Math.ceil(wordCount / 200));
     };
 
-    // Remove o H1 do conteúdo markdown para evitar duplicação do título
     const removeFirstH1 = (content: string) => {
         return content.replace(/^#\s+.+\n?/m, '');
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen flex items-center justify-center bg-[#F3F3F1]">
+                <div className="w-8 h-8 border-4 border-[#1A1A1A] border-t-[#D2E823] rounded-full animate-spin"></div>
             </div>
         );
     }
 
     if (error || !post) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-                    <span className="text-3xl font-bold text-muted-foreground">404</span>
-                </div>
-                <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                    {t("notFound.title", "Post not found")}
-                </h1>
-                <p className="text-muted-foreground mb-8">{t("notFound.description", "The post you're looking for doesn't exist.")}</p>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#F3F3F1]">
+                <h1 className="text-9xl font-black text-[#1A1A1A] mb-4" style={{ fontFamily: 'var(--font-display)' }}>404</h1>
+                <p className="text-2xl font-bold text-[#1A1A1A]/60 mb-8">{t("notFound.title", "Post not found")}</p>
                 <Link
                     to={`/${i18n.language}/blog`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:bg-primary-hover transition-colors"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#1A1A1A] text-white font-black text-lg uppercase tracking-wider hover:scale-105 transition-transform"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-5 h-5" />
                     {t("backToBlog", "Back to Blog")}
                 </Link>
             </div>
@@ -117,296 +110,122 @@ export default function BlogPostPage() {
     }
 
     const authorName = post.bio?.seoTitle || post.user?.name || "Portyo.me";
-    const authorImage = post.bio?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=bbff00&color=000`;
+    const authorImage = post.bio?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=1A1A1A&color=fff`;
     const readTime = getReadTime(post.content);
     const formattedDate = format(new Date(post.createdAt), 'MMMM d, yyyy');
     const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
-
-    // Processa o conteúdo removendo o H1 inicial
     const processedContent = isHtmlContent ? post.content : removeFirstH1(post.content);
 
     return (
-        <article className="min-h-screen bg-background">
-            {/* Navigation */}
-            <nav className="border-b border-border/50 sticky top-0 bg-background/95 backdrop-blur-md z-50">
-                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+        <article className="min-h-screen bg-[#F3F3F1] pb-20">
+            {/* Navbar Stub */}
+            <div className="sticky top-0 z-50 bg-[#F3F3F1]/90 backdrop-blur-md border-b-2 border-[#1A1A1A]">
+                <div className="max-w-[1000px] mx-auto px-6 h-20 flex items-center justify-between">
                     <Link
                         to={`/${i18n.language}/blog`}
-                        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        className="font-bold text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white px-4 py-2 transition-colors uppercase tracking-wider text-sm border-2 border-[#1A1A1A]"
                     >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span className="font-medium">{t("backToBlog", "Back to Blog")}</span>
+                        ← {t("backToBlog", "Back")}
                     </Link>
-
-                    <button
-                        onClick={handleShare}
-                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all"
-                        title={t("share", "Share")}
-                    >
-                        <Share2 className="w-4 h-4" />
+                    <button onClick={handleShare} className="p-3 hover:bg-[#1A1A1A] hover:text-white transition-colors border-2 border-[#1A1A1A] rounded-full">
+                        <Share2 className="w-5 h-5" />
                     </button>
                 </div>
-            </nav>
+            </div>
 
             {/* Hero Section */}
-            <header className="relative">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background pointer-events-none" />
-                
-                <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-12">
-                    {/* Meta info */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6"
-                    >
-                        <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {formattedDate}
-                        </span>
-                        <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
-                            <Clock className="w-3.5 h-3.5" />
-                            {t("readTime", { count: readTime })}
-                        </span>
-                        {post.views !== undefined && (
-                            <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full">
-                                <Eye className="w-3.5 h-3.5" />
-                                {post.views.toLocaleString()} {t("views", "views")}
-                            </span>
-                        )}
-                    </motion.div>
+            <header className="max-w-[1000px] mx-auto px-6 pt-16 pb-12">
+                <div className="flex flex-wrap gap-4 mb-8 text-sm font-bold text-[#1A1A1A]">
+                    <span className="flex items-center gap-2 px-3 py-1 bg-white border-2 border-[#1A1A1A]">
+                        <Calendar className="w-4 h-4" /> {formattedDate}
+                    </span>
+                    <span className="flex items-center gap-2 px-3 py-1 bg-[#D2E823] border-2 border-[#1A1A1A]">
+                        <Clock className="w-4 h-4" /> {readTime} min read
+                    </span>
+                </div>
 
-                    {/* Title */}
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-8 tracking-tight"
-                        style={{ fontFamily: 'var(--font-display)' }}
-                    >
-                        {post.title}
-                    </motion.h1>
+                <h1 className="text-5xl md:text-7xl lg:text-[5rem] font-black text-[#1A1A1A] leading-[1] mb-12 tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                    {post.title}
+                </h1>
 
-                    {/* Author */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="flex items-center gap-3"
-                    >
-                        <img
-                            src={authorImage}
-                            alt={authorName}
-                            className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
-                        />
-                        <div>
-                            <p className="text-sm font-semibold text-foreground">{authorName}</p>
-                            <p className="text-xs text-muted-foreground">{t("author.role", "Author")}</p>
-                        </div>
-                    </motion.div>
+                <div className="flex items-center gap-4 p-4 border-l-4 border-[#1A1A1A] bg-white">
+                    <img
+                        src={authorImage}
+                        alt={authorName}
+                        className="w-12 h-12 rounded-full border-2 border-[#1A1A1A]"
+                    />
+                    <div>
+                        <p className="font-bold text-[#1A1A1A] uppercase tracking-wide text-sm">WRITTEN BY</p>
+                        <p className="font-black text-xl text-[#1A1A1A]">{authorName}</p>
+                    </div>
                 </div>
             </header>
 
             {/* Featured Image */}
             {post.thumbnail && (
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="max-w-5xl mx-auto px-6 mb-12"
-                >
-                    <div className="relative overflow-hidden rounded-2xl">
+                <div className="max-w-[1200px] mx-auto px-6 mb-16">
+                    <div className="aspect-[21/9] w-full border-2 border-[#1A1A1A] bg-[#1A1A1A] shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] overflow-hidden">
                         <img
                             src={post.thumbnail}
                             alt={post.title}
-                            className="w-full h-auto max-h-[500px] object-cover"
+                            className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl" />
                     </div>
-                </motion.div>
+                </div>
             )}
 
             {/* Content */}
-            <main className="max-w-3xl mx-auto px-6 pb-20">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                    className="blog-post-content"
-                >
-                    {isHtmlContent ? (
-                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedContent) }} />
-                    ) : (
-                        <ReactMarkdown
-                            components={{
-                                h1: ({ children }) => (
-                                    <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-10 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+            <main className="max-w-[800px] mx-auto px-6 blog-content text-[#1A1A1A]">
+                {isHtmlContent ? (
+                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedContent) }} />
+                ) : (
+                    <ReactMarkdown
+                        components={{
+                            h1: ({ children }) => <h1 className="text-4xl font-black mt-12 mb-6 tracking-tight">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-3xl font-black mt-10 mb-5 tracking-tight border-b-4 border-[#D2E823] inline-block pr-8">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-2xl font-bold mt-8 mb-4">{children}</h3>,
+                            p: ({ children }) => <p className="text-lg leading-relaxed mb-6 font-medium text-[#1A1A1A]/80">{children}</p>,
+                            a: ({ href, children }) => <a href={href} className="bg-[#D2E823] px-1 text-[#1A1A1A] font-bold hover:bg-[#1A1A1A] hover:text-[#D2E823] transition-colors" target="_blank" rel="noopener">{children}</a>,
+                            ul: ({ children }) => <ul className="list-square pl-6 mb-6 space-y-2">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-6 mb-6 space-y-2 font-bold">{children}</ol>,
+                            li: ({ children }) => <li className="pl-2">{children}</li>,
+                            blockquote: ({ children }) => (
+                                <blockquote className="border-l-[6px] border-[#1A1A1A] pl-6 py-4 my-8 bg-white text-xl font-bold italic">
+                                    "{children}"
+                                </blockquote>
+                            ),
+                            code: ({ children, className }) => {
+                                const isInline = !className;
+                                return isInline ? (
+                                    <code className="bg-[#1A1A1A] text-[#D2E823] px-1.5 py-0.5 rounded text-sm font-mono font-bold">
                                         {children}
-                                    </h1>
-                                ),
-                                h2: ({ children }) => (
-                                    <h2 className="text-xl md:text-2xl font-bold text-foreground mt-8 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-                                        {children}
-                                    </h2>
-                                ),
-                                h3: ({ children }) => (
-                                    <h3 className="text-lg md:text-xl font-semibold text-foreground mt-6 mb-2">
-                                        {children}
-                                    </h3>
-                                ),
-                                h4: ({ children }) => (
-                                    <h4 className="text-base md:text-lg font-semibold text-foreground mt-5 mb-2">
-                                        {children}
-                                    </h4>
-                                ),
-                                p: ({ children }) => (
-                                    <p className="text-base text-muted-foreground leading-7 mb-5">
-                                        {children}
-                                    </p>
-                                ),
-                                a: ({ href, children }) => (
-                                    <a 
-                                        href={href} 
-                                        className="text-primary hover:text-primary-hover underline underline-offset-2 transition-colors"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {children}
-                                    </a>
-                                ),
-                                ul: ({ children }) => (
-                                    <ul className="list-disc pl-5 space-y-2 mb-5 text-muted-foreground">
-                                        {children}
-                                    </ul>
-                                ),
-                                ol: ({ children }) => (
-                                    <ol className="list-decimal pl-5 space-y-2 mb-5 text-muted-foreground">
-                                        {children}
-                                    </ol>
-                                ),
-                                li: ({ children }) => (
-                                    <li className="text-muted-foreground leading-7">
-                                        {children}
-                                    </li>
-                                ),
-                                blockquote: ({ children }) => (
-                                    <blockquote className="border-l-4 border-primary/50 pl-5 py-3 my-6 bg-muted/50 rounded-r-lg">
-                                        <p className="text-foreground italic m-0">{children}</p>
-                                    </blockquote>
-                                ),
-                                code: ({ children, className }) => {
-                                    const isInline = !className;
-                                    return isInline ? (
-                                        <code className="bg-muted px-1.5 py-0.5 rounded text-sm text-foreground font-mono">
-                                            {children}
-                                        </code>
-                                    ) : (
-                                        <pre className="bg-muted p-4 rounded-xl overflow-x-auto mb-5 border border-border">
-                                            <code className={`text-sm text-foreground font-mono ${className || ''}`}>
-                                                {children}
-                                            </code>
-                                        </pre>
-                                    );
-                                },
-                                hr: () => <hr className="border-border my-8" />,
-                                table: ({ children }) => (
-                                    <div className="overflow-x-auto my-6">
-                                        <table className="w-full border-collapse border border-border text-sm">
-                                            {children}
-                                        </table>
-                                    </div>
-                                ),
-                                thead: ({ children }) => (
-                                    <thead className="bg-muted">
-                                        {children}
-                                    </thead>
-                                ),
-                                tbody: ({ children }) => (
-                                    <tbody>
-                                        {children}
-                                    </tbody>
-                                ),
-                                tr: ({ children }) => (
-                                    <tr className="border-b border-border">
-                                        {children}
-                                    </tr>
-                                ),
-                                th: ({ children }) => (
-                                    <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                                        {children}
-                                    </th>
-                                ),
-                                td: ({ children }) => (
-                                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                                        {children}
-                                    </td>
-                                ),
-                                strong: ({ children }) => (
-                                    <strong className="font-semibold text-foreground">
-                                        {children}
-                                    </strong>
-                                ),
-                                em: ({ children }) => (
-                                    <em className="italic text-muted-foreground">
-                                        {children}
-                                    </em>
-                                ),
-                            }}
-                        >
-                            {processedContent}
-                        </ReactMarkdown>
-                    )}
-                </motion.div>
-
-                {/* Footer Section */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                    className="mt-16 pt-10 border-t border-border/50"
-                >
-                    <div className="text-center">
-                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                            {t("thanksReading", "Thanks for reading! If you enjoyed this article, consider sharing it.")}
-                        </p>
-                        <button
-                            onClick={handleShare}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-semibold rounded-xl hover:bg-primary-hover transition-colors"
-                        >
-                            <Share2 className="w-4 h-4" />
-                            {t("shareArticle", "Share this article")}
-                        </button>
-                    </div>
-                </motion.div>
+                                    </code>
+                                ) : (
+                                    <pre className="bg-[#1A1A1A] text-white p-6 rounded-none overflow-x-auto mb-8 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_#D2E823]">
+                                        <code className={`text-sm font-mono ${className || ''}`}>{children}</code>
+                                    </pre>
+                                );
+                            },
+                            img: ({ src, alt }) => (
+                                <div className="my-8 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                                    <img src={src} alt={alt} className="w-full h-auto block" />
+                                    {alt && <div className="bg-white p-2 border-t-2 border-[#1A1A1A] text-xs font-bold text-center uppercase tracking-widest text-[#1A1A1A]/60">{alt}</div>}
+                                </div>
+                            )
+                        }}
+                    >
+                        {processedContent}
+                    </ReactMarkdown>
+                )}
             </main>
 
-            {/* Custom styles */}
             <style>{`
-                .blog-post-content h1,
-                .blog-post-content h2,
-                .blog-post-content h3,
-                .blog-post-content h4 {
-                    scroll-margin-top: 80px;
+                .list-square {
+                    list-style-type: square;
                 }
-                
-                .blog-post-content img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 12px;
-                    margin: 1.5rem 0;
-                }
-                
-                .blog-post-content pre {
-                    background: hsl(var(--muted));
-                }
-                
-                .blog-post-content code {
-                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-                }
-                
-                .blog-post-content blockquote > p {
-                    margin: 0;
+                .blog-content strong {
+                    font-weight: 900;
+                    color: #1A1A1A;
                 }
             `}</style>
         </article>

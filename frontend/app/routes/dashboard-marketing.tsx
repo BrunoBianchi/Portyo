@@ -1,15 +1,15 @@
 import type { MetaFunction } from "react-router";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Plus, TrendingUp, X, Loader2, Trash2, Sparkles, DollarSign, Image as ImageIcon } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import AuthContext from "~/contexts/auth.context";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
 
 export const meta: MetaFunction = () => {
     return [
@@ -41,7 +41,7 @@ interface MarketingProposal {
     };
     guestName?: string;
     guestEmail?: string;
-    proposedPrice: number; // numeric in DB string in JSON? Helper usually converts, assuming number
+    proposedPrice: number;
     status: 'pending' | 'accepted' | 'rejected' | 'active' | 'completed' | 'in_progress';
     message?: string;
     content: {
@@ -56,7 +56,7 @@ interface MarketingProposal {
 export default function DashboardMarketing() {
     const { bio } = useContext(BioContext);
     const { user } = useContext(AuthContext);
-    const { t } = useTranslation();
+    const { t } = useTranslation("dashboard");
     const userPlan = user?.plan || 'free';
     const isPro = userPlan === 'pro';
     const isStandard = userPlan === 'standard' || isPro;
@@ -79,10 +79,9 @@ export default function DashboardMarketing() {
     // Stripe Status
     const [isStripeConnected, setIsStripeConnected] = useState(false);
     const [isLoadingStripe, setIsLoadingStripe] = useState(true);
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
+    const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:marketing-tour-done" });
 
     const [formData, setFormData] = useState({
         slotName: "",
@@ -129,11 +128,6 @@ export default function DashboardMarketing() {
         if (typeof window === "undefined") return;
         if (isMobile) return;
 
-        const hasSeenTour = window.localStorage.getItem("portyo:marketing-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
-
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
         if (primaryFromTheme) {
@@ -141,57 +135,46 @@ export default function DashboardMarketing() {
         }
     }, [isMobile]);
 
-    const marketingTourSteps: Step[] = [
-        {
-            target: "[data-tour=\"marketing-header\"]",
-            content: t("dashboard.tours.marketing.steps.header"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"marketing-create\"]",
-            content: t("dashboard.tours.marketing.steps.create"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"marketing-stripe\"]",
-            content: t("dashboard.tours.marketing.steps.stripe"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"marketing-grid\"]",
-            content: t("dashboard.tours.marketing.steps.grid"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"marketing-card\"]",
-            content: t("dashboard.tours.marketing.steps.card"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"marketing-proposals\"]",
-            content: t("dashboard.tours.marketing.steps.proposals"),
-            placement: "top",
-        },
-    ];
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (isMobile) return;
 
-    const handleMarketingTourCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
-
-        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
+        const hasSeenTour = window.localStorage.getItem("portyo:marketing-tour-done");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                startTour(marketingTourSteps);
+            }, 500);
+            return () => clearTimeout(timer);
         }
+    }, [isMobile, startTour]);
 
-        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:marketing-tour-done", "true");
-            }
-        }
-    };
+    const marketingTourSteps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"marketing-header\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.header"), description: t("dashboard.tours.marketing.steps.header"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"marketing-create\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.create"), description: t("dashboard.tours.marketing.steps.create"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"marketing-stripe\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.stripe"), description: t("dashboard.tours.marketing.steps.stripe"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"marketing-grid\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.grid"), description: t("dashboard.tours.marketing.steps.grid"), side: "top", align: "start" },
+        },
+        {
+            element: "[data-tour=\"marketing-card\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.card"), description: t("dashboard.tours.marketing.steps.card"), side: "top", align: "start" },
+        },
+        {
+            element: "[data-tour=\"marketing-proposals\"]",
+            popover: { title: t("dashboard.tours.marketing.steps.proposals"), description: t("dashboard.tours.marketing.steps.proposals"), side: "top", align: "start" },
+        },
+    ], [t]);
+
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -271,13 +254,11 @@ export default function DashboardMarketing() {
         setProcessingProposalId(proposalId);
         try {
             await api.put(`/marketing/proposals/${proposalId}/accept`);
-            // Update local state
             setSelectedSlotProposals(prev => prev.map(p => {
-                if (p.id === proposalId) return { ...p, status: 'accepted' }; // Or active? Backend sets active
+                if (p.id === proposalId) return { ...p, status: 'accepted' };
                 if (p.status === 'pending') return { ...p, status: 'rejected' };
                 return p;
             }));
-            // Update slot status in background or optimistic
             if (viewingProposalsFor) {
                 setSlots(prev => prev.map(s => s.id === viewingProposalsFor.id ? { ...s, status: 'occupied' } : s));
             }
@@ -303,40 +284,21 @@ export default function DashboardMarketing() {
         }
     };
 
-    const handleSendPaymentLink = async (proposalId: string) => {
-        if (!viewingProposalsFor?.bioId) {
-            alert(t("dashboard.marketing.errors.missingBio"));
-            return;
-        }
-        setSendingPaymentLinkId(proposalId);
-        try {
-            await api.post(`/marketing/proposals/${viewingProposalsFor.bioId}/generate-payment-link`, {
-                proposalId
-            });
-            alert(t("dashboard.marketing.paymentLinkSent"));
-        } catch (error: any) {
-            console.error("Failed to send payment link", error);
-            alert(error.response?.data?.error || t("dashboard.marketing.errors.paymentLink"));
-        } finally {
-            setSendingPaymentLinkId(null);
-        }
-    };
-
     if (!isStandard) {
         return (
             <AuthorizationGuard>
                 <div className="p-6 max-w-7xl mx-auto">
-                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl p-12 text-center text-white">
-                        <div className="w-20 h-20 bg-surface-card/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Sparkles className="w-10 h-10" />
+                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-[32px] p-12 text-center">
+                        <div className="w-20 h-20 bg-[#F3F3F1] rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-black">
+                            <Sparkles className="w-10 h-10 text-black" />
                         </div>
-                        <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.locked.title")}</h2>
-                        <p className="text-lg mb-8 opacity-90">
+                        <h2 className="text-3xl font-black text-[#1A1A1A] mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.locked.title")}</h2>
+                        <p className="text-lg mb-8 text-gray-600 font-medium">
                             {t("dashboard.marketing.locked.subtitle")}
                         </p>
                         <a
                             href="/dashboard/settings"
-                            className="inline-block px-8 py-4 bg-surface-card text-purple-600 rounded-full font-bold hover:bg-muted transition"
+                            className="inline-block px-8 py-4 bg-black text-white rounded-xl font-bold hover:bg-[#333] transition shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                         >
                             {t("dashboard.marketing.locked.cta")}
                         </a>
@@ -349,41 +311,21 @@ export default function DashboardMarketing() {
     return (
         <AuthorizationGuard>
             <div className="p-6 max-w-7xl mx-auto">
-                <Joyride
-                    steps={marketingTourSteps}
-                    run={tourRun && !isMobile}
-                    stepIndex={tourStepIndex}
-                    continuous
-                    showSkipButton
-                    spotlightClicks
-                    scrollToFirstStep
-                    callback={handleMarketingTourCallback}
-                    scrollOffset={joyrideProps.scrollOffset}
-                    spotlightPadding={joyrideProps.spotlightPadding}
-                    disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                    locale={{
-                        back: t("dashboard.tours.common.back"),
-                        close: t("dashboard.tours.common.close"),
-                        last: t("dashboard.tours.common.last"),
-                        next: t("dashboard.tours.common.next"),
-                        skip: t("dashboard.tours.common.skip"),
-                    }}
-                    styles={joyrideStyles}
-                />
+
                 {!isLoadingStripe && !isStripeConnected && (
-                    <div className="mb-8 p-6 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-between gap-4" data-tour="marketing-stripe">
+                    <div className="mb-8 p-6 bg-amber-50 rounded-[24px] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-4" data-tour="marketing-stripe">
                         <div className="flex gap-4">
-                            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 text-amber-600">
+                            <div className="w-12 h-12 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0 text-amber-800 border-2 border-amber-400">
                                 <DollarSign className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.stripe.title")}</h3>
-                                <p className="text-amber-800">{t("dashboard.marketing.stripe.subtitle")}</p>
+                                <h3 className="text-lg font-black text-[#1A1A1A] mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.stripe.title")}</h3>
+                                <p className="text-amber-800 font-medium">{t("dashboard.marketing.stripe.subtitle")}</p>
                             </div>
                         </div>
                         <a
                             href="/dashboard/integrations"
-                            className="px-6 py-3 bg-gray-900 text-white rounded-full font-bold hover:bg-black transition whitespace-nowrap"
+                            className="px-6 py-3 bg-white text-[#1A1A1A] rounded-xl border-2 border-black font-bold hover:bg-gray-50 transition whitespace-nowrap shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                         >
                             {t("dashboard.marketing.stripe.cta")}
                         </a>
@@ -392,35 +334,35 @@ export default function DashboardMarketing() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="marketing-header">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.title")}</h1>
-                        <p className="text-muted-foreground mt-1">{t("dashboard.marketing.subtitle", { current: slots.length, limit: maxSlots })}</p>
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.title")}</h1>
+                        <p className="text-gray-600 font-medium mt-2">{t("dashboard.marketing.subtitle", { current: slots.length, limit: maxSlots })}</p>
+                        <div className="text-xs text-gray-500 mt-2 flex items-center gap-1 font-bold uppercase tracking-wider">
                             {t("dashboard.marketing.platformFee")}
                             <InfoTooltip content={t("tooltips.marketing.platformFee")} position="right" />
-                        </p>
+                        </div>
                     </div>
                     <button
                         data-tour="marketing-create"
                         onClick={() => setIsCreateModalOpen(true)}
                         disabled={slots.length >= maxSlots || !isStripeConnected}
-                        className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-3 bg-[#C6F035] text-black rounded-xl font-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
                     >
-                        <Plus className="w-5 h-5" /> {t("dashboard.marketing.newSlot")}
+                        <Plus className="w-5 h-5" strokeWidth={3} /> {t("dashboard.marketing.newSlot")}
                     </button>
                 </div>
 
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                     </div>
                 ) : slots.length === 0 ? (
-                    <div className="bg-muted rounded-3xl p-12 text-center border-2 border-dashed border-border" data-tour="marketing-grid">
-                        <TrendingUp className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.emptyTitle")}</h3>
-                        <p className="text-muted-foreground mb-6">{t("dashboard.marketing.emptySubtitle")}</p>
+                    <div className="bg-[#F3F3F1] rounded-[32px] p-12 text-center border-2 border-dashed border-gray-300" data-tour="marketing-grid">
+                        <TrendingUp className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                        <h3 className="text-xl font-black text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.emptyTitle")}</h3>
+                        <p className="text-gray-500 font-medium mb-6 max-w-md mx-auto">{t("dashboard.marketing.emptySubtitle")}</p>
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
-                            className="px-6 py-3 bg-black text-white rounded-full font-bold hover:bg-gray-800 transition"
+                            className="px-6 py-3 bg-black text-white rounded-xl font-bold hover:bg-[#333] transition shadow-[4px_4px_0px_0px_rgba(198,240,53,1)]"
                         >
                             {t("dashboard.marketing.emptyCta")}
                         </button>
@@ -431,14 +373,14 @@ export default function DashboardMarketing() {
                             <div
                                 key={slot.id}
                                 data-tour={index === 0 ? "marketing-card" : undefined}
-                                className="bg-surface-card rounded-3xl border border-border p-6 shadow-sm hover:shadow-lg transition"
+                                className="bg-white rounded-[24px] border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-300"
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
-                                        <h3 className="font-bold text-lg text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{slot.slotName}</h3>
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <DollarSign className="w-4 h-4" />
-                                            <span>${slot.priceMin} - ${slot.priceMax}</span>
+                                        <h3 className="font-black text-xl text-[#1A1A1A] mb-1 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>{slot.slotName}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                                            <DollarSign className="w-4 h-4 text-black" />
+                                            <span className="text-black font-bold">${slot.priceMin} - ${slot.priceMax}</span>
                                             <span className="text-gray-300">•</span>
                                             <span>{t("dashboard.marketing.durationDays", { count: slot.duration })}</span>
                                         </div>
@@ -449,37 +391,37 @@ export default function DashboardMarketing() {
                                             setDeletingSlot(slot);
                                         }}
                                         disabled={slot.status !== 'available'}
-                                        className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="p-2.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400"
                                         title={slot.status !== 'available' ? t("dashboard.marketing.campaignInProgress") : t("dashboard.marketing.deleteSlot")}
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-5 h-5" />
                                     </button>
                                 </div>
 
-                                <div className="flex items-center gap-4 py-4 border-t border-b border-border my-4">
+                                <div className="flex items-center gap-4 py-4 border-t-2 border-gray-100 my-4">
                                     <div className="flex-1">
-                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.status.label")}</p>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${slot.status === 'available' ? 'bg-green-100 text-green-700' :
-                                            slot.status === 'occupied' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-yellow-100 text-yellow-700'
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t("dashboard.marketing.status.label")}</p>
+                                        <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wide border-2 ${slot.status === 'available' ? 'bg-green-100 text-green-700 border-green-200' :
+                                            slot.status === 'occupied' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                'bg-yellow-100 text-yellow-700 border-yellow-200'
                                             }`}>
                                             {slot.status === 'available' ? t("dashboard.marketing.status.available") : slot.status === 'occupied' ? t("dashboard.marketing.status.occupied") : t("dashboard.marketing.status.pending")}
                                         </span>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.proposals")}</p>
-                                        <p className="text-2xl font-bold text-foreground">{slot.totalProposals}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t("dashboard.marketing.proposals")}</p>
+                                        <p className="text-2xl font-black text-[#1A1A1A]">{slot.totalProposals}</p>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t("dashboard.marketing.revenue")}</p>
-                                        <p className="text-2xl font-bold text-green-400">${slot.totalRevenue}</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{t("dashboard.marketing.revenue")}</p>
+                                        <p className="text-2xl font-black text-[#1A1A1A]">${slot.totalRevenue}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex gap-2" data-tour={index === 0 ? "marketing-proposals" : undefined}>
                                     <button
                                         onClick={() => handleViewProposals(slot)}
-                                        className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition text-sm"
+                                        className="w-full py-3 bg-black text-white rounded-xl font-bold hover:bg-[#333] transition shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:shadow-[1px_1px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:scale-[0.99]"
                                     >
                                         {t("dashboard.marketing.viewProposals")}
                                     </button>
@@ -491,59 +433,66 @@ export default function DashboardMarketing() {
 
                 {/* Create Modal */}
                 {isCreateModalOpen && typeof document !== "undefined" && createPortal(
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md">
-                            <div className="p-6 border-b border-border flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.createModal.title")}</h3>
-                                <button onClick={() => setIsCreateModalOpen(false)} className="text-muted-foreground hover:text-muted-foreground">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsCreateModalOpen(false)} />
+                        <div className="relative bg-white rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black w-full max-w-md animate-in zoom-in-95 duration-200">
+                            <div className="p-6 border-b-2 border-gray-100 flex items-center justify-between">
+                                <h3 className="text-xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.createModal.title")}</h3>
+                                <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-black hover:text-white rounded-full transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <form onSubmit={handleCreate} className="p-6 space-y-4">
-                                {createError && <div className="p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">{createError}</div>}
+                            <form onSubmit={handleCreate} className="p-6 space-y-5">
+                                {createError && <div className="p-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl text-sm font-bold">{createError}</div>}
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.marketing.createModal.slotName")}</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{t("dashboard.marketing.createModal.slotName")}</label>
                                     <input
                                         required
                                         value={formData.slotName}
                                         onChange={(e) => setFormData({ ...formData, slotName: e.target.value })}
-                                        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 font-semibold text-[#1A1A1A] focus:border-black focus:ring-0 outline-none transition-all placeholder:text-gray-400"
                                         placeholder={t("dashboard.marketing.createModal.slotPlaceholder")}
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.marketing.createModal.minPrice")}</label>
-                                        <input
-                                            required
-                                            type="number"
-                                            min="0"
-                                            max="999999.99"
-                                            step="0.01"
-                                            value={formData.priceMin}
-                                            onChange={(e) => setFormData({ ...formData, priceMin: e.target.value })}
-                                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
-                                        />
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{t("dashboard.marketing.createModal.minPrice")}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">$</span>
+                                            <input
+                                                required
+                                                type="number"
+                                                min="0"
+                                                max="999999.99"
+                                                step="0.01"
+                                                value={formData.priceMin}
+                                                onChange={(e) => setFormData({ ...formData, priceMin: e.target.value })}
+                                                className="w-full rounded-xl border-2 border-gray-200 pl-8 pr-4 py-3 font-semibold text-[#1A1A1A] focus:border-black focus:ring-0 outline-none transition-all"
+                                            />
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.marketing.createModal.maxPrice")}</label>
-                                        <input
-                                            required
-                                            type="number"
-                                            min="0"
-                                            max="999999.99"
-                                            step="0.01"
-                                            value={formData.priceMax}
-                                            onChange={(e) => setFormData({ ...formData, priceMax: e.target.value })}
-                                            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
-                                        />
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{t("dashboard.marketing.createModal.maxPrice")}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">$</span>
+                                            <input
+                                                required
+                                                type="number"
+                                                min="0"
+                                                max="999999.99"
+                                                step="0.01"
+                                                value={formData.priceMax}
+                                                onChange={(e) => setFormData({ ...formData, priceMax: e.target.value })}
+                                                className="w-full rounded-xl border-2 border-gray-200 pl-8 pr-4 py-3 font-semibold text-[#1A1A1A] focus:border-black focus:ring-0 outline-none transition-all"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.marketing.createModal.duration")}</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{t("dashboard.marketing.createModal.duration")}</label>
                                     <input
                                         required
                                         type="number"
@@ -551,19 +500,19 @@ export default function DashboardMarketing() {
                                         max="365"
                                         value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                        className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:ring-2 focus:ring-black/10 outline-none"
+                                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 font-semibold text-[#1A1A1A] focus:border-black focus:ring-0 outline-none transition-all"
                                     />
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border-2 border-transparent hover:border-gray-200 transition-colors">
                                     <input
                                         type="checkbox"
                                         id="acceptOther"
                                         checked={formData.acceptOtherPrices}
                                         onChange={(e) => setFormData({ ...formData, acceptOtherPrices: e.target.checked })}
-                                        className="w-4 h-4"
+                                        className="w-5 h-5 rounded-md border-2 border-gray-300 text-black focus:ring-black"
                                     />
-                                    <label htmlFor="acceptOther" className="text-sm text-gray-700 flex items-center gap-1">
+                                    <label htmlFor="acceptOther" className="text-sm font-bold text-gray-700 flex items-center gap-1 cursor-pointer select-none">
                                         {t("dashboard.marketing.createModal.acceptOther")}
                                         <InfoTooltip content={t("tooltips.marketing.acceptOtherPrices")} position="top" />
                                     </label>
@@ -572,9 +521,9 @@ export default function DashboardMarketing() {
                                 <button
                                     type="submit"
                                     disabled={isCreating}
-                                    className="w-full bg-black text-white rounded-lg py-2.5 font-medium hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full bg-[#C6F035] text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] rounded-xl py-3.5 font-black hover:bg-[#d9fc5c] transition disabled:opacity-50 disabled:shadow-none disabled:transform-none flex items-center justify-center gap-2"
                                 >
-                                    {isCreating ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.marketing.createModal.creating")}</> : t("dashboard.marketing.createModal.create")}
+                                    {isCreating ? <><Loader2 className="w-5 h-5 animate-spin" /> {t("dashboard.marketing.createModal.creating")}</> : t("dashboard.marketing.createModal.create")}
                                 </button>
                             </form>
                         </div>
@@ -584,26 +533,27 @@ export default function DashboardMarketing() {
 
                 {/* Delete Modal */}
                 {deletingSlot && typeof document !== "undefined" && createPortal(
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
-                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="w-6 h-6 text-destructive" />
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setDeletingSlot(null)} />
+                        <div className="relative bg-white rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black w-full max-w-sm p-8 text-center animate-in zoom-in-95 duration-200">
+                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-100">
+                                <Trash2 className="w-8 h-8 text-red-500" />
                             </div>
-                            <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.deleteModal.title")}</h3>
-                            <p className="text-muted-foreground text-sm mb-6">
+                            <h3 className="text-xl font-black text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.deleteModal.title")}</h3>
+                            <p className="text-gray-500 font-medium text-sm mb-8 leading-relaxed">
                                 {t("dashboard.marketing.deleteModal.description", { name: deletingSlot.slotName })}
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setDeletingSlot(null)}
-                                    className="flex-1 py-2.5 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
+                                    className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-xl hover:border-black hover:text-black transition"
                                 >
                                     {t("dashboard.marketing.cancel")}
                                 </button>
                                 <button
                                     onClick={handleDelete}
                                     disabled={isDeleting}
-                                    className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 py-3 bg-red-600 text-white border-2 border-red-700 font-bold rounded-xl hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                                 >
                                     {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.marketing.delete")}
                                 </button>
@@ -615,16 +565,17 @@ export default function DashboardMarketing() {
 
                 {/* Proposals Modal */}
                 {viewingProposalsFor && typeof document !== "undefined" && createPortal(
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-                            <div className="p-6 border-b border-border flex items-center justify-between flex-shrink-0">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setViewingProposalsFor(null)} />
+                        <div className="relative bg-white rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black w-full max-w-2xl max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200">
+                            <div className="p-6 border-b-2 border-gray-100 flex items-center justify-between flex-shrink-0">
                                 <div>
-                                    <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.proposalsFor", { name: viewingProposalsFor.slotName })}</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        ${viewingProposalsFor.priceMin} - ${viewingProposalsFor.priceMax} • {t("dashboard.marketing.durationDays", { count: viewingProposalsFor.duration })}
+                                    <h3 className="text-xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.marketing.proposalsFor", { name: viewingProposalsFor.slotName })}</h3>
+                                    <p className="text-sm text-gray-500 font-medium mt-1">
+                                        <span className="text-[#1A1A1A] font-bold">${viewingProposalsFor.priceMin} - ${viewingProposalsFor.priceMax}</span> • {t("dashboard.marketing.durationDays", { count: viewingProposalsFor.duration })}
                                     </p>
                                 </div>
-                                <button onClick={() => setViewingProposalsFor(null)} className="text-muted-foreground hover:text-muted-foreground">
+                                <button onClick={() => setViewingProposalsFor(null)} className="p-2 hover:bg-black hover:text-white rounded-full transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -632,35 +583,38 @@ export default function DashboardMarketing() {
                             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                                 {isLoadingProposals ? (
                                     <div className="flex justify-center py-12">
-                                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                                     </div>
                                 ) : selectedSlotProposals.length === 0 ? (
-                                    <div className="text-center py-12 text-muted-foreground">
-                                        <p>{t("dashboard.marketing.noProposals")}</p>
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-gray-100">
+                                            <Sparkles className="w-8 h-8 text-gray-300" />
+                                        </div>
+                                        <p className="text-gray-500 font-bold">{t("dashboard.marketing.noProposals")}</p>
                                     </div>
                                 ) : (
                                     selectedSlotProposals.map(proposal => (
-                                        <div key={proposal.id} className="border border-border rounded-xl p-5 hover:border-border transition bg-muted/50">
+                                        <div key={proposal.id} className="border-2 border-gray-100 rounded-2xl p-5 hover:border-black transition-colors bg-white group">
                                             <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-[#F3F3F1] border-2 border-black rounded-full flex items-center justify-center text-black font-black text-lg">
                                                         {proposal.company?.sufix?.[0]?.toUpperCase() || proposal.guestName?.[0]?.toUpperCase() || 'G'}
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-foreground leading-tight">
+                                                        <h4 className="font-bold text-[#1A1A1A] leading-tight text-lg">
                                                             {proposal.company?.sufix ? `@${proposal.company.sufix}` : proposal.guestName || t("dashboard.marketing.guest")}
                                                         </h4>
-                                                        <p className="text-xs text-muted-foreground">
+                                                        <p className="text-xs text-gray-500 font-bold">
                                                             {new Date(proposal.createdAt).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-lg font-bold text-green-400">${proposal.proposedPrice}</span>
-                                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${proposal.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                        proposal.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                            proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                                                                'bg-red-100 text-red-700'
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <span className="text-xl font-black text-[#1A1A1A]">${proposal.proposedPrice}</span>
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider border ${proposal.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                                        proposal.status === 'in_progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                            proposal.status === 'active' || proposal.status === 'accepted' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                                'bg-red-100 text-red-700 border-red-200'
                                                         }`}>
                                                         {t(`dashboard.marketing.status.${proposal.status}`)}
                                                     </span>
@@ -668,42 +622,43 @@ export default function DashboardMarketing() {
                                             </div>
 
                                             {/* Proposal Content Preview */}
-                                            <div className="bg-surface-card border border-border rounded-lg p-3 mb-4 flex gap-3">
+                                            <div className="bg-[#F8F9FA] border-2 border-gray-100 rounded-xl p-3 mb-4 flex gap-4">
                                                 {proposal.content.imageUrl ? (
-                                                    <img src={proposal.content.imageUrl} alt="" className="w-16 h-16 rounded-md object-cover bg-muted" />
+                                                    <img src={proposal.content.imageUrl} alt="" className="w-20 h-20 rounded-lg object-cover border border-gray-200" />
                                                 ) : (
-                                                    <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center text-gray-300">
-                                                        <ImageIcon width={20} height={20} />
+                                                    <div className="w-20 h-20 rounded-lg bg-white border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300">
+                                                        <ImageIcon width={24} height={24} />
                                                     </div>
                                                 )}
-                                                <div className="flex-1 min-w-0">
-                                                    <h5 className="font-bold text-sm text-foreground truncate">{proposal.content.title}</h5>
-                                                    <p className="text-xs text-muted-foreground line-clamp-2">{proposal.content.description}</p>
-                                                    <a href={proposal.content.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline mt-1 inline-block truncate max-w-full">
+                                                <div className="flex-1 min-w-0 py-1">
+                                                    <h5 className="font-bold text-[#1A1A1A] truncate text-base mb-1">{proposal.content.title}</h5>
+                                                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{proposal.content.description}</p>
+                                                    <a href={proposal.content.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-600 font-bold hover:underline mt-2 inline-block truncate max-w-full">
                                                         {proposal.content.linkUrl}
                                                     </a>
                                                 </div>
                                             </div>
 
                                             {proposal.message && (
-                                                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg mb-4 italic">
-                                                    "{proposal.message}"
+                                                <div className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl mb-6 italic border border-gray-100 relative">
+                                                    <span className="absolute top-2 left-2 text-3xl text-gray-200 leading-none">"</span>
+                                                    <span className="relative z-10">{proposal.message}</span>
                                                 </div>
                                             )}
 
-                                            <div className="flex gap-2 pt-2">
+                                            <div className="flex gap-3 pt-2">
                                                 <button
                                                     onClick={() => handleAcceptProposal(proposal.id)}
                                                     disabled={processingProposalId === proposal.id || proposal.status !== 'pending' || viewingProposalsFor?.status !== 'available'}
-                                                    className="flex-1 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+                                                    className="flex-1 py-3 bg-[#C6F035] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black rounded-xl hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition disabled:opacity-50 disabled:shadow-none disabled:transform-none text-sm flex items-center justify-center gap-2"
                                                     title={proposal.status !== 'pending' ? t("dashboard.marketing.proposalNotPending") : viewingProposalsFor?.status !== 'available' ? t("dashboard.marketing.campaignInProgress") : t("dashboard.marketing.accept")}
                                                 >
-                                                    {processingProposalId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : t("dashboard.marketing.accept")}
+                                                    {processingProposalId === proposal.id ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.marketing.accept")}
                                                 </button>
                                                 <button
                                                     onClick={() => handleRejectProposal(proposal.id)}
                                                     disabled={processingProposalId === proposal.id || proposal.status !== 'pending' || viewingProposalsFor?.status !== 'available'}
-                                                    className="flex-1 py-2 border border-border text-muted-foreground font-semibold rounded-lg hover:bg-muted hover:text-destructive transition disabled:opacity-50 text-sm"
+                                                    className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-xl hover:border-black hover:text-black transition disabled:opacity-50 text-sm"
                                                     title={proposal.status !== 'pending' ? t("dashboard.marketing.proposalNotPending") : viewingProposalsFor?.status !== 'available' ? t("dashboard.marketing.campaignInProgress") : t("dashboard.marketing.reject")}
                                                 >
                                                     {t("dashboard.marketing.reject")}

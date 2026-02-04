@@ -70,13 +70,13 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-surface-card w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col md:flex-row">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="relative bg-white w-full max-w-4xl rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black overflow-hidden max-h-[90vh] flex flex-col md:flex-row animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
                 {/* Preview Section */}
-                <div className="flex-1 bg-muted p-8 flex items-center justify-center min-h-[350px] relative">
+                <div className="flex-1 bg-[#F3F3F1] p-8 flex items-center justify-center min-h-[350px] relative border-b-4 md:border-b-0 md:border-r-4 border-black">
                     {/* Phone Frame */}
-                    <div className="relative w-[240px] h-[480px] bg-gray-900 rounded-[2.5rem] p-2.5 shadow-2xl">
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-full z-10" />
+                    <div className="relative w-[240px] h-[480px] bg-black rounded-[2.5rem] p-2.5 shadow-2xl">
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-10" />
                         <div
                             className="w-full h-full rounded-[2rem] overflow-hidden"
                             style={{
@@ -87,7 +87,7 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                             <div className="h-full flex flex-col items-center justify-center p-5 text-center">
                                 {/* Profile */}
                                 <div
-                                    className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 mb-4"
+                                    className="w-16 h-16 rounded-full bg-gradient-to-br from-white/20 to-white/30 mb-4"
                                     style={{ borderRadius: theme.styles.cardBorderRadius + 'px' }}
                                 />
                                 <h3
@@ -139,50 +139,50 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                 </div>
 
                 {/* Info Section */}
-                <div className="w-full md:w-[360px] p-6 md:p-8 flex flex-col">
+                <div className="w-full md:w-[360px] p-6 md:p-8 flex flex-col bg-white">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 hover:bg-muted rounded-full transition-colors"
+                        className="absolute top-4 right-4 p-2.5 hover:bg-black hover:text-white rounded-full transition-colors border-2 border-transparent hover:border-black"
                     >
-                        <X className="w-5 h-5 text-muted-foreground" />
+                        <X className="w-5 h-5" />
                     </button>
 
                     <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">{theme.emoji}</span>
+                        <span className="text-3xl">{theme.emoji}</span>
                         <div>
-                            <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{theme.name}</h2>
-                            <p className="text-sm text-muted-foreground capitalize">{theme.category}</p>
+                            <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{theme.name}</h2>
+                            <p className="text-sm text-gray-500 font-bold capitalize tracking-wide">{theme.category}</p>
                         </div>
                     </div>
 
                     {/* Tier Badge */}
-                    <div className="mb-5">
+                    <div className="mb-6">
                         {theme.tier === "free" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-muted text-muted-foreground rounded-full">
+                            <span className="px-3 py-1 text-xs font-black uppercase bg-gray-100 text-gray-500 rounded-full border-2 border-gray-200">
                                 {t("themes.badges.free")}
                             </span>
                         )}
                         {theme.tier === "standard" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-emerald-100 text-emerald-700 rounded-full">
+                            <span className="px-3 py-1 text-xs font-black uppercase bg-emerald-100 text-emerald-700 rounded-full border-2 border-emerald-200">
                                 {t("themes.badges.standard")}
                             </span>
                         )}
                         {theme.tier === "pro" && (
-                            <span className="px-3 py-1 text-xs font-bold uppercase bg-gray-900 text-white rounded-full">
+                            <span className="px-3 py-1 text-xs font-black uppercase bg-black text-white rounded-full border-2 border-black">
                                 {t("themes.badges.pro")}
                             </span>
                         )}
                     </div>
 
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-1">{theme.description}</p>
+                    <p className="text-gray-600 text-sm font-medium leading-relaxed mb-8 flex-1">{theme.description}</p>
 
                     {/* Features List */}
                     {theme.features && theme.features.length > 0 && (
-                        <div className="mb-6">
-                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("themes.preview.features", "Features")}</h4>
+                        <div className="mb-8">
+                            <h4 className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-3">{t("themes.preview.features", "Features")}</h4>
                             <div className="flex flex-wrap gap-2">
                                 {theme.features.map((feature, i) => (
-                                    <span key={i} className="px-2.5 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-md">
+                                    <span key={i} className="px-2.5 py-1 bg-[#F3F3F1] text-[#1A1A1A] text-xs font-bold rounded-lg border-2 border-transparent">
                                         {feature}
                                     </span>
                                 ))}
@@ -191,31 +191,31 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                     )}
 
                     {/* Color Preview */}
-                    <div className="space-y-3 mb-6">
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("themes.preview.colors")}</h4>
+                    <div className="space-y-3 mb-8">
+                        <h4 className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider">{t("themes.preview.colors")}</h4>
                         <div className="flex gap-2">
                             {theme.colors ? (
                                 theme.colors.map((color, i) => (
                                     <div
                                         key={i}
-                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                        className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
                                         style={{ backgroundColor: color }}
                                     />
                                 ))
                             ) : (
                                 <>
                                     <div
-                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                        className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
                                         style={{ backgroundColor: theme.styles.bgColor }}
                                         title={t("themes.preview.background")}
                                     />
                                     <div
-                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                        className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
                                         style={{ backgroundColor: theme.styles.cardBackgroundColor }}
                                         title={t("themes.preview.card")}
                                     />
                                     <div
-                                        className="w-10 h-10 rounded-full border border-border shadow-sm"
+                                        className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-sm"
                                         style={{ backgroundColor: theme.styles.usernameColor }}
                                         title={t("themes.preview.text")}
                                     />
@@ -228,22 +228,22 @@ function ThemePreviewModal({ theme, isOpen, onClose, onApply, canAccess, userPla
                     {isGuest ? (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all active:scale-[0.98]"
+                            className="w-full py-4 bg-black text-white font-black rounded-xl hover:bg-[#333] transition-all active:scale-[0.98] shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                         >
                             {t("themes.actions.signInToApply")}
                         </button>
                     ) : canAccess ? (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-3.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                            className="w-full py-4 bg-[#C6F035] text-black font-black rounded-xl hover:bg-[#d9fc5c] transition-all flex items-center justify-center gap-2 active:scale-[0.98] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                         >
-                            <Check className="w-5 h-5" />
+                            <Check className="w-5 h-5" strokeWidth={3} />
                             {t("themes.actions.applyTheme")}
                         </button>
                     ) : (
                         <button
                             onClick={() => onApply(theme)}
-                            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-gray-900 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                            className="w-full py-4 bg-black text-white font-black rounded-xl hover:bg-[#333] transition-all flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:scale-[0.98]"
                         >
                             <Crown className="w-5 h-5" />
                             {t("themes.actions.upgradeTo", { plan: t(`themes.badges.${theme.tier}`) })}
@@ -269,43 +269,45 @@ function ApplyTargetModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-            <div className="relative w-full max-w-xl rounded-2xl bg-surface-card shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="relative w-full max-w-xl rounded-[32px] bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-8 py-6 border-b-2 border-black/5">
                     <div>
-                        <h3 className="text-lg font-semibold text-foreground">{t("themes.applyModal.title")}</h3>
-                        <p className="text-sm text-muted-foreground">{t("themes.applyModal.subtitle")}</p>
+                        <h3 className="text-2xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("themes.applyModal.title")}</h3>
+                        <p className="text-sm text-gray-500 font-medium mt-1">{t("themes.applyModal.subtitle")}</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-full hover:bg-muted transition-colors"
+                        className="p-2.5 rounded-full hover:bg-black hover:text-white transition-colors border-2 border-transparent hover:border-black"
                         disabled={isApplying}
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                <div className="px-8 py-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     {bios.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {bios.map((bioItem) => (
                                 <button
                                     key={bioItem.id}
                                     onClick={() => onSelectBio(bioItem.id)}
-                                    className="w-full flex items-center justify-between rounded-xl border border-border px-4 py-3 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+                                    className="w-full flex items-center justify-between rounded-xl border-2 border-gray-200 bg-white px-5 py-4 text-left hover:border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all group"
                                     disabled={isApplying}
                                 >
                                     <div>
-                                        <p className="text-sm font-semibold text-foreground">/{bioItem.sufix}</p>
-                                        <p className="text-xs text-muted-foreground">{t("themes.actions.applyToBio")}</p>
+                                        <p className="text-base font-black text-[#1A1A1A] group-hover:text-black">/{bioItem.sufix}</p>
+                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">{t("themes.actions.applyToBio")}</p>
                                     </div>
-                                    <Check className="w-4 h-4 text-muted-foreground" />
+                                    <div className="w-8 h-8 rounded-full bg-[#F3F3F1] flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
+                                        <Check className="w-4 h-4" />
+                                    </div>
                                 </button>
                             ))}
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-                            {t("themes.applyModal.noBios")}
+                        <div className="rounded-xl border-2 border-dashed border-gray-300 p-8 text-center bg-[#F3F3F1]">
+                            <p className="text-base font-bold text-gray-500">{t("themes.applyModal.noBios")}</p>
                         </div>
                     )}
 
@@ -313,7 +315,7 @@ function ApplyTargetModal({
                         <div className="pt-2">
                             <button
                                 onClick={onCreateNew}
-                                className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-xl bg-[#1A1A1A] text-white font-black hover:bg-black transition-all flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                                 disabled={isApplying}
                             >
                                 <Sparkles className="w-4 h-4" />
@@ -530,204 +532,171 @@ function ThemesPage() {
                 isApplying={isApplying}
             />
 
-            <div className="min-h-screen  p-4 md:p-8 lg:p-12">
-                <div className="max-w-7xl mx-auto space-y-10">
-
-                    {/* Header - Minimal & Elegant */}
-                    <div className="text-center max-w-2xl mx-auto">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-                            {t("themes.title")}
+            <div className="min-h-screen bg-white text-[#1A1A1A] pb-24">
+                {/* Hero / Header Section */}
+                <div className="bg-[#F3F3F1] pt-20 pb-16 px-6 md:px-12 border-b border-[#1A1A1A]/10">
+                    <div className="max-w-7xl mx-auto text-center space-y-6">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+                            {t("themes.title", "Designs que convertem")}
                         </h1>
-                        <p className="text-muted-foreground text-lg">
+                        <p className="text-lg md:text-xl text-[#1A1A1A]/70 font-medium max-w-2xl mx-auto leading-relaxed">
                             {t("themes.subtitle", { count: THEME_PRESETS.length })}
                         </p>
-                    </div>
 
-                    {/* Search - Centered & Clean */}
-                    <div className="max-w-md mx-auto">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder={t("themes.searchPlaceholder")}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-surface-card border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 transition-all text-foreground placeholder:text-muted-foreground"
-                            />
+                        <div className="max-w-xl mx-auto mt-8 flex gap-3">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1A1A1A]/40" />
+                                <input
+                                    type="text"
+                                    placeholder={t("themes.searchPlaceholder", "Buscar estilo...")}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-14 pr-6 py-4 bg-white border-2 border-transparent focus:border-[#1A1A1A] rounded-full focus:outline-none transition-all text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 font-bold shadow-sm"
+                                />
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Filters - Horizontal Pills */}
-                    <div className="space-y-4">
-                        {/* Categories */}
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                            {displayedCategories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    onClick={() => setSelectedCategory(category.id)}
-                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${selectedCategory === category.id
-                                        ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20"
-                                        : "bg-surface-card text-muted-foreground hover:bg-muted border border-border"
-                                        }`}
-                                >
-                                    <span>{category.emoji}</span>
-                                    <span>{t(`themes.categories.${category.id}`, { defaultValue: category.name })}</span>
-                                </button>
-                            ))}
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 -mt-8">
+                    {/* Filters - Scrollable Row */}
+                    <div className="flex overflow-x-auto pb-8 pt-2 gap-3 no-scrollbar justify-start lg:justify-center md:px-4">
+                        {displayedCategories.map((category) => (
                             <button
-                                onClick={() => setShowAllCategories((prev) => !prev)}
-                                className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                key={category.id}
+                                onClick={() => setSelectedCategory(category.id)}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all duration-200 border-2 ${selectedCategory === category.id
+                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-lg transform scale-105"
+                                    : "bg-white text-[#1A1A1A] border-[#1A1A1A]/10 hover:border-[#1A1A1A]"
+                                    }`}
                             >
-                                {showAllCategories ? t("themes.filters.less") : t("themes.filters.more")}
-                                {showAllCategories ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                <span className={selectedCategory === category.id ? "grayscale-0" : "grayscale opacity-80"}>{category.emoji}</span>
+                                <span>{t(`themes.categories.${category.id}`, { defaultValue: category.name })}</span>
                             </button>
-                        </div>
-
-                        {/* Plan Filters - Secondary */}
-                        <div className="flex items-center justify-center gap-1 bg-muted rounded-full p-1 max-w-fit mx-auto">
-                            {[
-                                { id: "all", label: t("themes.filters.plans.all") },
-                                { id: "free", label: t("themes.filters.plans.free") },
-                                { id: "standard", label: t("themes.filters.plans.standard") },
-                                { id: "pro", label: t("themes.filters.plans.pro") }
-                            ].map((plan) => (
-                                <button
-                                    key={plan.id}
-                                    onClick={() => setSelectedPlanFilter(plan.id as "all" | "free" | "standard" | "pro")}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${selectedPlanFilter === plan.id
-                                        ? "bg-surface-card text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-gray-700"
-                                        }`}
-                                >
-                                    {plan.label}
-                                </button>
-                            ))}
-                        </div>
+                        ))}
+                        <button
+                            onClick={() => setShowAllCategories((prev) => !prev)}
+                            className="flex items-center gap-2 px-4 py-3 rounded-full text-base font-bold bg-white text-[#1A1A1A] border-2 border-[#1A1A1A]/10 hover:border-[#1A1A1A] transition-all"
+                        >
+                            {showAllCategories ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                        </button>
                     </div>
 
-                    {/* Theme Grid - Clean Cards */}
-                    <div className="grid  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {/* Theme Grid - Portrait Mode (Mobile Style) */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10 px-2 md:px-0">
                         {filteredThemes.map((theme) => {
                             const hasAccess = canAccessTheme(theme);
-
                             return (
                                 <div
                                     key={`${theme.category}-${theme.name}`}
-                                    className="group bg-surface-card rounded-2xl border border-border overflow-hidden hover:border-border hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300"
+                                    className="group flex flex-col gap-3 cursor-pointer"
+                                    onClick={() => handlePreview(theme)}
                                 >
-                                    {/* Preview Thumbnail */}
-                                    <div
-                                        className="aspect-[4/3] relative overflow-hidden cursor-pointer"
-                                        onClick={() => handlePreview(theme)}
-                                        style={{ backgroundColor: theme.styles.bgColor }}
-                                    >
-                                        {/* Mini Preview */}
-                                        <div className="absolute inset-0 flex items-center justify-center p-6">
-                                            <div
-                                                className="w-20 h-28 flex flex-col items-center justify-center p-3 transform group-hover:scale-105 transition-transform duration-300"
-                                                style={{
-                                                    backgroundColor: theme.styles.cardBackgroundColor,
-                                                    borderWidth: theme.styles.cardBorderWidth + 'px',
-                                                    borderColor: theme.styles.cardBorderColor,
-                                                    borderRadius: Math.min(theme.styles.cardBorderRadius, 12) + 'px',
-                                                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-                                                }}
-                                            >
-                                                <div
-                                                    className="w-7 h-7 rounded-full mb-2"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.15 }}
-                                                />
-                                                <div
-                                                    className="w-12 h-1.5 rounded-full mb-1"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.25 }}
-                                                />
-                                                <div
-                                                    className="w-8 h-1.5 rounded-full"
-                                                    style={{ backgroundColor: theme.styles.usernameColor, opacity: 0.15 }}
-                                                />
+                                    {/* Phone Preview Card */}
+                                    <div className="aspect-[9/19] w-full relative rounded-[2rem] overflow-hidden border-[6px] border-[#1A1A1A] bg-[#1A1A1A] shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group-hover:scale-[1.02]">
+                                        {/* Status Bar Mock */}
+                                        <div className="absolute top-0 left-0 right-0 h-6 bg-black z-20 flex justify-between px-3 items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <div className="text-[8px] text-white font-medium">9:41</div>
+                                            <div className="flex gap-1">
+                                                <div className="w-3 h-2 bg-white rounded-[1px]"></div>
                                             </div>
                                         </div>
 
-                                        {/* Lock Badge */}
-                                        {!hasAccess && (
-                                            <div className="absolute top-3 right-3">
-                                                <div className="bg-black/80 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                                                    <Lock className="w-3 h-3 text-white" />
-                                                    <span className="text-[10px] font-bold text-white uppercase tracking-wide">
-                                                        {t(`themes.badges.${theme.tier}`)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
+                                        {/* The "Screen" Content */}
+                                        <div
+                                            className="w-full h-full relative flex flex-col items-center pt-8 px-4"
+                                            style={{
+                                                backgroundColor: theme.styles.bgColor,
+                                                backgroundImage: theme.styles.bgType === "gradient" ? theme.styles.bgColor : "none"
+                                                // Note: Ideally we'd map bgType properly to gradient syntaxes, but let's assume valid CSS color/gradient in bgColor for now or implement a helper like in specific renderers.
+                                                // For themes, bgColor usually holds the CSS value.
+                                            }}
+                                        >
+                                            {/* Profile Pic Placeholder */}
+                                            <div
+                                                className="w-16 h-16 mb-3 shrink-0"
+                                                style={{
+                                                    borderRadius: theme.styles.cardBorderRadius + 'px',
+                                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                                    border: '1px solid rgba(255,255,255,0.3)'
+                                                }}
+                                            />
 
-                                        {/* Preview Overlay */}
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                                            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                                <div className="bg-surface-card/95 backdrop-blur-sm text-foreground px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 shadow-lg">
-                                                    <Eye className="w-4 h-4" />
-                                                    {t("themes.actions.preview")}
+                                            {/* Name Lines */}
+                                            <div className="w-20 h-2 rounded-full mb-1 shrink-0" style={{ backgroundColor: theme.styles.usernameColor || '#fff', opacity: 0.6 }} />
+                                            <div className="w-12 h-1.5 rounded-full mb-6 shrink-0" style={{ backgroundColor: theme.styles.usernameColor || '#fff', opacity: 0.3 }} />
+
+                                            {/* Button Mocks */}
+                                            <div className="w-full space-y-2.5">
+                                                {[1, 2, 3].map(i => (
+                                                    <div
+                                                        key={i}
+                                                        className="h-10 w-full flex items-center justify-center text-[8px] font-bold tracking-wider"
+                                                        style={{
+                                                            backgroundColor: theme.styles.cardBackgroundColor,
+                                                            borderWidth: (theme.styles.cardBorderWidth || 0) + 'px',
+                                                            borderColor: theme.styles.cardBorderColor,
+                                                            borderRadius: (theme.styles.cardBorderRadius || 0) + 'px',
+                                                            color: theme.styles.usernameColor,
+                                                            opacity: 0.9,
+                                                            boxShadow: theme.styles.cardShadow === 'soft' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+                                                        }}
+                                                    >
+                                                        LINK {i}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Floating Elements (Visual Decoration Only) */}
+                                            {theme.styles.floatingElements && (
+                                                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                                                    {/* We can just render a couple of representative shapes */}
+                                                    <div className="absolute top-[10%] left-[-10%] w-20 h-20 rounded-full blur-xl opacity-30" style={{ backgroundColor: theme.styles.floatingElementsColor }}></div>
+                                                    <div className="absolute bottom-[20%] right-[-10%] w-24 h-24 rounded-full blur-xl opacity-30" style={{ backgroundColor: theme.styles.floatingElementsColor }}></div>
+                                                </div>
+                                            )}
+
+                                            {/* Lock Overlay */}
+                                            {!hasAccess && (
+                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-30">
+                                                    <div className="bg-[#1A1A1A] text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-white/20">
+                                                        <Lock className="w-3 h-3" />
+                                                        <span className="text-[9px] font-black uppercase tracking-wider">{t(`themes.badges.${theme.tier}`)}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Hover Action Overlay */}
+                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center justify-center">
+                                                <div className="bg-white text-black px-4 py-2 rounded-full font-bold text-xs shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                                                    {t("themes.actions.preview", "Visualizar")}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Card Info */}
-                                    <div className="p-4">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-base flex-shrink-0">{theme.emoji}</span>
-                                                <h3 className="font-semibold text-foreground truncate">{theme.name}</h3>
-                                            </div>
-
-                                            {/* Tier Badge - Minimal */}
-                                            {theme.tier !== "free" && (
-                                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full flex-shrink-0 ${theme.tier === "standard"
-                                                    ? "bg-emerald-100 text-emerald-700"
-                                                    : "bg-gray-900 text-white"
-                                                    }`}>
-                                                    {t(`themes.badges.${theme.tier}`)}
-                                                </span>
-                                            )}
+                                    {/* Info Footer */}
+                                    <div className="text-center">
+                                        <h3 className="font-bold text-[#1A1A1A] text-sm md:text-base leading-tight">{theme.name}</h3>
+                                        <div className="flex gap-2 justify-center mt-1">
+                                            {theme.tier === "pro" && <span className="text-[9px] font-black bg-black text-white px-1.5 py-0.5 rounded uppercase">PRO</span>}
+                                            {theme.tier === "standard" && <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase">STANDARD</span>}
+                                            {theme.tier === "free" && <span className="text-[9px] font-black bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">FREE</span>}
                                         </div>
-
-                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{theme.description}</p>
-
-                                        {/* Apply Button - Green to Black Gradient for Upgrade */}
-                                        <button
-                                            onClick={() => handleApply(theme)}
-                                            disabled={isApplying}
-                                            className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${hasAccess
-                                                ? "bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98]"
-                                                : "bg-gradient-to-r from-emerald-500 to-gray-900 text-white hover:from-emerald-600 hover:to-black active:scale-[0.98] shadow-lg shadow-emerald-500/20"
-                                                }`}
-                                        >
-                                            {isApplying ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : isGuest ? (
-                                                <>{t("themes.actions.signInToApply")}</>
-                                            ) : hasAccess ? (
-                                                <>{t("themes.actions.apply")}</>
-                                            ) : (
-                                                <>
-                                                    <Crown className="w-4 h-4" />
-                                                    {t("themes.actions.unlock")}
-                                                </>
-                                            )}
-                                        </button>
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* Empty State - Minimal */}
+                    {/* Empty State */}
                     {filteredThemes.length === 0 && (
-                        <div className="text-center py-24">
-                            <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-                                <Palette className="w-6 h-6 text-muted-foreground" />
+                        <div className="text-center py-32">
+                            <div className="bg-[#F3F3F1] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Palette className="w-8 h-8 text-[#1A1A1A]/40" />
                             </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">{t("themes.empty.title")}</h3>
-                            <p className="text-muted-foreground text-sm">{t("themes.empty.subtitle")}</p>
+                            <h3 className="text-2xl font-black text-[#1A1A1A] mb-2">{t("themes.empty.title")}</h3>
+                            <p className="text-[#1A1A1A]/60 font-medium">{t("themes.empty.subtitle")}</p>
                         </div>
                     )}
                 </div>

@@ -10,6 +10,14 @@ export * from './ai.service';
 export * from './auto-post-ai.service';
 export * from './auto-post.service';
 export * from './auto-post-cache.service';
+// Site Auto Post exports - use specific exports to avoid conflicts
+export {
+    generateSiteContentSummary,
+    generateSiteAutoPost,
+    SiteContentSummary,
+    GeneratedSitePost,
+} from './site-auto-post-ai.service';
+export * from './site-auto-post.service';
 // Note: baml-ai.service exports duplicate types from auto-post-ai.service
 // Import directly from baml-ai.service if needed: import { ... } from './services/baml-ai.service'
 
@@ -79,6 +87,8 @@ import * as aiService from './ai.service';
 import * as autoPostAIService from './auto-post-ai.service';
 import * as autoPostService from './auto-post.service';
 import * as autoPostCacheService from './auto-post-cache.service';
+import * as siteAutoPostAIService from './site-auto-post-ai.service';
+import * as siteAutoPostService from './site-auto-post.service';
 import * as toonService from './toon.service';
 import * as toonAdapter from './toon-adapter';
 import * as bamlAdapter from './baml-adapter';
@@ -91,6 +101,8 @@ export const Services = {
     autoPostAI: autoPostAIService,
     autoPost: autoPostService,
     autoPostCache: autoPostCacheService,
+    siteAutoPostAI: siteAutoPostAIService,
+    siteAutoPost: siteAutoPostService,
     toon: toonService,
     toonAdapter: toonAdapter,
     bamlAdapter: bamlAdapter,

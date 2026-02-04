@@ -17,6 +17,9 @@ const createMockRedis = () => {
     set: async () => undefined,
     del: async () => undefined,
     getBuffer: async () => null,
+    zadd: async () => 0,
+    zrangebyscore: async () => [],
+    zrem: async () => 0,
     pipeline,
     on: () => undefined,
   } as any;

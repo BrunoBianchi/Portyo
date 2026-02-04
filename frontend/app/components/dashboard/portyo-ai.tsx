@@ -114,7 +114,7 @@ export function PortyoAI({ bioId, onBlocksGenerated, onSettingsChange, onGlobalS
                         </svg>
                     </div>
                 </div>
-                <span className="text-sm font-semibold text-foreground group-hover:text-foreground">Ask AI</span>
+                <span className="text-sm font-bold text-white group-hover:text-white">Ask AI</span>
                 <span className="absolute -top-1.5 -right-2 bg-yellow-400 text-[8px] font-bold text-yellow-900 px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm transform rotate-12 z-10">
                     BETA
                 </span>
@@ -138,7 +138,7 @@ export function PortyoAI({ bioId, onBlocksGenerated, onSettingsChange, onGlobalS
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Describe what you want..."
-                        className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-foreground placeholder:text-muted-foreground min-w-0"
+                        className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-white placeholder:text-white/50 min-w-0"
                         disabled={isGenerating}
                         autoFocus
                     />
@@ -160,7 +160,7 @@ export function PortyoAI({ bioId, onBlocksGenerated, onSettingsChange, onGlobalS
                         <button
                             type="button"
                             onClick={() => setIsOpen(false)}
-                            className="w-7 h-7 md:w-8 md:h-8 shrink-0 flex items-center justify-center text-muted-foreground hover:text-muted-foreground hover:bg-muted/50 rounded-full transition-all"
+                            className="w-7 h-7 md:w-8 md:h-8 shrink-0 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all"
                         >
                             <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -194,7 +194,7 @@ export function PortyoAI({ bioId, onBlocksGenerated, onSettingsChange, onGlobalS
                         key={suggestion}
                         type="button"
                         onClick={() => setPrompt(suggestion)}
-                        className="px-2 md:px-3 py-1 md:py-1.5 text-[9px] md:text-[10px] font-semibold text-muted-foreground bg-surface-card hover:bg-green-500/10 hover:text-green-400 hover:border-green-200 border border-border rounded-lg shadow-sm hover:shadow transition-all duration-200 whitespace-nowrap"
+                        className="px-2 md:px-3 py-1 md:py-1.5 text-[9px] md:text-[10px] font-semibold text-white/70 bg-surface-card hover:bg-primary/10 hover:text-primary hover:border-primary/30 border border-border rounded-lg shadow-sm hover:shadow transition-all duration-200 whitespace-nowrap"
                     >
                         {suggestion}
                     </button>

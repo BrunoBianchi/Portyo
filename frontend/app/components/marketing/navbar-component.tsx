@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AuthContext from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "~/constants/languages";
-import { Menu, X, ChevronDown, Globe, Sparkles } from "lucide-react";
+import { Menu, X, ChevronDown, Globe } from "lucide-react";
 
 function IconGlobe(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -16,8 +16,8 @@ function IconGlobe(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function LanguageSelect({ value, onChange, buttonClassName }: { 
-  value: string; 
+function LanguageSelect({ value, onChange, buttonClassName }: {
+  value: string;
   onChange: (value: string) => void;
   buttonClassName: string;
 }) {
@@ -47,7 +47,7 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
         <span className="hidden sm:inline">{currentLabel}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      
+
       <AnimatePresence>
         {open && (
           <motion.div
@@ -64,11 +64,10 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
                   onChange(lang.code);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
-                  lang.code === value
+                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${lang.code === value
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted"
-                }`}
+                  }`}
               >
                 {lang.label}
               </button>
@@ -131,29 +130,23 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-background/80 backdrop-blur-xl shadow-lg shadow-black/20 border-b border-border/50' 
-            : 'bg-transparent'
-        }`}
-        style={{ top: '40px' }} // Espaço para announcement bar
+        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-[#1A1A1A] py-0" : "bg-transparent py-4"
+          }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="w-full px-6 sm:px-12 lg:px-20">
+          <div className="flex items-center justify-between h-20 w-full">
             {/* Logo */}
-            <Link to={withLang('/')} className="flex items-center gap-2">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: -5 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20"
-              >
-                <span className="text-background font-bold text-xl">P</span>
-              </motion.div>
-              <span className="text-xl font-bold tracking-tight text-foreground">Portyo</span>
+            <Link
+              to={withLang('/')}
+              className={`text-2xl md:text-3xl font-extrabold tracking-tighter leading-none flex items-center h-full transition-colors ${isScrolled ? "text-white" : "text-[#1A1A1A]"
+                }`}
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Portyo
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-6">
               {[
                 { label: t("nav.features", "Features"), href: "/#features" },
                 { label: t("nav.pricing", "Pricing"), href: "/pricing" },
@@ -163,7 +156,10 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   to={withLang(item.href)}
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-white/5 transition-colors"
+                  className={`text-sm font-bold uppercase tracking-wider transition-colors ${isScrolled
+                      ? "text-gray-300 hover:text-white"
+                      : "text-gray-700 hover:text-black"
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -172,65 +168,80 @@ export default function Navbar() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
+              {/* Language Select - Simplified for Bold Theme */}
               <LanguageSelect
                 value={i18n.resolvedLanguage || i18n.language}
                 onChange={(value) => {
                   i18n.changeLanguage(value);
                   navigate(buildLocalizedPath(value), { replace: true });
                 }}
-                buttonClassName="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-white/5 transition-colors"
+                buttonClassName={`text-sm font-bold flex items-center gap-2 transition-colors ${isScrolled
+                    ? "text-white hover:text-[#D2E823]"
+                    : "text-[#1A1A1A] hover:text-[#0047FF]"
+                  }`}
               />
-              
+
               {isHydrated && user ? (
-                <div className="flex items-center gap-3">
-                  <Link 
+                <div className="flex items-center gap-4">
+                  <Link
                     to="/dashboard"
-                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    className={`text-sm font-bold uppercase tracking-wide transition-colors ${isScrolled ? "text-white hover:text-[#D2E823]" : "text-[#1A1A1A] hover:text-[#0047FF]"
+                      }`}
                   >
                     {t("nav.dashboard", "Dashboard")}
                   </Link>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={logout}
-                    className="px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                    className="px-6 py-3 text-sm font-bold rounded-full bg-[#E94E77] text-white hover:bg-[#D43D63] transition-colors"
                   >
                     {t("nav.signOut", "Sign out")}
                   </motion.button>
                 </div>
               ) : isHydrated ? (
-                <div className="flex items-center gap-3">
-                  <Link 
+                <div className="flex items-center gap-4">
+                  <Link
                     to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
-                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    className={`text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-full transition-all ${isScrolled
+                        ? "text-white hover:bg-white/10"
+                        : "text-[#1A1A1A] hover:bg-black/5"
+                      }`}
                   >
                     {t("nav.signIn")}
                   </Link>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Link 
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
                       to={withLang('/sign-up')}
-                      className="px-5 py-2.5 bg-primary text-background text-sm font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20 flex items-center gap-2"
+                      className={`px-8 py-3 text-sm font-black uppercase tracking-wider rounded-full transition-colors shadow-none border-2 ${isScrolled
+                          ? "bg-[#D2E823] text-[#1A1A1A] border-[#D2E823] hover:bg-white hover:border-white"
+                          : "bg-[#1A1A1A] text-white border-[#1A1A1A] hover:bg-transparent hover:text-[#1A1A1A]"
+                        }`}
                     >
-                      <Sparkles className="w-4 h-4" />
                       {t("nav.startFree")}
                     </Link>
                   </motion.div>
                 </div>
               ) : (
-                <div className="h-10 w-24 bg-muted rounded-xl animate-pulse" />
+                <div className="h-10 w-24 bg-black/10 rounded-full animate-pulse" />
               )}
             </div>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-white/5 transition-colors text-foreground"
+              className={`md:hidden p-2 transition-colors ${isScrolled ? "text-white hover:bg-white/10" : "text-[#1A1A1A] hover:bg-black/5"
+                }`}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
             </button>
           </div>
         </div>
       </motion.header>
+      {/* Spacer for fixed header - ONLY if scrolled or if we want to push content down. 
+          Actually for Bold transparent header map, we DON'T want a spacer. The hero goes under.
+      */}
+
 
       {/* Mobile Menu */}
       <AnimatePresence>
@@ -249,7 +260,7 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
-            
+
             {/* Menu Panel */}
             <motion.div
               initial={{ x: "100%" }}
@@ -289,11 +300,10 @@ export default function Navbar() {
                           navigate(buildLocalizedPath(lang.code), { replace: true });
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                          lang.code === (i18n.resolvedLanguage || i18n.language)
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${lang.code === (i18n.resolvedLanguage || i18n.language)
                             ? "bg-primary text-background"
                             : "bg-muted text-muted-foreground hover:bg-muted-hover"
-                        }`}
+                          }`}
                       >
                         {lang.label}
                       </button>

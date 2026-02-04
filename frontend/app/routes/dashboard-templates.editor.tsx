@@ -82,7 +82,7 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
                         lineHeight: blockStyle.lineHeight || '1.6',
                         fontFamily
                     }}>
-                        {block.content ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }} /> : <span className="text-muted-foreground italic">{t("dashboard.templatesEditor.defaults.addText")}</span>}
+                        {block.content ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.content) }} /> : <span className="text-gray-400 italic">{t("dashboard.templatesEditor.defaults.addText")}</span>}
                     </div>
                 );
 
@@ -101,9 +101,9 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
                                 }}
                             />
                         ) : (
-                            <div className="h-32 bg-gradient-to-br from-gray-100 to-gray-50 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground">
+                            <div className="h-32 bg-gray-50 flex flex-col items-center justify-center rounded-xl border-4 border-black border-dashed text-gray-400">
                                 <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                                <span className="text-xs font-medium">{t("dashboard.templatesEditor.defaults.addImage")}</span>
+                                <span className="text-xs font-bold">{t("dashboard.templatesEditor.defaults.addImage")}</span>
                             </div>
                         )}
                     </div>
@@ -129,10 +129,10 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
 
             case 'spacer':
                 return (
-                    <div className="flex items-center justify-center py-2 text-muted-foreground">
-                        <div className="flex-1 border-t border-dashed border-border"></div>
-                        <span className="px-3 text-[10px] font-medium bg-muted rounded">{blockStyle.height || '32px'}</span>
-                        <div className="flex-1 border-t border-dashed border-border"></div>
+                    <div className="flex items-center justify-center py-2 text-gray-400">
+                        <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                        <span className="px-3 text-[10px] font-bold bg-white border border-gray-200 rounded">{blockStyle.height || '32px'}</span>
+                        <div className="flex-1 border-t-2 border-dashed border-gray-300"></div>
                     </div>
                 );
 
@@ -154,13 +154,13 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
                         {hasSocials ? (
                             <div className="flex gap-2 justify-center">
                                 {Object.entries(socials).filter(([_, v]) => v).map(([platform]) => (
-                                    <div key={platform} className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-bold">
+                                    <div key={platform} className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold">
                                         {platform.charAt(0).toUpperCase()}
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-muted-foreground text-sm">{t("dashboard.templatesEditor.defaults.addSocial")}</div>
+                            <div className="text-gray-400 text-sm font-medium">{t("dashboard.templatesEditor.defaults.addSocial")}</div>
                         )}
                     </div>
                 );
@@ -180,7 +180,7 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
                     <div className="p-4">
                         <div className={`grid gap-3 ${block.columnCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                             {Array.from({ length: block.columnCount || 2 }).map((_, i) => (
-                                <div key={i} className="h-20 bg-muted rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs font-medium">
+                                <div key={i} className="h-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs font-bold">
                                     {t("dashboard.templatesEditor.defaults.column", { index: i + 1 })}
                                 </div>
                             ))}
@@ -197,14 +197,14 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
         <div
             ref={setNodeRef}
             style={style}
-            className={`group relative rounded-xl transition-all duration-200 cursor-pointer mb-1 ${isSelected
-                ? 'ring-2 ring-blue-500 ring-offset-2 bg-surface-card shadow-lg'
-                : 'hover:bg-surface-card hover:shadow-md bg-transparent'
+            className={`group relative rounded-xl transition-all duration-200 cursor-pointer mb-2 ${isSelected
+                ? 'ring-4 ring-black ring-offset-2 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'
+                : 'hover:bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-transparent border-2 border-transparent hover:border-black'
                 }`}
             onClick={(e) => onClick(e, block.id)}
         >
             {/* Drag Handle */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 opacity-0 group-hover:opacity-100 cursor-move p-2 text-muted-foreground hover:text-muted-foreground bg-surface-card shadow-lg rounded-lg z-20 border border-border transition-all" {...attributes} {...listeners}>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 opacity-0 group-hover:opacity-100 cursor-move p-2 text-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-lg z-20 border-2 border-black transition-all" {...attributes} {...listeners}>
                 <GripVertical className="w-4 h-4" />
             </div>
 
@@ -212,9 +212,9 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
             <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 z-20 transition-all">
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(block.id); }}
-                    className="p-1.5 bg-destructive/100 text-white rounded-lg hover:bg-red-600 transition-colors shadow-lg"
+                    className="p-1.5 bg-[#E94E77] text-white rounded-lg hover:bg-red-600 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-black"
                 >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5 stroke-[2.5px]" />
                 </button>
             </div>
 
@@ -369,17 +369,17 @@ export default function DashboardTemplateEditor() {
         const blockStyle = selectedBlock.style || {};
 
         return (
-            <div className="space-y-5">
+            <div className="space-y-6">
                 {/* Alignment */}
                 {['heading', 'text', 'image', 'button', 'social'].includes(selectedBlock.type) && (
                     <div>
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.alignment")}</label>
-                        <div className="flex bg-muted rounded-lg p-1">
+                        <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.alignment")}</label>
+                        <div className="flex bg-white border-2 border-black rounded-xl overflow-hidden p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                             {(['left', 'center', 'right'] as const).map((align) => (
                                 <button
                                     key={align}
                                     onClick={() => updateBlock(selectedBlock.id, { align })}
-                                    className={`flex-1 py-2 rounded-md flex items-center justify-center transition-all ${selectedBlock.align === align ? 'bg-surface-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-muted-foreground'}`}
+                                    className={`flex-1 py-1.5 rounded-lg flex items-center justify-center transition-all ${selectedBlock.align === align ? 'bg-[#d2e823] text-black font-black border-2 border-black' : 'text-gray-500 hover:text-black'}`}
                                 >
                                     {align === 'left' && <AlignLeft className="w-4 h-4" />}
                                     {align === 'center' && <AlignCenter className="w-4 h-4" />}
@@ -394,13 +394,13 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'heading' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.headingLevel")}</label>
-                            <div className="flex bg-muted rounded-lg p-1">
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.headingLevel")}</label>
+                            <div className="flex bg-white border-2 border-black rounded-xl overflow-hidden p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                                 {(['h1', 'h2', 'h3'] as const).map((level) => (
                                     <button
                                         key={level}
                                         onClick={() => updateBlock(selectedBlock.id, { level })}
-                                        className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${selectedBlock.level === level ? 'bg-surface-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-muted-foreground'}`}
+                                        className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${selectedBlock.level === level ? 'bg-[#d2e823] text-black font-black border-2 border-black' : 'text-gray-500 hover:text-black'}`}
                                     >
                                         {level.toUpperCase()}
                                     </button>
@@ -408,20 +408,20 @@ export default function DashboardTemplateEditor() {
                             </div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.text")}</label>
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.text")}</label>
                             <input
                                 type="text"
                                 value={selectedBlock.content || ''}
                                 onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
-                                className="w-full text-sm border border-border rounded-xl p-3 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                                className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white"
                                 placeholder={t("dashboard.templatesEditor.placeholders.heading")}
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
-                            <div className="flex items-center gap-2 border border-border rounded-xl p-2 bg-surface-card">
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
+                            <div className="flex items-center gap-2 border-2 border-black rounded-xl p-2 bg-white">
                                 <input type="color" value={blockStyle.color as string || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
-                                <input type="text" value={blockStyle.color as string || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="flex-1 text-xs font-mono text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent uppercase" />
+                                <input type="text" value={blockStyle.color as string || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="flex-1 text-xs font-black text-[#1A1A1A] border-0 focus:ring-0 outline-none bg-transparent uppercase" />
                             </div>
                         </div>
                     </>
@@ -431,25 +431,25 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'text' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.content")}</label>
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.content")}</label>
                             <textarea
                                 rows={4}
                                 value={selectedBlock.content || ''}
                                 onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
-                                className="w-full text-sm border border-border rounded-xl p-3 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all resize-none"
+                                className="w-full text-sm font-medium border-2 border-black rounded-xl p-3 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white resize-none"
                                 placeholder={t("dashboard.templatesEditor.placeholders.text")}
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.fontSize")}</label>
-                                <input type="text" value={blockStyle.fontSize as string || '16px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, fontSize: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5" />
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.fontSize")}</label>
+                                <input type="text" value={blockStyle.fontSize as string || '16px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, fontSize: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white" />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
-                                <div className="flex items-center gap-2 border border-border rounded-xl p-1.5 bg-surface-card">
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
+                                <div className="flex items-center gap-2 border-2 border-black rounded-xl p-1.5 bg-white">
                                     <input type="color" value={blockStyle.color as string || '#374151'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="w-6 h-6 rounded cursor-pointer border-0 p-0" />
-                                    <span className="text-xs text-muted-foreground font-mono">{blockStyle.color || '#374151'}</span>
+                                    <span className="text-xs text-[#1A1A1A] font-black">{blockStyle.color || '#374151'}</span>
                                 </div>
                             </div>
                         </div>
@@ -460,21 +460,21 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'image' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.imageUrl")}</label>
-                            <input type="text" value={selectedBlock.content || ''} onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })} className="w-full text-sm border border-border rounded-xl p-3" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.imageUrl")}</label>
+                            <input type="text" value={selectedBlock.content || ''} onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.linkUrl")}</label>
-                            <input type="text" value={selectedBlock.url || ''} onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })} className="w-full text-sm border border-border rounded-xl p-3" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.linkUrl")}</label>
+                            <input type="text" value={selectedBlock.url || ''} onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.width")}</label>
-                                <input type="text" value={blockStyle.width as string || '100%'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, width: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5" />
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.width")}</label>
+                                <input type="text" value={blockStyle.width as string || '100%'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, width: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white" />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.radius")}</label>
-                                <input type="text" value={blockStyle.borderRadius as string || '0px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderRadius: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5" />
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.radius")}</label>
+                                <input type="text" value={blockStyle.borderRadius as string || '0px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderRadius: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white" />
                             </div>
                         </div>
                     </>
@@ -484,32 +484,32 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'button' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.label")}</label>
-                            <input type="text" value={selectedBlock.content || ''} onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })} className="w-full text-sm border border-border rounded-xl p-3" />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.label")}</label>
+                            <input type="text" value={selectedBlock.content || ''} onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white" />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.url")}</label>
-                            <input type="text" value={selectedBlock.url || ''} onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })} className="w-full text-sm border border-border rounded-xl p-3" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.url")}</label>
+                            <input type="text" value={selectedBlock.url || ''} onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white" placeholder={t("dashboard.templatesEditor.placeholders.url")} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.background")}</label>
-                                <div className="flex items-center gap-2 border border-border rounded-xl p-1.5 bg-surface-card">
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.background")}</label>
+                                <div className="flex items-center gap-2 border-2 border-black rounded-xl p-1.5 bg-white">
                                     <input type="color" value={blockStyle.backgroundColor as string || '#000000'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, backgroundColor: e.target.value } })} className="w-6 h-6 rounded cursor-pointer border-0 p-0" />
-                                    <span className="text-xs text-muted-foreground font-mono">{blockStyle.backgroundColor || '#000'}</span>
+                                    <span className="text-xs text-[#1A1A1A] font-black font-mono">{blockStyle.backgroundColor || '#000'}</span>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.textColor")}</label>
-                                <div className="flex items-center gap-2 border border-border rounded-xl p-1.5 bg-surface-card">
+                                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.textColor")}</label>
+                                <div className="flex items-center gap-2 border-2 border-black rounded-xl p-1.5 bg-white">
                                     <input type="color" value={blockStyle.color as string || '#ffffff'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="w-6 h-6 rounded cursor-pointer border-0 p-0" />
-                                    <span className="text-xs text-muted-foreground font-mono">{blockStyle.color || '#fff'}</span>
+                                    <span className="text-xs text-[#1A1A1A] font-black font-mono">{blockStyle.color || '#fff'}</span>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.borderRadius")}</label>
-                            <input type="text" value={blockStyle.borderRadius as string || '8px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderRadius: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5" />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.borderRadius")}</label>
+                            <input type="text" value={blockStyle.borderRadius as string || '8px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderRadius: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white" />
                         </div>
                     </>
                 )}
@@ -517,8 +517,8 @@ export default function DashboardTemplateEditor() {
                 {/* Spacer Properties */}
                 {selectedBlock.type === 'spacer' && (
                     <div>
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.height")}</label>
-                        <input type="text" value={blockStyle.height as string || '32px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, height: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-3" />
+                        <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.height")}</label>
+                        <input type="text" value={blockStyle.height as string || '32px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, height: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white" />
                     </div>
                 )}
 
@@ -526,19 +526,19 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'divider' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
-                            <div className="flex items-center gap-2 border border-border rounded-xl p-2 bg-surface-card">
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.color")}</label>
+                            <div className="flex items-center gap-2 border-2 border-black rounded-xl p-2 bg-white">
                                 <input type="color" value={blockStyle.borderColor as string || '#e5e7eb'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderColor: e.target.value } })} className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
-                                <input type="text" value={blockStyle.borderColor as string || '#e5e7eb'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderColor: e.target.value } })} className="flex-1 text-xs font-mono text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent uppercase" />
+                                <input type="text" value={blockStyle.borderColor as string || '#e5e7eb'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderColor: e.target.value } })} className="flex-1 text-xs font-black font-mono text-[#1A1A1A] border-0 focus:ring-0 outline-none bg-transparent uppercase" />
                             </div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.thickness")}</label>
-                            <input type="text" value={blockStyle.borderWidth as string || '1px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderWidth: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5" />
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.thickness")}</label>
+                            <input type="text" value={blockStyle.borderWidth as string || '1px'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderWidth: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white" />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.style")}</label>
-                            <select value={blockStyle.borderStyle as string || 'solid'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderStyle: e.target.value } })} className="w-full text-sm border border-border rounded-xl p-2.5 bg-surface-card">
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.style")}</label>
+                            <select value={blockStyle.borderStyle as string || 'solid'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, borderStyle: e.target.value } })} className="w-full text-sm font-bold border-2 border-black rounded-xl p-2.5 bg-white">
                                 <option value="solid">{t("dashboard.templatesEditor.borderStyles.solid")}</option>
                                 <option value="dashed">{t("dashboard.templatesEditor.borderStyles.dashed")}</option>
                                 <option value="dotted">{t("dashboard.templatesEditor.borderStyles.dotted")}</option>
@@ -552,12 +552,12 @@ export default function DashboardTemplateEditor() {
                     <div className="space-y-3">
                         {(['instagram', 'twitter', 'linkedin', 'facebook', 'youtube', 'tiktok'] as const).map((platform) => (
                             <div key={platform}>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block capitalize">{platform}</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 block capitalize">{platform}</label>
                                 <input
                                     type="text"
                                     value={selectedBlock.socials?.[platform] || ''}
                                     onChange={(e) => updateBlock(selectedBlock.id, { socials: { ...selectedBlock.socials, [platform]: e.target.value } })}
-                                    className="w-full text-sm border border-border rounded-xl p-2.5"
+                                    className="w-full text-sm font-medium border-2 border-black rounded-xl p-2.5 bg-white"
                                     placeholder={t("dashboard.templatesEditor.placeholders.socialUrl", { platform })}
                                 />
                             </div>
@@ -569,20 +569,20 @@ export default function DashboardTemplateEditor() {
                 {selectedBlock.type === 'footer' && (
                     <>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.text")}</label>
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.text")}</label>
                             <textarea
                                 rows={3}
                                 value={selectedBlock.content || ''}
                                 onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
-                                className="w-full text-sm border border-border rounded-xl p-3 resize-none"
+                                className="w-full text-sm font-medium border-2 border-black rounded-xl p-3 resize-none bg-white"
                                 placeholder={t("dashboard.templatesEditor.placeholders.footer")}
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.textColor")}</label>
-                            <div className="flex items-center gap-2 border border-border rounded-xl p-2 bg-surface-card">
+                            <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.textColor")}</label>
+                            <div className="flex items-center gap-2 border-2 border-black rounded-xl p-2 bg-white">
                                 <input type="color" value={blockStyle.color as string || '#6b7280'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
-                                <input type="text" value={blockStyle.color as string || '#6b7280'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="flex-1 text-xs font-mono text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent uppercase" />
+                                <input type="text" value={blockStyle.color as string || '#6b7280'} onChange={(e) => updateBlock(selectedBlock.id, { style: { ...blockStyle, color: e.target.value } })} className="flex-1 text-xs font-black font-mono text-[#1A1A1A] border-0 focus:ring-0 outline-none bg-transparent uppercase" />
                             </div>
                         </div>
                     </>
@@ -591,13 +591,13 @@ export default function DashboardTemplateEditor() {
                 {/* Columns Properties */}
                 {selectedBlock.type === 'columns' && (
                     <div>
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.columns")}</label>
-                        <div className="flex bg-muted rounded-lg p-1">
+                        <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.properties.columns")}</label>
+                        <div className="flex bg-white border-2 border-black rounded-xl overflow-hidden p-1">
                             {([2, 3] as const).map((num) => (
                                 <button
                                     key={num}
                                     onClick={() => updateBlock(selectedBlock.id, { columnCount: num })}
-                                    className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${selectedBlock.columnCount === num ? 'bg-surface-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-muted-foreground'}`}
+                                    className={`flex-1 py-2 rounded-lg text-sm font-black transition-all ${selectedBlock.columnCount === num ? 'bg-[#C6F035] text-black border-2 border-black' : 'text-gray-500 hover:text-black'}`}
                                 >
                                     {t("dashboard.templatesEditor.columnsLabel", { count: num })}
                                 </button>
@@ -611,10 +611,10 @@ export default function DashboardTemplateEditor() {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-muted">
+            <div className="flex h-screen items-center justify-center bg-white">
                 <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground font-medium">{t("dashboard.templatesEditor.loading")}</span>
+                    <Loader2 className="w-10 h-10 animate-spin text-[#C6F035] stroke-black stroke-[3px]" />
+                    <span className="text-sm text-black font-black uppercase tracking-wider">{t("dashboard.templatesEditor.loading")}</span>
                 </div>
             </div>
         );
@@ -624,26 +624,28 @@ export default function DashboardTemplateEditor() {
     if (previewMode) {
         const html = generateEmailHtml(blocks, globalStyles);
         return (
-            <div className="fixed inset-0 z-50 bg-gray-900 flex flex-col">
-                <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col">
+                <div className="bg-white border-b-4 border-black px-6 py-4 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-4">
-                        <h2 className="font-bold text-lg text-white">{t("dashboard.templatesEditor.preview")}</h2>
-                        <div className="flex items-center gap-1 bg-gray-700 rounded-lg p-1">
-                            <button onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-md transition-all ${previewDevice === 'desktop' ? 'bg-gray-600 text-white' : 'text-muted-foreground hover:text-white'}`}><Monitor className="w-4 h-4" /></button>
-                            <button onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-md transition-all ${previewDevice === 'mobile' ? 'bg-gray-600 text-white' : 'text-muted-foreground hover:text-white'}`}><Smartphone className="w-4 h-4" /></button>
+                        <h2 className="font-black text-xl text-[#1A1A1A]">{t("dashboard.templatesEditor.preview")}</h2>
+                        <div className="flex items-center gap-1 bg-[#F3F3F1] border-2 border-black rounded-xl p-1">
+                            <button onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'}`}><Monitor className="w-4 h-4" /></button>
+                            <button onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'}`}><Smartphone className="w-4 h-4" /></button>
                         </div>
                     </div>
-                    <button onClick={() => setPreviewMode(false)} className="p-2 text-muted-foreground hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+                    <button onClick={() => setPreviewMode(false)} className="p-2 border-2 border-black rounded-xl hover:bg-black hover:text-white transition-all"><X className="w-6 h-6 stroke-[3px]" /></button>
                 </div>
                 <div className="flex-1 overflow-auto p-8 flex justify-center items-start">
                     <div className={`transition-all duration-300 ${previewDevice === 'mobile' ? 'w-[375px]' : 'w-full max-w-[700px]'}`}>
-                        <iframe
-                            srcDoc={html}
-                            className="w-full bg-surface-card rounded-xl shadow-2xl"
-                            style={{ height: '800px' }}
-                            title={t("dashboard.templatesEditor.previewTitle")}
-                            sandbox="allow-same-origin"
-                        />
+                        <div className="bg-white rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                            <iframe
+                                srcDoc={html}
+                                className="w-full bg-white"
+                                style={{ height: '800px' }}
+                                title={t("dashboard.templatesEditor.previewTitle")}
+                                sandbox="allow-same-origin"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -652,70 +654,71 @@ export default function DashboardTemplateEditor() {
 
     return (
         <AuthorizationGuard minPlan="pro">
-            <div className="h-screen flex flex-col bg-[#f9f7f2] overflow-hidden font-sans">
-
+            <div className="h-screen flex flex-col bg-[#F3F3F1] overflow-hidden font-sans">
                 {/* Top Bar */}
-                <header className="h-16 bg-surface-card border-b border-border flex items-center justify-between px-6 shrink-0 z-20 shadow-sm">
+                <header className="h-20 bg-white border-b-4 border-black flex items-center justify-between px-6 shrink-0 z-30 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)]">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/dashboard/templates')} className="p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-all">
-                            <ArrowLeft className="w-5 h-5" />
+                        <button onClick={() => navigate('/dashboard/templates')} className="p-2.5 hover:bg-black hover:text-white border-2 border-black rounded-xl text-black transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                            <ArrowLeft className="w-5 h-5 stroke-[3px]" />
                         </button>
-                        <div className="h-6 w-px bg-gray-200" />
+                        <div className="h-8 w-px bg-gray-200 mx-2" />
                         <input
                             type="text"
                             value={templateName}
                             onChange={(e) => setTemplateName(e.target.value)}
-                            className="font-bold text-foreground text-lg focus:outline-none bg-transparent placeholder-gray-300 w-64 hover:bg-muted rounded-lg px-3 py-1.5 -ml-3 transition-all border border-transparent focus:border-border"
+                            className="font-black text-[#1A1A1A] text-xl focus:outline-none bg-transparent placeholder-gray-300 w-80 hover:bg-gray-50 rounded-lg px-2 py-1 transition-all border border-transparent focus:border-black focus:border-dashed"
                             placeholder={t("dashboard.templatesEditor.defaultName")}
                         />
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => setPreviewMode(true)} className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:bg-muted rounded-xl font-medium text-sm transition-all">
-                            <Eye className="w-4 h-4" />
+                        <button onClick={() => setPreviewMode(true)} className="flex items-center gap-2 px-5 py-2.5 text-black border-2 border-black hover:bg-gray-100 rounded-xl font-bold text-sm transition-all">
+                            <Eye className="w-5 h-5 stroke-[2.5px]" />
                             <span>{t("dashboard.templatesEditor.preview")}</span>
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/10 active:scale-95 disabled:opacity-70"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-[#C6F035] text-black border-2 border-black rounded-xl font-black text-sm hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 stroke-[3px]" />}
                             {t("dashboard.templatesEditor.save")}
                         </button>
                     </div>
                 </header>
 
                 <div className="flex-1 flex overflow-hidden">
-
                     {/* Left Sidebar - Blocks */}
-                    <aside className="w-72 bg-surface-card border-r border-border flex flex-col shrink-0 shadow-sm">
-                        <div className="p-4 border-b border-border">
-                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.templatesEditor.addBlocks")}</h3>
+                    <aside className="w-80 bg-white border-r-4 border-black flex flex-col shrink-0 z-20">
+                        <div className="p-5 border-b-4 border-black bg-gray-50">
+                            <h3 className="text-sm font-black text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
+                                <GripVertical className="w-4 h-4" />
+                                {t("dashboard.templatesEditor.addBlocks")}
+                            </h3>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-5 space-y-6">
                             {blockPalette.map((group) => (
                                 <div key={group.category}>
                                     <button
                                         onClick={() => toggleCategory(group.category)}
-                                        className="w-full flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 hover:text-gray-700 transition-colors"
+                                        className="w-full flex items-center justify-between text-xs font-black text-gray-500 uppercase tracking-wider mb-3 hover:text-black transition-colors"
                                     >
                                         {group.category}
-                                        {expandedCategories.includes(group.category) ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                                        {expandedCategories.includes(group.category) ? <ChevronDown className="w-4 h-4 stroke-[3px]" /> : <ChevronRight className="w-4 h-4 stroke-[3px]" />}
                                     </button>
                                     {expandedCategories.includes(group.category) && (
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-2 gap-3">
                                             {group.items.map((item) => {
                                                 const Icon = item.icon;
                                                 return (
                                                     <button
                                                         key={item.type}
                                                         onClick={() => addBlock(item.type as EmailBlock['type'])}
-                                                        className="group flex flex-col items-center gap-2 p-3 bg-muted hover:bg-blue-500/10 rounded-xl border border-border hover:border-blue-200 transition-all hover:shadow-md active:scale-95"
+                                                        className="group flex flex-col items-center gap-3 p-4 bg-white hover:bg-[#F3F3F1] rounded-[16px] border-2 border-black transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                                     >
-                                                        <div className="w-9 h-9 rounded-lg bg-surface-card flex items-center justify-center text-muted-foreground group-hover:text-blue-400 group-hover:bg-blue-100 transition-all shadow-sm">
-                                                            <Icon className="w-4 h-4" />
+                                                        <div className="w-10 h-10 rounded-xl bg-[#d2e823] border-2 border-black flex items-center justify-center text-black group-hover:scale-110 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                                            <Icon className="w-5 h-5 stroke-[2.5px]" />
                                                         </div>
-                                                        <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-blue-700">{item.label}</span>
+                                                        <span className="text-xs font-bold text-[#1A1A1A]">{item.label}</span>
                                                     </button>
                                                 );
                                             })}
@@ -726,11 +729,11 @@ export default function DashboardTemplateEditor() {
                         </div>
 
                         {/* Variables Helper */}
-                        <div className="p-4 border-t border-border bg-muted/50">
-                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("dashboard.templatesEditor.variables")}</h3>
-                            <div className="flex flex-wrap gap-1.5">
+                        <div className="p-5 border-t-4 border-black bg-gray-50">
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.templatesEditor.variables")}</h3>
+                            <div className="flex flex-wrap gap-2">
                                 {['{{name}}', '{{email}}', '{{bio_name}}'].map(v => (
-                                    <button key={v} className="px-2 py-1 bg-surface-card border border-border rounded-lg text-[10px] font-mono text-muted-foreground hover:border-blue-300 hover:text-blue-400 transition-colors shadow-sm" onClick={() => navigator.clipboard.writeText(v)}>
+                                    <button key={v} className="px-2.5 py-1.5 bg-white border-2 border-black rounded-lg text-xs font-bold font-mono text-black hover:bg-[#d2e823] transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => navigator.clipboard.writeText(v)}>
                                         {v}
                                     </button>
                                 ))}
@@ -739,18 +742,20 @@ export default function DashboardTemplateEditor() {
                     </aside>
 
                     {/* Canvas */}
-                    <main className="flex-1 bg-muted p-6 overflow-y-auto flex justify-center" onClick={() => setSelectedBlockId(null)}>
+                    <main className="flex-1 bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px] p-8 overflow-y-auto flex justify-center" onClick={() => setSelectedBlockId(null)}>
                         <div
-                            className="transition-all duration-300 min-h-[600px] relative"
+                            className="transition-all duration-300 min-h-[800px] relative shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)]"
                             style={{
                                 width: `${globalStyles.width}px`,
                                 backgroundColor: globalStyles.backgroundColor,
-                                padding: `${globalStyles.contentPadding}px`
+                                padding: `${globalStyles.contentPadding}px`,
+                                border: '4px solid black',
+                                borderRadius: '24px',
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div
-                                className="shadow-xl min-h-[500px]"
+                                className="min-h-[600px] border-2 border-dashed border-gray-300"
                                 style={{
                                     backgroundColor: globalStyles.contentBackgroundColor,
                                     borderRadius: `${globalStyles.borderRadius}px`,
@@ -768,12 +773,12 @@ export default function DashboardTemplateEditor() {
                                     >
                                         <div className="p-4 min-h-full">
                                             {blocks.length === 0 ? (
-                                                <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground rounded-xl border-2 border-dashed border-border bg-muted/30 m-4">
-                                                    <div className="w-16 h-16 bg-surface-card rounded-2xl shadow-sm border border-border flex items-center justify-center mb-4">
-                                                        <Mail className="w-7 h-7 text-gray-300" />
+                                                <div className="h-[400px] flex flex-col items-center justify-center text-gray-400 rounded-xl bg-gray-50 m-4">
+                                                    <div className="w-20 h-20 bg-white rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6">
+                                                        <Mail className="w-8 h-8 text-black" />
                                                     </div>
-                                                    <h3 className="font-bold text-gray-700 text-base mb-1">{t("dashboard.templatesEditor.emptyTitle")}</h3>
-                                                    <p className="text-center max-w-[240px] text-xs text-muted-foreground">{t("dashboard.templatesEditor.emptySubtitle")}</p>
+                                                    <h3 className="font-black text-black text-lg mb-2">{t("dashboard.templatesEditor.emptyTitle")}</h3>
+                                                    <p className="text-center max-w-[240px] text-sm font-medium text-gray-500">{t("dashboard.templatesEditor.emptySubtitle")}</p>
                                                 </div>
                                             ) : (
                                                 blocks.map(block => (
@@ -795,74 +800,83 @@ export default function DashboardTemplateEditor() {
                     </main>
 
                     {/* Right Sidebar - Properties */}
-                    <aside className={`w-80 bg-surface-card border-l border-border flex flex-col shrink-0 shadow-sm transition-all duration-300 ${selectedBlock ? 'translate-x-0' : 'translate-x-full hidden'}`}>
-                        <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
+                    <aside className={`w-80 bg-white border-l-4 border-black flex flex-col shrink-0 shadow-[-4px_0px_20px_0px_rgba(0,0,0,0.05)] transition-all duration-300 z-20 ${selectedBlock ? 'translate-x-0' : 'translate-x-full hidden'}`}>
+                        <div className="p-5 border-b-4 border-black bg-gray-50 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm text-gray-700 capitalize">{t("dashboard.templatesEditor.properties.title", { type: selectedBlock?.type })}</span>
+                                <span className="font-black text-[#1A1A1A] capitalize flex items-center gap-2 text-sm">
+                                    <div className="w-2 h-2 rounded-full bg-[#d2e823] border border-black" />
+                                    {t("dashboard.templatesEditor.properties.title", { type: selectedBlock?.type })}
+                                </span>
                             </div>
-                            <button onClick={() => setSelectedBlockId(null)} className="p-1.5 hover:bg-gray-200 rounded-lg text-muted-foreground hover:text-muted-foreground transition-all">
-                                <X className="w-4 h-4" />
+                            <button onClick={() => setSelectedBlockId(null)} className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-500 hover:text-black transition-all">
+                                <X className="w-5 h-5 stroke-[3px]" />
                             </button>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex-1 overflow-y-auto p-5">
                             {renderProperties()}
                         </div>
                     </aside>
 
                     {/* Settings Panel (when no block selected) */}
                     {!selectedBlock && (
-                        <aside className="w-80 bg-surface-card border-l border-border flex flex-col shrink-0 shadow-sm">
-                            <div className="p-4 border-b border-border bg-muted/50">
-                                <h3 className="font-bold text-sm text-gray-700">{t("dashboard.templatesEditor.settings.title")}</h3>
+                        <aside className="w-80 bg-white border-l-4 border-black flex flex-col shrink-0 z-20">
+                            <div className="p-5 border-b-4 border-black bg-gray-50">
+                                <h3 className="font-black text-sm text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
+                                    <Type className="w-4 h-4" />
+                                    {t("dashboard.templatesEditor.settings.title")}
+                                </h3>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+                            <div className="flex-1 overflow-y-auto p-5 space-y-6">
                                 <div>
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.width")}</label>
+                                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.width")}</label>
                                     <input
                                         type="number"
                                         value={globalStyles.width}
                                         onChange={(e) => setGlobalStyles(s => ({ ...s, width: parseInt(e.target.value) || 600 }))}
-                                        className="w-full text-sm border border-border rounded-xl p-2.5"
+                                        className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.backgroundColor")}</label>
-                                    <div className="flex items-center gap-2 border border-border rounded-xl p-2 bg-surface-card">
+                                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.backgroundColor")}</label>
+                                    <div className="flex items-center gap-2 border-2 border-black rounded-xl p-2 bg-white">
                                         <input type="color" value={globalStyles.backgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, backgroundColor: e.target.value }))} className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
-                                        <input type="text" value={globalStyles.backgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, backgroundColor: e.target.value }))} className="flex-1 text-xs font-mono text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent uppercase" />
+                                        <input type="text" value={globalStyles.backgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, backgroundColor: e.target.value }))} className="flex-1 text-xs font-black font-mono text-[#1A1A1A] border-0 focus:ring-0 outline-none bg-transparent uppercase" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.contentBackground")}</label>
-                                    <div className="flex items-center gap-2 border border-border rounded-xl p-2 bg-surface-card">
+                                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.contentBackground")}</label>
+                                    <div className="flex items-center gap-2 border-2 border-black rounded-xl p-2 bg-white">
                                         <input type="color" value={globalStyles.contentBackgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, contentBackgroundColor: e.target.value }))} className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
-                                        <input type="text" value={globalStyles.contentBackgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, contentBackgroundColor: e.target.value }))} className="flex-1 text-xs font-mono text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent uppercase" />
+                                        <input type="text" value={globalStyles.contentBackgroundColor} onChange={(e) => setGlobalStyles(s => ({ ...s, contentBackgroundColor: e.target.value }))} className="flex-1 text-xs font-black font-mono text-[#1A1A1A] border-0 focus:ring-0 outline-none bg-transparent uppercase" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.borderRadius")}</label>
+                                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.borderRadius")}</label>
                                     <input
                                         type="number"
                                         value={globalStyles.borderRadius}
                                         onChange={(e) => setGlobalStyles(s => ({ ...s, borderRadius: parseInt(e.target.value) || 0 }))}
-                                        className="w-full text-sm border border-border rounded-xl p-2.5"
+                                        className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.fontFamily")}</label>
-                                    <select
-                                        value={globalStyles.fontFamily}
-                                        onChange={(e) => setGlobalStyles(s => ({ ...s, fontFamily: e.target.value }))}
-                                        className="w-full text-sm border border-border rounded-xl p-2.5 bg-surface-card"
-                                    >
-                                        <option value="Arial, sans-serif">Arial</option>
-                                        <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
-                                        <option value="Georgia, serif">Georgia</option>
-                                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                                        <option value="Verdana, sans-serif">Verdana</option>
-                                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                                        <option value="'Courier New', Courier, monospace">Courier New</option>
-                                    </select>
+                                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider mb-2 block">{t("dashboard.templatesEditor.settings.fontFamily")}</label>
+                                    <div className="relative">
+                                        <select
+                                            value={globalStyles.fontFamily}
+                                            onChange={(e) => setGlobalStyles(s => ({ ...s, fontFamily: e.target.value }))}
+                                            className="w-full text-sm font-bold border-2 border-black rounded-xl p-3 bg-white appearance-none cursor-pointer"
+                                        >
+                                            <option value="Arial, sans-serif">Arial</option>
+                                            <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+                                            <option value="Georgia, serif">Georgia</option>
+                                            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                                            <option value="Verdana, sans-serif">Verdana</option>
+                                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                            <option value="'Courier New', Courier, monospace">Courier New</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black stroke-[3px] pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
                         </aside>

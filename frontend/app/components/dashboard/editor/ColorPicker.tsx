@@ -127,7 +127,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     return (
         <div className={`relative ${className}`}>
             {label && (
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">
                     {label}
                 </label>
             )}
@@ -154,7 +154,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     }}
                     onBlur={() => addToRecent(value)}
                     onFocus={(e) => e.target.select()}
-                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-muted-foreground border-0 focus:ring-0 outline-none bg-transparent"
+                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-white/70 border-0 focus:ring-0 outline-none bg-transparent placeholder:text-white/40"
                     placeholder="#000000"
                     maxLength={9}
                 />
@@ -173,7 +173,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
 
                     {/* Native Picker Wrapper */}
                     <div className="mb-4">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Pick Custom Color</label>
+                        <label className="text-[10px] font-bold text-white/80 uppercase tracking-wider mb-2 block">Pick Custom Color</label>
                         <div
                             className="w-full"
                             onMouseUp={handleInteractionEnd}
@@ -190,7 +190,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     {/* Recent Colors */}
                     {recentColors.length > 0 && (
                         <div className="mb-4">
-                            <label className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider mb-2 block">Recent</label>
+                            <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Recent</label>
                             <div className="grid grid-cols-5 gap-2">
                                 {recentColors.map((c, i) => (
                                     <button
@@ -210,7 +210,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     {/* Saved Palette */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider block">My Palette</label>
+                            <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider block">My Palette</label>
                             <button onClick={addToPalette} className="text-[10px] flex items-center gap-1 text-blue-400 hover:text-blue-700 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full transition-colors">
                                 <PlusIcon size={10} /> Add Current
                             </button>
@@ -218,7 +218,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
 
                         {savedPalette.length === 0 ? (
                             <div className="text-center py-4 bg-muted rounded-lg border border-dashed border-border">
-                                <span className="text-[10px] text-muted-foreground/50">No saved colors</span>
+                                <span className="text-[10px] text-white/50">No saved colors</span>
                             </div>
                         ) : (
                             <div className="grid grid-cols-5 gap-2">

@@ -8,29 +8,27 @@ interface FloatingLabel {
   position: { top: string; left: string };
   zIndex: number;
   parallaxSpeed: number;
-  floatOffsetX: number;
-  floatOffsetY: number;
 }
 
 const labels: FloatingLabel[] = [
   // Behind text
-  { key: "engineers", color: "blue", position: { top: "35%", left: "5%" }, zIndex: 1, parallaxSpeed: 0.3, floatOffsetX: 8, floatOffsetY: -10 },
-  { key: "academics", color: "purple", position: { top: "25%", left: "20%" }, zIndex: 1, parallaxSpeed: 0.5, floatOffsetX: -6, floatOffsetY: 12 },
-  { key: "doctors", color: "blue", position: { top: "65%", left: "25%" }, zIndex: 1, parallaxSpeed: 0.4, floatOffsetX: 10, floatOffsetY: 8 },
-  { key: "interns", color: "cyan", position: { top: "60%", left: "70%" }, zIndex: 1, parallaxSpeed: 0.35, floatOffsetX: -8, floatOffsetY: -12 },
-  { key: "professionals", color: "pink", position: { top: "35%", left: "75%" }, zIndex: 1, parallaxSpeed: 0.45, floatOffsetX: 5, floatOffsetY: 10 },
-  { key: "architects", color: "lime", position: { top: "50%", left: "15%" }, zIndex: 3, parallaxSpeed: 0.6, floatOffsetX: -10, floatOffsetY: 15 },
+  { key: "engineers", color: "blue", position: { top: "35%", left: "5%" }, zIndex: 1, parallaxSpeed: 0.3 },
+  { key: "academics", color: "purple", position: { top: "25%", left: "20%" }, zIndex: 1, parallaxSpeed: 0.5 },
+  { key: "doctors", color: "blue", position: { top: "65%", left: "25%" }, zIndex: 1, parallaxSpeed: 0.4 },
+  { key: "interns", color: "cyan", position: { top: "60%", left: "70%" }, zIndex: 1, parallaxSpeed: 0.35 },
+  { key: "professionals", color: "pink", position: { top: "35%", left: "75%" }, zIndex: 1, parallaxSpeed: 0.45 },
+  { key: "architects", color: "lime", position: { top: "50%", left: "15%" }, zIndex: 3, parallaxSpeed: 0.6 },
   
   // In front of text
-  { key: "musicians", color: "purple", position: { top: "10%", left: "12%" }, zIndex: 3, parallaxSpeed: 0.6, floatOffsetX: -10, floatOffsetY: 15 },
-  { key: "creators", color: "cyan", position: { top: "8%", left: "45%" }, zIndex: 3, parallaxSpeed: 0.7, floatOffsetX: 12, floatOffsetY: -8 },
-  { key: "lawyers", color: "lime", position: { top: "12%", left: "78%" }, zIndex: 3, parallaxSpeed: 0.55, floatOffsetX: -15, floatOffsetY: 10 },
-  { key: "bankers", color: "orange", position: { top: "30%", left: "35%" }, zIndex: 3, parallaxSpeed: 0.65, floatOffsetX: 8, floatOffsetY: -12 },
-  { key: "founders", color: "lime", position: { top: "68%", left: "50%" }, zIndex: 3, parallaxSpeed: 0.5, floatOffsetX: -10, floatOffsetY: 8 },
-  { key: "teachers", color: "cyan", position: { top: "78%", left: "58%" }, zIndex: 3, parallaxSpeed: 0.4, floatOffsetX: 6, floatOffsetY: -15 },
-  { key: "students", color: "purple", position: { top: "70%", left: "85%" }, zIndex: 3, parallaxSpeed: 0.6, floatOffsetX: -12, floatOffsetY: 10 },
-  { key: "sideHustlers", color: "pink", position: { top: "72%", left: "3%" }, zIndex: 3, parallaxSpeed: 0.55, floatOffsetX: 10, floatOffsetY: -8 },
-  { key: "designers", color: "purple", position: { top: "48%", left: "88%" }, zIndex: 3, parallaxSpeed: 0.45, floatOffsetX: -8, floatOffsetY: 12 },
+  { key: "musicians", color: "purple", position: { top: "10%", left: "12%" }, zIndex: 3, parallaxSpeed: 0.6 },
+  { key: "creators", color: "cyan", position: { top: "8%", left: "45%" }, zIndex: 3, parallaxSpeed: 0.7 },
+  { key: "lawyers", color: "lime", position: { top: "12%", left: "78%" }, zIndex: 3, parallaxSpeed: 0.55 },
+  { key: "bankers", color: "orange", position: { top: "30%", left: "35%" }, zIndex: 3, parallaxSpeed: 0.65 },
+  { key: "founders", color: "lime", position: { top: "68%", left: "50%" }, zIndex: 3, parallaxSpeed: 0.5 },
+  { key: "teachers", color: "cyan", position: { top: "78%", left: "58%" }, zIndex: 3, parallaxSpeed: 0.4 },
+  { key: "students", color: "purple", position: { top: "70%", left: "85%" }, zIndex: 3, parallaxSpeed: 0.6 },
+  { key: "sideHustlers", color: "pink", position: { top: "72%", left: "3%" }, zIndex: 3, parallaxSpeed: 0.55 },
+  { key: "designers", color: "purple", position: { top: "48%", left: "88%" }, zIndex: 3, parallaxSpeed: 0.45 },
 ];
 
 const colorClasses: Record<FloatingLabel["color"], string> = {
@@ -74,26 +72,15 @@ export default function BuiltForEveryoneSection() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ delay: Math.random() * 0.5, duration: 0.6 }}
-              className={`absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap hidden md:flex ${colorClasses[label.color]} shadow-lg`}
+              className={`absolute px-4 py-2 rounded-full font-bold text-sm md:text-base whitespace-nowrap hidden md:flex ${colorClasses[label.color]} shadow-lg hover:scale-110 transition-transform cursor-default`}
               style={{
                 top: label.position.top,
                 left: label.position.left,
                 zIndex: 1,
               }}
+              whileHover={{ scale: 1.1 }}
             >
-              <motion.span
-                animate={{
-                  x: [0, label.floatOffsetX, 0],
-                  y: [0, label.floatOffsetY, 0],
-                }}
-                transition={{
-                  duration: 4 + label.parallaxSpeed * 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                {t(`builtForEveryone.labels.${label.key}`, label.key)}
-              </motion.span>
+              {t(`builtForEveryone.labels.${label.key}`, label.key)}
             </motion.div>
           ))}
         </div>
@@ -104,7 +91,7 @@ export default function BuiltForEveryoneSection() {
             initial={{ opacity: 0, y: 50 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-center font-bold uppercase tracking-tight text-foreground leading-[1] select-none"
+            className="text-center font-black uppercase tracking-tight text-white leading-[1] select-none"
             style={{
               fontSize: "clamp(2.5rem, 10vw, 8rem)",
               fontFamily: "var(--font-display)",
@@ -126,7 +113,7 @@ export default function BuiltForEveryoneSection() {
           {["creators", "musicians", "engineers", "designers", "founders", "lawyers"].map((key) => (
             <span
               key={key}
-              className="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wide text-foreground"
+              className="rounded-full bg-muted px-3 py-1 text-xs font-bold uppercase tracking-wide text-white/80"
             >
               {t(`builtForEveryone.labels.${key}`, key)}
             </span>
@@ -141,26 +128,15 @@ export default function BuiltForEveryoneSection() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ delay: Math.random() * 0.5 + 0.2, duration: 0.6 }}
-              className={`absolute px-4 py-2 rounded-full font-semibold text-sm md:text-base whitespace-nowrap hidden md:flex ${colorClasses[label.color]} shadow-xl`}
+              className={`absolute px-4 py-2 rounded-full font-bold text-sm md:text-base whitespace-nowrap hidden md:flex ${colorClasses[label.color]} shadow-xl hover:scale-110 transition-transform cursor-default`}
               style={{
                 top: label.position.top,
                 left: label.position.left,
                 zIndex: 3,
               }}
+              whileHover={{ scale: 1.1 }}
             >
-              <motion.span
-                animate={{
-                  x: [0, label.floatOffsetX, 0],
-                  y: [0, label.floatOffsetY, 0],
-                }}
-                transition={{
-                  duration: 4 + label.parallaxSpeed * 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                {t(`builtForEveryone.labels.${label.key}`, label.key)}
-              </motion.span>
+              {t(`builtForEveryone.labels.${label.key}`, label.key)}
             </motion.div>
           ))}
         </div>

@@ -1,6 +1,10 @@
 {
   "hero": {
+    "badge": "Now with AI-powered content",
     "title": {
+      "line1": "The fast, friendly",
+      "line2": "link in bio",
+      "line3": "tool.",
       "pre": "Convert your followers into",
       "highlight": "customers",
       "post": "with one link"
@@ -15,9 +19,47 @@
       "word7": "one",
       "word8": "link"
     },
-    "subtitle": "Generate powerful revenue-generating Bio's with our all-in-one platform. Grow your following and earn while you sleep!",
+    "subtitle": "Portyo helps creators and businesses create a single link that houses all their content, products, and services.",
+    "ctaPrimary": "Get started for free",
+    "ctaSecondary": "Explore all plans",
+    "disclaimer": "Free forever. No credit card required.",
     "ctaPlaceholder": "yourname",
     "ctaButton": "Claim Now",
+    "trustedBy": "Trusted by creators on every platform",
+    "stats": {
+      "clicks": "Clicks tracked",
+      "users": "Active users",
+      "products": "Products sold",
+      "visits": "Daily visits"
+    },
+    "features": {
+      "title": "Everything you need to",
+      "highlight": "grow online",
+      "subtitle": "All the tools you need to share your content, sell products, and connect with your audience.",
+      "cards": {
+        "content": {
+          "title": "Share every type of content",
+          "description": "Embed videos, music, podcasts, and more directly in your bio page."
+        },
+        "audience": {
+          "title": "Grow and engage your audience",
+          "description": "Collect emails, build your newsletter, and connect with your fans."
+        },
+        "sell": {
+          "title": "Sell products, collect payments",
+          "description": "Turn your bio into a storefront. Sell digital products, merch, and services."
+        },
+        "track": {
+          "title": "Track your performance",
+          "description": "Get detailed analytics on clicks, views, and conversions."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to grow your",
+      "highlight": "audience",
+      "button": "Get started for free"
+    },
     "floating": {
       "roleLabel": "Role",
       "roleValue": "Digital Artist",
@@ -267,6 +309,98 @@
       {
         "role": "SaaS",
         "description": "Connecting students with internship opportunities in Brazil."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Questions?",
+    "highlight": "Answered",
+    "subtitle": "Everything you need to know about Portyo",
+    "items": [
+      {
+        "question": "Why do I need a link in bio tool?",
+        "answer": "A link in bio tool allows you to share multiple links through one URL. Instead of constantly updating your bio link, you can create a single landing page with all your important links, content, and products. It's essential for creators, businesses, and anyone who wants to maximize their social media presence."
+      },
+      {
+        "question": "Is Portyo free to use?",
+        "answer": "Yes! Portyo offers a free forever plan that includes unlimited links, basic analytics, and essential features. We also offer premium plans with advanced features like custom domains, detailed analytics, e-commerce integration, and priority support."
+      },
+      {
+        "question": "Can I sell products through my Portyo page?",
+        "answer": "Absolutely! Portyo includes built-in e-commerce features that let you sell digital products, physical merchandise, and services directly through your bio page. You can accept payments, manage inventory, and track sales all in one place."
+      },
+      {
+        "question": "How is Portyo different from Linktree?",
+        "answer": "Portyo offers more customization options, better analytics, built-in e-commerce, appointment scheduling, and AI-powered content generation. We focus on helping you not just share links, but actually convert your audience into customers."
+      },
+      {
+        "question": "Can I use my own domain?",
+        "answer": "Yes! With our Standard and Pro plans, you can connect your own custom domain to your Portyo page. This gives you a professional branded URL like yourname.com instead of portyo.me/yourname."
+      },
+      {
+        "question": "Is Portyo safe to use on all social media platforms?",
+        "answer": "Yes, Portyo is completely safe and compliant with all major social media platforms including Instagram, TikTok, Twitter, YouTube, and more. We follow all platform guidelines and best practices."
+      }
+    ]
+  },
+  "creatorMarquee": {
+    "title": "Trusted by",
+    "highlight": "creators worldwide",
+    "subtitle": "Join thousands of creators who trust Portyo"
+  },
+  "testimonials": {
+    "badge": "Loved by 10,000+ creators",
+    "title": "What creators are saying",
+    "subtitle": "Join thousands of creators who've transformed their online presence with Portyo",
+    "trustedBy": "Trusted by teams at",
+    "stats": {
+      "activeUsers": "Active Users",
+      "revenue": "Revenue Generated",
+      "uptime": "Uptime",
+      "rating": "Average Rating"
+    },
+    "items": [
+      {
+        "name": "Sarah Chen",
+        "role": "Content Creator",
+        "content": "Portyo completely transformed how I monetize my content. The automation features alone saved me hours every week!",
+        "metric": "3x",
+        "metricLabel": "Revenue increase"
+      },
+      {
+        "name": "Marcus Johnson",
+        "role": "Fitness Coach",
+        "content": "The booking scheduler is a game-changer. My clients love how easy it is to book sessions, and I love the automated reminders.",
+        "metric": "50+",
+        "metricLabel": "Monthly bookings"
+      },
+      {
+        "name": "Emily Rodriguez",
+        "role": "Digital Artist",
+        "content": "Finally, a link-in-bio tool that actually helps me sell my art. The product showcase feature is beautiful and converts so well!",
+        "metric": "$12k",
+        "metricLabel": "Sales in 3 months"
+      },
+      {
+        "name": "David Park",
+        "role": "Tech YouTuber",
+        "content": "The analytics are incredible. I can finally see exactly what my audience engages with and optimize accordingly.",
+        "metric": "85%",
+        "metricLabel": "Click-through rate"
+      },
+      {
+        "name": "Aisha Patel",
+        "role": "Business Consultant",
+        "content": "Portyo makes me look professional. The custom domain and clean design have helped me land bigger clients.",
+        "metric": "10x",
+        "metricLabel": "Lead generation"
+      },
+      {
+        "name": "James Wilson",
+        "role": "Musician",
+        "content": "Love how I can showcase my music, sell merch, and book gigs all in one place. My fans love the experience!",
+        "metric": "2k+",
+        "metricLabel": "Newsletter subs"
       }
     ]
   }

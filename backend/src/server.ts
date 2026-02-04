@@ -1,6 +1,7 @@
 import express from "express";
 import routes from "./routes/index";
 import { deserializeUser } from "./middlewares/auth.middleware";
+import { customDomainMiddleware } from "./middlewares/custom-domain.middleware";
 import * as session from "express-session";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import cors from "cors";
@@ -134,6 +135,10 @@ app.use(
 );
 
 app.use(deserializeUser);
+
+// Middleware para detectar domínios personalizados
+// Deve vir antes das rotas para identificar o domínio correto
+app.use(customDomainMiddleware);
 
 app.use(routes);
 app.use(errorMiddleware);

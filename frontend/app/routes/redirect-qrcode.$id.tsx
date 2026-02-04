@@ -38,16 +38,18 @@ export default function RedirectQrCodePage() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-                <div className="text-center space-y-4 p-8">
-                    <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
-                        <span className="text-red-500 text-2xl">✕</span>
+            <div className="min-h-screen flex items-center justify-center bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]">
+                <div className="text-center space-y-4 p-8 bg-white border-4 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full mx-4">
+                    <div className="w-20 h-20 rounded-2xl bg-red-100 border-4 border-black flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <span className="text-black text-4xl font-black">✕</span>
                     </div>
-                    <h1 className="text-2xl font-bold text-text-main">Oops!</h1>
-                    <p className="text-text-muted">{error}</p>
+                    <div>
+                        <h1 className="text-3xl font-black text-[#1A1A1A] uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>Oops!</h1>
+                        <p className="text-gray-600 mt-2 font-medium">{error}</p>
+                    </div>
                     <a
                         href="/"
-                        className="inline-block mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                        className="inline-flex mt-6 px-8 py-3 bg-[#E94E77] text-white border-2 border-black rounded-xl font-black uppercase tracking-wide hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
                     >
                         Go to Homepage
                     </a>
@@ -57,12 +59,17 @@ export default function RedirectQrCodePage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-            <div className="text-center space-y-6 p-8">
-                <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
+        <div className="min-h-screen flex items-center justify-center bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]">
+            <div className="text-center space-y-8 p-12 bg-white border-4 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm w-full mx-4">
+                <div className="relative w-20 h-20 mx-auto">
+                    <div className="absolute inset-0 bg-[#C6F035] rounded-full border-4 border-black animate-ping opacity-20"></div>
+                    <div className="relative w-20 h-20 bg-[#C6F035] rounded-full border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <Loader2 className="w-8 h-8 animate-spin text-black stroke-[3px]" />
+                    </div>
+                </div>
                 <div className="space-y-2">
-                    <h1 className="text-2xl font-bold text-text-main">Redirecting...</h1>
-                    <p className="text-text-muted">Please wait while we redirect you</p>
+                    <h1 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>Redirecting...</h1>
+                    <p className="text-gray-600 font-bold text-sm">Please wait while we redirect you</p>
                 </div>
             </div>
         </div>

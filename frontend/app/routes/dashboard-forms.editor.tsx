@@ -39,12 +39,11 @@ import {
     Edit,
     Save,
     Loader2,
-    Menu,
     ChevronLeft,
     ChevronRight,
-    Settings as SettingsIcon,
-    Palette,
-    ListChecks
+    ListChecks,
+    Sparkles,
+    Settings
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -82,12 +81,12 @@ function DraggableToolboxItem({ type, label, icon: Icon }: { type: FormFieldType
             ref={setNodeRef}
             {...listeners}
             {...attributes}
-            className={`flex items-center gap-3 p-3 bg-surface-card border border-border rounded-lg cursor-grab hover:border-primary hover:shadow-sm transition-all ${isDragging ? "opacity-50" : ""}`}
+            className={`flex items-center gap-3 p-4 bg-white border-2 border-black rounded-[12px] cursor-grab hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${isDragging ? "opacity-50" : ""}`}
         >
-            <div className="p-2 bg-muted rounded-md text-muted-foreground">
+            <div className="p-2 bg-[#d2e823] rounded-md border-2 border-black text-black">
                 <Icon className="w-4 h-4" />
             </div>
-            <span className="text-sm font-medium text-gray-700">{label}</span>
+            <span className="text-sm font-bold text-[#1A1A1A]">{label}</span>
         </div>
     );
 }
@@ -110,13 +109,15 @@ function FormCanvas({ fields, onRemove, selectedFieldId, onSelect, isToolboxDrag
     return (
         <div
             ref={setNodeRef}
-            className={`flex-1 bg-surface-card rounded-xl border-2 border-dashed transition-colors min-h-[500px] p-8 shadow-sm ${isOver ? "border-primary bg-primary/5" : "border-border"}`}
+            className={`flex-1 bg-white rounded-[24px] border-4 transition-colors min-h-[600px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isOver ? "border-[#d2e823] bg-[#d2e823]/10" : "border-black"}`}
         >
             {fields.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-muted-foreground min-h-[400px]">
-                    <Plus className="w-12 h-12 mb-3 text-gray-300" />
-                    <p className="text-lg font-medium">{t("dashboard.formsEditor.emptyTitle")}</p>
-                    <p className="text-sm">{t("dashboard.formsEditor.emptySubtitle")}</p>
+                <div className="h-full flex flex-col items-center justify-center text-center min-h-[500px]">
+                    <div className="w-20 h-20 bg-[#F3F3F1] rounded-full flex items-center justify-center mb-6 border-4 border-black border-dashed">
+                        <Plus className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <h3 className="text-2xl font-black text-[#1A1A1A] mb-2">{t("dashboard.formsEditor.emptyTitle")}</h3>
+                    <p className="text-gray-500 font-medium max-w-sm">{t("dashboard.formsEditor.emptySubtitle")}</p>
                 </div>
             ) : (
                 <SortableContext items={fieldIds} strategy={verticalListSortingStrategy}>
@@ -157,7 +158,8 @@ function SortableField({ field, onRemove, selectedFieldId, onSelect }: {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.6 : 1
+        opacity: isDragging ? 0.6 : 1,
+        zIndex: isDragging ? 999 : 'auto'
     };
 
     return (
@@ -169,54 +171,54 @@ function SortableField({ field, onRemove, selectedFieldId, onSelect }: {
                 e.stopPropagation();
                 onSelect(field.id);
             }}
-            className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${selectedFieldId === field.id
-                ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
-                : "border-border hover:border-primary/50 hover:shadow-sm"
+            className={`group relative p-6 rounded-[16px] border-2 transition-all cursor-pointer ${selectedFieldId === field.id
+                ? "border-black bg-[#d2e823]/10 ring-2 ring-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                : "border-black bg-white hover:bg-gray-50 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px]"
                 }`}
         >
-            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-surface-card/80 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-border">
+            <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                 <button
                     onClick={(e) => onRemove(field.id, e)}
-                    className="p-1.5 text-red-500 hover:bg-destructive/10 rounded-md transition-colors"
+                    className="p-2 text-red-600 bg-white border-2 border-black rounded-lg hover:bg-red-50 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                 >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 stroke-[2.5px]" />
                 </button>
                 <div
                     ref={setActivatorNodeRef}
                     {...listeners}
-                    className="p-1.5 text-muted-foreground cursor-grab active:cursor-grabbing"
+                    className="p-2 text-black bg-white border-2 border-black rounded-lg cursor-grab active:cursor-grabbing hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     title="Reorder"
                 >
-                    <GripVertical className="w-4 h-4" />
+                    <GripVertical className="w-4 h-4 stroke-[2.5px]" />
                 </div>
             </div>
 
-            <div className="mb-2 pointer-events-none">
-                <label className="block text-sm font-bold text-foreground mb-1">
+            <div className="mb-3 pointer-events-none">
+                <label className="block text-base font-black text-[#1A1A1A] mb-1">
                     {field.label} {field.required && <span className="text-red-500">*</span>}
                 </label>
-                {field.placeholder && <p className="text-xs text-muted-foreground mb-2">{field.placeholder}</p>}
+                {field.placeholder && <p className="text-sm text-gray-500 font-medium">{field.placeholder}</p>}
             </div>
 
-            <div className="pointer-events-none opacity-60">
+            <div className="pointer-events-none opacity-80">
                 {field.type === "textarea" ? (
-                    <div className="w-full h-24 bg-muted rounded-lg border border-border" />
+                    <div className="w-full h-24 bg-[#F3F3F1] rounded-xl border-2 border-dashed border-gray-300" />
                 ) : field.type === "checkbox" ? (
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded border border-gray-300 bg-muted" />
-                        <span className="text-sm text-muted-foreground">{t("dashboard.formsEditor.preview.matchesLabel")}</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-md border-2 border-black bg-white" />
+                        <span className="text-sm font-bold text-gray-600">{t("dashboard.formsEditor.preview.matchesLabel")}</span>
                     </div>
                 ) : field.type === "multichoice" ? (
                     <div className="space-y-2">
                         {(field.options || [t("dashboard.formsEditor.defaults.option", { index: 1 }), t("dashboard.formsEditor.defaults.option", { index: 2 }), t("dashboard.formsEditor.defaults.option", { index: 3 })]).slice(0, 3).map((opt) => (
-                            <div key={opt} className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded border border-gray-300 bg-muted" />
-                                <span className="text-sm text-muted-foreground">{opt}</span>
+                            <div key={opt} className="flex items-center gap-3">
+                                <div className="w-5 h-5 rounded-full border-2 border-black bg-white" />
+                                <span className="text-sm font-bold text-gray-600">{opt}</span>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="w-full h-10 bg-muted rounded-lg border border-border" />
+                    <div className="w-full h-12 bg-[#F3F3F1] rounded-xl border-2 border-dashed border-gray-300" />
                 )}
             </div>
         </div>
@@ -257,8 +259,10 @@ export default function DashboardFormsEditor() {
         const fetchForm = async () => {
             try {
                 const response = await api.get(`/form/forms/${id}`);
-                setFields(response.data.fields || []);
-                setFormTitle(response.data.title || "Untitled Form");
+                // Ensure we handle the response correctly
+                const formData = response.data;
+                setFields(Array.isArray(formData.fields) ? formData.fields : []);
+                setFormTitle(formData.title || "Untitled Form");
             } catch (err) {
                 console.error("Failed to load form", err);
                 navigate("/dashboard/forms");
@@ -340,8 +344,8 @@ export default function DashboardFormsEditor() {
 
     if (isLoading) {
         return (
-            <div className="h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="h-screen flex items-center justify-center bg-[#F3F3F1]">
+                <Loader2 className="w-10 h-10 animate-spin text-[#d2e823] stroke-black stroke-[3px]" />
             </div>
         );
     }
@@ -353,44 +357,45 @@ export default function DashboardFormsEditor() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex flex-col h-screen bg-surface-card overflow-hidden relative">
+            <div className="flex flex-col h-screen bg-[#F3F3F1] overflow-hidden relative">
                 {/* Header Bar - Mobile & Desktop */}
-                <header className="h-16 border-b border-border bg-surface-card flex items-center justify-between px-4 md:px-6 shrink-0 z-30">
-                    <div className="flex items-center gap-3">
+                <header className="h-20 border-b-4 border-black bg-white flex items-center justify-between px-4 md:px-8 shrink-0 z-30 shadow-sm relative">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate("/dashboard/forms")}
-                            className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                            className="p-2.5 hover:bg-[#F3F3F1] rounded-[12px] border-2 border-transparent hover:border-black transition-all group"
                             title={t("dashboard.formsEditor.backToForms")}
                         >
-                            <ArrowLeft className="w-5 h-5" />
+                            <ArrowLeft className="w-5 h-5 text-black stroke-[3px] group-hover:-translate-x-1 transition-transform" />
                         </button>
-                        <div className="w-px h-6 bg-muted hidden md:block"></div>
+                        <div className="w-px h-8 bg-gray-200 hidden md:block"></div>
                         <div className="flex flex-col">
                             <input
                                 type="text"
                                 value={formTitle}
                                 onChange={(e) => setFormTitle(e.target.value)}
-                                className="text-base font-bold bg-transparent border-none outline-none text-foreground placeholder:text-gray-300 w-40 md:w-64 focus:ring-0 p-0"
+                                className="text-xl font-black bg-transparent border-none outline-none text-[#1A1A1A] placeholder:text-gray-300 w-40 md:w-96 focus:ring-0 p-0 tracking-tight"
+                                style={{ fontFamily: 'var(--font-display)' }}
                                 placeholder={t("dashboard.formsEditor.defaultName")}
                             />
-                            <p className="text-[10px] text-muted-foreground md:hidden">{t("dashboard.formsEditor.editorMode")}</p>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider md:hidden">{t("dashboard.formsEditor.editorMode")}</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsMobileToolboxOpen(true)}
-                            className="md:hidden p-2 bg-muted text-muted-foreground rounded-lg"
+                            className="md:hidden p-3 bg-white border-2 border-black rounded-[12px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                         >
-                            <Plus className="w-5 h-5" />
+                            <Plus className="w-5 h-5 stroke-[3px]" />
                         </button>
 
                         <button
                             onClick={saveForm}
                             disabled={isSaving}
-                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                            className="flex items-center gap-3 px-6 py-3 bg-[#C6F035] hover:bg-[#d6ed42] text-black border-2 border-black rounded-[14px] text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 stroke-[2.5px]" />}
                             <span className="hidden md:inline">{isSaving ? t("dashboard.formsEditor.saving") : t("dashboard.formsEditor.save")}</span>
                         </button>
                     </div>
@@ -398,10 +403,13 @@ export default function DashboardFormsEditor() {
 
                 <div className="flex-1 flex overflow-hidden relative">
                     {/* Toolbox Sidebar - Desktop (Collapsible) */}
-                    <aside className={`hidden md:flex flex-col border-r border-border bg-surface-card transition-all duration-300 ${isToolboxOpen ? 'w-64' : 'w-0 opacity-0 overflow-hidden'}`}>
-                        <div className="p-6 space-y-6 overflow-y-auto">
-                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("dashboard.formsEditor.toolbox.title")}</h3>
-                            <div className="space-y-3">
+                    <aside className={`hidden md:flex flex-col border-r-4 border-black bg-white transition-all duration-300 ${isToolboxOpen ? 'w-80' : 'w-0 opacity-0 overflow-hidden'}`}>
+                        <div className="p-8 space-y-6 overflow-y-auto">
+                            <h3 className="text-sm font-black text-black uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-2 h-2 bg-[#C6F035] rounded-full border border-black"></span>
+                                {t("dashboard.formsEditor.toolbox.title")}
+                            </h3>
+                            <div className="space-y-4">
                                 {toolboxItems.map((item) => (
                                     <DraggableToolboxItem key={item.type} {...item} />
                                 ))}
@@ -412,15 +420,15 @@ export default function DashboardFormsEditor() {
                     {/* Mobile Toolbox Overlay */}
                     {isMobileToolboxOpen && (
                         <div className="fixed inset-0 z-50 md:hidden">
-                            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setIsMobileToolboxOpen(false)} />
-                            <div className="absolute left-0 top-0 bottom-0 w-72 bg-surface-card shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="font-bold text-foreground">{t("dashboard.formsEditor.addField")}</h3>
-                                    <button onClick={() => setIsMobileToolboxOpen(false)} className="p-2 text-muted-foreground">
-                                        <X className="w-5 h-5" />
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileToolboxOpen(false)} />
+                            <div className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col p-6 border-r-4 border-black">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h3 className="text-xl font-black text-black" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.formsEditor.addField")}</h3>
+                                    <button onClick={() => setIsMobileToolboxOpen(false)} className="p-2 border-2 border-transparent hover:border-black rounded-lg transition-all">
+                                        <X className="w-6 h-6" />
                                     </button>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {toolboxItems.map((item) => (
                                         <DraggableToolboxItem key={item.type} {...item} />
                                     ))}
@@ -431,10 +439,13 @@ export default function DashboardFormsEditor() {
 
                     {/* Canvas Area */}
                     <main
-                        className="flex-1 bg-muted/30 overflow-y-auto p-4 md:p-12"
+                        className="flex-1 bg-[#F3F3F1] overflow-y-auto p-4 md:p-12 relative"
                         onClick={() => setSelectedFieldId(null)}
                     >
-                        <div className="max-w-2xl mx-auto min-h-full">
+                        {/* Dot pattern background */}
+                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+
+                        <div className="max-w-3xl mx-auto min-h-full relative z-10">
                             <FormCanvas
                                 fields={fields}
                                 onRemove={removeField}
@@ -451,40 +462,42 @@ export default function DashboardFormsEditor() {
 
                     {/* Property Editor Sidebar - Desktop & Tablet */}
                     {selectedField && (
-                        <aside className="fixed md:relative inset-y-0 right-0 w-full md:w-80 bg-surface-card border-l border-border shadow-2xl md:shadow-none z-40 flex flex-col animate-in slide-in-from-right duration-300">
-                            <div className="p-6 border-b border-gray-50 flex items-center justify-between shrink-0">
-                                <h3 className="font-bold text-foreground flex items-center gap-2">
-                                    <Edit className="w-4 h-4 text-primary" />
+                        <aside className="fixed md:relative inset-y-0 right-0 w-full md:w-96 bg-white border-l-4 border-black shadow-2xl md:shadow-none z-40 flex flex-col animate-in slide-in-from-right duration-300">
+                            <div className="p-6 border-b-2 border-gray-100 flex items-center justify-between shrink-0 bg-white">
+                                <h3 className="font-black text-xl text-black flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
+                                    <div className="p-2 bg-[#d2e823] border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                        <Edit className="w-4 h-4 text-black" />
+                                    </div>
                                     {t("dashboard.formsEditor.editField")}
                                 </h3>
                                 <button
                                     onClick={() => setSelectedFieldId(null)}
-                                    className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                                    className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-xl transition-colors"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-6 h-6 stroke-[2.5px]" />
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8">
                                 <div>
-                                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("dashboard.formsEditor.displayLabel")}</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{t("dashboard.formsEditor.displayLabel")}</label>
                                     <input
                                         type="text"
                                         value={selectedField.label}
                                         onChange={(e) => updateField(selectedField.id, { label: e.target.value })}
-                                        className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                        className="w-full px-5 py-4 bg-white border-2 border-black rounded-[14px] text-base font-bold outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[-2px] focus:translate-y-[-2px] transition-all"
                                         placeholder={t("dashboard.formsEditor.placeholders.label")}
                                     />
                                 </div>
 
                                 {selectedField.type !== 'checkbox' && selectedField.type !== 'multichoice' && (
                                     <div>
-                                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("dashboard.formsEditor.placeholderLabel")}</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{t("dashboard.formsEditor.placeholderLabel")}</label>
                                         <input
                                             type="text"
                                             value={selectedField.placeholder || ""}
                                             onChange={(e) => updateField(selectedField.id, { placeholder: e.target.value })}
-                                            className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                            className="w-full px-5 py-4 bg-white border-2 border-black rounded-[14px] text-base font-bold outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[-2px] focus:translate-y-[-2px] transition-all"
                                             placeholder={t("dashboard.formsEditor.placeholders.placeholder")}
                                         />
                                     </div>
@@ -492,10 +505,11 @@ export default function DashboardFormsEditor() {
 
                                 {selectedField.type === 'multichoice' && (
                                     <div>
-                                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("dashboard.formsEditor.options")}</label>
-                                        <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">{t("dashboard.formsEditor.options")}</label>
+                                        <div className="space-y-3">
                                             {(selectedField.options || []).map((opt, index) => (
-                                                <div key={`${selectedField.id}-opt-${index}`} className="flex items-center gap-2">
+                                                <div key={`${selectedField.id}-opt-${index}`} className="flex items-center gap-3">
+                                                    <div className="w-6 h-6 rounded-full border-2 border-black bg-white flex items-center justify-center text-xs font-bold">{index + 1}</div>
                                                     <input
                                                         type="text"
                                                         value={opt}
@@ -504,7 +518,7 @@ export default function DashboardFormsEditor() {
                                                             next[index] = e.target.value;
                                                             updateField(selectedField.id, { options: next });
                                                         }}
-                                                        className="flex-1 px-3 py-2 bg-muted border border-border rounded-lg text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                                                        className="flex-1 px-4 py-3 bg-white border-2 border-black rounded-[12px] text-sm font-bold focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] outline-none transition-all"
                                                         placeholder={t("dashboard.formsEditor.optionPlaceholder", { index: index + 1 })}
                                                     />
                                                     <button
@@ -512,10 +526,10 @@ export default function DashboardFormsEditor() {
                                                             const next = (selectedField.options || []).filter((_, i) => i !== index);
                                                             updateField(selectedField.id, { options: next });
                                                         }}
-                                                        className="p-2 text-muted-foreground hover:text-red-500 rounded-lg hover:bg-destructive/10 transition-colors"
+                                                        className="p-3 text-red-500 hover:text-white hover:bg-red-500 border-2 border-transparent hover:border-black rounded-[12px] transition-all"
                                                         title={t("dashboard.formsEditor.removeOption")}
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Trash2 className="w-4 h-4 stroke-[2.5px]" />
                                                     </button>
                                                 </div>
                                             ))}
@@ -525,47 +539,46 @@ export default function DashboardFormsEditor() {
                                                     next.push(t("dashboard.formsEditor.optionPlaceholder", { index: next.length + 1 }));
                                                     updateField(selectedField.id, { options: next });
                                                 }}
-                                                className="w-full flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-lg text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-black/30 rounded-[14px] text-sm font-bold text-black/60 hover:border-black hover:bg-[#d2e823]/20 hover:text-black transition-all"
                                             >
-                                                <Plus className="w-4 h-4" />
+                                                <Plus className="w-4 h-4 stroke-[3px]" />
                                                 {t("dashboard.formsEditor.addOption")}
                                             </button>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="p-4 bg-muted rounded-2xl border border-border space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <label htmlFor="required_field" className="text-sm font-bold text-gray-700">{t("dashboard.formsEditor.required")}</label>
-                                        <input
-                                            type="checkbox"
-                                            id="required_field"
-                                            checked={selectedField.required}
-                                            onChange={(e) => updateField(selectedField.id, { required: e.target.checked })}
-                                            className="w-5 h-5 text-primary rounded-lg border-gray-300 focus:ring-primary cursor-pointer"
-                                        />
+                                <div className="p-6 bg-gray-50 rounded-[20px] border-2 border-gray-200">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label htmlFor="required_field" className="text-base font-black text-[#1A1A1A]">{t("dashboard.formsEditor.required")}</label>
+                                        <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out">
+                                            <input
+                                                type="checkbox"
+                                                id="required_field"
+                                                checked={selectedField.required}
+                                                onChange={(e) => updateField(selectedField.id, { required: e.target.checked })}
+                                                className="peer absolute w-0 h-0 opacity-0"
+                                            />
+                                            <label
+                                                htmlFor="required_field"
+                                                className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer border-2 border-black peer-checked:bg-[#C6F035] transition-colors"
+                                            >
+                                                <span className={`block h-full w-1/2 bg-white border-r-2 border-black rounded-full shadow-[1px_0px_0px_0px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-in-out ${selectedField.required ? 'translate-x-full border-l-2 border-r-0' : 'translate-x-0'}`}></span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">{t("dashboard.formsEditor.requiredHint")}</p>
+                                    <p className="text-sm text-gray-500 font-medium">{t("dashboard.formsEditor.requiredHint")}</p>
                                 </div>
 
-                                <div className="pt-6 mt-6 border-t border-border">
+                                <div className="pt-8 mt-4 border-t-2 border-gray-100">
                                     <button
                                         onClick={() => removeField(selectedField.id)}
-                                        className="w-full flex items-center justify-center gap-2 p-3 text-destructive bg-destructive/10 hover:bg-red-100 rounded-xl text-sm font-bold transition-all"
+                                        className="w-full flex items-center justify-center gap-3 p-4 text-white bg-red-600 border-2 border-black hover:bg-red-500 rounded-[16px] text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-5 h-5 stroke-[2.5px]" />
                                         {t("dashboard.formsEditor.deleteField")}
                                     </button>
                                 </div>
-                            </div>
-
-                            <div className="p-6 border-t border-gray-50 bg-muted/30">
-                                <button
-                                    onClick={() => setSelectedFieldId(null)}
-                                    className="w-full py-3 bg-surface-card border border-border text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:bg-muted transition-all"
-                                >
-                                    {t("dashboard.formsEditor.doneEditing")}
-                                </button>
                             </div>
                         </aside>
                     )}
@@ -574,11 +587,11 @@ export default function DashboardFormsEditor() {
 
             <DragOverlay modifiers={[restrictToWindowEdges]}>
                 {activeDragItem ? (
-                    <div className="flex items-center gap-3 p-3 bg-surface-card border border-primary/50 shadow-xl rounded-lg cursor-grabbing w-64 transform scale-105">
-                        <div className="p-2 bg-primary/10 rounded-md text-primary">
-                            <Plus className="w-4 h-4" />
+                    <div className="flex items-center gap-3 p-4 bg-white border-2 border-black rounded-[12px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-grabbing w-64 transform scale-105 rotate-2">
+                        <div className="p-2 bg-[#d2e823] rounded-md border-2 border-black text-black">
+                            <Plus className="w-4 h-4 stroke-[3px]" />
                         </div>
-                        <span className="text-sm font-medium text-foreground">{activeDragItem.label}</span>
+                        <span className="text-lg font-black text-[#1A1A1A]">{activeDragItem.label}</span>
                     </div>
                 ) : null}
             </DragOverlay>

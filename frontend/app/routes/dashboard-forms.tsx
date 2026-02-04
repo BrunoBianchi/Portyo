@@ -1,55 +1,80 @@
+import { useState, useEffect, useContext, useMemo } from "react";
+import type { Route } from "../+types/root";
+import { Plus, Trash2, FileText, Loader2, Sparkles, AlertCircle, X } from "lucide-react";
 import { Link, useNavigate } from "react-router";
-import { Plus, FileText, Trash2, X, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useBio } from "~/contexts/bio.context";
-import { useAuth } from "~/contexts/auth.context";
+import { AuthorizationGuard } from "~/contexts/guard.context";
+import BioContext from "~/contexts/bio.context";
 import { api } from "~/services/api";
-import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
-import { UpgradePopup } from "~/components/shared/upgrade-popup";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
+import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 import { useTranslation } from "react-i18next";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
+
+export function meta({ }: Route.MetaArgs) {
+    return [
+        { title: "Forms | Portyo" },
+        { name: "description", content: "Manage your custom forms" },
+    ];
+}
 
 interface Form {
     id: string;
     title: string;
+    description: string | null;
+    createdAt: string;
     updatedAt: string;
-    fields: any[];
-    submissions: number;
-    views: number;
+    submissions?: number;
+    _count?: {
+        answers?: number;
+    };
 }
 
 export default function DashboardFormsList() {
+    const { bio, updateBio } = useContext(BioContext);
+    const { t } = useTranslation("dashboard");
     const navigate = useNavigate();
-    const { bio } = useBio();
-    const { user } = useAuth();
-    const { t } = useTranslation();
     const [forms, setForms] = useState<Form[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
-    const [deletingForm, setDeletingForm] = useState<Form | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [createError, setCreateError] = useState<string | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
+    const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:forms-tour-done" });
+
+    const [deleteModal, setDeleteModal] = useState<{
+        isOpen: boolean;
+        title: string | null;
+        id: string | null;
+    }>({
+        isOpen: false,
+        title: null,
+        id: null
+    });
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Upgrade Popup State
+    const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+
 
     useEffect(() => {
         if (bio?.id) {
-            fetchForms();
+            setLoading(true);
+            api.get(`/form/bios/${bio.id}/forms`)
+                .then((response) => {
+                    setForms(response.data);
+                })
+                .catch((error) => {
+                    console.error("Failed to fetch forms:", error);
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
         }
     }, [bio?.id]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
         if (isMobile) return;
-
-        const hasSeenTour = window.localStorage.getItem("portyo:forms-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
 
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
@@ -58,274 +83,235 @@ export default function DashboardFormsList() {
         }
     }, [isMobile]);
 
-    const formsTourSteps: Step[] = [
-        {
-            target: "[data-tour=\"forms-header\"]",
-            content: t("dashboard.tours.forms.steps.header"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"forms-create\"]",
-            content: t("dashboard.tours.forms.steps.create"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"forms-grid\"]",
-            content: t("dashboard.tours.forms.steps.grid"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"forms-card\"]",
-            content: t("dashboard.tours.forms.steps.card"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"forms-answers\"]",
-            content: t("dashboard.tours.forms.steps.answers"),
-            placement: "top",
-        },
-    ];
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (isMobile) return;
 
-    const handleFormsTourCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
-
-        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
+        const hasSeenTour = window.localStorage.getItem("portyo:forms-tour-done");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                startTour(formsTourSteps);
+            }, 500);
+            return () => clearTimeout(timer);
         }
+    }, [isMobile, startTour]);
 
-        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:forms-tour-done", "true");
-            }
-        }
-    };
+    const formsTourSteps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"forms-header\"]",
+            popover: { title: t("dashboard.tours.forms.steps.header"), description: t("dashboard.tours.forms.steps.header"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"forms-create\"]",
+            popover: { title: t("dashboard.tours.forms.steps.create"), description: t("dashboard.tours.forms.steps.create"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"forms-grid\"]",
+            popover: { title: t("dashboard.tours.forms.steps.grid"), description: t("dashboard.tours.forms.steps.grid"), side: "top", align: "start" },
+        },
+        ...(forms.length > 0 ? [{
+            element: "[data-tour=\"forms-card\"]",
+            popover: { title: t("dashboard.tours.forms.steps.card"), description: t("dashboard.tours.forms.steps.card"), side: "bottom", align: "start" },
+        }] : []),
+    ], [t, forms.length]);
 
-    const fetchForms = async () => {
-        try {
-            setIsLoading(true);
-            const response = await api.get(`/form/bios/${bio!.id}/forms`);
-            setForms(response.data);
-        } catch (err) {
-            console.error("Failed to fetch forms", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+
 
     const createNewForm = async () => {
         if (!bio?.id) return;
-
-        const plan = (user?.plan || 'free') as PlanType;
-        const limit = PLAN_LIMITS[plan]?.formsPerBio || 1;
-
-        if (forms.length >= limit) {
-            setIsUpgradePopupOpen(true);
-            return;
-        }
+        setIsCreating(true);
+        setCreateError(null);
 
         try {
-            setIsLoading(true);
             const response = await api.post(`/form/bios/${bio.id}/forms`, {
-                title: t("dashboard.forms.defaultName"),
+                title: t("dashboard.forms.newFormTitle"),
+                description: t("dashboard.forms.newFormDesc"),
                 fields: []
             });
             navigate(`/dashboard/forms/${response.data.id}`);
-        } catch (err: any) {
-            console.error("Failed to create form", err);
-            setError(err.response?.data?.error || t("dashboard.forms.createError"));
-            setTimeout(() => setError(null), 5000);
+        } catch (error: any) {
+            console.error("Failed to create form:", error);
+            if (error.response?.status === 403) {
+                setShowUpgradePopup(true);
+            } else {
+                setCreateError(t("dashboard.forms.createError"));
+            }
         } finally {
-            setIsLoading(false);
+            setIsCreating(false);
         }
     };
 
-    const deleteForm = (form: Form, e: React.MouseEvent) => {
+    const handleDeleteClick = (e: React.MouseEvent, form: Form) => {
         e.preventDefault();
         e.stopPropagation();
-        setDeletingForm(form);
+        setDeleteModal({ isOpen: true, title: form.title, id: form.id });
     };
 
     const handleConfirmDelete = async () => {
-        if (!deletingForm) return;
+        if (!bio?.id || !deleteModal.id) return;
+        setIsDeleting(true);
+
         try {
-            setIsDeleting(true);
-            await api.delete(`/form/forms/${deletingForm.id}`);
-            setForms(prev => prev.filter(f => f.id !== deletingForm.id));
-            setDeletingForm(null);
-        } catch (err) {
-            console.error("Failed to delete form", err);
+            await api.delete(`/form/forms/${deleteModal.id}`);
+            setForms(prev => prev.filter(f => f.id !== deleteModal.id));
+            setDeleteModal(prev => ({ ...prev, isOpen: false }));
+        } catch (error) {
+            console.error("Failed to delete form:", error);
             alert(t("dashboard.forms.deleteError"));
         } finally {
             setIsDeleting(false);
         }
     };
 
-    if (!bio) return null;
-
     return (
-        <div className="p-8 max-w-6xl mx-auto">
-                <Joyride
-                steps={formsTourSteps}
-                    run={tourRun && !isMobile}
-                stepIndex={tourStepIndex}
-                continuous
-                showSkipButton
-                spotlightClicks
-                scrollToFirstStep
-                callback={handleFormsTourCallback}
-                scrollOffset={joyrideProps.scrollOffset}
-                spotlightPadding={joyrideProps.spotlightPadding}
-                disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                locale={{
-                    back: t("dashboard.tours.common.back"),
-                    close: t("dashboard.tours.common.close"),
-                    last: t("dashboard.tours.common.last"),
-                    next: t("dashboard.tours.common.next"),
-                    skip: t("dashboard.tours.common.skip"),
-                }}
-                styles={joyrideStyles}
-            />
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10" data-tour="forms-header">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.title")}</h1>
-                    <p className="text-muted-foreground text-medium">{t("dashboard.forms.subtitle")}</p>
+        <AuthorizationGuard minPlan="standard" fallback={
+            <div className="p-6 max-w-4xl mx-auto text-center flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="w-20 h-20 bg-[#C6F035] rounded-full flex items-center justify-center mb-6 mx-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Sparkles className="w-10 h-10 text-black" />
                 </div>
-                <button
-                    data-tour="forms-create"
-                    onClick={createNewForm}
-                    className="group bg-gray-900 text-white pl-4 pr-5 py-3 rounded-full font-bold shadow-lg hover:bg-black hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-3 w-fit"
-                    disabled={isLoading}
-                >
-                    <div className="w-6 h-6 rounded-full bg-surface-card/20 flex items-center justify-center group-hover:bg-surface-card/30 transition-colors">
-                        <Plus className="w-3.5 h-3.5 text-white" />
-                    </div>
-                    <div className="flex flex-col items-start leading-none gap-0.5">
-                        <span className="text-sm">{t("dashboard.forms.create")}</span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                            {forms.length} / {
-                                (() => {
-                                    const plan = (user?.plan || 'free') as PlanType;
-                                    return PLAN_LIMITS[plan]?.formsPerBio || 1;
-                                })()
-                            } used
-                        </span>
-                    </div>
+                <h1 className="text-3xl font-black text-[#1A1A1A] mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.locked.title")}</h1>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto text-base font-medium">{t("dashboard.forms.locked.subtitle")}</p>
+                <button className="px-8 py-3 bg-[#C6F035] text-black rounded-[14px] font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+                    {t("dashboard.forms.locked.cta")}
                 </button>
             </div>
+        }>
+            <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen">
 
-            <UpgradePopup
-                isOpen={isUpgradePopupOpen}
-                onClose={() => setIsUpgradePopupOpen(false)}
-            />
-
-            {error && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-lg text-destructive text-sm font-medium">
-                    {error}
-                </div>
-            )}
-
-            {isLoading && forms.length === 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="bg-muted h-48 rounded-xl animate-pulse" />
-                    ))}
-                </div>
-            ) : forms.length === 0 ? (
-                <div className="bg-muted rounded-xl border-2 border-dashed border-border p-12 flex flex-col items-center justify-center text-center" data-tour="forms-grid">
-                    <div className="w-16 h-16 bg-surface-card rounded-full flex items-center justify-center shadow-sm mb-4">
-                        <FileText className="w-8 h-8 text-muted-foreground" />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12" data-tour="forms-header">
+                    <div>
+                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.title")}</h1>
+                        <p className="text-gray-600 text-lg font-medium">{t("dashboard.forms.subtitle")}</p>
                     </div>
-                    <h3 className="text-lg font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.emptyTitle")}</h3>
-                    <p className="text-muted-foreground mb-6 max-w-sm">{t("dashboard.forms.emptySubtitle")}</p>
                     <button
+                        data-tour="forms-create"
                         onClick={createNewForm}
-                        className="btn btn-primary"
+                        disabled={isCreating}
+                        className="group bg-[#C6F035] text-black px-6 py-4 rounded-[16px] font-black text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 flex items-center gap-3"
                     >
-                        {t("dashboard.forms.emptyCta")}
+                        {isCreating ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <Plus className="w-6 h-6 stroke-[3px]" />
+                        )}
+                        {isCreating ? t("dashboard.forms.creating") : t("dashboard.forms.create")}
                     </button>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="forms-grid">
-                    {forms.map((form, index) => (
-                        <Link
-                            key={form.id}
-                            data-tour={index === 0 ? "forms-card" : undefined}
-                            to={`/dashboard/forms/${form.id}`}
-                            className="group bg-surface-card p-6 rounded-xl border border-border shadow-sm hover:shadow-md hover:border-primary/20 transition-all flex flex-col h-full"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 bg-primary/5 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                    <FileText className="w-6 h-6" />
-                                </div>
-                                <div className="relative">
-                                    <button
-                                        className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-                                        onClick={(e) => deleteForm(form, e)}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
+
+                {/* Upgrade Popup */}
+                {showUpgradePopup && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowUpgradePopup(false)} />
+                        <div className="relative bg-white rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 max-w-md w-full animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                            <div className="w-16 h-16 bg-[#C6F035] rounded-full flex items-center justify-center mb-6 mx-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <Sparkles className="w-8 h-8 text-black" />
                             </div>
+                            <h3 className="text-2xl font-black text-center text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                                {t("dashboard.forms.upgrade.title")}
+                            </h3>
+                            <p className="text-center text-gray-600 font-medium mb-8">
+                                {t("dashboard.forms.upgrade.subtitle")}
+                            </p>
 
-                            <h3 className="font-bold text-foreground mb-1 group-hover:text-primary transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{form.title || t("dashboard.forms.defaultName")}</h3>
-                            <p className="text-sm text-muted-foreground mb-6">{t("dashboard.forms.lastUpdated", { date: new Date(form.updatedAt).toLocaleDateString() })}</p>
-
-                            <div className="mt-auto flex items-center justify-between text-sm font-medium text-muted-foreground">
-                                <div className="flex items-center gap-4">
-                                    <span>{t("dashboard.forms.fieldsCount", { count: form.fields.length })}</span>
-                                    <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                    <span>{t("dashboard.forms.submissionsCount", { count: form.submissions })}</span>
-                                </div>
-                                <button
-                                    data-tour={index === 0 ? "forms-answers" : undefined}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(`/dashboard/forms/${form.id}/answers`);
-                                    }}
-                                    className="text-primary hover:underline font-bold"
+                            <div className="flex flex-col gap-3">
+                                <Link
+                                    to="/pricing"
+                                    className="w-full py-4 bg-[#1A1A1A] text-white rounded-[14px] font-black text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-none hover:translate-y-[2px] transition-all"
                                 >
-                                    {t("dashboard.forms.viewAnswers")}
+                                    {t("dashboard.forms.upgrade.cta")}
+                                </Link>
+                                <button
+                                    onClick={() => setShowUpgradePopup(false)}
+                                    className="w-full py-4 bg-transparent text-gray-500 font-bold hover:text-black transition-colors"
+                                >
+                                    {t("common.cancel")}
                                 </button>
                             </div>
-                        </Link>
-                    ))}
-                </div>
-            )}
-            {/* Delete Confirmation Modal */}
-            {deletingForm && typeof document !== "undefined" && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 p-6 text-center">
-                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-destructive">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.deleteTitle")}</h3>
-                        <p className="text-muted-foreground text-sm mb-6">
-                            {t("dashboard.forms.deleteDescription", { title: deletingForm.title || t("dashboard.forms.defaultName") })}
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeletingForm(null)}
-                                className="flex-1 py-2.5 bg-muted text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
-                            >
-                                {t("dashboard.forms.cancel")}
-                            </button>
-                            <button
-                                onClick={handleConfirmDelete}
-                                disabled={isDeleting}
-                                className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                            >
-                                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : t("dashboard.forms.delete")}
-                            </button>
                         </div>
                     </div>
-                </div>,
-                document.body
-            )}
-        </div>
+                )}
+
+                {createError && (
+                    <div className="mb-8 p-4 bg-red-50 border-2 border-red-500 rounded-xl flex items-center gap-3 text-red-600 font-bold animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-5 h-5 shrink-0" />
+                        {createError}
+                    </div>
+                )}
+
+
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="w-10 h-10 animate-spin text-[#C6F035] stroke-black stroke-[3px]" />
+                        <p className="text-gray-500 font-bold animate-pulse">{t("common.loading")}</p>
+                    </div>
+                ) : forms.length === 0 ? (
+                    <div className="text-center py-24 bg-white rounded-[32px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center justify-center">
+                        <div className="w-24 h-24 bg-[#F3F3F1] rounded-full flex items-center justify-center mb-6 border-4 border-black border-dashed">
+                            <FileText className="w-10 h-10 text-gray-400" />
+                        </div>
+                        <h3 className="text-2xl font-black text-[#1A1A1A] mb-2">{t("dashboard.forms.empty.title")}</h3>
+                        <p className="text-gray-500 max-w-md mx-auto mb-8 font-medium">{t("dashboard.forms.empty.subtitle")}</p>
+                        <button
+                            onClick={createNewForm}
+                            className="bg-[#C6F035] text-black px-8 py-4 rounded-[16px] font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
+                        >
+                            <Plus className="w-5 h-5 stroke-[3px]" />
+                            {t("dashboard.forms.createFirst")}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-tour="forms-grid">
+                        {forms.map((form, index) => (
+                            <Link
+                                key={form.id}
+                                data-tour={index === 0 ? "forms-card" : undefined}
+                                to={`/dashboard/forms/${form.id}`}
+                                className="group bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all flex flex-col h-full relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-2 bg-[#C6F035] border-b-2 border-black" />
+
+                                <div className="flex justify-between items-start mb-4 mt-2">
+                                    <h3 className="text-xl font-black text-[#1A1A1A] line-clamp-1 group-hover:underline decoration-2 underline-offset-2 decoration-[#C6F035]">
+                                        {form.title}
+                                    </h3>
+                                    <button
+                                        onClick={(e) => handleDeleteClick(e, form)}
+                                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        title={t("common.delete")}
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                <p className="text-gray-500 text-sm line-clamp-2 mb-8 font-medium flex-1">
+                                    {form.description || t("dashboard.forms.noDescription")}
+                                </p>
+
+                                <div className="flex items-center justify-between pt-4 border-t-2 border-gray-100">
+                                    <div className="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+                                        <div className="w-8 h-8 rounded-lg bg-[#E0EAFF] border-2 border-black flex items-center justify-center text-blue-600">
+                                            <FileText className="w-4 h-4" />
+                                        </div>
+                                        {form._count?.answers ?? form.submissions ?? 0} {t("dashboard.forms.answersCount")}
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
+                                        {new Date(form.updatedAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+
+                <DeleteConfirmationModal
+                    isOpen={deleteModal.isOpen}
+                    onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+                    onConfirm={handleConfirmDelete}
+                    title={t("dashboard.forms.deleteTitle")}
+                    description={t("dashboard.forms.deleteDesc", { title: deleteModal.title })}
+                    isDeleting={isDeleting}
+                />
+            </div>
+        </AuthorizationGuard>
     );
 }

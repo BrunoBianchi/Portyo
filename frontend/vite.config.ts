@@ -61,11 +61,15 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   
   optimizeDeps: {
-    include: ["date-fns", "react", "react-dom", "framer-motion"],
-    exclude: ["@react-router/dev"],
+    include: ["date-fns", "react", "react-dom", "framer-motion", "driver.js"],
+    exclude: ["@react-router/dev", "i18next-fs-backend"],
     esbuildOptions: {
-      target: 'es2020',
+      target: 'esnext',
     },
+  },
+
+  ssr: {
+    noExternal: ["driver.js"],
   },
   
   server: {

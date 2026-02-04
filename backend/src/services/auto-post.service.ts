@@ -14,7 +14,7 @@ import {
     getLanguageByCountry,
 } from "./auto-post-ai.service";
 import { logger } from "../shared/utils/logger";
-import { LessThan, MoreThan, IsNull, Not } from "typeorm";
+import { LessThan, MoreThan, IsNull, Not, In } from "typeorm";
 import { notificationService } from "./notification.service";
 import { NotificationType } from "../database/entity/notification-entity";
 import { 
@@ -24,8 +24,12 @@ import {
     getCachedMetadata,
     setCachedMetadata,
 } from "./auto-post-cache.service";
+import redisClient from "../config/redis.client";
 
 const MAX_POSTS_PER_MONTH = 10;
+const AUTO_POST_QUEUE_KEY = "auto-post:queue";
+const AUTO_POST_DELAY_MS = 12 * 60 * 1000;
+const AUTO_POST_QUEUE_BATCH = 5;
 
 const scheduleRepository = AppDataSource.getRepository(AutoPostScheduleEntity);
 const logRepository = AppDataSource.getRepository(AutoPostLogEntity);
@@ -565,7 +569,21 @@ export const processSchedule = async (schedule: AutoPostScheduleEntity): Promise
 };
 
 /**
+ * Check if a schedule is "overdue" (should have been posted earlier)
+ * Overdue = nextPostDate is in the past by more than a small buffer
+ */
+const isScheduleOverdue = (schedule: AutoPostScheduleEntity): boolean => {
+    if (!schedule.nextPostDate) return false;
+    const now = new Date();
+    const nextPost = new Date(schedule.nextPostDate);
+    // Consider overdue if it was scheduled more than 5 minutes ago
+    const bufferMs = 5 * 60 * 1000; // 5 minutes
+    return nextPost.getTime() < (now.getTime() - bufferMs);
+};
+
+/**
  * Run the auto-post job - called by cron
+ * Handles both regular scheduled posts and "catch-up" for overdue posts
  */
 export const runAutoPostJob = async (): Promise<void> => {
     logger.info("[AutoPost] Starting auto-post job");
@@ -590,15 +608,126 @@ export const runAutoPostJob = async (): Promise<void> => {
         // Filter by start date
         const eligibleSchedules = schedules.filter(s => shouldScheduleRun(s));
 
-        logger.info(`[AutoPost] Found ${eligibleSchedules.length} eligible schedules to process (filtered from ${schedules.length})`);
+        // Separate overdue schedules from on-time schedules
+        const overdueSchedules = eligibleSchedules.filter(isScheduleOverdue);
+        const onTimeSchedules = eligibleSchedules.filter(s => !isScheduleOverdue(s));
 
-        for (const schedule of eligibleSchedules) {
-            await processSchedule(schedule);
+        logger.info(`[AutoPost] Found ${eligibleSchedules.length} eligible schedules (${overdueSchedules.length} overdue, ${onTimeSchedules.length} on-time)`);
+
+        // Process overdue schedules immediately (they should have been posted earlier)
+        if (overdueSchedules.length > 0) {
+            logger.info(`[AutoPost] Processing ${overdueSchedules.length} overdue schedules immediately`);
+            for (const schedule of overdueSchedules) {
+                try {
+                    // Process immediately, don't wait for queue
+                    await processSchedule(schedule);
+                    logger.info(`[AutoPost] Processed overdue schedule ${schedule.id}`);
+                } catch (error: any) {
+                    logger.error(`[AutoPost] Failed to process overdue schedule ${schedule.id}: ${error.message}`);
+                }
+            }
+        }
+
+        // Enqueue on-time schedules with normal spacing
+        if (onTimeSchedules.length > 0) {
+            await enqueueAutoPostSchedules(onTimeSchedules);
         }
 
         logger.info("[AutoPost] Auto-post job completed");
     } catch (error: any) {
         logger.error(`[AutoPost] Error in auto-post job: ${error.message}`);
+    }
+};
+
+/**
+ * Enqueue eligible schedules into Redis with 12-minute spacing
+ */
+export const enqueueAutoPostSchedules = async (
+    schedules: AutoPostScheduleEntity[]
+): Promise<void> => {
+    if (!schedules.length) return;
+
+    const now = Date.now();
+
+    const sorted = [...schedules].sort((a, b) => {
+        const aTime = a.nextPostDate ? new Date(a.nextPostDate).getTime() : now;
+        const bTime = b.nextPostDate ? new Date(b.nextPostDate).getTime() : now;
+        return aTime - bTime;
+    });
+
+    let enqueuedCount = 0;
+
+    for (let index = 0; index < sorted.length; index += 1) {
+        const schedule = sorted[index];
+        const executeAt = now + index * AUTO_POST_DELAY_MS;
+
+        try {
+            const added = await redisClient.zadd(
+                AUTO_POST_QUEUE_KEY,
+                "NX",
+                executeAt,
+                schedule.id
+            );
+
+            if (added) {
+                enqueuedCount += 1;
+            }
+        } catch (error: any) {
+            logger.error(`[AutoPost] Failed to enqueue schedule ${schedule.id}: ${error.message}`);
+        }
+    }
+
+    logger.info(`[AutoPost] Enqueued ${enqueuedCount} schedules in Redis queue`);
+};
+
+/**
+ * Process due schedules from Redis queue
+ */
+export const processAutoPostQueue = async (): Promise<void> => {
+    try {
+        const now = Date.now();
+
+        const dueIds: string[] = await redisClient.zrangebyscore(
+            AUTO_POST_QUEUE_KEY,
+            0,
+            now,
+            "LIMIT",
+            0,
+            AUTO_POST_QUEUE_BATCH
+        );
+
+        if (!dueIds.length) return;
+
+        const claimedIds: string[] = [];
+
+        for (const scheduleId of dueIds) {
+            const removed = await redisClient.zrem(AUTO_POST_QUEUE_KEY, scheduleId);
+            if (removed) {
+                claimedIds.push(scheduleId);
+            }
+        }
+
+        if (!claimedIds.length) return;
+
+        const schedules = await scheduleRepository.find({
+            where: { id: In(claimedIds) },
+        });
+
+        const schedulesById = new Map(schedules.map((schedule) => [schedule.id, schedule]));
+
+        await Promise.all(
+            claimedIds.map(async (scheduleId) => {
+                const schedule = schedulesById.get(scheduleId);
+                if (!schedule) {
+                    logger.warn(`[AutoPost] Schedule ${scheduleId} not found while processing queue`);
+                    return;
+                }
+
+                await processSchedule(schedule);
+            })
+        );
+    } catch (error: any) {
+        logger.error(`[AutoPost] Error processing queue: ${error.message}`);
     }
 };
 

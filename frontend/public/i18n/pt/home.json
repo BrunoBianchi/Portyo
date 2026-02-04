@@ -1,6 +1,10 @@
 {
   "hero": {
+    "badge": "Agora com conteúdo gerado por IA",
     "title": {
+      "line1": "A ferramenta de",
+      "line2": "link na bio",
+      "line3": "rápida e fácil.",
       "pre": "Converta seus seguidores",
       "highlight": "em clientes",
       "post": "com um único link"
@@ -15,9 +19,47 @@
       "word7": "um único",
       "word8": "link"
     },
-    "subtitle": "Gere bios poderosas que geram receita com nossa plataforma tudo-em-um. Cresça sua audiência e ganhe enquanto dorme!",
+    "subtitle": "O Portyo ajuda criadores e empresas a criar um único link que abriga todo o seu conteúdo, produtos e serviços.",
+    "ctaPrimary": "Começar grátis",
+    "ctaSecondary": "Explorar todos os planos",
+    "disclaimer": "Grátis para sempre. Não precisa de cartão de crédito.",
     "ctaPlaceholder": "seunome",
     "ctaButton": "Resgatar agora",
+    "trustedBy": "Confiado por criadores em todas as plataformas",
+    "stats": {
+      "clicks": "Cliques rastreados",
+      "users": "Usuários ativos",
+      "products": "Produtos vendidos",
+      "visits": "Visitas diárias"
+    },
+    "features": {
+      "title": "Tudo o que você precisa para",
+      "highlight": "crescer online",
+      "subtitle": "Todas as ferramentas que você precisa para compartilhar seu conteúdo, vender produtos e conectar com sua audiência.",
+      "cards": {
+        "content": {
+          "title": "Compartilhe todo tipo de conteúdo",
+          "description": "Incorpore vídeos, músicas, podcasts e mais diretamente na sua página de bio."
+        },
+        "audience": {
+          "title": "Cresça e engaje sua audiência",
+          "description": "Colete e-mails, construa sua newsletter e conecte-se com seus fãs."
+        },
+        "sell": {
+          "title": "Venda produtos, receba pagamentos",
+          "description": "Transforme sua bio em uma loja. Venda produtos digitais, merch e serviços."
+        },
+        "track": {
+          "title": "Acompanhe seu desempenho",
+          "description": "Obtenha analytics detalhados sobre cliques, visualizações e conversões."
+        }
+      }
+    },
+    "cta": {
+      "title": "Pronto para crescer sua",
+      "highlight": "audiência",
+      "button": "Começar grátis"
+    },
     "floating": {
       "roleLabel": "Função",
       "roleValue": "Artista Digital",
@@ -267,6 +309,98 @@
       {
         "role": "SaaS",
         "description": "Conectando estudantes a oportunidades de estágio no Brasil."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Dúvidas?",
+    "highlight": "Respondidas",
+    "subtitle": "Tudo o que você precisa saber sobre o Portyo",
+    "items": [
+      {
+        "question": "Por que preciso de uma ferramenta de link na bio?",
+        "answer": "Uma ferramenta de link na bio permite compartilhar múltiplos links através de uma única URL. Em vez de atualizar constantemente seu link na bio, você pode criar uma landing page única com todos os seus links, conteúdos e produtos importantes. É essencial para criadores, empresas e qualquer pessoa que queira maximizar sua presença nas redes sociais."
+      },
+      {
+        "question": "O Portyo é gratuito?",
+        "answer": "Sim! O Portyo oferece um plano grátis para sempre que inclui links ilimitados, analytics básico e recursos essenciais. Também oferecemos planos premium com recursos avançados como domínios personalizados, analytics detalhado, integração de e-commerce e suporte prioritário."
+      },
+      {
+        "question": "Posso vender produtos através da minha página Portyo?",
+        "answer": "Com certeza! O Portyo inclui recursos de e-commerce integrados que permitem vender produtos digitais, mercadorias físicas e serviços diretamente através da sua página de bio. Você pode aceitar pagamentos, gerenciar estoque e acompanhar vendas tudo em um só lugar."
+      },
+      {
+        "question": "Qual a diferença entre Portyo e Linktree?",
+        "answer": "O Portyo oferece mais opções de personalização, analytics superior, e-commerce integrado, agendamento de compromissos e geração de conteúdo com IA. Focamos em ajudar você não apenas a compartilhar links, mas realmente converter sua audiência em clientes."
+      },
+      {
+        "question": "Posso usar meu próprio domínio?",
+        "answer": "Sim! Com nossos planos Standard e Pro, você pode conectar seu próprio domínio personalizado à sua página Portyo. Isso oferece uma URL profissional com sua marca como seunome.com ao invés de portyo.me/seunome."
+      },
+      {
+        "question": "O Portyo é seguro para usar em todas as redes sociais?",
+        "answer": "Sim, o Portyo é completamente seguro e compatível com todas as principais redes sociais incluindo Instagram, TikTok, Twitter, YouTube e muitas outras. Seguimos todas as diretrizes e melhores práticas das plataformas."
+      }
+    ]
+  },
+  "creatorMarquee": {
+    "title": "Confiado por",
+    "highlight": "criadores no mundo todo",
+    "subtitle": "Junte-se a milhares de criadores que confiam no Portyo"
+  },
+  "testimonials": {
+    "badge": "Adorado por mais de 10.000 criadores",
+    "title": "O que os criadores estão dizendo",
+    "subtitle": "Junte-se a milhares de criadores que transformaram sua presença online com o Portyo",
+    "trustedBy": "Confiado por equipes da",
+    "stats": {
+      "activeUsers": "Usuários Ativos",
+      "revenue": "Receita Gerada",
+      "uptime": "Uptime",
+      "rating": "Avaliação Média"
+    },
+    "items": [
+      {
+        "name": "Sarah Chen",
+        "role": "Criadora de Conteúdo",
+        "content": "O Portyo transformou completamente como eu monetizo meu conteúdo. Os recursos de automação sozinhos me economizaram horas toda semana!",
+        "metric": "3x",
+        "metricLabel": "Aumento de receita"
+      },
+      {
+        "name": "Marcus Johnson",
+        "role": "Personal Trainer",
+        "content": "O agendamento é um divisor de águas. Meus clientes adoram como é fácil agendar sessões, e eu adoro os lembretes automatizados.",
+        "metric": "50+",
+        "metricLabel": "Agendamentos mensais"
+      },
+      {
+        "name": "Emily Rodriguez",
+        "role": "Artista Digital",
+        "content": "Finalmente uma ferramenta de link na bio que realmente me ajuda a vender minha arte. O showcase de produtos é lindo e converte muito bem!",
+        "metric": "$12k",
+        "metricLabel": "Vendas em 3 meses"
+      },
+      {
+        "name": "David Park",
+        "role": "YouTuber de Tecnologia",
+        "content": "O analytics é incrível. Finalmente posso ver exatamente com o que minha audiência se engaja e otimizar adequadamente.",
+        "metric": "85%",
+        "metricLabel": "Taxa de cliques"
+      },
+      {
+        "name": "Aisha Patel",
+        "role": "Consultora de Negócios",
+        "content": "O Portyo me faz parecer profissional. O domínio personalizado e o design limpo me ajudaram a conseguir clientes maiores.",
+        "metric": "10x",
+        "metricLabel": "Geração de leads"
+      },
+      {
+        "name": "James Wilson",
+        "role": "Músico",
+        "content": "Adoro como posso mostrar minha música, vender merch e agendar shows tudo em um lugar. Meus fãs adoram a experiência!",
+        "metric": "2k+",
+        "metricLabel": "Inscritos na newsletter"
       }
     ]
   }

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import { QrCode as QrCodeIcon, Download, Plus, Link as LinkIcon, Loader2, Copy, Check, RotateCcw, Palette } from "lucide-react";
@@ -6,8 +6,8 @@ import type { MetaFunction } from "react-router";
 import QRCode from "react-qr-code";
 import { createQrCode, getQrCodes, type QrCode } from "~/services/qrcode.service";
 import { useTranslation } from "react-i18next";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
 
 const PRESET_COLORS = [
     { name: "Classic", fg: "#000000", bg: "#FFFFFF" },
@@ -27,7 +27,7 @@ export const meta: MetaFunction = () => {
 
 export default function DashboardQrCode() {
     const { bio } = useContext(BioContext);
-    const { t } = useTranslation();
+    const { t } = useTranslation("dashboard");
     const [qrCodes, setQrCodes] = useState<QrCode[]>([]);
     const [selectedQrCode, setSelectedQrCode] = useState<QrCode | null>(null);
     const [newValue, setNewValue] = useState("");
@@ -36,10 +36,9 @@ export default function DashboardQrCode() {
     const [copied, setCopied] = useState(false);
     const [fgColor, setFgColor] = useState("#000000");
     const [bgColor, setBgColor] = useState("#FFFFFF");
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
+    const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:qrcode-tour-done" });
 
     useEffect(() => {
         if (bio?.id) {
@@ -51,11 +50,6 @@ export default function DashboardQrCode() {
         if (typeof window === "undefined") return;
         if (isMobile) return;
 
-        const hasSeenTour = window.localStorage.getItem("portyo:qrcode-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
-
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
         if (primaryFromTheme) {
@@ -63,57 +57,46 @@ export default function DashboardQrCode() {
         }
     }, [isMobile]);
 
-    const qrTourSteps: Step[] = [
-        {
-            target: "[data-tour=\"qrcode-header\"]",
-            content: t("dashboard.tours.qrcode.steps.header"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"qrcode-create\"]",
-            content: t("dashboard.tours.qrcode.steps.create"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"qrcode-list\"]",
-            content: t("dashboard.tours.qrcode.steps.list"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"qrcode-preview\"]",
-            content: t("dashboard.tours.qrcode.steps.preview"),
-            placement: "left",
-        },
-        {
-            target: "[data-tour=\"qrcode-appearance\"]",
-            content: t("dashboard.tours.qrcode.steps.appearance"),
-            placement: "left",
-        },
-        {
-            target: "[data-tour=\"qrcode-download\"]",
-            content: t("dashboard.tours.qrcode.steps.download"),
-            placement: "left",
-        },
-    ];
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (isMobile) return;
 
-    const handleQrTourCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
-
-        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
+        const hasSeenTour = window.localStorage.getItem("portyo:qrcode-tour-done");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                startTour(qrTourSteps);
+            }, 500);
+            return () => clearTimeout(timer);
         }
+    }, [isMobile, startTour]);
 
-        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:qrcode-tour-done", "true");
-            }
-        }
-    };
+    const qrTourSteps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"qrcode-header\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.header"), description: t("dashboard.tours.qrcode.steps.header"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"qrcode-create\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.create"), description: t("dashboard.tours.qrcode.steps.create"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"qrcode-list\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.list"), description: t("dashboard.tours.qrcode.steps.list"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"qrcode-preview\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.preview"), description: t("dashboard.tours.qrcode.steps.preview"), side: "left", align: "start" },
+        },
+        {
+            element: "[data-tour=\"qrcode-appearance\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.appearance"), description: t("dashboard.tours.qrcode.steps.appearance"), side: "left", align: "start" },
+        },
+        {
+            element: "[data-tour=\"qrcode-download\"]",
+            popover: { title: t("dashboard.tours.qrcode.steps.download"), description: t("dashboard.tours.qrcode.steps.download"), side: "left", align: "start" },
+        },
+    ], [t]);
+
 
     const loadQrCodes = async () => {
         if (!bio?.id) return;
@@ -173,35 +156,15 @@ export default function DashboardQrCode() {
     return (
         <AuthorizationGuard>
             <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-                <Joyride
-                    steps={qrTourSteps}
-                    run={tourRun && !isMobile}
-                    stepIndex={tourStepIndex}
-                    continuous
-                    showSkipButton
-                    spotlightClicks
-                    scrollToFirstStep
-                    callback={handleQrTourCallback}
-                    scrollOffset={joyrideProps.scrollOffset}
-                    spotlightPadding={joyrideProps.spotlightPadding}
-                    disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                    locale={{
-                        back: t("dashboard.tours.common.back"),
-                        close: t("dashboard.tours.common.close"),
-                        last: t("dashboard.tours.common.last"),
-                        next: t("dashboard.tours.common.next"),
-                        skip: t("dashboard.tours.common.skip"),
-                    }}
-                    styles={joyrideStyles}
-                />
+
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-6" data-tour="qrcode-header">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold uppercase tracking-wider mb-3">
-                            <QrCodeIcon className="w-3 h-3" />
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C6F035] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase tracking-wider mb-3">
+                            <QrCodeIcon className="w-3.5 h-3.5" />
                             {t("dashboard.qrcode.share")}
                         </div>
-                        <h1 className="text-4xl font-bold text-text-main tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.title")}</h1>
-                        <p className="text-lg text-text-muted">{t("dashboard.qrcode.subtitle")}</p>
+                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter mb-2 uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.title")}</h1>
+                        <p className="text-lg text-gray-600 font-medium">{t("dashboard.qrcode.subtitle")}</p>
                     </div>
                 </header>
 
@@ -209,19 +172,20 @@ export default function DashboardQrCode() {
                     {/* Left Column: List & Create */}
                     <div className="lg:col-span-1 space-y-6">
                         {/* Create New */}
-                        <div className="card p-6" data-tour="qrcode-create">
-                            <h3 className="text-lg font-bold text-text-main mb-4" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.createTitle")}</h3>
+                        {/* Create New */}
+                        <div className="bg-white rounded-[20px] border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" data-tour="qrcode-create">
+                            <h3 className="text-lg font-black text-[#1A1A1A] mb-4 uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.createTitle")}</h3>
                             <form onSubmit={handleCreate} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-text-muted uppercase mb-2">{t("dashboard.qrcode.destinationUrl")}</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">{t("dashboard.qrcode.destinationUrl")}</label>
                                     <div className="relative">
-                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <input
                                             type="url"
                                             value={newValue}
                                             onChange={(e) => setNewValue(e.target.value)}
                                             placeholder={t("dashboard.qrcode.urlPlaceholder")}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-sm font-bold placeholder-gray-400 text-[#1A1A1A]"
                                             required
                                         />
                                     </div>
@@ -229,33 +193,33 @@ export default function DashboardQrCode() {
                                 <button
                                     type="submit"
                                     disabled={isCreating || !newValue}
-                                    className="btn btn-primary w-full justify-center"
+                                    className="w-full py-3 bg-[#C6F035] border-2 border-black rounded-xl text-black font-black uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                    {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 stroke-[3px]" />}
                                     <span>{t("dashboard.qrcode.generate")}</span>
                                 </button>
                             </form>
                         </div>
 
                         {/* List */}
-                        <div className="card overflow-hidden flex flex-col max-h-[600px]" data-tour="qrcode-list">
-                            <div className="p-4 border-b border-border bg-surface-alt/30">
-                                <h3 className="font-bold text-text-main text-sm" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.yourCodes")}</h3>
+                        <div className="bg-white rounded-[20px] border-4 border-black overflow-hidden flex flex-col max-h-[600px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" data-tour="qrcode-list">
+                            <div className="p-4 border-b-2 border-black bg-gray-50">
+                                <h3 className="font-black text-[#1A1A1A] text-sm uppercase tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.qrcode.yourCodes")}</h3>
                             </div>
-                            <div className="overflow-y-auto flex-1 p-2 space-y-1 custom-scrollbar">
+                            <div className="overflow-y-auto flex-1 p-2 space-y-2 custom-scrollbar">
                                 {/* Default Bio Link Option */}
                                 <button
                                     onClick={() => setSelectedQrCode(null)}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${!selectedQrCode ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-surface-alt'}`}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border-2 ${!selectedQrCode ? 'bg-[#C6F035]/20 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
                                 >
-                                    <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center shrink-0">
-                                        <QrCodeIcon className="w-5 h-5 text-primary" />
+                                    <div className="w-10 h-10 rounded-lg bg-white border-2 border-black flex items-center justify-center shrink-0 text-black">
+                                        <QrCodeIcon className="w-5 h-5 stroke-[2.5px]" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="font-bold text-text-main text-sm truncate">{t("dashboard.qrcode.mainProfile")}</p>
-                                        <p className="text-xs text-text-muted truncate">{defaultBioUrl}</p>
+                                        <p className="font-bold text-[#1A1A1A] text-sm truncate">{t("dashboard.qrcode.mainProfile")}</p>
+                                        <p className="text-xs text-gray-500 truncate font-medium">{defaultBioUrl}</p>
                                     </div>
-                                    {!selectedQrCode && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                                    {!selectedQrCode && <div className="w-3 h-3 rounded-full bg-black"></div>}
                                 </button>
 
                                 {isLoading ? (
@@ -267,23 +231,23 @@ export default function DashboardQrCode() {
                                     <button
                                         key={qr.id}
                                         onClick={() => setSelectedQrCode(qr)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${selectedQrCode?.id === qr.id ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-surface-alt'}`}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border-2 ${selectedQrCode?.id === qr.id ? 'bg-[#C6F035]/20 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
                                     >
-                                        <div className="w-10 h-10 rounded-lg bg-surface-card border border-border flex items-center justify-center shrink-0">
+                                        <div className="w-10 h-10 rounded-lg bg-white border-2 border-black flex items-center justify-center shrink-0">
                                             <QRCode value={qr.value} size={24} />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="font-bold text-text-main text-sm truncate">{qr.value}</p>
+                                            <p className="font-bold text-[#1A1A1A] text-sm truncate">{qr.value}</p>
                                             <div className="flex items-center gap-3 mt-0.5">
-                                                <span className="text-[10px] text-text-muted bg-surface-alt px-1.5 py-0.5 rounded border border-border">
+                                                <span className="text-[10px] text-gray-500 font-bold bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300">
                                                     {new Date(qr.createdAt).toLocaleDateString()}
                                                 </span>
-                                                <span className="text-[10px] text-text-muted">
+                                                <span className="text-[10px] text-gray-500 font-bold">
                                                     {t("dashboard.qrcode.views", { count: qr.views })}
                                                 </span>
                                             </div>
                                         </div>
-                                        {selectedQrCode?.id === qr.id && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                                        {selectedQrCode?.id === qr.id && <div className="w-3 h-3 rounded-full bg-black"></div>}
                                     </button>
                                 ))}
                             </div>
@@ -292,29 +256,29 @@ export default function DashboardQrCode() {
 
                     {/* Right Column: Preview */}
                     <div className="lg:col-span-2">
-                        <div className="card h-full flex flex-col relative overflow-hidden" data-tour="qrcode-preview">
-                            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+                        <div className="bg-white rounded-[20px] border-4 border-black h-full flex flex-col relative overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" data-tour="qrcode-preview">
+                            <div className="absolute top-0 left-0 w-full h-32 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px] opacity-10 pointer-events-none"></div>
 
                             <div className="p-6 md:p-8 relative z-10 flex flex-col xl:flex-row gap-8 h-full">
                                 {/* Left Side: Preview */}
                                 <div className="flex-1 flex flex-col items-center justify-center space-y-6">
                                     <div className="text-center space-y-2 w-full">
-                                        <h2 className="text-2xl font-bold text-text-main" style={{ fontFamily: 'var(--font-display)' }}>
+                                        <h2 className="text-2xl font-black text-[#1A1A1A] uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
                                             {selectedQrCode ? t("dashboard.qrcode.custom") : t("dashboard.qrcode.profile")}
                                         </h2>
-                                        <div className="flex items-center justify-center gap-2 text-text-muted bg-surface-alt/50 py-1 px-3 rounded-full inline-flex max-w-full mx-auto border border-border/50">
-                                            <span className="truncate text-xs max-w-[180px] xl:max-w-[240px]">{currentQrValue}</span>
+                                        <div className="flex items-center justify-center gap-2 text-gray-500 bg-gray-100 py-1.5 px-4 rounded-full inline-flex max-w-full mx-auto border-2 border-gray-200">
+                                            <span className="truncate text-xs font-mono font-bold max-w-[180px] xl:max-w-[240px]">{currentQrValue}</span>
                                             <button
                                                 onClick={() => handleCopy(currentQrValue)}
-                                                className="p-0.5 hover:text-primary transition-colors"
+                                                className="p-0.5 hover:text-black transition-colors"
                                                 title={t("dashboard.qrcode.copyUrl")}
                                             >
-                                                {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                                {copied ? <Check className="w-3.5 h-3.5 text-green-600 stroke-[3px]" /> : <Copy className="w-3.5 h-3.5 stroke-[2.5px]" />}
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm transition-colors duration-300 w-full max-w-[300px]" style={{ backgroundColor: bgColor }}>
+                                    <div className="bg-white p-6 rounded-2xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-300 w-full max-w-[300px]" style={{ backgroundColor: bgColor }}>
                                         <QRCode
                                             value={currentQrValue}
                                             size={256}
@@ -328,43 +292,43 @@ export default function DashboardQrCode() {
                                     {selectedQrCode && (
                                         <div className="grid grid-cols-2 gap-8 pt-2 w-full max-w-xs">
                                             <div className="text-center">
-                                                <p className="text-2xl font-bold text-text-main">{selectedQrCode.views}</p>
-                                                <p className="text-xs font-bold text-text-muted uppercase tracking-wider">{t("dashboard.qrcode.scans")}</p>
+                                                <p className="text-3xl font-black text-[#1A1A1A]">{selectedQrCode.views}</p>
+                                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{t("dashboard.qrcode.scans")}</p>
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-2xl font-bold text-text-main">{selectedQrCode.clicks}</p>
-                                                <p className="text-xs font-bold text-text-muted uppercase tracking-wider">{t("dashboard.qrcode.clicks")}</p>
+                                                <p className="text-3xl font-black text-[#1A1A1A]">{selectedQrCode.clicks}</p>
+                                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{t("dashboard.qrcode.clicks")}</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Right Side: Controls */}
-                                <div className="w-full xl:w-80 shrink-0 border-t xl:border-t-0 xl:border-l border-border pt-6 xl:pt-0 xl:pl-8 flex flex-col gap-6" data-tour="qrcode-appearance">
+                                <div className="w-full xl:w-80 shrink-0 border-t-2 xl:border-t-0 xl:border-l-2 border-black pt-6 xl:pt-0 xl:pl-8 flex flex-col gap-6" data-tour="qrcode-appearance">
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-text-main font-bold text-sm uppercase tracking-wider">
-                                                <Palette className="w-4 h-4" />
+                                            <div className="flex items-center gap-2 text-[#1A1A1A] font-black text-sm uppercase tracking-wider">
+                                                <Palette className="w-4 h-4 stroke-[2.5px]" />
                                                 <span>{t("dashboard.qrcode.appearance")}</span>
                                             </div>
                                             <button
                                                 onClick={handleResetColors}
-                                                className="flex items-center gap-1.5 text-xs text-text-muted hover:text-primary transition-colors"
+                                                className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-black transition-colors"
                                             >
-                                                <RotateCcw className="w-3 h-3" />
+                                                <RotateCcw className="w-3 h-3 stroke-[2.5px]" />
                                                 {t("dashboard.qrcode.reset")}
                                             </button>
                                         </div>
 
                                         {/* Presets */}
                                         <div>
-                                            <label className="text-xs font-medium text-text-muted mb-3 block">{t("dashboard.qrcode.colorPresets")}</label>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">{t("dashboard.qrcode.colorPresets")}</label>
                                             <div className="grid grid-cols-6 gap-2">
                                                 {PRESET_COLORS.map((preset) => (
                                                     <button
                                                         key={preset.name}
                                                         onClick={() => { setFgColor(preset.fg); setBgColor(preset.bg); }}
-                                                        className="w-9 h-9 rounded-full border border-border shadow-sm flex items-center justify-center transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                        className="w-9 h-9 rounded-full border-2 border-gray-200 hover:border-black shadow-sm flex items-center justify-center transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-black/20 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                                         style={{ backgroundColor: preset.bg }}
                                                         title={preset.name}
                                                     >
@@ -375,11 +339,11 @@ export default function DashboardQrCode() {
                                         </div>
 
                                         {/* Custom Pickers */}
-                                        <div className="space-y-4 pt-2 border-t border-border/50">
+                                        <div className="space-y-4 pt-4 border-t-2 border-gray-100">
                                             <div>
-                                                <label className="text-xs font-medium text-text-muted mb-2 block">{t("dashboard.qrcode.foreground")}</label>
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t("dashboard.qrcode.foreground")}</label>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border shadow-sm shrink-0">
+                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
                                                         <input
                                                             type="color"
                                                             value={fgColor}
@@ -392,15 +356,15 @@ export default function DashboardQrCode() {
                                                             type="text"
                                                             value={fgColor}
                                                             onChange={(e) => setFgColor(e.target.value)}
-                                                            className="w-full bg-surface-alt border border-border rounded-lg pl-3 pr-3 py-2 text-sm font-mono uppercase focus:outline-none focus:border-primary transition-colors"
+                                                            className="w-full bg-gray-50 border-2 border-black rounded-lg pl-3 pr-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-text-muted mb-2 block">{t("dashboard.qrcode.background")}</label>
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t("dashboard.qrcode.background")}</label>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border shadow-sm shrink-0">
+                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
                                                         <input
                                                             type="color"
                                                             value={bgColor}
@@ -413,7 +377,7 @@ export default function DashboardQrCode() {
                                                             type="text"
                                                             value={bgColor}
                                                             onChange={(e) => setBgColor(e.target.value)}
-                                                            className="w-full bg-surface-alt border border-border rounded-lg pl-3 pr-3 py-2 text-sm font-mono uppercase focus:outline-none focus:border-primary transition-colors"
+                                                            className="w-full bg-gray-50 border-2 border-black rounded-lg pl-3 pr-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                                                         />
                                                     </div>
                                                 </div>
@@ -425,11 +389,11 @@ export default function DashboardQrCode() {
                                         <a
                                             href={downloadUrl}
                                             download={`qrcode-${selectedQrCode ? 'custom' : bio?.sufix}.png`}
-                                            className="btn btn-primary w-full justify-center py-3 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                                            className="w-full py-3 bg-black text-white rounded-xl font-bold uppercase tracking-wide flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-900 transition-all hover:-translate-y-0.5 active:translate-y-0"
                                             target="_blank"
                                             rel="noreferrer"
                                         >
-                                            <Download className="w-5 h-5" />
+                                            <Download className="w-4 h-4 stroke-[3px]" />
                                             <span className="ml-2">{t("dashboard.qrcode.downloadPng")}</span>
                                         </a>
                                     </div>

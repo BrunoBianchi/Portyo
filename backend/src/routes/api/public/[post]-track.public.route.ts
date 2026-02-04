@@ -3,11 +3,13 @@ import geoip from "geoip-lite";
 import { AppDataSource } from "../../../database/datasource";
 import { PageViewEntity } from "../../../database/entity/page-view-entity";
 import { BioEntity } from "../../../database/entity/bio-entity";
+import { ActivityEntity, ActivityType } from "../../../database/entity/activity-entity";
 import z from "zod";
 
 const router: Router = Router();
 const pageViewRepository = AppDataSource.getRepository(PageViewEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
+const activityRepository = AppDataSource.getRepository(ActivityEntity);
 
     const trackSchema = z.object({
     bioId: z.string().uuid(),
@@ -100,6 +102,29 @@ router.post("/track", async (req: Request, res: Response) => {
         });
 
         await pageViewRepository.save(pageView);
+
+        // Create activity record for analytics
+        const activityType = type === 'view' ? ActivityType.VIEW : ActivityType.CLICK;
+        const activityDescription = type === 'view' 
+            ? `Page view from ${geo?.country || 'Unknown'} (${device} - ${browser})`
+            : `Link click from ${geo?.country || 'Unknown'} (${device} - ${browser})`;
+        
+        const activity = activityRepository.create({
+            bioId,
+            type: activityType,
+            description: activityDescription,
+            metadata: {
+                country: geo?.country,
+                city: geo?.city,
+                device,
+                browser,
+                referrer,
+                sessionId,
+                ip: ip.substring(0, ip.lastIndexOf('.') + 1) + 'xxx' // Mask IP for privacy
+            }
+        });
+
+        await activityRepository.save(activity);
 
         // Increment bio views/clicks counter
         if (type === 'view') {

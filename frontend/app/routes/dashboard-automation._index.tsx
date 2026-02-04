@@ -1,6 +1,5 @@
 
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router";
 import {
     Zap,
@@ -28,9 +27,9 @@ import {
 import type { Route } from "../+types/root";
 import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmation-modal";
 import { EmailUsageService, type EmailUsage } from "~/services/email-usage.service";
-import Joyride, { ACTIONS, EVENTS, STATUS, type CallBackProps, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -65,10 +64,9 @@ export default function DashboardAutomationList() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [emailUsage, setEmailUsage] = useState<EmailUsage | null>(null);
     const [loadingUsage, setLoadingUsage] = useState(true);
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
+    const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:automation-tour-done" });
 
     // Load automations
     const loadAutomations = async () => {
@@ -106,11 +104,6 @@ export default function DashboardAutomationList() {
         if (typeof window === "undefined") return;
         if (isMobile) return;
 
-        const hasSeenTour = window.localStorage.getItem("portyo:automation-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
-
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
         if (primaryFromTheme) {
@@ -118,57 +111,46 @@ export default function DashboardAutomationList() {
         }
     }, [isMobile]);
 
-    const automationTourSteps: Step[] = [
-        {
-            target: "[data-tour=\"automation-header\"]",
-            content: t("dashboard.tours.automation.steps.header"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"automation-create\"]",
-            content: t("dashboard.tours.automation.steps.create"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"automation-usage\"]",
-            content: t("dashboard.tours.automation.steps.usage"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"automation-list\"]",
-            content: t("dashboard.tours.automation.steps.list"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"automation-card\"]",
-            content: t("dashboard.tours.automation.steps.card"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"automation-actions\"]",
-            content: t("dashboard.tours.automation.steps.actions"),
-            placement: "top",
-        },
-    ];
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (isMobile) return;
 
-    const handleAutomationTourCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
-
-        if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
+        const hasSeenTour = window.localStorage.getItem("portyo:automation-tour-done");
+        if (!hasSeenTour) {
+            const timer = setTimeout(() => {
+                startTour(automationTourSteps);
+            }, 500);
+            return () => clearTimeout(timer);
         }
+    }, [isMobile, startTour]);
 
-        if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:automation-tour-done", "true");
-            }
-        }
-    };
+    const automationTourSteps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"automation-header\"]",
+            popover: { title: t("dashboard.tours.automation.steps.header"), description: t("dashboard.tours.automation.steps.header"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"automation-create\"]",
+            popover: { title: t("dashboard.tours.automation.steps.create"), description: t("dashboard.tours.automation.steps.create"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"automation-usage\"]",
+            popover: { title: t("dashboard.tours.automation.steps.usage"), description: t("dashboard.tours.automation.steps.usage"), side: "bottom", align: "start" },
+        },
+        {
+            element: "[data-tour=\"automation-list\"]",
+            popover: { title: t("dashboard.tours.automation.steps.list"), description: t("dashboard.tours.automation.steps.list"), side: "top", align: "start" },
+        },
+        {
+            element: "[data-tour=\"automation-card\"]",
+            popover: { title: t("dashboard.tours.automation.steps.card"), description: t("dashboard.tours.automation.steps.card"), side: "top", align: "start" },
+        },
+        {
+            element: "[data-tour=\"automation-actions\"]",
+            popover: { title: t("dashboard.tours.automation.steps.actions"), description: t("dashboard.tours.automation.steps.actions"), side: "top", align: "start" },
+        },
+    ], [t]);
+
 
     const handleCreate = async () => {
         if (!bio?.id) return;
@@ -232,96 +214,84 @@ export default function DashboardAutomationList() {
 
     return (
         <AuthorizationGuard minPlan="standard">
-            <div className="flex-1 p-8 bg-surface-alt min-h-screen">
-                    <Joyride
-                    steps={automationTourSteps}
-                        run={tourRun && !isMobile}
-                    stepIndex={tourStepIndex}
-                    continuous
-                    showSkipButton
-                    spotlightClicks
-                    scrollToFirstStep
-                    callback={handleAutomationTourCallback}
-                    scrollOffset={joyrideProps.scrollOffset}
-                    spotlightPadding={joyrideProps.spotlightPadding}
-                    disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                    locale={{
-                        back: t("dashboard.tours.common.back"),
-                        close: t("dashboard.tours.common.close"),
-                        last: t("dashboard.tours.common.last"),
-                        next: t("dashboard.tours.common.next"),
-                        skip: t("dashboard.tours.common.skip"),
-                    }}
-                    styles={joyrideStyles}
-                />
+            <div className="flex-1 p-6 md:p-8 bg-[#F3F3F1] min-h-screen">
+
                 <DeleteConfirmationModal
                     isOpen={deleteModal.isOpen}
                     onClose={() => setDeleteModal({ isOpen: false, id: null })}
                     onConfirm={handleConfirmDelete}
-                    title="Delete Automation"
-                    description="Are you sure you want to delete this automation? This action cannot be undone and the automation will stop running immediately."
+                    title={t("dashboard.automationList.deleteTitle")}
+                    description={t("dashboard.automationList.deleteDescription")}
                     isDeleting={isDeleting}
                 />
 
-                <div className="max-w-6xl mx-auto space-y-8">
+                <div className="max-w-6xl mx-auto space-y-12">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0" data-tour="automation-header">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6" data-tour="automation-header">
                         <div>
-                            <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.title")}</h1>
-                            <p className="text-muted-foreground mt-1">{t("dashboard.automationList.subtitle")}</p>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E94E77] border border-black text-white text-xs font-black uppercase tracking-wider mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <Zap className="w-3 h-3 fill-current" />
+                                {t("dashboard.automationList.sectionTitle")}
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                                {t("dashboard.automationList.title")}
+                            </h1>
+                            <p className="text-lg text-gray-500 font-bold max-w-2xl">{t("dashboard.automationList.subtitle")}</p>
                         </div>
                         <button
                             data-tour="automation-create"
                             onClick={handleCreate}
                             disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#C6F035] text-black px-8 py-4 rounded-[16px] font-black text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 shrink-0"
                         >
-                            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                            {t("dashboard.automationList.create", { current: emailUsage ? automations.length : 0, limit: emailUsage ? getAutomationLimit(emailUsage.plan) : 0 })}
+                            {creating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className="w-6 h-6 stroke-[3px]" />}
+                            {t("dashboard.automationList.createWithCount", { current: emailUsage ? automations.length : 0, limit: emailUsage ? getAutomationLimit(emailUsage.plan) : 0 })}
                         </button>
                     </div>
 
                     {/* Email Usage Card */}
                     {emailUsage && (
-                        <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm" data-tour="automation-usage">
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-0">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center shrink-0">
-                                        <Mail className="w-6 h-6" />
+                        <div className="bg-white rounded-[24px] border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" data-tour="automation-usage">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-[#F3F3F1] border-2 border-black rounded-xl flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                        <Mail className="w-7 h-7 stroke-[2.5px]" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-foreground text-lg">{t("dashboard.automationList.emailUsage.title")}</h3>
-                                        <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.automationList.emailUsage.subtitle")}</p>
+                                        <h3 className="font-black text-[#1A1A1A] text-xl" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.emailUsage.title")}</h3>
+                                        <p className="text-gray-500 font-bold">{t("dashboard.automationList.emailUsage.subtitle")}</p>
                                     </div>
                                 </div>
                                 <div className="text-left sm:text-right">
-                                    <div className="text-2xl font-bold text-foreground">
-                                        {emailUsage.sent} <span className="text-base font-normal text-muted-foreground">/ {emailUsage.limit}</span>
+                                    <div className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+                                        {emailUsage.sent} <span className="text-xl text-gray-400">/ {emailUsage.limit}</span>
                                     </div>
-                                    <div className="text-xs text-muted-foreground mt-1 uppercase font-semibold tracking-wider">
+                                    <div className="inline-flex mt-2 px-3 py-1 bg-[#d2e823] border border-black rounded-full text-xs font-black uppercase tracking-wider">
                                         {t("dashboard.automationList.emailUsage.plan", { plan: emailUsage.plan })}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="mt-4">
-                                <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                            <div className="relative pt-2">
+                                <div className="w-full bg-[#F3F3F1] rounded-full h-4 border-2 border-black overflow-hidden relative">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-500 ${emailUsage.sent / emailUsage.limit >= 0.9
-                                            ? 'bg-destructive/100'
+                                        className={`h-full border-r-2 border-black transition-all duration-500 relative ${emailUsage.sent / emailUsage.limit >= 0.9
+                                            ? 'bg-red-500'
                                             : emailUsage.sent / emailUsage.limit >= 0.7
-                                                ? 'bg-yellow-500'
-                                                : 'bg-blue-500/100'
+                                                ? 'bg-yellow-400'
+                                                : 'bg-[#d2e823]'
                                             }`}
                                         style={{ width: `${Math.min((emailUsage.sent / emailUsage.limit) * 100, 100)}%` }}
-                                    />
+                                    >
+                                        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] [background-size:1rem_1rem] opacity-50 block w-full h-full" />
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between mt-2 text-sm">
-                                    <span className="text-muted-foreground">
+                                <div className="flex items-center justify-between mt-3 text-sm font-bold">
+                                    <span className="text-gray-500">
                                         {t("dashboard.automationList.emailUsage.remaining", { count: emailUsage.limit - emailUsage.sent })}
                                     </span>
-                                    <span className="text-muted-foreground">
+                                    <span className="text-[#1A1A1A]">
                                         {t("dashboard.automationList.emailUsage.used", { percent: ((emailUsage.sent / emailUsage.limit) * 100).toFixed(0) })}
                                     </span>
                                 </div>
@@ -329,14 +299,14 @@ export default function DashboardAutomationList() {
 
                             {/* Upgrade CTA if close to limit */}
                             {emailUsage.sent / emailUsage.limit >= 0.8 && emailUsage.plan !== 'pro' && (
-                                <div className="mt-4 p-4 bg-blue-500/10 rounded-xl border border-blue-100">
+                                <div className="mt-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-500 border-dashed">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-1">
-                                            <h4 className="font-semibold text-blue-900 text-sm">{t("dashboard.automationList.emailUsage.lowTitle")}</h4>
-                                            <p className="text-blue-700 text-sm mt-1">{t("dashboard.automationList.emailUsage.lowSubtitle", { plan: emailUsage.plan === 'free' ? t("dashboard.automationList.plan.standard") : t("dashboard.automationList.plan.pro") })}</p>
+                                            <h4 className="font-black text-blue-900 text-sm uppercase tracking-wider">{t("dashboard.automationList.emailUsage.lowTitle")}</h4>
+                                            <p className="text-blue-700 font-medium text-sm mt-1">{t("dashboard.automationList.emailUsage.lowSubtitle", { plan: emailUsage.plan === 'free' ? t("dashboard.automationList.plan.standard") : t("dashboard.automationList.plan.pro") })}</p>
                                             <Link
                                                 to="/pricing"
-                                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-400 hover:text-blue-700 mt-2"
+                                                className="inline-flex items-center gap-1 text-sm font-black text-blue-600 hover:text-blue-800 hover:underline mt-2"
                                             >
                                                 {t("dashboard.automationList.emailUsage.viewPlans")}
                                             </Link>
@@ -349,58 +319,58 @@ export default function DashboardAutomationList() {
 
                     {/* List */}
                     {loading ? (
-                        <div className="flex justify-center py-12">
-                            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+                        <div className="flex justify-center py-20">
+                            <Loader2 className="w-10 h-10 animate-spin text-[#C6F035] stroke-black stroke-[3px]" />
                         </div>
                     ) : automations.length === 0 ? (
-                        <div className="bg-surface-card rounded-2xl p-12 text-center border border-border shadow-sm flex flex-col items-center" data-tour="automation-list">
-                            <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
-                                <Zap className="w-8 h-8" />
+                        <div className="bg-white rounded-[32px] p-12 text-center border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center" data-tour="automation-list">
+                            <div className="w-24 h-24 bg-[#F3F3F1] rounded-full border-4 border-dashed border-black flex items-center justify-center mb-6">
+                                <Zap className="w-10 h-10 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.emptyTitle")}</h3>
-                            <p className="text-muted-foreground max-w-sm mt-2 mb-6">{t("dashboard.automationList.emptySubtitle")}</p>
+                            <h3 className="text-2xl font-black text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.automationList.emptyTitle")}</h3>
+                            <p className="text-gray-500 font-medium max-w-md mt-2 mb-8">{t("dashboard.automationList.emptySubtitle")}</p>
                             <button
                                 onClick={handleCreate}
                                 disabled={creating}
-                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-200"
+                                className="bg-[#C6F035] text-black px-8 py-3 rounded-xl font-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-3"
                             >
-                                {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5 stroke-[3px]" />}
                                 {t("dashboard.automationList.emptyCta")}
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-4" data-tour="automation-list">
+                        <div className="grid grid-cols-1 gap-6" data-tour="automation-list">
                             {automations.map((automation, index) => (
                                 <div
                                     key={automation.id}
                                     data-tour={index === 0 ? "automation-card" : undefined}
-                                    className="group bg-surface-card rounded-2xl border border-border p-5 hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
+                                    className="group bg-white rounded-[24px] border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all flex flex-col sm:flex-row sm:items-center gap-6"
                                 >
                                     {/* Icon & Info Wrapper */}
-                                    <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
+                                    <div className="flex items-center gap-6 w-full sm:w-auto flex-1">
                                         {/* Icon */}
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${automation.isActive ? 'bg-green-500/10 text-green-400' : 'bg-muted text-muted-foreground'
+                                        <div className={`w-16 h-16 rounded-2xl border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-colors ${automation.isActive ? 'bg-[#d2e823] text-black' : 'bg-[#F3F3F1] text-gray-400'
                                             }`}>
-                                            <Zap className="w-6 h-6" />
+                                            <Zap className="w-8 h-8 stroke-[2.5px] fill-current" />
                                         </div>
 
                                         {/* Info */}
-                                        <div className="flex-1 min-w-0 pointer-events-none">
-                                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                                <h3 className="font-bold text-foreground truncate text-lg group-hover:text-blue-400 transition-colors">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-3 mb-2">
+                                                <h3 className="font-black text-[#1A1A1A] truncate text-xl" style={{ fontFamily: 'var(--font-display)' }}>
                                                     {automation.name}
                                                 </h3>
-                                                <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${automation.isActive ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
+                                                <div className={`px-3 py-1 rounded-full border-2 border-black text-[10px] font-black uppercase tracking-wider shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${automation.isActive ? 'bg-[#C6F035] text-black' : 'bg-gray-200 text-gray-500'
                                                     }`}>
                                                     {automation.isActive ? t("dashboard.automationList.status.active") : t("dashboard.automationList.status.inactive")}
                                                 </div>
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Activity className="w-4 h-4" />
+                                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-bold text-gray-500">
+                                                <div className="flex items-center gap-2">
+                                                    <Activity className="w-4 h-4 stroke-[2.5px]" />
                                                     <span>{t("dashboard.automationList.runs", { count: automation.executionCount || 0 })}</span>
                                                 </div>
-                                                <span className="hidden xs:inline">•</span>
+                                                <div className="w-1 h-1 rounded-full bg-gray-300 hidden sm:block" />
                                                 <span>{t("dashboard.automationList.updated", { date: new Date(automation.updatedAt).toLocaleDateString() })}</span>
                                             </div>
                                         </div>
@@ -408,27 +378,27 @@ export default function DashboardAutomationList() {
 
                                     {/* Actions */}
                                     <div
-                                        className="flex items-center justify-end gap-2 w-full sm:w-auto border-t border-gray-50 pt-4 sm:border-0 sm:pt-0"
+                                        className="flex items-center justify-end gap-3 w-full sm:w-auto border-t-2 border-gray-100 pt-6 sm:border-0 sm:pt-0"
                                         data-tour={index === 0 ? "automation-actions" : undefined}
                                     >
                                         <button
                                             onClick={() => handleToggle(automation.id, automation.isActive)}
                                             disabled={togglingId === automation.id}
-                                            className={`flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl font-medium text-sm flex items-center gap-2 transition-colors ${automation.isActive
-                                                ? 'bg-destructive/10 text-destructive hover:bg-red-100'
-                                                : 'bg-green-500/10 text-green-400 hover:bg-green-100'
+                                            className={`flex-1 sm:flex-none justify-center h-12 px-6 rounded-xl font-bold border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] text-sm flex items-center gap-2 transition-all ${automation.isActive
+                                                ? 'bg-white text-black hover:bg-gray-50'
+                                                : 'bg-black text-white hover:bg-gray-800'
                                                 }`}
                                         >
                                             {togglingId === automation.id ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                             ) : automation.isActive ? (
                                                 <>
-                                                    <Pause className="w-4 h-4" />
+                                                    <Pause className="w-4 h-4 stroke-[3px]" />
                                                     <span>{t("dashboard.automationList.pause")}</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Play className="w-4 h-4" />
+                                                    <Play className="w-4 h-4 stroke-[3px]" />
                                                     <span>{t("dashboard.automationList.activate")}</span>
                                                 </>
                                             )}
@@ -436,18 +406,18 @@ export default function DashboardAutomationList() {
 
                                         <Link
                                             to={`/dashboard/automation/${automation.id}`}
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-muted text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                            className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border-2 border-black text-black hover:bg-[#d2e823] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                                             title={t("dashboard.automationList.edit")}
                                         >
-                                            <Edit className="w-4 h-4" />
+                                            <Edit className="w-5 h-5 stroke-[2.5px]" />
                                         </Link>
 
                                         <button
                                             onClick={(e) => handleDeleteClick(automation.id, e)}
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-card text-muted-foreground hover:text-red-500 hover:bg-destructive/10 transition-colors border border-border sm:border-0"
+                                            className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border-2 border-black text-gray-400 hover:text-red-500 hover:bg-red-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                                             title={t("dashboard.automationList.delete")}
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-5 h-5 stroke-[2.5px]" />
                                         </button>
                                     </div>
                                 </div>

@@ -12,6 +12,7 @@ import uploadBlockImageRoute from "./[post]-upload-block-image.route";
 import uploadFaviconRoute from "./[post]-upload-favicon.route";
 import uploadOgImageRoute from "./[post]-upload-og-image.route";
 import uploadBioLogoRoute from "./[post]-upload-bio-logo.route";
+import uploadResumeRoute from "./[post]-upload-resume.route";
 
 import logoutRoute from "./[post]-logout.route"
 
@@ -35,6 +36,7 @@ router.use("/upload-product-image", uploadProductImageRoute);
 router.use("/upload-block-image", uploadBlockImageRoute);
 router.use("/upload-favicon", uploadFaviconRoute);
 router.use("/upload-og-image", uploadOgImageRoute);
+router.use("/upload-resume", uploadResumeRoute);
 router.use(parseResumeRoute);
 router.use("/billing", billingHistoryRoute)
 router.use(emailUsageRoute)

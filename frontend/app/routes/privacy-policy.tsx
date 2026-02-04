@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
     return (
         <div className="min-h-screen bg-surface-alt flex flex-col font-sans text-text-main selection:bg-primary selection:text-black">
 
-            <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <main className="flex-1 w-full max-w-3xl mx-auto px-6 pt-32 pb-24 md:pt-40 md:pb-32">
                 <header className="mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">{t("privacyPage.title")}</h1>
                     <p className="text-lg text-text-muted">{t("privacyPage.updated")}</p>

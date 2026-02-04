@@ -242,6 +242,7 @@ interface Bio {
         email?: string;
         website?: string;
         github?: string;
+        facebook?: string;
     };
     enableSubscribeButton?: boolean;
     seoTitle?: string;

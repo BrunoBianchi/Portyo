@@ -225,8 +225,8 @@ export default function DashboardSettings() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and subscription.</p>
+        <h1 className="text-2xl font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
+        <p className="text-white/70 mt-1">Manage your account and subscription.</p>
       </div>
 
       {/* Tabs */}
@@ -234,38 +234,38 @@ export default function DashboardSettings() {
         <button
           onClick={() => setActiveTab('general')}
           className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'general'
-            ? 'text-black'
-            : 'text-muted-foreground hover:text-gray-700'
+            ? 'text-white'
+            : 'text-white/60 hover:text-white/80'
             }`}
         >
           General
           {activeTab === 'general' && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-t-full"></div>
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white rounded-t-full"></div>
           )}
         </button>
         <button
           onClick={() => setActiveTab('billing')}
           className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'billing'
-            ? 'text-black'
-            : 'text-muted-foreground hover:text-gray-700'
+            ? 'text-white'
+            : 'text-white/60 hover:text-white/80'
             }`}
         >
           Billing
           {activeTab === 'billing' && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-t-full"></div>
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white rounded-t-full"></div>
           )}
         </button>
         {isAdmin && (
           <button
             onClick={() => setActiveTab('admin')}
             className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'admin'
-              ? 'text-black'
-              : 'text-muted-foreground hover:text-gray-700'
+              ? 'text-white'
+              : 'text-white/60 hover:text-white/80'
               }`}
           >
             Admin
             {activeTab === 'admin' && (
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black rounded-t-full"></div>
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white rounded-t-full"></div>
             )}
           </button>
         )}
@@ -279,17 +279,17 @@ export default function DashboardSettings() {
                 <User className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Profile</h2>
-                <p className="text-sm text-muted-foreground">Update your basic account information.</p>
+                <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Profile</h2>
+                <p className="text-sm text-white/70">Update your basic account information.</p>
               </div>
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                     <input
                       type="text"
                       defaultValue={user?.fullname || ""}
@@ -298,9 +298,9 @@ export default function DashboardSettings() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                     <input
                       type="email"
                       defaultValue={user?.email || ""}
@@ -314,7 +314,7 @@ export default function DashboardSettings() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+                  className="px-6 py-2 bg-white text-[#0a0a0f] rounded-xl font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-70"
                 >
                   {isLoading ? "Saving..." : (
                     <>
@@ -333,14 +333,14 @@ export default function DashboardSettings() {
                 <Lock className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Security</h2>
-                <p className="text-sm text-muted-foreground">Manage your password and authentication.</p>
+                <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Security</h2>
+                <p className="text-sm text-white/70">Manage your password and authentication.</p>
               </div>
             </div>
 
             {user?.provider && user.provider !== 'password' ? (
               <div className="bg-muted rounded-xl p-4 border border-border">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/70">
                   Your account uses <span className="font-semibold capitalize">{user.provider}</span> login.
                   Password change is not available for social login accounts.
                 </p>
@@ -381,7 +381,7 @@ export default function DashboardSettings() {
                 }
               }} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Current Password</label>
                   <input
                     type="password"
                     name="currentPassword"
@@ -392,7 +392,7 @@ export default function DashboardSettings() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">New Password</label>
                     <input
                       type="password"
                       name="newPassword"
@@ -401,10 +401,10 @@ export default function DashboardSettings() {
                       minLength={8}
                       className="w-full px-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Min 8 characters, uppercase, lowercase, number</p>
+                    <p className="text-xs text-white/50 mt-1">Min 8 characters, uppercase, lowercase, number</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Confirm New Password</label>
                     <input
                       type="password"
                       name="confirmPassword"
@@ -419,7 +419,7 @@ export default function DashboardSettings() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+                    className="px-6 py-2 bg-white text-[#0a0a0f] rounded-xl font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-70"
                   >
                     {isLoading ? 'Updating...' : (
                       <>
@@ -449,7 +449,7 @@ export default function DashboardSettings() {
             <div className="flex items-center justify-between bg-surface-card p-4 rounded-xl border border-red-100">
               <div>
                 <p className="font-medium text-foreground">Delete Account</p>
-                <p className="text-xs text-muted-foreground">Permanently remove your account and all data.</p>
+                <p className="text-xs text-white/50">Permanently remove your account and all data.</p>
               </div>
               <button className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
                 Delete Account
@@ -472,7 +472,7 @@ export default function DashboardSettings() {
                   <div className="flex items-start justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'var(--font-display)' }}>Current Plan</h2>
-                      <p className="text-muted-foreground">You are currently on the <span className="font-bold text-foreground capitalize">{planLabel} Plan</span></p>
+                      <p className="text-white/70">You are currently on the <span className="font-bold text-white capitalize">{planLabel} Plan</span></p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${billingHistory[0]?.status === 'canceled'
@@ -493,11 +493,11 @@ export default function DashboardSettings() {
                     {visibleFeatureItems.map((item) => (
                       <div
                         key={item.key}
-                        className={`flex items-start gap-3 text-sm font-medium ${item.enabled ? 'text-foreground' : 'text-muted-foreground opacity-70'}`}
+                        className={`flex items-start gap-3 text-sm font-medium ${item.enabled ? 'text-white' : 'text-white/50 opacity-70'}`}
                       >
                         <div
                           className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${item.enabled
-                            ? 'bg-green-100 text-green-400'
+                            ? 'bg-green-500/20 text-green-400'
                             : 'bg-muted text-muted-foreground'
                             }`}
                         >
@@ -505,7 +505,7 @@ export default function DashboardSettings() {
                         </div>
                         <div className="space-y-0.5">
                           <span className="leading-tight block">{item.label}</span>
-                          <p className="text-xs font-normal text-muted-foreground">{item.description}</p>
+                          <p className="text-xs font-normal text-white/50">{item.description}</p>
                         </div>
                       </div>
                     ))}
@@ -535,7 +535,7 @@ export default function DashboardSettings() {
                           </div>
                           <div className="text-sm">
                             <p className="font-bold text-foreground">Email usage</p>
-                            <p className="text-xs text-muted-foreground">Monthly automation emails</p>
+                            <p className="text-xs text-white/50">Monthly automation emails</p>
                           </div>
                         </div>
                         <span className="text-sm font-semibold text-foreground">{emailUsage.sent} / {emailUsage.limit}</span>
@@ -549,7 +549,7 @@ export default function DashboardSettings() {
                         </div>
                         <div className="text-sm">
                           <p className="font-bold text-foreground">Bio pages</p>
-                          <p className="text-xs text-muted-foreground">Active bios online</p>
+                          <p className="text-xs text-white/50">Active bios online</p>
                         </div>
                       </div>
                       <span className="text-sm font-semibold text-foreground">{user?.usage?.bios || 0} / {planLimits.bios}</span>
@@ -562,7 +562,7 @@ export default function DashboardSettings() {
                         </div>
                         <div className="text-sm">
                           <p className="font-bold text-foreground">Automations</p>
-                          <p className="text-xs text-muted-foreground">Total active automations</p>
+                          <p className="text-xs text-white/50">Total active automations</p>
                         </div>
                       </div>
                       <span className="text-sm font-semibold text-foreground">{user?.usage?.automations || 0}</span>
@@ -581,7 +581,7 @@ export default function DashboardSettings() {
                           setIsUpgradePopupOpen(true);
                         }
                       }}
-                      className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-black bg-yellow-400 hover:bg-yellow-500 transition-colors w-full md:w-auto"
+                      className="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-[#0a0a0f] bg-white hover:bg-white/90 transition-colors w-full md:w-auto"
                     >
                       {resolvedPlan === 'free' ? 'Upgrade to Pro' : 'Manage Subscription'}
                     </button>
@@ -599,29 +599,29 @@ export default function DashboardSettings() {
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Plan duration</h2>
-                      <p className="text-sm text-muted-foreground">Current plan: {planLabel}</p>
+                      <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Plan duration</h2>
+                      <p className="text-sm text-white/70">Current plan: {planLabel}</p>
                     </div>
                   </div>
 
                   {planDuration ? (
                     <>
-                      <p className="text-2xl font-bold text-foreground">{planDuration.durationText}</p>
+                      <p className="text-2xl font-semibold text-foreground">{planDuration.durationText}</p>
                       <p className="text-sm text-muted-foreground mt-1">Started on {planDuration.startLabel}</p>
                       {planDuration.endLabel && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-white/70">
                           {billingHistory[0]?.status === 'canceled' ? 'Ends' : 'Renews'} in {planDuration.remainingDays ?? 0} days (until {planDuration.endLabel})
                         </p>
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No history available to calculate plan duration.</p>
+                    <p className="text-sm text-white/70">No history available to calculate plan duration.</p>
                   )}
                 </section>
 
                 <section className="bg-surface-card rounded-2xl border border-border p-6 flex flex-col shadow-sm">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-muted rounded-lg text-muted-foreground">
+                    <div className="p-2 bg-white/10 rounded-lg text-white/70">
                       <Receipt className="w-5 h-5" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Billing History</h2>
@@ -630,23 +630,23 @@ export default function DashboardSettings() {
                   <div className="space-y-1 flex-1 pr-2">
                     {billingHistory.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center text-gray-300 mb-3">
+                        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center text-white/30 mb-3">
                           <Receipt className="w-6 h-6" />
                         </div>
-                        <p className="text-muted-foreground text-sm">No billing history available.</p>
+                        <p className="text-white/70 text-sm">No billing history available.</p>
                       </div>
                     ) : (
                       billingHistory.map((bill) => (
                         <div key={bill.id} className="flex items-center justify-between gap-4 p-3 rounded-xl hover:bg-muted transition-colors group cursor-pointer border border-transparent hover:border-border">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400 border border-green-100">
+                            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400 border border-green-500/30">
                               <Check className="w-4 h-4" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-foreground">
                                 {new Date(bill.startDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}
                               </p>
-                              <p className="text-xs text-muted-foreground capitalize">
+                              <p className="text-xs text-white/50 capitalize">
                                 {bill.plan} Plan
                                 {bill.status === 'canceled' && <span className="text-red-500 ml-1">(Canceled)</span>}
                               </p>
@@ -665,7 +665,7 @@ export default function DashboardSettings() {
 
                   <button
                     onClick={() => setShowHistoryModal(true)}
-                    className="w-full mt-6 py-2.5 bg-surface-card border border-border text-gray-700 rounded-xl text-sm font-medium hover:bg-muted transition-colors shadow-sm"
+                    className="w-full mt-6 py-2.5 bg-surface-card border border-border text-white/70 rounded-xl text-sm font-medium hover:bg-muted transition-colors shadow-sm"
                   >
                     View All Invoices
                   </button>
@@ -687,8 +687,8 @@ export default function DashboardSettings() {
                 <Shield className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Global Announcement</h2>
-                <p className="text-sm text-muted-foreground">Manage the announcement bar on the homepage.</p>
+                <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Global Announcement</h2>
+                <p className="text-sm text-white/70">Manage the announcement bar on the homepage.</p>
               </div>
             </div>
 
@@ -724,7 +724,7 @@ export default function DashboardSettings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Announcement Text</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Announcement Text</label>
                   <input
                     type="text"
                     value={adminAnnouncement.text || ""}
@@ -734,7 +734,7 @@ export default function DashboardSettings() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Link URL</label>
                   <input
                     type="text"
                     value={adminAnnouncement.link || ""}
@@ -746,7 +746,7 @@ export default function DashboardSettings() {
 
                 {/* Badge Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Badge Type</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Badge Type</label>
                   <select
                     value={adminAnnouncement.badge || 'new'}
                     onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, badge: e.target.value as any })}
@@ -762,7 +762,7 @@ export default function DashboardSettings() {
 
                 {/* Font Size */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Font Size</label>
                   <select
                     value={adminAnnouncement.fontSize || '14'}
                     onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, fontSize: e.target.value as any })}
@@ -776,7 +776,7 @@ export default function DashboardSettings() {
 
                 {/* Background Color */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Background Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -795,7 +795,7 @@ export default function DashboardSettings() {
 
                 {/* Text Color */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Text Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -814,14 +814,14 @@ export default function DashboardSettings() {
 
                 {/* Text Alignment */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Text Alignment</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setAdminAnnouncement({ ...adminAnnouncement, textAlign: 'left' })}
                       className={`flex-1 px-4 py-2 rounded-xl border font-medium transition-all ${adminAnnouncement.textAlign === 'left'
                         ? 'bg-black text-white border-black'
-                        : 'bg-surface-card text-gray-700 border-border hover:border-gray-300'
+                        : 'bg-surface-card text-white/70 border-border hover:border-white/30'
                         }`}
                     >
                       Left
@@ -831,7 +831,7 @@ export default function DashboardSettings() {
                       onClick={() => setAdminAnnouncement({ ...adminAnnouncement, textAlign: 'center' })}
                       className={`flex-1 px-4 py-2 rounded-xl border font-medium transition-all ${adminAnnouncement.textAlign === 'center'
                         ? 'bg-black text-white border-black'
-                        : 'bg-surface-card text-gray-700 border-border hover:border-gray-300'
+                        : 'bg-surface-card text-white/70 border-border hover:border-white/30'
                         }`}
                     >
                       Center
@@ -846,9 +846,9 @@ export default function DashboardSettings() {
                       type="checkbox"
                       checked={adminAnnouncement.isVisible}
                       onChange={(e) => setAdminAnnouncement({ ...adminAnnouncement, isVisible: e.target.checked })}
-                      className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                      className="w-5 h-5 rounded border-white/30 text-black focus:ring-black"
                     />
-                    <span className="text-sm font-medium text-gray-700">Announcement Visible</span>
+                    <span className="text-sm font-medium text-white/70">Announcement Visible</span>
                   </label>
                 </div>
               </div>
@@ -857,7 +857,7 @@ export default function DashboardSettings() {
                 <button
                   type="submit"
                   disabled={isAdminLoading}
-                  className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+                  className="px-6 py-2 bg-white text-[#0a0a0f] rounded-xl font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-70"
                 >
                   {isAdminLoading ? "Saving..." : (
                     <>
@@ -886,6 +886,7 @@ export default function DashboardSettings() {
 function BroadcastSection() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { t } = useTranslation("dashboard");
   const [data, setData] = useState({
     title: "",
     message: "",
@@ -895,7 +896,7 @@ function BroadcastSection() {
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirm("Are you sure you want to send this notification to ALL users?")) return;
+    if (!confirm(t("admin.broadcast.subtitle"))) return; // Using subtitle as confirmation for now or add a specific confirmation key
 
     setLoading(true);
     setSuccess(false);
@@ -908,7 +909,7 @@ function BroadcastSection() {
       setTimeout(() => setSuccess(false), 5000);
     } catch (error) {
       console.error("Failed to broadcast", error);
-      alert("Failed to send notification");
+      alert(t("admin.broadcast.error") || "Failed to send notification");
     } finally {
       setLoading(false);
     }
@@ -921,55 +922,55 @@ function BroadcastSection() {
           <Bell className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>Global Notification</h2>
-          <p className="text-sm text-muted-foreground">Send an in-app notification to all users.</p>
+          <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{t("admin.broadcast.title")}</h2>
+          <p className="text-sm text-white/70">{t("admin.broadcast.subtitle")}</p>
         </div>
         <div className="ml-auto bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-          Caution
+          {t("admin.broadcast.caution")}
         </div>
       </div>
 
       <form onSubmit={handleBroadcast} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">{t("admin.broadcast.form.title")}</label>
             <input
               required
               type="text"
               value={data.title}
               onChange={(e) => setData({ ...data, title: e.target.value })}
-              placeholder="New Feature Alert! 🚀"
+              placeholder={t("admin.broadcast.form.placeholder.title")}
               className="w-full px-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Icon (Lucide Name)</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">{t("admin.broadcast.form.icon")}</label>
             <input
               type="text"
               value={data.icon}
               onChange={(e) => setData({ ...data, icon: e.target.value })}
-              placeholder="Megaphone"
+              placeholder={t("admin.broadcast.form.placeholder.icon")}
               className="w-full px-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">{t("admin.broadcast.form.message")}</label>
             <textarea
               required
               rows={3}
               value={data.message}
               onChange={(e) => setData({ ...data, message: e.target.value })}
-              placeholder="Type your message here..."
+              placeholder={t("admin.broadcast.form.placeholder.message")}
               className="w-full px-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all resize-none"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Action Link (Optional)</label>
+            <label className="block text-sm font-medium text-white/70 mb-1">{t("admin.broadcast.form.link")}</label>
             <input
               type="text"
               value={data.link}
               onChange={(e) => setData({ ...data, link: e.target.value })}
-              placeholder="/dashboard/new-feature"
+              placeholder={t("admin.broadcast.form.placeholder.link")}
               className="w-full px-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-black/5 focus:border-black outline-none transition-all"
             />
           </div>
@@ -979,21 +980,21 @@ function BroadcastSection() {
           {success && (
             <div className="flex items-center gap-2 text-green-400 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
               <Check className="w-4 h-4" />
-              Sent!
+              {t("admin.broadcast.sent")}
             </div>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-70"
+            className="px-6 py-2 bg-white text-[#0a0a0f] rounded-xl font-semibold hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-70"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                <Loader2 className="w-4 h-4 animate-spin" /> {t("admin.broadcast.sending")}
               </>
             ) : (
               <>
-                <Bell className="w-4 h-4" /> Send Notification
+                <Bell className="w-4 h-4" /> {t("admin.broadcast.submit")}
               </>
             )}
           </button>

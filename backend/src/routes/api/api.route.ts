@@ -120,4 +120,10 @@ router.use('/fonts', fontRoute)
 import autoPostRoute from "./auto-post/auto-post.route"
 router.use('/auto-post', authMiddleware, autoPostRoute)
 
+import siteAutoPostRoute from "./site-auto-post/site-auto-post.route"
+router.use('/site-auto-post', authMiddleware, siteAutoPostRoute)
+
+import customDomainRoute from "./custom-domain/custom-domain.route"
+router.use('/custom-domains', authMiddleware, customDomainRoute)
+
 export default router;

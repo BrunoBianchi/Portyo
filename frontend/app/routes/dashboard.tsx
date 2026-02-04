@@ -1,16 +1,17 @@
 import AuthorizationGuard from "~/contexts/guard.context";
 import { Sidebar } from "~/components/dashboard/sidebar";
 import type { Route } from "../+types/root";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { BioProvider } from "~/contexts/bio.context";
 import { BlogProvider } from "~/contexts/blog.context";
 import { SiteBlogProvider } from "~/contexts/site-blog.context";
 import { AutoPostProvider } from "~/contexts/auto-post.context";
+import { SiteAutoPostProvider } from "~/contexts/site-auto-post.context";
 import { Outlet, useLocation } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
-import Joyride, { type CallBackProps, EVENTS, STATUS, ACTIONS, type Step } from "react-joyride";
 import { useTranslation } from "react-i18next";
-import { useJoyrideSettings } from "~/utils/joyride";
+import { useDriverTour, useIsMobile } from "~/utils/driver";
+import type { DriveStep } from "driver.js";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -21,124 +22,143 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function Dashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [tourRun, setTourRun] = useState(false);
-    const [tourStepIndex, setTourStepIndex] = useState(0);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
     const { t } = useTranslation();
-    const { isMobile, styles: joyrideStyles, joyrideProps } = useJoyrideSettings(tourPrimaryColor);
+    const isMobile = useIsMobile();
     const location = useLocation();
     const pathnameNoLang = location.pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
     const isDashboardHome = pathnameNoLang === "/dashboard" || pathnameNoLang === "/dashboard/";
 
+    const { startTour } = useDriverTour({
+        primaryColor: tourPrimaryColor,
+        storageKey: "portyo:dashboard-tour-done",
+    });
+
     useEffect(() => {
         if (typeof window === "undefined") return;
-        if (!isDashboardHome) return;
-        if (isMobile) return;
-
-        const hasSeenTour = window.localStorage.getItem("portyo:dashboard-tour-done");
-        if (!hasSeenTour) {
-            setTourRun(true);
-        }
 
         const rootStyles = getComputedStyle(document.documentElement);
         const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
         if (primaryFromTheme) {
             setTourPrimaryColor(primaryFromTheme);
         }
-    }, [isDashboardHome, isMobile]);
+    }, []);
 
-    const steps: Step[] = [
-        {
-            target: "[data-tour=\"dashboard-overview-header\"]",
-            content: t("dashboard.tours.overview.steps.welcome"),
-            placement: "bottom",
-            disableBeacon: true,
-        },
-        {
-            target: "[data-tour=\"dashboard-overview-stats\"]",
-            content: t("dashboard.tours.overview.steps.stats"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"dashboard-overview-sales\"]",
-            content: t("dashboard.tours.overview.steps.sales"),
-            placement: "bottom",
-        },
-        {
-            target: "[data-tour=\"dashboard-overview-activity\"]",
-            content: t("dashboard.tours.overview.steps.activity"),
-            placement: "top",
-        },
-        {
-            target: "[data-tour=\"dashboard-sidebar\"]",
-            content: t("dashboard.tours.overview.steps.sidebar"),
-            placement: "right",
-        },
-        {
-            target: "[data-tour=\"dashboard-nav-editor\"]",
-            content: t("dashboard.tours.overview.steps.navEditor"),
-            placement: "right",
-        },
-        {
-            target: "[data-tour=\"dashboard-nav-forms\"]",
-            content: t("dashboard.tours.overview.steps.navForms"),
-            placement: "right",
-        },
-        {
-            target: "[data-tour=\"dashboard-nav-products\"]",
-            content: t("dashboard.tours.overview.steps.navProducts"),
-            placement: "right",
-        },
-        {
-            target: "[data-tour=\"dashboard-nav-integrations\"]",
-            content: t("dashboard.tours.overview.steps.navIntegrations"),
-            placement: "right",
-        },
-        {
-            target: "[data-tour=\"dashboard-nav-settings\"]",
-            content: t("dashboard.tours.overview.steps.navSettings"),
-            placement: "top",
-        },
-    ];
+    // Inicia o tour automaticamente na página inicial
+    useEffect(() => {
+        if (!isDashboardHome || isMobile) return;
+        if (typeof window === "undefined") return;
 
-    const handleJoyrideCallback = (data: CallBackProps) => {
-        const { status, type, index, action } = data;
+        const hasSeenTour = window.localStorage.getItem("portyo:dashboard-tour-done");
+        if (hasSeenTour) return;
 
-        if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-            const delta = action === ACTIONS.PREV ? -1 : 1;
-            setTourStepIndex(index + delta);
-            return;
-        }
+        const timer = setTimeout(() => {
+            startTour(steps);
+        }, 1500);
 
-        if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-            setTourRun(false);
-            setTourStepIndex(0);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem("portyo:dashboard-tour-done", "true");
-            }
-        }
-    };
+        return () => clearTimeout(timer);
+    }, [isDashboardHome, isMobile, startTour]);
+
+    const steps: DriveStep[] = useMemo(() => [
+        {
+            element: "[data-tour=\"dashboard-overview-header\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.welcomeTitle", "Bem-vindo ao Dashboard"),
+                description: t("dashboard.tours.overview.steps.welcome"),
+                side: "bottom",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-overview-stats\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.statsTitle", "Estatísticas"),
+                description: t("dashboard.tours.overview.steps.stats"),
+                side: "bottom",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-overview-sales\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.salesTitle", "Vendas"),
+                description: t("dashboard.tours.overview.steps.sales"),
+                side: "bottom",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-overview-activity\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.activityTitle", "Atividades"),
+                description: t("dashboard.tours.overview.steps.activity"),
+                side: "top",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-sidebar\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.sidebarTitle", "Navegação"),
+                description: t("dashboard.tours.overview.steps.sidebar"),
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-nav-editor\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.navEditorTitle", "Editor"),
+                description: t("dashboard.tours.overview.steps.navEditor"),
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-nav-forms\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.navFormsTitle", "Formulários"),
+                description: t("dashboard.tours.overview.steps.navForms"),
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-nav-products\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.navProductsTitle", "Produtos"),
+                description: t("dashboard.tours.overview.steps.navProducts"),
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-nav-integrations\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.navIntegrationsTitle", "Integrações"),
+                description: t("dashboard.tours.overview.steps.navIntegrations"),
+                side: "right",
+                align: "start",
+            },
+        },
+        {
+            element: "[data-tour=\"dashboard-nav-settings\"]",
+            popover: {
+                title: t("dashboard.tours.overview.steps.navSettingsTitle", "Configurações"),
+                description: t("dashboard.tours.overview.steps.navSettings"),
+                side: "top",
+                align: "start",
+            },
+        },
+    ], [t]);
 
     return (
         <AuthorizationGuard>
             <BioProvider>
                 <BlogProvider>
                     <SiteBlogProvider>
+                        <SiteAutoPostProvider>
                         <AutoPostProvider>
-                        <Joyride
-                            steps={steps}
-                            run={tourRun && !isMobile && isDashboardHome}
-                            stepIndex={tourStepIndex}
-                            continuous
-                            showSkipButton
-                            spotlightClicks
-                            scrollToFirstStep
-                            callback={handleJoyrideCallback}
-                            styles={joyrideStyles}
-                            scrollOffset={joyrideProps.scrollOffset}
-                            spotlightPadding={joyrideProps.spotlightPadding}
-                            disableScrollParentFix={joyrideProps.disableScrollParentFix}
-                        />
                         <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
                             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -163,6 +183,7 @@ export default function Dashboard() {
                             </main>
                         </div>
                     </AutoPostProvider>
+                    </SiteAutoPostProvider>
                     </SiteBlogProvider>
                 </BlogProvider>
             </BioProvider>

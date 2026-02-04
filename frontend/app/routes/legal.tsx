@@ -23,7 +23,7 @@ export default function Legal() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#fdfaf5] py-20 px-4 font-sans">
+        <div className="min-h-screen bg-[#fdfaf5] pt-32 pb-20 px-4 font-sans">
             <div className="max-w-4xl mx-auto">
 
                 {/* Header */}

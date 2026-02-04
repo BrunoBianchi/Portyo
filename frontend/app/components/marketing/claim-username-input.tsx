@@ -83,7 +83,7 @@ export default function ClaimUsernameInput() {
           bg-surface-card rounded-full
           shadow-2xl shadow-black/50
           border-2 transition-all duration-300 
-          ${isFocused ? 'border-primary/50 shadow-primary/20' : 'border-border'}
+          ${isFocused ? 'border-white/50 shadow-white/10' : 'border-border'}
           group-hover:border-border-hover
           overflow-hidden
           pr-2 pl-6 sm:pl-8

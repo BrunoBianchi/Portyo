@@ -4,6 +4,7 @@
 export * from "./automation.service";
 export * from "./bio.service";
 export * from "./blog.service";
+export * from "./custom-domain.service";
 export * from "./email.service";
 export * from "./google-analytics.service";
 export * from "./google.service";

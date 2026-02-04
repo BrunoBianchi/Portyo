@@ -1,83 +1,83 @@
 import { lazy, Suspense } from "react";
-import HeroSection from "~/components/marketing/hero-section";
-import TestimonialsSection from "~/components/marketing/testimonials-section";
-import FAQSection from "~/components/marketing/faq-section";
 import { SEOSchema } from "~/components/marketing/seo-schema";
 
-const CarouselSection = lazy(() => import("~/components/bio/carousel-section"));
-const BuiltForEveryoneSection = lazy(() => import("~/components/marketing/built-for-everyone"));
-const AnalyticsSection = lazy(() => import("~/components/dashboard/analytics-section"));
-const WhoUsesSection = lazy(() => import("~/components/marketing/who-uses-section"));
-const FeaturesSection = lazy(() => import("~/components/marketing/features-section"));
-const PricingSection = lazy(() => import("~/components/marketing/pricing-section"));
-const BlogSection = lazy(() => import("~/components/bio/blog-section"));
-const ClaimUsernameBar = lazy(() => import("~/components/marketing/claim-username-bar"));
+// New Bold Components
+import LinktreeHeroBold from "~/components/marketing/linktree-hero-bold";
+import FeatureSection from "~/components/marketing/feature-section";
+import FeaturedTestimonial from "~/components/marketing/featured-testimonial";
 
-// Simple loading placeholder that matches section background
-function SectionPlaceholder({ className = "" }: { className?: string }) {
-  return (
-    <div className={`w-full ${className}`}>
-      <div className="animate-pulse w-full h-full min-h-[400px] bg-muted/20" />
-    </div>
-  );
-}
+// Icons for features
+import { BarChart3, ShoppingBag } from "lucide-react";
+
+// Lazy loaded legacy sections (if we want to keep them for now, or remove? The prompt says "Refactoring", implies replacement)
+// We will replace mostly, but keep FAQ maybe? Prompt didn't mention FAQ. I'll keep FAQ as a footer element.
+import AnimatedFAQ from "~/components/marketing/animated-faq";
 
 export default function LandingPage() {
   return (
     <>
-      {/* SEO Schema Markup */}
       <SEOSchema type="software" />
-      
-      <main className="flex flex-col w-full bg-background">
-        {/* Hero Section */}
-        <HeroSection />
-        
-        {/* Carousel / Social Proof - seamless transition */}
-        <Suspense fallback={<SectionPlaceholder className="bg-background" />}>
-          <CarouselSection />
-        </Suspense>
-        
-        {/* Built For Everyone */}
-        <Suspense fallback={<SectionPlaceholder className="bg-surface-muted" />}>
-          <BuiltForEveryoneSection />
-        </Suspense>
-        
-        {/* Analytics Preview */}
-        <Suspense fallback={<SectionPlaceholder className="bg-background" />}>
-          <AnalyticsSection />
-        </Suspense>
-        
-        {/* Who Uses */}
-        <Suspense fallback={<SectionPlaceholder className="bg-background" />}>
-          <WhoUsesSection />
-        </Suspense>
-        
-        {/* Features Section */}
-        <Suspense fallback={<SectionPlaceholder className="bg-surface-muted" />}>
-          <FeaturesSection />
-        </Suspense>
-        
-        {/* Testimonials */}
-        <TestimonialsSection />
-        
-        {/* Pricing Section */}
-        <Suspense fallback={<SectionPlaceholder className="bg-background" />}>
-          <PricingSection />
-        </Suspense>
-        
-        {/* FAQ Section */}
-        <FAQSection />
-        
-        {/* Blog Section */}
-        <Suspense fallback={<SectionPlaceholder className="bg-surface-muted" />}>
-          <BlogSection />
-        </Suspense>
+
+      <main className="flex flex-col w-full overflow-x-hidden">
+        {/* SECTION 1: HERO (Acid Green) */}
+        <LinktreeHeroBold />
+
+        {/* SECTION 2: SOCIAL PROOF (Off White) */}
+        <section className="w-full py-16 bg-[#F3F3F1] border-b-2 border-black/5">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <p className="font-bold text-[#1A1A1A] opacity-60 uppercase tracking-widest text-sm mb-8">
+              Usado por mais de 50.000 criadores
+            </p>
+            <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+              {/* Placeholder Logos */}
+              {['Google', 'Spotify', 'Asana', 'Zoom', 'Slack'].map((logo) => (
+                <div key={logo} className="font-display font-black text-2xl text-[#1A1A1A]">
+                  {logo}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 3: FEATURE A (Electric Blue) */}
+        <FeatureSection
+          backgroundColor="#0047FF" // Electric Blue
+          textColor="#FFFFFF"
+          title="ANALYTICS QUE NÃO MENTEM."
+          description="Chega de métricas de vaidade. Saiba exatamente quem clica, quem compra e de onde vêm. Dados reais para crescimento real."
+          align="left"
+          mediaContent={
+            <div className="relative w-full h-full flex items-center justify-center bg-white/10 backdrop-blur-sm p-12">
+              <BarChart3 className="w-32 h-32 text-white" />
+              <div className="absolute inset-0 border-2 border-white/20 m-4 rounded-none"></div>
+            </div>
+          }
+        />
+
+        {/* SECTION 4: FEATURE B (Shock Pink) */}
+        <FeatureSection
+          backgroundColor="#E94E77" // Shock Pink
+          textColor="#FFFFFF"
+          title="VENDA MAIS. MUITO MAIS."
+          description=" integre produtos digitais, agendamentos e newsletters diretamente no seu link. Transforme seguidores em clientes em 2 cliques."
+          align="right"
+          mediaContent={
+            <div className="relative w-full h-full flex items-center justify-center bg-white/10 backdrop-blur-sm p-12">
+              <ShoppingBag className="w-32 h-32 text-white" />
+              <div className="absolute inset-0 border-2 border-white/20 m-4 rounded-none"></div>
+            </div>
+          }
+        />
+
+        {/* SECTION 5: FEATURED TESTIMONIAL (Off White) */}
+        <FeaturedTestimonial />
+
+        {/* FAQ - Keeping as useful content at the bottom, can be restyled later if needed */}
+        <div className="bg-[#1A1A1A] text-white">
+          <AnimatedFAQ />
+        </div>
       </main>
-      
-      {/* Sticky CTA Bar */}
-      <Suspense fallback={null}>
-        <ClaimUsernameBar />
-      </Suspense>
     </>
   );
 }
+

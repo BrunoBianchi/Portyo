@@ -99,7 +99,7 @@ export default function ClaimBio() {
                             <input
                                 value={bioSufix}
                                 onChange={(e) => setBioSufix(e.target.value)}
-                                className="bg-transparent text-[#1F1F1F] outline-none text-lg font-semibold min-w-[4ch] text-left"
+                                className="bg-transparent text-[#1F1F1F] outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-lg font-semibold min-w-[4ch] text-left"
                                 autoFocus
                                 spellCheck={false}
                             />

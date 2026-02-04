@@ -194,41 +194,42 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
             <div
-                className="bg-surface-card rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]"
+                className="bg-white rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] border-4 border-black"
                 onClick={(e) => e.stopPropagation()}
             >
 
                 {/* Header */}
-                <div className="p-6 pb-4 border-b border-border">
+                <div className="p-8 pb-4 border-b-2 border-dashed border-gray-200">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h2 className="text-xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                            <h2 className="text-3xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
                                 {post ? "Edit Post" : "New Post"}
                             </h2>
-                            <p className="text-muted-foreground text-sm mt-0.5">{post ? "Update your blog content" : "Create or upload content for your blog"}</p>
+                            <p className="text-gray-500 font-medium text-sm mt-1">{post ? "Update your blog content" : "Create or upload content for your blog"}</p>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                            <button onClick={onClose} className="p-3 rounded-full hover:bg-gray-100 transition-colors text-black border-2 border-transparent hover:border-black">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
 
                     {error && (
-                        <div className="mb-4 p-3 bg-destructive/10 border border-red-200 text-destructive rounded-lg text-sm">
+                        <div className="mb-4 p-4 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl font-bold text-sm flex items-center gap-2">
+                            <Info className="w-4 h-4" />
                             {error}
                         </div>
                     )}
 
                     {/* Mode Toggle */}
-                    <div className="bg-muted p-1 rounded-lg inline-flex w-full">
+                    <div className="bg-gray-100 p-1.5 rounded-xl inline-flex w-full border-2 border-transparent">
                         <button
                             onClick={() => setActiveMode("upload")}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeMode === "upload"
-                                ? "bg-surface-card text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${activeMode === "upload"
+                                ? "bg-white text-black shadow-sm border-2 border-black"
+                                : "text-gray-500 hover:text-black hover:bg-white/50"
                                 }`}
                         >
                             <Upload className="w-4 h-4" />
@@ -236,9 +237,9 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                         </button>
                         <button
                             onClick={() => setActiveMode("write")}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeMode === "write"
-                                ? "bg-surface-card text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${activeMode === "write"
+                                ? "bg-white text-black shadow-sm border-2 border-black"
+                                : "text-gray-500 hover:text-black hover:bg-white/50"
                                 }`}
                         >
                             <FileText className="w-4 h-4" />
@@ -248,7 +249,7 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto px-8 pb-6 space-y-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto px-8 pb-6 space-y-6 custom-scrollbar bg-white">
 
                     {/* Upload Area (Only in Upload Mode) */}
                     {activeMode === "upload" && (
@@ -256,7 +257,7 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                             onClick={() => fileInputRef.current?.click()}
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
-                            className="border border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-border hover:bg-muted transition-all group bg-surface-card min-h-[200px]"
+                            className="border-2 border-dashed border-gray-300 rounded-[24px] p-10 flex flex-col items-center justify-center text-center cursor-pointer hover:border-black hover:bg-gray-50 transition-all group bg-white min-h-[200px] mt-6"
                         >
                             <input
                                 type="file"
@@ -264,18 +265,18 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                                 onChange={handleFileChange}
                                 className="hidden"
                             />
-                            <div className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <Upload className="w-5 h-5 text-muted-foreground" />
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 border-2 border-gray-200 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:border-black group-hover:bg-[#C6F035]">
+                                <Upload className="w-6 h-6 text-gray-400 group-hover:text-black transition-colors" />
                             </div>
                             {file ? (
                                 <div>
-                                    <p className="text-base font-bold text-foreground">{file.name}</p>
-                                    <p className="text-xs text-muted-foreground mt-1 font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    <p className="text-lg font-black text-black">{file.name}</p>
+                                    <p className="text-sm text-gray-500 mt-1 font-bold">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
                             ) : (
                                 <>
-                                    <p className="text-base font-bold text-foreground mb-1">Upload your blog file</p>
-                                    <p className="text-xs text-muted-foreground font-medium">
+                                    <p className="text-lg font-black text-black mb-1">Upload your blog file</p>
+                                    <p className="text-sm text-gray-500 font-bold">
                                         HTML, Markdown, or PDF (10 mb max)
                                     </p>
                                 </>
@@ -284,41 +285,41 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                     )}
 
                     {/* Form Fields */}
-                    <div className="grid grid-cols-2 gap-5">
-                        <div className="col-span-2 md:col-span-1 space-y-1.5">
-                            <label className="text-xs font-semibold text-muted-foreground ml-1">Post Title <span className="text-red-500">*</span></label>
+                    <div className="grid grid-cols-2 gap-6 mt-6">
+                        <div className="col-span-2 md:col-span-1 space-y-2">
+                            <label className="text-xs font-black uppercase tracking-wider text-black ml-1">Post Title <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="e.g. The Future of Design"
-                                className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm placeholder:text-muted-foreground/50"
+                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white focus:outline-none focus:border-black focus:ring-0 transition-all text-sm font-bold placeholder:text-gray-300 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                             />
                         </div>
-                        <div className="col-span-2 md:col-span-1 space-y-1.5">
+                        <div className="col-span-2 md:col-span-1 space-y-2">
                             <div className="flex items-center justify-between ml-1">
-                                <label className="text-xs font-semibold text-muted-foreground">Publish Time</label>
+                                <label className="text-xs font-black uppercase tracking-wider text-black">Publish Time</label>
                             </div>
-                            <div className="flex items-center gap-1 bg-muted rounded-lg p-1 h-[42px]">
+                            <div className="flex items-center gap-2 bg-white rounded-xl h-[46px]">
                                 <button
                                     onClick={() => setScheduleMode("now")}
-                                    className={`flex-1 h-full rounded-md text-xs font-medium transition-all ${scheduleMode === "now"
-                                        ? "bg-surface-card text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
+                                    className={`flex-1 h-full rounded-xl text-xs font-bold transition-all border-2 ${scheduleMode === "now"
+                                        ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_rgba(198,240,53,1)]"
+                                        : "bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black"
                                         }`}
                                 >
                                     Now
                                 </button>
                                 <div
                                     ref={datePickerRef}
-                                    className={`flex-[2] h-full relative rounded-md transition-all flex items-center px-3 gap-2 cursor-pointer ${scheduleMode === "later"
-                                        ? "bg-surface-card text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
+                                    className={`flex-[2] h-full relative rounded-xl transition-all flex items-center px-3 gap-2 cursor-pointer border-2 ${scheduleMode === "later"
+                                        ? "bg-white text-black border-black shadow-[2px_2px_0px_0px_rgba(198,240,53,1)]"
+                                        : "bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black"
                                         }`}
                                     onClick={() => setShowDatePicker(!showDatePicker)}
                                 >
-                                    <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                                    <span className="text-xs font-medium truncate">
+                                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                                    <span className="text-xs font-bold truncate">
                                         {scheduledDate
                                             ? scheduledDate.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                                             : "Select date..."}
@@ -343,11 +344,11 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                     </div>
 
                     {/* Thumbnail Input (Both Modes) */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground ml-1">Thumbnail / Cover Image</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-wider text-black ml-1">Thumbnail / Cover Image</label>
                         <div
                             onClick={() => thumbnailInputRef.current?.click()}
-                            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card hover:bg-muted hover:border-border transition-all cursor-pointer flex items-center gap-3 group"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-black transition-all cursor-pointer flex items-center gap-4 group shadow-sm hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                         >
                             <input
                                 type="file"
@@ -356,7 +357,7 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                                 className="hidden"
                                 accept="image/*"
                             />
-                            <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
+                            <div className="w-12 h-12 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                                 {thumbnail ? (
                                     <img
                                         src={thumbnail instanceof File ? URL.createObjectURL(thumbnail) : thumbnail}
@@ -364,37 +365,37 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                                    <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-black" />
                                 )}
                             </div>
                             {thumbnail ? (
-                                <span className="text-sm font-medium text-foreground">
+                                <span className="text-sm font-bold text-black truncate">
                                     {thumbnail instanceof File ? thumbnail.name : "Current Thumbnail"}
                                 </span>
                             ) : (
-                                <span className="text-sm text-muted-foreground/50">Click to upload thumbnail...</span>
+                                <span className="text-sm text-gray-400 font-medium group-hover:text-black">Click to upload thumbnail...</span>
                             )}
                         </div>
                     </div>
 
                     {/* Markdown Editor (Only in Write Mode) */}
                     {activeMode === "write" && (
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-muted-foreground ml-1">
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-wider text-black ml-1">
                                 Content <span className="text-red-500">*</span>
                             </label>
 
-                            <div className="relative group border border-border rounded-lg bg-surface-card focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all overflow-hidden">
+                            <div className="relative group border-2 border-gray-200 rounded-[20px] bg-white focus-within:border-black transition-all overflow-hidden shadow-sm focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                 {/* Fixed Toolbar inside container */}
-                                <div className="flex items-center gap-1 p-1.5 border-b border-border bg-muted">
-                                    <button onClick={() => insertMarkdown("**", "**")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("*", "*")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("<u>", "</u>")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Underline"><Underline className="w-3.5 h-3.5" /></button>
-                                    <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                                    <button onClick={() => insertMarkdown("`", "`")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Code"><Code className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => insertMarkdown("[", "](url)")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
-                                    <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                                    <button onClick={() => insertMarkdown("\n- ")} className="p-1.5 hover:bg-surface-card hover:shadow-sm rounded-md transition-all text-muted-foreground hover:text-foreground" title="List"><List className="w-3.5 h-3.5" /></button>
+                                <div className="flex items-center gap-1 p-2 border-b-2 border-gray-100 bg-gray-50/50">
+                                    <button onClick={() => insertMarkdown("**", "**")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="Bold"><Bold className="w-4 h-4" /></button>
+                                    <button onClick={() => insertMarkdown("*", "*")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="Italic"><Italic className="w-4 h-4" /></button>
+                                    <button onClick={() => insertMarkdown("<u>", "</u>")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="Underline"><Underline className="w-4 h-4" /></button>
+                                    <div className="w-px h-5 bg-gray-300 mx-2"></div>
+                                    <button onClick={() => insertMarkdown("`", "`")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="Code"><Code className="w-4 h-4" /></button>
+                                    <button onClick={() => insertMarkdown("[", "](url)")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="Link"><LinkIcon className="w-4 h-4" /></button>
+                                    <div className="w-px h-5 bg-gray-300 mx-2"></div>
+                                    <button onClick={() => insertMarkdown("\n- ")} className="p-2 hover:bg-white hover:shadow-sm hover:border border border-transparent rounded-lg transition-all text-gray-500 hover:text-black" title="List"><List className="w-4 h-4" /></button>
                                 </div>
 
                                 <textarea
@@ -402,29 +403,29 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Write your article here..."
-                                    className="w-full h-[200px] px-4 py-3 bg-transparent focus:outline-none font-mono text-sm resize-none leading-relaxed"
+                                    className="w-full h-[250px] px-6 py-5 bg-transparent focus:outline-none font-mono text-sm resize-none leading-relaxed text-black placeholder:text-gray-300"
                                 />
                             </div>
                         </div>
                     )}
 
                     {/* Tags */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                         <div className="flex items-center justify-between ml-1">
-                            <label className="text-xs font-semibold text-muted-foreground">Tags</label>
-                            <span className="text-xs text-muted-foreground/50">12 tags remaining</span>
+                            <label className="text-xs font-black uppercase tracking-wider text-black">Tags</label>
+                            <span className="text-xs text-gray-400 font-bold">12 tags remaining</span>
                         </div>
-                        <div className="flex flex-wrap gap-2 p-2 bg-surface-card border border-border rounded-lg min-h-[46px] items-center focus-within:ring-2 focus-within:ring-black/5 focus-within:border-black transition-all">
+                        <div className="flex flex-wrap gap-2 p-3 bg-white border-2 border-gray-200 rounded-xl min-h-[52px] items-center focus-within:border-black transition-all shadow-sm focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                             {tags.map(tag => (
-                                <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-foreground border border-transparent">
+                                <span key={tag} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#C6F035] border border-black text-xs font-bold text-black shadow-sm">
                                     {tag}
-                                    <button onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
+                                    <button onClick={() => removeTag(tag)} className="hover:text-red-600 transition-colors ml-1"><X className="w-3 h-3" strokeWidth={3} /></button>
                                 </span>
                             ))}
                             <input
                                 type="text"
                                 placeholder="Add tags..."
-                                className="bg-transparent border-none focus:outline-none text-xs px-2 py-1 min-w-[80px] flex-1 font-medium placeholder:text-muted-foreground/50"
+                                className="bg-transparent border-none focus:outline-none text-xs px-2 py-1 min-w-[80px] flex-1 font-bold placeholder:text-gray-300 text-black"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = (e.target as HTMLInputElement).value.trim();
@@ -436,11 +437,11 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                                 }}
                             />
                         </div>
-                        <div className="flex gap-2 mt-1">
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors bg-surface-card">
+                        <div className="flex gap-2 mt-2">
+                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border-2 border-gray-200 text-xs font-bold text-gray-500 hover:border-black hover:text-black transition-all bg-white">
                                 <Plus className="w-3 h-3" /> Photography
                             </button>
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors bg-surface-card">
+                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border-2 border-gray-200 text-xs font-bold text-gray-500 hover:border-black hover:text-black transition-all bg-white">
                                 <Plus className="w-3 h-3" /> AI Art
                             </button>
                         </div>
@@ -448,15 +449,15 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t border-border bg-muted/50 rounded-b-2xl">
+                <div className="flex items-center justify-between p-8 border-t-2 border-dashed border-gray-200 bg-gray-50/50">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500/100 shadow-[0_0_0_2px_rgba(34,197,94,0.2)]"></div>
-                        <span className="text-xs font-medium text-muted-foreground">Saved as a draft</span>
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.2)]"></div>
+                        <span className="text-xs font-bold text-gray-500">Saved as a draft</span>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={onClose}
-                            className="px-6 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+                            className="px-6 py-3.5 rounded-full text-sm font-bold text-gray-500 hover:text-black hover:bg-gray-200 transition-colors"
                             disabled={isSubmitting}
                         >
                             Cancel
@@ -464,9 +465,16 @@ export function NewPostModal({ isOpen, onClose, post }: NewPostModalProps) {
                         <button
                             onClick={handleSchedule}
                             disabled={isSubmitting}
-                            className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-black hover:bg-gray-800 transition-all shadow-lg shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-8 py-3.5 rounded-full text-sm font-black text-white bg-[#1A1A1A] hover:bg-black transition-all shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {isSubmitting ? "Saving..." : (post ? "Save Changes" : "Schedule Post")}
+                            {isSubmitting ? (
+                                <>
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    Saving...
+                                </>
+                            ) : (
+                                post ? "Save Changes" : "Schedule Post"
+                            )}
                         </button>
                     </div>
                 </div>

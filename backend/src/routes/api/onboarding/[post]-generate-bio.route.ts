@@ -46,6 +46,8 @@ const onboardingSchema = z.object({
     education: z.object({
         hasGraduation: z.boolean(),
         degree: z.string().optional(),
+        universityName: z.string().optional(),
+        courseName: z.string().optional(),
     }),
     profession: z.string().min(1, "Por favor, informe sua profissão"),
     skills: z.array(z.string()),

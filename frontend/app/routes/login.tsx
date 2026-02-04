@@ -7,10 +7,19 @@ import { AlertCircle } from "lucide-react";
 import { EnvelopeIcon } from "~/components/shared/icons";
 import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
+import { AuthLayoutBold } from "~/components/auth/auth-layout-bold";
 
 export function meta({ params }: Route.MetaArgs) {
     const lang = params?.lang === "pt" ? "pt" : "en";
-    return [{ title: i18n.t("meta.login.title", { lng: lang }) }];
+    const title = i18n.t("meta.login.title", { lng: lang, defaultValue: lang === "pt" ? "Login | Portyo" : "Login | Portyo" });
+    const description = lang === "pt"
+        ? "Faça login na sua conta Portyo para gerenciar seus links, produtos e analytics."
+        : "Log in to your Portyo account to manage your links, products, and analytics.";
+    return [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: "noindex, follow" },
+    ];
 }
 
 export default function Login() {
@@ -23,6 +32,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const authContext = useContext(AuthContext)
+
 
     const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
     const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
@@ -95,99 +105,107 @@ export default function Login() {
             : 'https://api.portyo.me';
         window.location.href = `${apiUrl}/api/google/auth`;
     };
+
     return (
-        <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
-            <AuthBackground />
-            <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                <div className="bg-surface w-full max-w-[480px] rounded-[2rem] shadow-xl p-8 md:p-10 relative border border-white/50">
+        <AuthLayoutBold
+            title={t("auth.login.title", "Bem-vindo de volta")}
+            subtitle={t("auth.login.subtitle", "Faça login na sua Linktree")}
+        >
+            <form className="space-y-6" onSubmit={handleLogin}>
+                {error && (
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-600 font-medium">{error}</p>
+                    </div>
+                )}
 
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold mb-3">{t("auth.login.title")}</h1>
-                        <p className="text-text-muted text-sm px-4">
-                            {t("auth.login.subtitle")}
-                        </p>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
+                            {t("auth.login.emailPlaceholder", "Email")}
+                        </label>
+                        <input
+                            type="email"
+                            placeholder="ex: bruno@portyo.me"
+                            value={email}
+                            autoComplete="email"
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-6 py-4 rounded-xl bg-[#F3F3F1] border-2 border-transparent focus:bg-white focus:border-[#1A1A1A] outline-none transition-all font-medium text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                        />
                     </div>
 
-                    {error && (
-                        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                            <p className="text-sm text-red-600 font-medium">{error}</p>
-                        </div>
-                    )}
-
-                    <form className="space-y-5" onSubmit={handleLogin}>
-                        <div>
-                            <input
-                                type="email"
-                                placeholder={t("auth.login.emailPlaceholder")}
-                                value={email}
-                                autoComplete="email"
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
-                            />
-                        </div>
-                        <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                placeholder={t("auth.login.passwordPlaceholder")}
-                                value={password}
-                                autoComplete="current-password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3.5 rounded-xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/70"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-text-main hover:text-primary transition-colors"
-                            >
-                                {showPassword ? t("auth.login.hide") : t("auth.login.show")}
-                            </button>
-                        </div>
-
-                        <div className="text-left pt-1">
-                            <Link to={withLang("/forgot-password")} className="text-xs font-medium text-text-main hover:text-primary transition-colors">
-                                {t("auth.login.trouble")}
-                            </Link>
-                        </div>
-
-                        <button type="submit" className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary-hover transition-colors shadow-sm mt-2">
-                            {t("auth.login.submit")}
+                    <div className="relative">
+                        <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
+                            {t("auth.login.passwordPlaceholder", "Senha")}
+                        </label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="********"
+                            value={password}
+                            autoComplete="current-password"
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-6 py-4 rounded-xl bg-[#F3F3F1] border-2 border-transparent focus:bg-white focus:border-[#1A1A1A] outline-none transition-all font-medium text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-[3.2rem] text-sm font-bold text-[#1A1A1A] hover:opacity-70 transition-opacity"
+                        >
+                            {showPassword ? t("auth.login.hide") : t("auth.login.show")}
                         </button>
-                    </form>
-
-                    <div className="mt-8">
-                        <div className="relative flex items-center justify-center mb-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-border"></div>
-                            </div>
-                            <span className="relative bg-surface px-3 text-xs text-text-main font-semibold uppercase tracking-wider">{t("auth.login.or")}</span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                            <button
-                                onClick={handleGoogleLogin}
-                                className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group"
-                            >
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform">G</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.login.google")}</span>
-                            </button>
-                            <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform"></span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.login.apple")}</span>
-                            </button>
-                            <button className="flex items-center justify-center px-4 py-2.5 border border-border rounded-xl hover:bg-surface-muted transition-colors group">
-                                <span className="font-bold text-lg group-hover:scale-110 transition-transform">f</span> <span className="ml-2 text-xs font-bold hidden sm:inline">{t("auth.login.facebook")}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 text-center">
-                        <p className="text-xs text-text-muted font-medium">
-                            {t("auth.login.noAccount")} <Link to={withLang("/sign-up")} className="font-bold text-text-main hover:underline ml-1">{t("auth.login.createNow")}</Link>
-                        </p>
                     </div>
                 </div>
-            </main>
 
-        </div>
+                <div className="flex justify-end">
+                    <Link
+                        to={withLang("/forgot-password")}
+                        className="text-sm font-bold text-[#1A1A1A]/60 hover:text-[#0047FF] transition-colors"
+                    >
+                        {t("auth.login.trouble")}
+                    </Link>
+                </div>
+
+                <div className="space-y-4 pt-4">
+                    <button
+                        type="submit"
+                        className="w-full bg-[#1A1A1A] text-white font-display font-bold text-lg py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#1A1A1A]/10"
+                    >
+                        {t("auth.login.submit", "Entrar")}
+                    </button>
+
+                    <div className="relative flex items-center justify-center py-2">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-[#1A1A1A]/10"></div>
+                        </div>
+                        <span className="relative bg-white px-4 text-xs font-bold text-[#1A1A1A]/40 uppercase tracking-widest">
+                            {t("auth.login.or")}
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        className="w-full bg-white border-2 border-[#1A1A1A]/10 text-[#1A1A1A] font-bold text-lg py-4 rounded-full hover:border-[#1A1A1A] hover:bg-transparent transition-colors flex items-center justify-center gap-3"
+                    >
+                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                        </svg>
+                        {t("auth.login.google", "Continuar com Google")}
+                    </button>
+                </div>
+            </form>
+
+            <div className="text-center pt-8">
+                <p className="text-sm font-medium text-[#1A1A1A]/60">
+                    {t("auth.login.noAccount")}
+                    <Link to={withLang("/sign-up")} className="ml-1 font-bold text-[#1A1A1A] underline decoration-2 underline-offset-4 hover:text-[#0047FF] hover:decoration-[#0047FF] transition-colors">
+                        {t("auth.login.createNow")}
+                    </Link>
+                </p>
+            </div>
+        </AuthLayoutBold>
     );
 }

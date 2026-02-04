@@ -12,7 +12,8 @@
     "menu": "Menu",
     "goToDashboard": "Ir para o painel",
     "signOut": "Sair",
-    "language": "Idioma"
+    "language": "Idioma",
+    "autoPost": "Auto Post"
   },
   "meta": {
     "root": {
@@ -161,7 +162,232 @@
       "analytics": "Análises",
       "adminPanel": "Painel Admin",
       "announcements": "Anúncios",
-      "siteBlog": "Blog do site"
+      "siteBlog": "Blog do site",
+      "autoPost": "Auto Post"
+    },
+    "autoPost": {
+      "confirmDelete": "Tem certeza que deseja excluir este agendamento de auto post?",
+      "emptyBioTitle": "Selecione uma bio primeiro",
+      "emptyBioSubtitle": "Selecione uma bio na barra lateral para configurar o auto post.",
+      "header": {
+        "proFeature": "Recurso Pro",
+        "title": "Auto Post",
+        "subtitle": "Conteúdo com IA e otimização avançada de SEO, GEO e AEO",
+        "pause": "Pausar",
+        "resume": "Retomar",
+        "edit": "Editar",
+        "cancelEdit": "Cancelar"
+      },
+      "frequencies": {
+        "daily": { "label": "Diário", "description": "Novo post todos os dias" },
+        "weekly": { "label": "Semanal", "description": "Novo post toda semana" },
+        "biweekly": { "label": "Quinzenal", "description": "Novo post a cada 2 semanas" },
+        "monthly": { "label": "Mensal", "description": "Novo post todo mês" }
+      },
+      "tones": {
+        "professional": "Profissional",
+        "casual": "Casual",
+        "friendly": "Amigável",
+        "technical": "Técnico",
+        "creative": "Criativo",
+        "authoritative": "Autoritativo"
+      },
+      "lengths": {
+        "short": { "label": "Curto", "description": "600-800 palavras" },
+        "medium": { "label": "Médio", "description": "1000-1500 palavras" },
+        "long": { "label": "Longo", "description": "1800-2500 palavras" }
+      },
+      "stats": {
+        "postsThisMonth": "Posts deste mês",
+        "remainingOf": "{{remaining}} restantes de {{limit}}",
+        "nextPost": "Próximo post",
+        "today": "Hoje",
+        "notScheduled": "Não agendado",
+        "overdue": "Atrasado",
+        "lastPost": "Último post",
+        "never": "Nunca",
+        "noPostsYet": "Nenhum post ainda",
+        "status": "Status",
+        "active": "Ativo",
+        "paused": "Pausado",
+        "notConfigured": "Não configurado",
+        "avgScores": "Médias",
+        "basedOnPosts_one": "Baseado em {{count}} post",
+        "basedOnPosts_other": "Baseado em {{count}} posts"
+      },
+      "config": {
+        "title": "Configuração",
+        "subtitle": "Personalize como a IA gera seus posts",
+        "postFrequency": "Frequência",
+        "postingTime": "Horário de postagem",
+        "publishAtTime": "Os posts serão publicados neste horário",
+        "startDateOptional": "Data de início (opcional)",
+        "cronStarts": "O cron inicia nesta data (deixe vazio para hoje)",
+        "postLength": "Tamanho do post",
+        "topicsLabel": "Tópicos e temas",
+        "aiAnalyzing": "A IA está analisando...",
+        "topicsPlaceholder": "Descreva os tópicos sobre os quais você quer escrever (ex.: 'Desenvolvimento web, tutoriais de React, dicas de carreira'). A IA irá gerar palavras‑chave e público‑alvo automaticamente.",
+        "aiSuggestionsTitle": "Sugestões da IA",
+        "suggestedKeywords": "Palavras-chave sugeridas:",
+        "targetAudience": "Público-alvo:",
+        "applySuggestions": "Aplicar sugestões",
+        "ignore": "Ignorar",
+        "seoKeywords": "Palavras-chave de SEO",
+        "aiGenerated": "Gerado por IA",
+        "keywordsPlaceholder": "Informe palavras‑chave separadas por vírgulas (ou deixe a IA gerar a partir dos tópicos)",
+        "writingTone": "Tom de escrita",
+        "targetAudienceLabel": "Público-alvo",
+        "targetAudiencePlaceholder": "Para quem você está escrevendo? (A IA sugerirá com base nos tópicos)",
+        "geoTargetLabel": "Alvo geográfico e idioma",
+        "geoTargetEmpty": "Selecione um país para otimizar conteúdo para SEO local, referências culturais e preferências regionais",
+        "editToChange": "Edite para alterar",
+        "targetLanguage": "Alvo: {{target}} • Idioma: {{language}}"
+      },
+      "actions": {
+        "saving": "Salvando...",
+        "saveUpdate": "Atualizar agendamento",
+        "saveCreate": "Criar agendamento",
+        "generating": "Gerando...",
+        "previewWithMetrics": "Prévia com métricas",
+        "cancel": "Cancelar",
+        "previewNextPost": "Prévia do próximo post",
+        "delete": "Excluir"
+      },
+      "bioSummary": {
+        "title": "Entendimento da IA sobre sua bio",
+        "refresh": "Atualizar"
+      },
+      "sidebar": {
+        "recentAutoPosts": "Posts automáticos recentes",
+        "viewDetails": "Ver detalhes",
+        "noAutoPosts": "Nenhum post automático ainda"
+      },
+      "info": {
+        "title": "Como funciona",
+        "bullet1": "A IA analisa sua bio para um entendimento profundo",
+        "bullet2": "Gera conteúdo otimizado para SEO + GEO + AEO + AIO",
+        "bullet3": "Métricas detalhadas para cada post",
+        "bullet4": "Publica automaticamente no agendamento"
+      },
+      "preview": {
+        "title": "Prévia do post",
+        "subtitle": "Métricas completas de otimização para este post gerado",
+        "close": "Fechar",
+        "createSchedule": "Criar agendamento"
+      },
+      "metricsModal": {
+        "title": "Métricas do post",
+        "seoScore": "Pontuação SEO",
+        "geoScore": "Pontuação GEO",
+        "aeoScore": "Pontuação AEO",
+        "aioScore": "Pontuação AIO",
+        "readability": "Legibilidade",
+        "titleChars": "Caracteres do título",
+        "keywords": "Palavras-chave",
+        "primary": "Principal",
+        "contentStructure": "Estrutura do conteúdo",
+        "headings": "Títulos",
+        "paragraphs": "Parágrafos",
+        "lists": "Listas",
+        "words": "Palavras",
+        "seoSuggestions": "Sugestões de SEO",
+        "geoSuggestions": "Sugestões de GEO",
+        "aeoSuggestions": "Sugestões de AEO",
+        "aioSuggestions": "Sugestões de AIO",
+        "close": "Fechar"
+      }
+    },
+    "siteAutoPost": {
+      "confirmDelete": "Tem certeza que deseja excluir a automação?",
+      "header": {
+        "title": "Posts Automáticos - Site Blog",
+        "subtitle": "Configure posts automáticos para o seu blog institucional",
+        "edit": "Editar",
+        "cancel": "Cancelar",
+        "processing": "Processando...",
+        "pause": "Pausar",
+        "activate": "Ativar"
+      },
+      "toast": {
+        "updateSuccess": "Configurações atualizadas com sucesso!",
+        "createSuccess": "Automação criada com sucesso!",
+        "saveError": "Erro ao salvar configurações",
+        "pausedSuccess": "Automação pausada",
+        "activatedSuccess": "Automação ativada",
+        "statusError": "Erro ao alterar status",
+        "deleteSuccess": "Automação excluída com sucesso",
+        "deleteError": "Erro ao excluir",
+        "previewSuccess": "Preview gerado com sucesso!",
+        "previewError": "Erro ao gerar preview"
+      },
+      "status": {
+        "status": "Status",
+        "active": "Ativo",
+        "paused": "Pausado",
+        "frequency": "Frequência",
+        "postsThisMonth": "Posts este mês",
+        "nextPost": "Próximo post",
+        "notScheduled": "Não agendado"
+      },
+      "config": {
+        "editTitle": "Editar Configuração",
+        "createTitle": "Criar Automação",
+        "preview": "Gerar Preview",
+        "generating": "Gerando...",
+        "frequency": "Frequência de Postagem",
+        "postLength": "Tamanho do Post",
+        "tone": "Tom de Voz",
+        "preferredTime": "Horário Preferido",
+        "topics": "Tópicos/Temas *",
+        "topicsPlaceholder": "Ex: Marketing Digital, SEO, Redes Sociais, Empreendedorismo...",
+        "keywords": "Palavras-chave (separadas por vírgula)",
+        "keywordsPlaceholder": "Ex: marketing digital, SEO, estratégia de conteúdo...",
+        "targetAudience": "Público-alvo",
+        "targetAudiencePlaceholder": "Ex: Empreendedores digitais, profissionais de marketing...",
+        "bilingual": "Gerar conteúdo bilíngue (Português + Inglês)"
+      },
+      "frequency": {
+        "5hours": "A cada 5 horas",
+        "daily": "Diariamente",
+        "weekly": "Semanalmente",
+        "biweekly": "A cada 2 semanas",
+        "monthly": "Mensalmente"
+      },
+      "length": {
+        "short": "Curto (~800 palavras)",
+        "medium": "Médio (~1500 palavras)",
+        "long": "Longo (~2500 palavras)"
+      },
+      "tones": {
+        "professional": "Profissional",
+        "casual": "Casual",
+        "friendly": "Amigável",
+        "authoritative": "Autoritativo",
+        "creative": "Criativo"
+      },
+      "actions": {
+        "saving": "Salvando...",
+        "save": "Salvar Alterações",
+        "create": "Criar Automação",
+        "delete": "Excluir"
+      },
+      "preview": {
+        "title": "Preview do Post",
+        "portugueseVersion": "Versão em Português",
+        "englishVersion": "Versão em Inglês",
+        "keywords": "Palavras-chave",
+        "suggestions": "Sugestões de Melhoria"
+      },
+      "logs": {
+        "title": "Posts Recentes",
+        "wordCount_one": "{{count}} palavra",
+        "wordCount_other": "{{count}} palavras",
+        "status": {
+          "published": "Publicado",
+          "failed": "Falhou",
+          "generated": "Gerado"
+        }
+      }
     },
     "sidebar": {
       "newPage": "Nova página",
@@ -745,6 +971,12 @@
       }
     },
     "editor": {
+      "tabs": {
+        "links": "Links",
+        "design": "Design",
+        "settings": "Configurações"
+      },
+      "addLink": "Adicionar Link",
       "defaults": {
         "headingTitle": "Apresente-se",
         "headingBody": "Em uma linha, diga por que as pessoas devem se conectar com você.",

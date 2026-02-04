@@ -1,183 +1,49 @@
 import { useNavigate } from "react-router";
-import { useContext, useState, useEffect, useMemo } from "react";
-import { AuthBackground } from "~/components/shared/auth-background";
+import { useContext, useState, useEffect, useMemo, useRef } from "react";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
-import THEME_PRESETS, { type ThemeStyles } from "~/constants/theme-presets";
+import THEME_PRESETS, { type ThemePreset } from "~/constants/theme-presets";
+import { Check, ChevronRight, Sparkles, Wand2, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function meta() {
-    return [{ title: "Bem-vindo ao Portyo - Configure seu perfil" }];
+    return [{ title: "Welcome to Portyo - Setup your profile" }];
 }
 
 interface OnboardingAnswers {
-    theme?: {
-        name: string;
-        styles: ThemeStyles;
-    } | null;
-    aboutYou: string;
-    education: {
-        hasGraduation: boolean;
-        degree?: string;
-    };
-    profession: string;
-    skills: string[];
-
-    goals: string[];
-    resumeText?: string;
+    username: string;
+    category: string;
+    theme: ThemePreset | null;
 }
 
-const PROFESSIONS = [
-    "Desenvolvedor(a) de Software",
-    "Arquiteto(a)",
-    "Engenheiro(a)",
-    "Contador(a)",
-    "Advogado(a)",
-    "Médico(a)",
-    "Enfermeiro(a)",
-    "Socorrista",
-    "Designer",
-    "Marketing Digital",
-    "Criador(a) de Conteúdo",
-    "Fotógrafo(a)",
-    "Músico(a)",
-    "Produtor(a) Musical",
-    "Consultor(a)",
-    "Gestor(a) de Tráfego",
-    "Freelancer",
-    "Empreendedor(a)",
-    "Vendedor(a)",
-    "Corretor(a)",
-    "Coach",
-    "Psicólogo(a)",
-    "Nutricionista",
-    "Fisioterapeuta",
-    "Personal Trainer",
-    "Professor(a)",
-    "Pesquisador(a)",
-    "Estudante",
-    "Artista",
-    "Streamer",
-    "Gamer",
-    "Influenciador(a)",
-    "Outro"
-];
-
-const SKILLS = [
-    "Programação",
-    "Design Gráfico",
-    "Design UI/UX",
-    "Marketing",
-    "SEO",
-    "Redes Sociais",
-    "Fotografia",
-    "Edição de Vídeo",
-    "Escrita",
-    "Vendas",
-    "Gestão de Projetos",
-    "Comunicação",
-    "Liderança",
-    "Análise de Dados",
-    "Idiomas",
-    "Música",
-    "Ilustração"
-];
-
-const GOALS = [
-    "Mostrar meu portfólio",
-    "Destacar projetos e cases",
-    "Centralizar meus links e redes sociais",
-    "Apresentar meus serviços",
-    "Vender produtos ou serviços",
-    "Divulgar meu trabalho freelancer",
-    "Coletar contatos e leads",
-    "Receber mensagens via WhatsApp",
-    "Mostrar agenda/booking",
-    "Divulgar eventos",
-    "Compartilhar blog ou artigos",
-    "Exibir galeria de fotos",
-    "Promover minha música",
-    "Networking profissional",
-    "Criar uma página profissional de contato",
-    "Construir minha marca pessoal"
-];
-
-const STEP_CONFIG = [
-    {
-        icon: "🎨",
-        gradient: "from-slate-500 to-zinc-600",
-        shadow: "shadow-slate-500/30",
-        title: "Escolha um tema",
-        subtitle: "Opcional: personalize o estilo da sua página"
-    },
-    {
-        icon: "👋",
-        gradient: "from-violet-500 to-purple-600",
-        shadow: "shadow-violet-500/30",
-        title: "Conte sobre você",
-        subtitle: "Uma breve descrição que ajudará a criar sua página"
-    },
-    {
-        icon: "📄",
-        gradient: "from-blue-500 to-indigo-600",
-        shadow: "shadow-blue-500/30",
-        title: "Importar Currículo",
-        subtitle: "Envie seu currículo para preenchermos automaticamente (Opcional)"
-    },
-    {
-        icon: "🎓",
-        gradient: "from-sky-500 to-blue-600",
-        shadow: "shadow-sky-500/30",
-        title: "Sua formação",
-        subtitle: "Você tem graduação?"
-    },
-    {
-        icon: "💼",
-        gradient: "from-emerald-500 to-teal-600",
-        shadow: "shadow-emerald-500/30",
-        title: "O que você faz?",
-        subtitle: "Selecione a opção que melhor te descreve"
-    },
-    {
-        icon: "⚡",
-        gradient: "from-amber-500 to-orange-600",
-        shadow: "shadow-amber-500/30",
-        title: "Suas principais habilidades",
-        subtitle: "Selecione todas as que se aplicam (opcional)"
-    },
-    {
-        icon: "🎯",
-        gradient: "from-rose-500 to-pink-600",
-        shadow: "shadow-rose-500/30",
-        title: "Qual é o seu objetivo?",
-        subtitle: "O que você quer alcançar com sua página?"
-    }
+const CATEGORIES = [
+    { id: "creator", name: "Creator", icon: "🎨" },
+    { id: "business", name: "Business", icon: "💼" },
+    { id: "personal", name: "Personal", icon: "👋" },
+    { id: "education", name: "Education", icon: "📚" },
+    { id: "entertainment", name: "Entertainment", icon: "🎬" },
+    { id: "tech", name: "Tech", icon: "💻" },
+    { id: "fashion", name: "Fashion", icon: "👗" },
+    { id: "other", name: "Other", icon: "✨" },
 ];
 
 export default function Onboarding() {
     const { user, loading, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [step, setStep] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
     const [answers, setAnswers] = useState<OnboardingAnswers>({
-        theme: null,
-        aboutYou: "",
-        education: {
-            hasGraduation: false,
-            degree: ""
-        },
-        profession: "",
-        skills: [],
-
-        goals: [],
-        resumeText: ""
+        username: "",
+        category: "",
+        theme: THEME_PRESETS[0] || null,
     });
 
-    const availableThemes = useMemo(() => {
-        return THEME_PRESETS;
-    }, []);
+    // Check username availability (faked for UI feel, real validation on submit)
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -188,506 +54,352 @@ export default function Onboarding() {
         }
     }, [user, loading, navigate]);
 
-
-
-    const totalSteps = 7;
-    const currentConfig = STEP_CONFIG[step - 1];
-
-    const handleSkip = async () => {
-        try {
-            await api.post("/onboarding/skip");
-            await refreshUser();
-            navigate("/dashboard");
-        } catch (err) {
-            console.error("Falha ao pular onboarding:", err);
-            navigate("/dashboard");
+    // Pre-fill username if available
+    useEffect(() => {
+        if (user?.username && !answers.username) {
+            setAnswers(prev => ({ ...prev, username: user.username }));
         }
-    };
+    }, [user]);
 
-    const handleNext = () => {
-        if (step < totalSteps) {
-            setStep(step + 1);
-        }
-    };
+    const handleNext = () => setStep(prev => prev + 1);
+    const handleBack = () => setStep(prev => prev - 1);
 
-    const handleBack = () => {
-        if (step > 1) {
-            setStep(step - 1);
-        }
-    };
-
-    const handleGenerate = async () => {
+    const handleFinish = async () => {
         setIsGenerating(true);
-        setError(null);
-
         try {
-            const payload = {
-                ...answers,
-                goals: answers.goals.join(", ")
-            };
-            await api.post("/onboarding/generate-bio", payload);
-            await refreshUser();
-            navigate("/dashboard");
-        } catch (err: any) {
-            console.error("Falha ao gerar bio:", err);
-            setError(err.response?.data?.message || "Falha ao gerar seu perfil. Tente novamente.");
-            setIsGenerating(false);
-        }
-    };
+            // 1. Update Username if changed
+            if (answers.username !== user?.username) {
+                await api.post("/user/username", { username: answers.username });
+            }
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (file.type !== "application/pdf") {
-            setError("Apenas arquivos PDF são permitidos");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("resume", file);
-
-        try {
-            setError(null);
-            const response = await api.post("/user/upload-resume", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+            // 2. Generate Bio/Profile
+            await api.post("/onboarding/generate-bio", {
+                category: answers.category,
+                theme: answers.theme?.name || "Modern Minimal",
+                aboutYou: `I am a ${answers.category} looking to showcase my work.`, // Simplified for now
+                profession: answers.category,
+                goals: "Showcase portfolio",
             });
 
-            if (response.data.success && response.data.resumeText) {
-                setAnswers(prev => ({
-                    ...prev,
-                    resumeText: response.data.resumeText
-                }));
+            // 3. Mark completed
+            await refreshUser();
+
+            // 4. Celebration!
+            if (typeof window !== "undefined") {
+                try {
+                    const { default: confetti } = await import("canvas-confetti");
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#D2E823', '#0047FF', '#E94E77', '#000000']
+                    });
+                } catch (error) {
+                    console.warn("Confetti unavailable:", error);
+                }
             }
+
+            // Slight delay to enjoy confetti
+            setTimeout(() => {
+                navigate("/dashboard");
+            }, 2000);
+
         } catch (err) {
-            console.error("Erro ao enviar currículo:", err);
-            setError("Falha ao processar o currículo. Tente novamente ou pule esta etapa.");
+            console.error("Onboarding failed:", err);
+            setIsGenerating(false);
+            // Fallback navigation
+            navigate("/dashboard");
         }
     };
 
-    const toggleSkill = (skill: string) => {
-        setAnswers(prev => ({
-            ...prev,
-            skills: prev.skills.includes(skill)
-                ? prev.skills.filter(s => s !== skill)
-                : [...prev.skills, skill]
-        }));
-    };
+    // --- STEPS RENDERERS ---
 
-    const canProceed = () => {
-        switch (step) {
-            case 1: return true;
-            case 2: return answers.aboutYou.trim().length > 0;
-            case 3: return true;
-            case 4: return true;
-            case 5: return answers.profession.length > 0;
-            case 6: return true;
-            case 7: return answers.goals.length > 0;
-            default: return false;
-        }
-    };
-
-    const toggleGoal = (goal: string) => {
-        setAnswers(prev => ({
-            ...prev,
-            goals: prev.goals.includes(goal)
-                ? prev.goals.filter(g => g !== goal)
-                : [...prev.goals, goal]
-        }));
-    };
-
-
-
-    if (loading || !user) return null;
-
-    const renderStep = () => {
-        switch (step) {
-            case 1:
-                return (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                            {availableThemes.map((theme) => {
-                                const isSelected = answers.theme?.name === theme.name;
-                                return (
-                                    <button
-                                        key={theme.name}
-                                        onClick={() => setAnswers({ ...answers, theme: { name: theme.name, styles: theme.styles } })}
-                                        className={`p-3 rounded-2xl border transition-all text-left ${isSelected
-                                            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                                            : "border-border bg-surface hover:border-primary/40"
-                                            }`}
-                                    >
-                                        <div
-                                            className="h-20 rounded-xl mb-3 border border-border"
-                                            style={{
-                                                backgroundColor: theme.styles.bgColor,
-                                                backgroundImage: theme.styles.bgType === "gradient"
-                                                    ? `linear-gradient(135deg, ${theme.styles.bgColor}, ${theme.styles.bgSecondaryColor})`
-                                                    : undefined
-                                            }}
-                                        />
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-semibold">{theme.name}</p>
-                                                <p className="text-xs text-text-muted line-clamp-2">{theme.description}</p>
-                                            </div>
-                                            {isSelected && (
-                                                <span className="text-xs font-bold text-primary">Selecionado</span>
-                                            )}
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                );
-
-            case 2:
-                return (
-                    <div className="space-y-6">
-                        <textarea
-                            value={answers.aboutYou}
-                            onChange={(e) => setAnswers({ ...answers, aboutYou: e.target.value })}
-                            placeholder="Ex.: Sou um(a) desenvolvedor(a) full‑stack apaixonado(a) por criar soluções inovadoras..."
-                            className="w-full px-5 py-4 rounded-2xl border border-border bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60 min-h-[160px] resize-none leading-relaxed"
-                            autoFocus
-                        />
-                        <p className="text-xs text-text-muted text-center">
-                            Isso será usado para criar a descrição da sua bio
-                        </p>
-                    </div>
-                );
-
-            case 3:
-                return (
-                    <div className="space-y-6 text-center">
-                        <div className="border-2 border-dashed border-border rounded-2xl p-8 hover:border-primary/50 transition-colors bg-surface-muted/30">
-                            <input
-                                type="file"
-                                accept="application/pdf"
-                                onChange={handleFileUpload}
-                                className="hidden"
-                                id="resume-upload"
-                            />
-                            <label
-                                htmlFor="resume-upload"
-                                className="cursor-pointer flex flex-col items-center gap-4"
-                            >
-                                <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center">
-                                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-lg">Clique para enviar seu PDF</p>
-                                    <p className="text-sm text-text-muted mt-1">Tamanho máximo: 5MB</p>
-                                </div>
-                            </label>
-                        </div>
-
-                        {answers.resumeText && (
-                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-green-500/10 text-green-400 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-medium border border-green-500/20">
-                                    <span className="w-5 h-5 rounded-full bg-green-200 flex items-center justify-center">✓</span>
-                                    Currículo processado com sucesso!
-                                </div>
-                                <p className="text-xs text-text-muted mt-2">
-                                    Nossa IA usará as informações do seu currículo para enriquecer seu perfil.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                );
-
-            case 4:
-                return (
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                onClick={() => setAnswers({ ...answers, education: { hasGraduation: true, degree: answers.education.degree } })}
-                                className={`group relative px-6 py-8 rounded-2xl font-semibold transition-all duration-300 text-center overflow-hidden ${answers.education.hasGraduation
-                                    ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
-                                    : 'bg-surface-card border-2 border-border hover:border-primary/50 hover:shadow-lg'
-                                    }`}
-                            >
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${answers.education.hasGraduation
-                                    ? 'bg-white/20'
-                                    : 'bg-primary/10 group-hover:bg-primary/20'
-                                    }`}>
-                                    <svg className={`w-7 h-7 ${answers.education.hasGraduation ? 'text-white' : 'text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                <span className="text-lg font-bold">Sim, tenho</span>
-                                <p className={`text-xs mt-1 ${answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>Tenho graduação</p>
-                            </button>
-                            <button
-                                onClick={() => setAnswers({ ...answers, education: { hasGraduation: false, degree: "" } })}
-                                className={`group relative px-6 py-8 rounded-2xl font-semibold transition-all duration-300 text-center overflow-hidden ${!answers.education.hasGraduation
-                                    ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]'
-                                    : 'bg-surface-card border-2 border-border hover:border-primary/50 hover:shadow-lg'
-                                    }`}
-                            >
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${!answers.education.hasGraduation
-                                    ? 'bg-white/20'
-                                    : 'bg-muted group-hover:bg-muted'
-                                    }`}>
-                                    <svg className={`w-7 h-7 ${!answers.education.hasGraduation ? 'text-white' : 'text-muted-foreground'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </div>
-                                <span className="text-lg font-bold">Ainda não</span>
-                                <p className={`text-xs mt-1 ${!answers.education.hasGraduation ? 'text-white/70' : 'text-text-muted'}`}>Ainda estou aprendendo</p>
-                            </button>
-                        </div>
-
-                        {answers.education.hasGraduation && (
-                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                <input
-                                    type="text"
-                                    value={answers.education.degree || ""}
-                                    onChange={(e) => setAnswers({ ...answers, education: { ...answers.education, degree: e.target.value } })}
-                                    placeholder="O que você estudou? Ex.: Ciência da Computação"
-                                    className="w-full px-5 py-4 rounded-2xl border-2 border-border bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm placeholder:text-text-muted/60"
-                                    autoFocus
-                                />
-                            </div>
-                        )}
-                    </div>
-                );
-
-
-
-            case 5:
-                return (
-                    <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                        {PROFESSIONS.map((profession) => (
-                            <button
-                                key={profession}
-                                onClick={() => setAnswers({ ...answers, profession })}
-                                className={`w-full px-5 py-4 rounded-xl font-medium text-sm transition-all text-left flex items-center gap-3 group ${answers.profession === profession
-                                    ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-lg shadow-primary/20'
-                                    : 'bg-surface border border-border hover:border-primary/40 hover:bg-surface-muted'
-                                    }`}
-                            >
-                                <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${answers.profession === profession
-                                    ? 'border-white bg-white/20'
-                                    : 'border-border group-hover:border-primary/50'
-                                    }`}>
-                                    {answers.profession === profession && (
-                                        <span className="w-2 h-2 rounded-full bg-white" />
-                                    )}
-                                </span>
-                                {profession}
-                            </button>
-                        ))}
-                    </div>
-                );
-
-
-
-            case 6:
-                return (
-                    <div className="space-y-4">
-                        <div className="flex flex-wrap gap-2 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
-                            {SKILLS.map((skill) => (
-                                <button
-                                    key={skill}
-                                    onClick={() => toggleSkill(skill)}
-                                    className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${answers.skills.includes(skill)
-                                        ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-md shadow-primary/20'
-                                        : 'bg-surface border border-border hover:border-primary/40 hover:bg-surface-muted'
-                                        }`}
-                                >
-                                    {answers.skills.includes(skill) && <span className="mr-1.5">✓</span>}
-                                    {skill}
-                                </button>
-                            ))}
-                        </div>
-
-                        {answers.skills.length > 0 && (
-                            <div className="flex items-center justify-center gap-2 text-xs text-primary font-medium">
-                                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                    {answers.skills.length}
-                                </span>
-                                habilidade{answers.skills.length > 1 ? 's' : ''} selecionada{answers.skills.length > 1 ? 's' : ''}
-                            </div>
-                        )}
-                    </div>
-                );
-
-
-
-            case 7:
-                return (
-                    <div className="space-y-4">
-                        <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                            {GOALS.map((goal) => (
-                                <button
-                                    key={goal}
-                                    onClick={() => toggleGoal(goal)}
-                                    className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${answers.goals.includes(goal)
-                                        ? 'bg-gradient-to-r from-primary to-primary-hover text-white shadow-md shadow-primary/20'
-                                        : 'bg-surface border border-border hover:border-primary/40 hover:bg-surface-muted'
-                                        }`}
-                                >
-                                    {answers.goals.includes(goal) && <span className="mr-1.5">✓</span>}
-                                    {goal}
-                                </button>
-                            ))}
-                        </div>
-
-                        {answers.goals.length > 0 && (
-                            <div className="flex items-center justify-center gap-2 text-xs text-primary font-medium">
-                                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                    {answers.goals.length}
-                                </span>
-                                objetivo{answers.goals.length > 1 ? 's' : ''} selecionado{answers.goals.length > 1 ? 's' : ''}
-                            </div>
-                        )}
-                    </div>
-                );
-        }
-    };
-
-    if (isGenerating) {
-        return (
-            <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
-                <AuthBackground />
-                <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                    <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-14 relative border border-border text-center">
-                        <div className="mb-8">
-                            <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary-hover rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/40 animate-pulse">
-                                <span className="text-4xl">✨</span>
-                            </div>
-                            <h2 className="text-2xl font-bold mb-3">Criando sua página...</h2>
-                            <p className="text-text-muted text-sm leading-relaxed">
-                                Nossa IA está criando o conteúdo perfeito para você.<br />
-                                Isso leva apenas alguns segundos.
-                            </p>
-                        </div>
-
-                        <div className="flex justify-center gap-2">
-                            <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
-                            <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></span>
-                            <span className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></span>
-                        </div>
-                    </div>
-                </main>
+    const renderStep1_Username = () => (
+        <div className="flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4">
+                <h1 className="text-5xl md:text-7xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                    Claim your link.
+                </h1>
+                <p className="text-xl text-[#1A1A1A]/60 font-medium max-w-lg mx-auto">
+                    Choose your unique username to get started. You can always change it later.
+                </p>
             </div>
-        );
-    }
 
-    return (
-        <div className="min-h-screen w-full bg-surface-alt flex flex-col relative overflow-hidden font-sans text-text-main">
-            <AuthBackground />
-            <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
-                <div className="bg-surface w-full max-w-[560px] rounded-[2rem] shadow-2xl p-10 md:p-12 relative border border-border">
-
-                    {/* Progress Header */}
-                    <div className="mb-8">
-                        <div className="flex justify-between items-center mb-3">
-                            <div className="flex items-center gap-2">
-                                {Array.from({ length: totalSteps }, (_, index) => index + 1).map((s) => (
-                                    <div
-                                        key={s}
-                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${s === step
-                                            ? 'w-6 bg-primary'
-                                            : s < step
-                                                ? 'bg-primary/60'
-                                                : 'bg-border'
-                                            }`}
-                                    />
-                                ))}
+            <div className="w-full max-w-xl">
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                        <span className="text-2xl font-black text-[#1A1A1A]/40 tracking-tight">portyo.me/</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={answers.username}
+                        onChange={(e) => {
+                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+                            setAnswers(prev => ({ ...prev, username: val }));
+                            setUsernameAvailable(val.length > 2); // Simple client-side validation for now
+                        }}
+                        className="w-full py-6 pl-[150px] pr-6 bg-white border-4 border-[#1A1A1A] rounded-2xl text-2xl font-black text-[#1A1A1A] placeholder:text-[#1A1A1A]/20 focus:outline-none focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
+                        placeholder="yourname"
+                        autoFocus
+                    />
+                    {answers.username.length > 2 && (
+                        <div className="absolute inset-y-0 right-0 pr-6 flex items-center">
+                            <div className="bg-[#D2E823] text-black border-2 border-black rounded-full p-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <Check className="w-4 h-4 text-black" strokeWidth={4} />
                             </div>
-                            <button
-                                onClick={handleSkip}
-                                className="text-xs font-semibold text-text-muted hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-muted"
-                            >
-                                Pular
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Step Header */}
-                    <div className="text-center mb-8">
-                        <div className={`w-16 h-16 bg-gradient-to-br ${currentConfig.gradient} rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl ${currentConfig.shadow} rotate-3 hover:rotate-0 transition-transform`}>
-                            <span className="text-2xl">{currentConfig.icon}</span>
-                        </div>
-                        <h1 className="text-2xl font-bold mb-2">{currentConfig.title}</h1>
-                        <p className="text-text-muted text-sm">{currentConfig.subtitle}</p>
-                    </div>
-
-                    {/* Step Content */}
-                    <div className="min-h-[280px]">
-                        {renderStep()}
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-xl text-sm font-medium text-center border border-destructive/20">
-                            {error}
                         </div>
                     )}
+                </div>
 
-                    {/* Navigation Buttons */}
-                    <div className="flex gap-4 mt-10">
-                        {step > 1 && (
-                            <button
-                                onClick={handleBack}
-                                className="flex-1 bg-surface-card border-2 border-border text-text-main font-bold py-4 px-6 rounded-2xl hover:bg-surface-muted hover:border-primary/30 transition-all flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Voltar
-                            </button>
+                <button
+                    onClick={handleNext}
+                    disabled={!answers.username || answers.username.length < 3}
+                    className="mt-8 w-full py-5 bg-[#1A1A1A] text-white rounded-2xl font-black text-xl uppercase tracking-widest hover:bg-[#D2E823] hover:text-[#1A1A1A] hover:border-2 hover:border-[#1A1A1A] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 group"
+                >
+                    Claim & Continue
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderStep2_Category = () => (
+        <div className="flex flex-col items-center justify-center text-center space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-4xl mx-auto">
+            <div className="space-y-4">
+                <h1 className="text-4xl md:text-6xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                    What best describes you?
+                </h1>
+                <p className="text-lg text-[#1A1A1A]/60 font-medium">
+                    This helps us tailor your experience.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                {CATEGORIES.map(cat => (
+                    <button
+                        key={cat.id}
+                        onClick={() => setAnswers(prev => ({ ...prev, category: cat.id }))}
+                        className={`
+                            relative h-32 md:h-40 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center gap-3 group
+                            ${answers.category === cat.id
+                                ? 'bg-[#D2E823] border-[#1A1A1A] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] -translate-y-1'
+                                : 'bg-white border-[#1A1A1A] hover:bg-gray-50 hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                            }
+                        `}
+                    >
+                        <span className="text-4xl md:text-5xl group-hover:scale-110 transition-transform duration-300">{cat.icon}</span>
+                        <span className={`font-black uppercase tracking-wider text-sm ${answers.category === cat.id ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/70'}`}>
+                            {cat.name}
+                        </span>
+
+                        {answers.category === cat.id && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-[#1A1A1A] rounded-full flex items-center justify-center text-[#D2E823]">
+                                <Check className="w-4 h-4" strokeWidth={3} />
+                            </div>
                         )}
+                    </button>
+                ))}
+            </div>
 
-                        {step < totalSteps ? (
-                            <button
-                                onClick={handleNext}
-                                disabled={!canProceed()}
-                                className="flex-1 bg-primary text-white font-bold py-4 px-6 rounded-2xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
-                            >
-                                Continuar
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
+            <div className="flex gap-4 w-full max-w-md">
+                <button
+                    onClick={handleBack}
+                    className="flex-1 py-4 bg-white border-2 border-[#1A1A1A] text-[#1A1A1A] rounded-xl font-bold uppercase tracking-wider hover:bg-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                    Back
+                </button>
+                <button
+                    onClick={handleNext}
+                    disabled={!answers.category}
+                    className="flex-1 py-4 bg-[#1A1A1A] text-white rounded-xl font-bold uppercase tracking-wider hover:bg-[#D2E823] hover:text-[#1A1A1A] hover:border-2 hover:border-[#1A1A1A] hover:shadow-[4px_4px_0px_0px_rgba(210,232,35,1)] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                >
+                    Continue
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderStep3_Theme = () => (
+        <div className="flex flex-col md:flex-row gap-8 w-full max-w-6xl mx-auto h-[calc(100vh-140px)] animate-in fade-in slide-in-from-right-8 duration-500">
+            {/* Left Panel: Selection */}
+            <div className="w-full md:w-1/3 flex flex-col space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-2">
+                    <h1 className="text-3xl md:text-4xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                        Pick a vibe.
+                    </h1>
+                    <p className="text-[#1A1A1A]/60 font-medium">
+                        Start with a theme. Completely customizable later.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 pb-20">
+                    {THEME_PRESETS.map(theme => (
+                        <button
+                            key={theme.name}
+                            onClick={() => setAnswers(prev => ({ ...prev, theme }))}
+                            className={`
+                                group relative p-4 rounded-xl border-2 transition-all text-left overflow-hidden
+                                ${answers.theme?.name === theme.name
+                                    ? 'border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white ring-2 ring-[#D2E823] ring-offset-2'
+                                    : 'border-transparent hover:border-[#1A1A1A]/10 bg-white hover:shadow-sm'
+                                }
+                            `}
+                        >
+                            <div className="flex items-center gap-4">
+                                {/* Mini Preview Circle */}
+                                <div
+                                    className="w-16 h-16 rounded-full shadow-inner border border-black/5 shrink-0"
+                                    style={{ background: theme.styles.bgColor }}
+                                />
+                                <div>
+                                    <h3 className="font-bold text-[#1A1A1A]">{theme.name}</h3>
+                                    <p className="text-xs text-[#1A1A1A]/50 font-medium line-clamp-1">Designed for {answers.category || 'everyone'}</p>
+                                </div>
+                            </div>
+
+                            {answers.theme?.name === theme.name && (
+                                <div className="absolute top-1/2 -translate-y-1/2 right-4 w-8 h-8 bg-[#1A1A1A] text-[#D2E823] rounded-full flex items-center justify-center">
+                                    <Check className="w-5 h-5" strokeWidth={3} />
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Right Panel: Live Mobile Preview */}
+            <div className="w-full md:w-2/3 bg-[#F3F3F1] rounded-[40px] border-4 border-[#1A1A1A] p-4 flex items-center justify-center relative overflow-hidden shadow-inner">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+                />
+
+                <div className="relative w-[300px] h-[600px] bg-white rounded-[40px] border-[8px] border-[#1A1A1A] overflow-hidden shadow-[20px_20px_0px_0px_rgba(0,0,0,0.1)] flex flex-col transition-all duration-300 transform">
+                    {/* Simulated Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#1A1A1A] rounded-b-2xl z-20" />
+
+                    {/* Theme Preview Content */}
+                    {answers.theme && (
+                        <div
+                            className="w-full h-full flex flex-col p-6 overflow-y-auto scrollbar-hide"
+                            style={{
+                                background: answers.theme.styles.bgColor,
+                                fontFamily: answers.theme.styles.fontFamily
+                            }}
+                        >
+                            <div className="mt-8 flex flex-col items-center gap-4 z-10">
+                                <div
+                                    className="w-24 h-24 rounded-full shadow-lg"
+                                    style={{
+                                        background: answers.theme.styles.usernameColor,
+                                        opacity: 0.8
+                                    }}
+                                />
+                                <div className="text-center space-y-1">
+                                    <div className="h-6 w-32 bg-current opacity-80 rounded mx-auto" style={{ color: answers.theme.styles.usernameColor }} />
+                                    <div className="h-4 w-48 bg-current opacity-60 rounded mx-auto" style={{ color: answers.theme.styles.usernameColor }} />
+                                </div>
+                            </div>
+
+                            <div className="mt-8 space-y-3 z-10">
+                                {[1, 2, 3].map(i => (
+                                    <div
+                                        key={i}
+                                        className="w-full h-14 rounded-xl flex items-center justify-center font-bold"
+                                        style={{
+                                            background: answers.theme.styles.cardBackgroundColor,
+                                            border: `${answers.theme.styles.cardBorderWidth || 0}px solid ${answers.theme.styles.cardBorderColor}`,
+                                            color: answers.theme.styles.usernameColor
+                                        }}
+                                    >
+                                        Link {i}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Floating Action Buttons */}
+                <div className="absolute bottom-8 right-8 flex flex-col gap-3">
+                    <button
+                        onClick={handleBack}
+                        className="w-14 h-14 bg-white border-2 border-[#1A1A1A] rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                        <span className="text-xl">🔙</span>
+                    </button>
+                    <button
+                        onClick={handleFinish}
+                        disabled={isGenerating}
+                        className="w-16 h-16 bg-[#D2E823] border-2 border-[#1A1A1A] rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[#1A1A1A]"
+                    >
+                        {isGenerating ? (
+                            <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
                         ) : (
-                            <button
-                                onClick={handleGenerate}
-                                disabled={!canProceed()}
-                                className="flex-1 bg-gradient-to-r from-primary to-primary-hover text-white font-bold py-4 px-6 rounded-2xl hover:shadow-xl hover:shadow-primary/30 transition-all shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
-                            >
-                                <span>✨</span> Gerar minha página
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </button>
+                            <Check className="w-8 h-8" strokeWidth={4} />
                         )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen w-full bg-[#F3F3F1] flex flex-col overflow-hidden font-sans text-[#1A1A1A] selection:bg-[#D2E823] selection:text-black">
+
+            {/* Header / Nav */}
+            <header className="p-6 md:p-10 flex justify-between items-center z-10 w-full max-w-7xl mx-auto">
+                <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-[#1A1A1A] text-[#D2E823] rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                        <Sparkles className="w-6 h-6" />
                     </div>
+                    <span className="font-black text-xl tracking-tight hidden md:inline">Portyo</span>
+                </div>
+
+                {/* Steps Indicator */}
+                <div className="flex items-center gap-2">
+                    {[1, 2, 3].map(i => (
+                        <div
+                            key={i}
+                            className={`h-2 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-[#1A1A1A]' : i < step ? 'w-2 bg-[#D2E823]' : 'w-2 bg-[#E5E5E5]'
+                                }`}
+                        />
+                    ))}
+                </div>
+            </header>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col relative w-full max-w-7xl mx-auto px-6">
+                <div className="flex-1 flex items-center justify-center w-full">
+                    {step === 1 && renderStep1_Username()}
+                    {step === 2 && renderStep2_Category()}
+                    {step === 3 && renderStep3_Theme()}
                 </div>
             </main>
 
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 4px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0,0,0,0.1);
-                    border-radius: 4px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(0,0,0,0.2);
-                }
-            `}</style>
+            {/* Footer */}
+            <footer className="p-6 text-center text-[#1A1A1A]/40 text-xs font-bold uppercase tracking-widest">
+                © {new Date().getFullYear()} Portyo
+            </footer>
+
+            {/* Confetti Canvas (handled by library, but good to have a target if needed manually) */}
         </div>
     );
 }
+
+// Styles for custom scrollbar to match theme
+const styles = `
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #E5E5E5;
+        border-radius: 99px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #CCCCCC;
+    }
+`;

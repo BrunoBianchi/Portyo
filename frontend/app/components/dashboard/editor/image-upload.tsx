@@ -189,7 +189,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                             value={value}
                             onChange={(e) => onChange(e.target.value)}
                             placeholder="https://example.com/image.png"
-                            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50"
+                            className="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:ring-2 focus:ring-white/30 focus:border-white/50 outline-none transition-all placeholder:text-muted-foreground/50"
                             autoFocus
                         />
                     )}

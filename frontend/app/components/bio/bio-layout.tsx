@@ -1202,21 +1202,21 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             }
         };
 
-        // Track link clicks for automation
+        // Track link clicks for automation and analytics
         const initLinkClickTracking = () => {
             const root = containerRef.current;
             if (!root || !bio?.id) return;
 
-            const links = root.querySelectorAll('a[href^="http"], a[href^="https"]');
+            const links = root.querySelectorAll('a[href^="http"], a[href^="https"], a[href^="/"]');
             links.forEach(link => {
                 if (link.hasAttribute('data-click-tracked')) return;
                 link.setAttribute('data-click-tracked', 'true');
 
-                link.addEventListener('click', () => {
+                link.addEventListener('click', (e) => {
                     const href = link.getAttribute('href') || '';
                     const label = link.getAttribute('aria-label') || link.textContent?.trim() || '';
 
-                    // Fire link_click event (async, don't block navigation)
+                    // 1. Fire link_click event for automation (async, don't block navigation)
                     api.post(`/public/events/${bio.id}`, {
                         eventType: 'link_click',
                         data: {
@@ -1225,6 +1225,23 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             timestamp: new Date().toISOString()
                         }
                     }).catch(() => { });
+
+                    // 2. Track click for analytics (CTR calculation)
+                    // Use sendBeacon if available for better reliability on navigation
+                    const trackData = {
+                        bioId: bio.id,
+                        referrer: document.referrer || undefined,
+                        sessionId: sessionStorage.getItem('portyo_session') || undefined,
+                        type: 'click'
+                    };
+
+                    if (navigator.sendBeacon) {
+                        const blob = new Blob([JSON.stringify(trackData)], { type: 'application/json' });
+                        navigator.sendBeacon(`${(api.defaults.baseURL || '').replace(/\/$/, '')}/public/track`, blob);
+                    } else {
+                        // Fallback to regular POST
+                        api.post('/public/track', trackData).catch(() => { });
+                    }
                 });
             });
         };

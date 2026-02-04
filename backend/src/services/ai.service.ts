@@ -42,6 +42,8 @@ export interface OnboardingAnswers {
     aboutYou: string;
     education: {
         hasGraduation: boolean;
+        universityName?: string;
+        courseName?: string;
         degree?: string;
     };
     profession: string;
@@ -60,93 +62,193 @@ const generateBlockId = (): string => {
     return `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-const SYSTEM_PROMPT = `You are an expert at creating professional portfolio/bio pages. 
-Based on the user information provided, you must generate content blocks and page settings for a bio page.
+const SYSTEM_PROMPT = `You are PortyoAI, an elite AI architect specializing in creating premium, conversion-optimized portfolio and bio pages. You craft professional digital identities that captivate visitors and achieve business goals.
 
-IMPORTANT: You MUST respond ONLY with valid JSON, no additional text before or after.
+=== CRITICAL RULES ===
+- Respond ONLY with valid JSON. No markdown, no explanations, no text before or after.
+- All content must be in the SAME LANGUAGE as the user's input.
+- Create content that is CONCISE, SCANNABLE, and conversion-focused.
+- KEEP IT SHORT: max 2-3 sentences per text block (150-200 chars).
+- AVOID long paragraphs - they look terrible on mobile.
+- NO bullet points (•) inside text blocks.
+- Use SHORT sentences - one idea per sentence.
 
 === AVAILABLE BLOCK TYPES ===
-1. "heading" - Title. Fields: title (string), body (string), align ("left"|"center"|"right"), fontSize (e.g. "32px"), fontWeight ("700")
-2. "text" - Paragraph. Fields: body (string), align ("left"|"center"|"right")
-3. "button" - Link. Fields: title, href, buttonStyle ("solid"|"outline"|"white"|"glass"|"gradient"|"soft-shadow"|"neumorphism"), align, accent (hex), buttonShape ("pill"|"rounded"|"square")
-4. "image" - Fields: mediaUrl (URL), align, imageStyle ("default"|"circle"|"rounded")
-5. "socials" - Fields: socials ({instagram, linkedin, github, twitter, email, website, youtube, tiktok, whatsapp}), socialsLayout ("row"|"column")
-6. "divider" - Fields: dividerStyle ("line"|"dots"|"space")
-7. "video" - Fields: mediaUrl (YouTube/Vimeo URL)
-8. "blog" - Fields: blogLayout ("carousel"|"list"|"grid"), blogCardStyle ("featured"|"minimal")
-9. "product" - Fields: products ([{id, title, price, image, url}]), productLayout ("grid"|"list")
-10. "calendar" - Fields: calendarTitle, calendarUrl
-11. "map" - Fields: mapAddress, mapTitle
-12. "featured" - Fields: featuredTitle, featuredDescription, featuredPrice, featuredUrl, featuredImage
-13. "affiliate" - Fields: affiliateTitle, affiliateCode, affiliateImage
-14. "event" - Fields: eventTitle, eventDate, eventButtonText, eventButtonUrl
-15. "instagram" - Fields: instagramUsername (no @)
-16. "youtube" - Fields: youtubeUrl
-17. "spotify" - Fields: spotifyUrl
-18. "qrcode" - Fields: qrCodeValue, qrCodeColor
-19. "button_grid" - Fields: gridItems ([{id, title, url, icon}]). good for skills/links.
-20. "form" - Fields: formTitle, formFields (["name", "email", "message"])
-21. "portfolio" - Fields: portfolioTitle, portfolioItems ([{id, title, imageUrl, description, url}])
-22. "marketing" - Fields: marketingTitle, marketingDescription
-23. "whatsapp" - Fields: whatsappNumber, whatsappMessage 
+
+CORE CONTENT:
+1. "heading" - Main title
+    Fields: title, body (optional), align ("left"|"center"|"right"), fontSize, fontWeight, textColor (hex)
+2. "text" - Paragraph
+    Fields: body, align, textColor (hex)
+3. "button" - CTA link
+    Fields: title, href, buttonStyle ("solid"|"outline"|"gradient"|"glass"), align, accent (hex), textColor (hex), buttonShape ("pill"|"rounded"|"square")
+4. "divider" - Separator
+    Fields: dividerStyle ("line"|"dots"|"space")
+5. "button_grid" - Grid of buttons
+    Fields: gridItems (array of {id, title, url, icon})
+
+MEDIA:
+6. "image" - Image
+    Fields: mediaUrl, align, imageStyle ("default"|"circle"|"rounded")
+7. "video" - Video
+    Fields: mediaUrl
+8. "youtube" - YouTube
+    Fields: youtubeUrl, youtubeDisplayType ("grid"|"list")
+9. "spotify" - Spotify
+    Fields: spotifyUrl, spotifyCompact (boolean)
+10. "instagram" - Instagram
+    Fields: instagramUsername, instagramDisplayType ("grid"|"list")
+
+SOCIAL / CONTACT:
+11. "socials" - Social links
+     Fields: socials ({instagram, linkedin, github, twitter, email, website, youtube, tiktok, whatsapp}), socialsLayout ("row"|"column")
+12. "whatsapp" - WhatsApp CTA
+     Fields: whatsappNumber, whatsappMessage, whatsappStyle, whatsappShape, accent, textColor
+
+COMMERCE:
+13. "product" - Product list
+     Fields: products (array), productLayout ("grid"|"list"|"carousel"), productCardStyle ("default"|"minimal")
+14. "featured" - Featured item
+     Fields: featuredTitle, featuredDescription, featuredPrice, featuredUrl, featuredImage
+15. "affiliate" - Affiliate/coupon
+     Fields: affiliateTitle, affiliateCode, affiliateUrl, affiliateImage
+
+GROWTH / UTILITIES:
+16. "form" - Lead capture
+     Fields: formId, formBackgroundColor, formTextColor
+17. "portfolio" - Portfolio
+     Fields: portfolioTitle
+18. "experience" - Experience
+     Fields: experienceTitle, experiences (array of {role, company, period, location, description})
+19. "blog" - Blog feed
+     Fields: blogLayout ("carousel"|"list"|"grid"), blogPostCount
+20. "calendar" - Booking calendar
+     Fields: calendarTitle, calendarUrl
+21. "map" - Location
+     Fields: mapTitle, mapAddress
+22. "event" - Event CTA
+     Fields: eventTitle, eventDate, eventButtonText, eventButtonUrl
+23. "tour" - Tour dates
+     Fields: tourTitle, tours (array)
+24. "qrcode" - QR Code
+     Fields: qrCodeValue, qrCodeLayout ("single"|"multiple"|"grid")
+25. "marketing" - Marketing slot
+     Fields: marketingId
+
+=== CONTENT GENERATION STRATEGY ===
+
+STRUCTURE (Create 5-7 blocks maximum):
+1. HEADING: Name + very short tagline (max 5-7 words)
+   Example: "João Silva" + "Desenvolvedor Full Stack"
+
+2. SHORT BIO: 1-2 sentences about what they do
+   Example: "Ajudo empresas a construir produtos digitais escaláveis. Especialista em React e Node.js."
+
+3. [Optional] SKILLS: button_grid with 4-6 skills (1-2 words each)
+
+4. DIVIDER: Add space between sections
+
+5. CTA BUTTON: One clear call-to-action (2-4 words)
+   Examples: "Fale Comigo", "Agendar Call", "Ver Projetos"
+
+6. SOCIAL LINKS: socials block
 
 === PAGE SETTINGS ===
-Generate a "settings" object with:
-- bgType: "color" | "gradient" | "dots" | "grid" | "waves" | "mesh" | "particles" | "noise" | "abstract"
-- bgColor: hex color for background (e.g., "#0f172a")
-- bgSecondaryColor: hex color (e.g., "#334155")
-- font: "Inter" | "Roboto" | "Open Sans" | "Merriweather" | "Oswald" | "Raleway" | "Poppins" | "Playfair Display" | "Montserrat" | "Lato"
-- usernameColor: hex color for main texts/headers
-- cardStyle: "none" | "flat" | "shadow" | "outline" | "glass"
-- cardBackgroundColor: hex color (if cardStyle != none)
+Generate optimized "settings" object:
+- bgType: Choose based on profession vibe ("color"|"gradient"|"mesh-gradient"|"noise")
+- bgColor: Harmonizes with selected theme or professional standard
+- bgSecondaryColor: Complementary accent
+- font: Professional typography ("Inter"|"Space Grotesk"|"Plus Jakarta Sans"|"DM Sans")
+- usernameColor: High contrast against background
+- cardStyle: "solid"|"frosted"|"none" based on modern trends
+- cardBackgroundColor: Ensure readability
+- imageStyle: "circle" for personal brands, "rounded" for corporate
 
-=== GENERATION RULES ===
-- Analyze the user's profession, skills, and code.
-- Create a WELCOMING Heading with their name/role.
-- Write a PROFESSIONAL Introduction.
-- If they have SKILLS, use a "button_grid" or "text" block to list them.
-- If they have a PORTFOLIO/PROJECTS, use "portfolio" or "featured" blocks.
-- If they want CONTACT, use "form" or "button" (mailto).
-- CHOOSE A THEME (colors/fonts) that fits their persona (e.g., Developer = Dark/Techy, Designer = Clean/Creative, Lawyer = Serif/Trustworthy).
-- Ensure "usernameColor" is visible against "bgColor".
-- Limit to 5-8 blocks.
-- Use English data/text.
+=== THEME-AWARE DESIGN ===
+If a theme is selected, respect its:
+- Color palette (adapt content colors for contrast)
+- Typography style
+- Overall aesthetic (minimal, bold, elegant, etc.)
+- Card and layout preferences
 
-=== JSON RESPONSE FORMAT ===
+=== RESPONSE FORMAT ===
 {
-  "settings": { ... },
-  "blocks": [ { "type": "...", "id": "...", ... }, ... ]
+  "settings": {
+    "bgType": "...",
+    "bgColor": "#...",
+    "bgSecondaryColor": "#...",
+    "font": "...",
+    "usernameColor": "#...",
+    "cardStyle": "...",
+    "cardBackgroundColor": "#...",
+    "imageStyle": "..."
+  },
+  "blocks": [
+    { "type": "heading", "id": "...", "title": "...", "body": "...", "align": "center" },
+    { "type": "text", "id": "...", "body": "...", "align": "center" },
+    ...
+  ]
 }`;
 
 const buildUserPrompt = (answers: OnboardingAnswers): string => {
-    let prompt = `Create bio/portfolio blocks for a person with the following characteristics:\n\n`;
+    let prompt = `Create a professional, conversion-optimized bio page for the following person:\n\n`;
     
-    prompt += `**About the person:** ${answers.aboutYou}\n\n`;
+    prompt += `=== PROFESSIONAL PROFILE ===\n`;
+    prompt += `About: ${answers.aboutYou}\n\n`;
     
-    if (answers.education.hasGraduation && answers.education.degree) {
-        prompt += `**Education:** Graduated in ${answers.education.degree}\n\n`;
+    prompt += `Profession: ${answers.profession}\n\n`;
+    
+    if (answers.education.hasGraduation) {
+        prompt += `Education: `;
+        if (answers.education.courseName) {
+            prompt += `Graduated in ${answers.education.courseName}`;
+            if (answers.education.universityName) {
+                prompt += ` from ${answers.education.universityName}`;
+            }
+        } else if (answers.education.degree) {
+            prompt += `Holds degree in ${answers.education.degree}`;
+        } else {
+            prompt += `Has formal education`;
+        }
+        prompt += `\n\n`;
     } else {
-        prompt += `**Education:** No degree yet\n\n`;
+        prompt += `Education: Self-taught / No formal degree\n\n`;
     }
     
-    prompt += `**Profession/Area:** ${answers.profession}\n\n`;
-    
     if (answers.skills.length > 0) {
-        prompt += `**Main skills:** ${answers.skills.join(", ")}\n\n`;
+        prompt += `Key Skills: ${answers.skills.join(", ")}\n\n`;
     }
     
     if (answers.goals.length > 0) {
-        prompt += `**Goals with Portyo:** ${answers.goals.join(", ")}\n\n`;
+        prompt += `Primary Goals: ${answers.goals.join(", ")}\n\n`;
     }
     
-
-
     if (answers.resumeText) {
-        prompt += `**Resume/CV Content:**\n${answers.resumeText}\n\n`;
-        prompt += `Use the information from the Resume/CV (experience, education, skills, projects) to enrich the bio content, but prioritize the specific answers provided strictly above.\n\n`;
+        prompt += `=== RESUME/CV CONTENT ===\n${answers.resumeText}\n\n`;
+        prompt += `Use resume information to enhance the bio, prioritizing the specific profile above.\n\n`;
     }
     
-    prompt += `Generate the appropriate content blocks and settings for this person. Remember to respond ONLY with the JSON, no additional text.`;
+    if (answers.theme?.name) {
+        prompt += `=== SELECTED THEME ===\n`;
+        prompt += `Theme: ${answers.theme.name}\n`;
+        if (answers.theme.styles) {
+            prompt += `Background: ${answers.theme.styles.bgType}\n`;
+            prompt += `Style: ${answers.theme.styles.cardStyle}\n`;
+            prompt += `Typography: ${answers.theme.styles.font}\n`;
+        }
+        prompt += `\n`;
+    }
+    
+    prompt += `=== CRITICAL INSTRUCTIONS ===\n`;
+    prompt += `1. KEEP ALL CONTENT SHORT AND CONCISE - users scan, they don't read long text\n`;
+    prompt += `2. Text blocks: MAXIMUM 2-3 short sentences (150-200 characters total)\n`;
+    prompt += `3. NO bullet points with • in text blocks\n`;
+    prompt += `4. NO generic phrases like "apaixonado por", "dedicado a", "comprometido com"\n`;
+    prompt += `5. Use SPECIFIC language about what they DO and the RESULTS they deliver\n`;
+    prompt += `6. Focus on OUTCOMES, not just descriptions\n`;
+    prompt += `7. Create 5-7 blocks maximum\n`;
+    prompt += `8. Include dividers between sections for visual breathing room\n`;
+    prompt += `9. Respond ONLY with the JSON object. No additional text.\n`;
     
     return prompt;
 };
@@ -202,8 +304,8 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
                 },
             ],
             model: "llama-3.3-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 2048,
+            temperature: 0.6,
+            max_tokens: 4096,
             response_format: { type: "json_object" },
         });
 
@@ -271,26 +373,30 @@ export const getDefaultBlocks = (name: string): { blocks: BioBlock[], settings: 
             {
                 id: generateBlockId(),
                 type: "heading",
-                title: name || "Welcome to my profile",
-                body: "Professional in development",
+                title: name || "Welcome",
+                body: "Professional Portfolio",
+                align: "center",
             },
             {
                 id: generateBlockId(),
                 type: "text",
-                body: "This is my portfolio page. I'll be adding more information about my professional journey soon.",
+                body: "Welcome to my professional page. I'm excited to share my work and connect with you.",
+                align: "center",
             },
             {
                 id: generateBlockId(),
                 type: "button",
-                title: "Get in touch",
+                title: "Get in Touch",
                 href: "mailto:contact@example.com",
                 buttonStyle: "solid",
+                align: "center",
             },
         ],
         settings: {
             bgType: "color",
-            bgColor: "#f8fafc",
+            bgColor: "#0a0a0f",
             font: "Inter",
+            usernameColor: "#ffffff",
         }
     };
 };
@@ -335,9 +441,9 @@ CRITICAL - DARK/LIGHT THEME & CONTRAST:
 
 CRITICAL - DARK THEME LOGIC:
 - When user asks for "Dark Theme" or "Dark Mode":
-  1. Background: Dark (e.g., #0f172a, #000000, #18181b)
+  1. Background: Dark (e.g., #0a0a0f, #000000, #0f172a)
   2. Text: Light (e.g., #f8fafc, #ffffff)
-  3. Buttons/Accents: MID-TONE colors (e.g., #6366f1, #22c55e, #a855f7) - they should be vibrant and visible against the dark background, but not pure white.
+  3. Buttons/Accents: MID-TONE colors (e.g., #6366f1, #22c55e, #a855f7) - vibrant against dark background
 
 === ALL AVAILABLE BLOCK TYPES ===
 
@@ -413,35 +519,28 @@ PRO BLOCKS (only for Pro users):
 
 === PAGE SETTINGS ===
 - bgType: "color" | "gradient" | "dots" | "grid" | "waves" | "mesh" | "particles" | "noise" | "abstract"
-- bgColor: hex color (e.g., "#1a1a2e")
-- bgSecondaryColor: hex for patterns (e.g., "#16213e")
+- bgColor: hex color (e.g., "#0a0a0f")
+- bgSecondaryColor: hex for patterns (e.g., "#1a1a2e")
 - cardStyle: "none" | "solid" | "frosted"
 - cardBackgroundColor: hex color
-- cardBackgroundColor: hex color
 - usernameColor: hex color for name text
-- font: "Inter" | "Roboto" | "Open Sans" | "Merriweather" | "Oswald" | "Raleway" | "Poppins"
-- imageStyle: "circle" | "rounded" | "square" | "amoeba" | "star" | "hexagon"
+- font: "Inter" | "Space Grotesk" | "DM Sans" | "Plus Jakarta Sans"
+- imageStyle: "circle" | "rounded" | "square"
 
 === RESPONSE FORMAT ===
 {
   "blocks": [...],
   "settings": {...},
-  "globalBlockStyles": { ... }, // Optional: Key-value pairs to apply to ALL existing blocks (e.g., textColor, accent)
+  "globalBlockStyles": { ... },
   "replaceBlocks": true/false
 }
 
 === EXAMPLES ===
-- "Dark theme with white text": {"blocks": [], "settings": {"bgType": "color", "bgColor": "#000000", "usernameColor": "#FFFFFF"}, "replaceBlocks": false}
-- "Add a white headline": {"blocks": [{"type": "heading", "title": "Hello", "textColor": "#FFFFFF"}], "settings": {}, "replaceBlocks": false}
-- "Make a bio for a lawyer": {"blocks": [{"type": "heading", "title": "John Doe", "body": "Attorney at Law", "textColor": "#FFFFFF"}, {"type": "text", "body": "Specializing in corporate law.", "textColor": "#E0E0E0"}, {"type": "button", "title": "Consultation", "href": "https://", "buttonStyle": "solid", "accent": "#C0A062", "textColor": "#FFFFFF"}], "settings": {"bgType": "color", "bgColor": "#1a1a1a", "usernameColor": "#C0A062", "cardStyle": "solid", "cardBackgroundColor": "#2a2a2a"}, "replaceBlocks": true}
-- "Dark mode": {
-    "blocks": [],
-    "settings": {"bgType": "color", "bgColor": "#0f172a", "usernameColor": "#f8fafc"},
-    "globalBlockStyles": {"textColor": "#f8fafc", "accent": "#38bdf8", "buttonStyle": "solid"},
-    "replaceBlocks": false
-  }
+- "Dark theme": {"blocks": [], "settings": {"bgType": "color", "bgColor": "#0a0a0f", "usernameColor": "#ffffff"}, "globalBlockStyles": {"textColor": "#ffffff", "accent": "#6366f1"}, "replaceBlocks": false}
+- "Add headline": {"blocks": [{"type": "heading", "title": "Hello", "textColor": "#ffffff"}], "settings": {}, "replaceBlocks": false}
+- "Make bio for lawyer": {"blocks": [{"type": "heading", "title": "John Doe", "body": "Attorney at Law", "textColor": "#ffffff"}, {"type": "text", "body": "Specializing in corporate law.", "textColor": "#E0E0E0"}, {"type": "button", "title": "Consultation", "href": "https://", "buttonStyle": "solid", "accent": "#C0A062", "textColor": "#FFFFFF"}], "settings": {"bgType": "color", "bgColor": "#0a0a0f", "usernameColor": "#C0A062", "cardStyle": "solid", "cardBackgroundColor": "#1a1a1a"}, "replaceBlocks": true}
 
-Be creative! Use the right blocks for each profession.`;
+Be creative and professional!`;
 
 
 export const generateContentFromPrompt = async (prompt: string): Promise<AIGenerationResult> => {

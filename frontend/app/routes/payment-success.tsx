@@ -803,7 +803,7 @@ export default function PaymentSuccess() {
                                                     max="10"
                                                     value={creative.borderWidth || 0}
                                                     onChange={e => setCreative({ ...creative, borderWidth: parseInt(e.target.value) })}
-                                                    className="w-full h-8 accent-neutral-900"
+                                                    className="w-full h-8 accent-primary"
                                                 />
                                             </div>
                                         </div>
@@ -816,7 +816,7 @@ export default function PaymentSuccess() {
                                                 max="48"
                                                 value={creative.borderRadius || 24}
                                                 onChange={e => setCreative({ ...creative, borderRadius: parseInt(e.target.value) })}
-                                                className="w-full accent-neutral-900"
+                                                className="w-full accent-primary"
                                             />
                                         </div>
                                     </div>

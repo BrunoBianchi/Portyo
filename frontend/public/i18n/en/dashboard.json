@@ -17,9 +17,79 @@
     "analytics": "Analytics",
     "adminPanel": "Admin Panel",
     "announcements": "Announcements",
-    "siteBlog": "Site Blog"
+    "siteBlog": "Site Blog",
+    "autoPost": "Auto Post"
+  },
+  "customDomains": {
+    "title": "Custom Domains",
+    "subtitle": "Connect your own domain to your Portyo for a more professional brand",
+    "badge": "Pro Feature",
+    "addTitle": "Add New Domain",
+    "addSubtitle": "Enter the domain you want to connect",
+    "placeholder": "yourdomain.com",
+    "addButton": "Add Domain",
+    "yourDomains": "Your Domains",
+    "empty": {
+      "title": "No domains configured",
+      "subtitle": "Add your first custom domain above"
+    },
+    "instructions": {
+      "title": "How to configure your domain",
+      "step1": "Add your domain in the field above",
+      "step2": "Configure a DNS A record pointing your domain to our server IP",
+      "step3": "Wait for DNS propagation (can take up to 24h)",
+      "step4": "SSL will be automatically generated when DNS is detected"
+    },
+    "status": {
+      "active": "Active",
+      "pending": "Pending",
+      "dnsVerified": "DNS Verified",
+      "failed": "Failed"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "details": {
+      "status": "Status",
+      "ssl": "SSL",
+      "expires": "SSL Expires",
+      "added": "Added"
+    },
+    "verify": "Verify",
+    "visit": "Visit",
+    "remove": "Remove",
+    "copy": "Copy",
+    "confirmRemove": "Are you sure you want to remove this domain?",
+    "success": {
+      "added": "Domain added successfully!",
+      "removed": "Domain removed successfully!",
+      "verificationStarted": "Verification started!"
+    },
+    "errors": {
+      "fetchFailed": "Failed to fetch domains",
+      "addFailed": "Failed to add domain",
+      "removeFailed": "Failed to remove domain",
+      "verifyFailed": "Failed to verify domain"
+    },
+    "tour": {
+      "headerTitle": "Custom Domains",
+      "header": "Connect your own domain to your Portyo",
+      "addTitle": "Add Domain",
+      "add": "Enter your custom domain here",
+      "listTitle": "Your Domains",
+      "list": "Track the status of all your domains"
+    }
   },
   "sidebar": {
+    "groups": {
+      "myPortyo": "My Portyo",
+      "earn": "Earn",
+      "audience": "Audience",
+      "tools": "Tools"
+    },
+    "groupMyPortyo": "My Portyo",
+    "groupEarn": "Earn",
+    "groupAudience": "Audience",
+    "groupTools": "Tools",
     "newPage": "New Page",
     "claimTitle": "Claim your link",
     "claimSubtitle": "Choose a unique username for your new page.",
@@ -41,7 +111,9 @@
     "livePage": "Live Page",
     "userFallback": "User",
     "logout": "Log out",
-    "createError": "Failed to create page. Username might be taken."
+    "createError": "Failed to create page. Username might be taken.",
+    "setup": "Setup",
+    "finishSetup": "Finish Setup"
   },
   "notifications": {
     "bell": "Notifications",
@@ -65,6 +137,7 @@
     "totalRevenue": "Total Revenue",
     "avgOrderValue": "Avg. Order Value",
     "revenueTrend": "Revenue Trend (30 days)",
+    "noRevenueData": "No sales data in the last 30 days",
     "connectStripeHint": "Connect Stripe to see your sales analytics",
     "connectStripe": "Connect Stripe",
     "recentActivity": "Recent Activity",
@@ -110,7 +183,303 @@
         "navSettings": "Access your account settings and preferences."
       }
     },
+    "autoPost": {
+      "confirmDelete": "Are you sure you want to delete this auto-post schedule?",
+      "emptyBioTitle": "Select a Bio First",
+      "emptyBioSubtitle": "Please select a bio from the sidebar to configure auto-post.",
+      "header": {
+        "proFeature": "Pro Feature",
+        "title": "Auto Post",
+        "subtitle": "AI-powered content with advanced SEO, GEO & AEO optimization",
+        "pause": "Pause",
+        "resume": "Resume",
+        "edit": "Edit",
+        "cancelEdit": "Cancel"
+      },
+      "frequencies": {
+        "daily": {
+          "label": "Daily",
+          "description": "New post every day"
+        },
+        "weekly": {
+          "label": "Weekly",
+          "description": "New post every week"
+        },
+        "biweekly": {
+          "label": "Bi-weekly",
+          "description": "New post every 2 weeks"
+        },
+        "monthly": {
+          "label": "Monthly",
+          "description": "New post every month"
+        }
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "friendly": "Friendly",
+        "technical": "Technical",
+        "creative": "Creative",
+        "authoritative": "Authoritative"
+      },
+      "lengths": {
+        "short": {
+          "label": "Short",
+          "description": "600-800 words"
+        },
+        "medium": {
+          "label": "Medium",
+          "description": "1000-1500 words"
+        },
+        "long": {
+          "label": "Long",
+          "description": "1800-2500 words"
+        }
+      },
+      "stats": {
+        "postsThisMonth": "Posts This Month",
+        "remainingOf": "{{remaining}} remaining of {{limit}}",
+        "nextPost": "Next Post",
+        "today": "Today",
+        "notScheduled": "Not scheduled",
+        "overdue": "Overdue",
+        "lastPost": "Last Post",
+        "never": "Never",
+        "noPostsYet": "No posts yet",
+        "status": "Status",
+        "active": "Active",
+        "paused": "Paused",
+        "notConfigured": "Not configured",
+        "avgScores": "Avg Scores",
+        "basedOnPosts_one": "Based on {{count}} post",
+        "basedOnPosts_other": "Based on {{count}} posts"
+      },
+      "config": {
+        "title": "Configuration",
+        "subtitle": "Customize how AI generates your blog posts",
+        "postFrequency": "Post Frequency",
+        "postingTime": "Posting Time",
+        "publishAtTime": "Posts will be published at this time",
+        "startDateOptional": "Start Date (Optional)",
+        "cronStarts": "Cron starts from this date (leave empty for today)",
+        "postLength": "Post Length",
+        "topicsLabel": "Topics & Themes",
+        "aiAnalyzing": "AI is analyzing...",
+        "topicsPlaceholder": "Describe the topics you want to write about (e.g., 'Web development, React tutorials, Career advice'). AI will generate keywords and target audience automatically.",
+        "aiSuggestionsTitle": "AI Suggestions",
+        "suggestedKeywords": "Suggested Keywords:",
+        "targetAudience": "Target Audience:",
+        "applySuggestions": "Apply Suggestions",
+        "ignore": "Ignore",
+        "seoKeywords": "SEO Keywords",
+        "aiGenerated": "AI Generated",
+        "keywordsPlaceholder": "Enter keywords separated by commas (or let AI generate them from your topics)",
+        "writingTone": "Writing Tone",
+        "targetAudienceLabel": "Target Audience",
+        "targetAudiencePlaceholder": "Who are you writing for? (AI will suggest based on your topics)",
+        "geoTargetLabel": "Geographic Target & Language",
+        "geoTargetEmpty": "Select a country to optimize content for local SEO, cultural references, and regional preferences",
+        "editToChange": "Edit to change",
+        "targetLanguage": "Target: {{target}} • Language: {{language}}"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "saveUpdate": "Update Schedule",
+        "saveCreate": "Create Schedule",
+        "generating": "Generating...",
+        "previewWithMetrics": "Preview with Metrics",
+        "cancel": "Cancel",
+        "previewNextPost": "Preview Next Post",
+        "delete": "Delete"
+      },
+      "bioSummary": {
+        "title": "AI Understanding of Your Bio",
+        "refresh": "Refresh"
+      },
+      "sidebar": {
+        "recentAutoPosts": "Recent Auto Posts",
+        "viewDetails": "View Details",
+        "noAutoPosts": "No auto posts yet"
+      },
+      "info": {
+        "title": "How it works",
+        "bullet1": "AI analyzes your bio for deep understanding",
+        "bullet2": "Generates SEO + GEO + AEO + AIO optimized content",
+        "bullet3": "Detailed metrics for every post",
+        "bullet4": "Publishes automatically on schedule"
+      },
+      "preview": {
+        "title": "Post Preview",
+        "subtitle": "Complete optimization metrics for this generated post",
+        "close": "Close",
+        "createSchedule": "Create Schedule"
+      },
+      "metricsModal": {
+        "title": "Post Metrics",
+        "seoScore": "SEO Score",
+        "geoScore": "GEO Score",
+        "aeoScore": "AEO Score",
+        "aioScore": "AIO Score",
+        "readability": "Readability",
+        "titleChars": "Title Chars",
+        "keywords": "Keywords",
+        "primary": "Primary",
+        "contentStructure": "Content Structure",
+        "headings": "Headings",
+        "paragraphs": "Paragraphs",
+        "lists": "Lists",
+        "words": "Words",
+        "seoSuggestions": "SEO Suggestions",
+        "geoSuggestions": "GEO Suggestions",
+        "aeoSuggestions": "AEO Suggestions",
+        "aioSuggestions": "AIO Suggestions",
+        "close": "Close"
+      }
+    },
+    "siteAutoPost": {
+      "confirmDelete": "Are you sure you want to delete this automation?",
+      "header": {
+        "title": "Auto Posts - Site Blog",
+        "subtitle": "Configure automatic posts for your institutional blog",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "pause": "Pause",
+        "activate": "Activate"
+      },
+      "toast": {
+        "updateSuccess": "Settings updated successfully!",
+        "createSuccess": "Automation created successfully!",
+        "saveError": "Failed to save settings",
+        "pausedSuccess": "Automation paused",
+        "activatedSuccess": "Automation activated",
+        "statusError": "Failed to update status",
+        "deleteSuccess": "Automation deleted successfully",
+        "deleteError": "Failed to delete",
+        "previewSuccess": "Preview generated successfully!",
+        "previewError": "Failed to generate preview"
+      },
+      "status": {
+        "status": "Status",
+        "active": "Active",
+        "paused": "Paused",
+        "frequency": "Frequency",
+        "postsThisMonth": "Posts this month",
+        "nextPost": "Next post",
+        "notScheduled": "Not scheduled"
+      },
+      "config": {
+        "editTitle": "Edit Configuration",
+        "createTitle": "Create Automation",
+        "preview": "Generate Preview",
+        "generating": "Generating...",
+        "frequency": "Posting Frequency",
+        "postLength": "Post Length",
+        "tone": "Tone of Voice",
+        "preferredTime": "Preferred Time",
+        "topics": "Topics/Themes *",
+        "topicsPlaceholder": "Ex: Digital Marketing, SEO, Social Media, Entrepreneurship...",
+        "keywords": "Keywords (comma separated)",
+        "keywordsPlaceholder": "Ex: digital marketing, SEO, content strategy...",
+        "targetAudience": "Target audience",
+        "targetAudiencePlaceholder": "Ex: Digital entrepreneurs, marketing professionals...",
+        "bilingual": "Generate bilingual content (Portuguese + English)"
+      },
+      "frequency": {
+        "5hours": "Every 5 hours",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "biweekly": "Every 2 weeks",
+        "monthly": "Monthly"
+      },
+      "length": {
+        "short": "Short (~800 words)",
+        "medium": "Medium (~1500 words)",
+        "long": "Long (~2500 words)"
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "friendly": "Friendly",
+        "authoritative": "Authoritative",
+        "creative": "Creative"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Changes",
+        "create": "Create Automation",
+        "delete": "Delete"
+      },
+      "preview": {
+        "title": "Post Preview",
+        "portugueseVersion": "Portuguese Version",
+        "englishVersion": "English Version",
+        "keywords": "Keywords",
+        "suggestions": "Improvement Suggestions"
+      },
+      "logs": {
+        "title": "Recent Posts",
+        "wordCount_one": "{{count}} word",
+        "wordCount_other": "{{count}} words",
+        "status": {
+          "published": "Published",
+          "failed": "Failed",
+          "generated": "Generated"
+        }
+      }
+    },
     "editor": {
+      "tabs": {
+        "links": "Links",
+        "design": "Design",
+        "settings": "Settings"
+      },
+      "addLink": "Add Link",
+      "confirmDelete": "Are you sure you want to delete this block?",
+      "empty": {
+        "title": "No links yet",
+        "body": "Your profile is empty. Add a link to get started!"
+      },
+      "editorPage": {
+        "design": {
+          "title": "Customize your page",
+          "bodyLine1": "Themes, fonts, and backgrounds are coming in the next update.",
+          "bodyLine2": "For now, your page uses the \"Bold\" system automatically."
+        },
+        "settings": {
+          "title": "Page Settings",
+          "body": "SEO settings, analytics, and custom domains will live here."
+        },
+        "preview": {
+          "iframeTitle": "Preview",
+          "mobileHeader": "Preview",
+          "mobileIframeTitle": "Mobile Preview"
+        },
+        "liveUpdate": "Live Update",
+        "editDrawer": {
+          "title": "Edit {{type}}",
+          "subtitle": "Configuration",
+          "fields": {
+            "titleLabel": "Title",
+            "titlePlaceholder": "Enter title...",
+            "urlLabel": "Destination URL",
+            "urlPlaceholder": "https://...",
+            "youtubeLabel": "YouTube URL",
+            "youtubePlaceholder": "https://youtube.com/watch?v=..."
+          },
+          "save": "Save Changes"
+        }
+      },
+      "blockTypes": {
+        "button": "Button",
+        "heading": "Header",
+        "image": "Image",
+        "social": "Social",
+        "spotify": "Music",
+        "youtube": "Video",
+        "tour": "Map/Tour",
+        "marketing": "Marketing"
+      },
       "steps": {
         "intro": "This is your editor. Control the entire page structure here.",
         "palette": "Drag a block from the list to build your page (drag & drop).",
@@ -122,6 +491,43 @@
         "preview": "Live preview of the final result. Your edits appear here.",
         "mobilePreview": "Use mobile preview to see how it looks on phones."
       }
+    },
+    "addBlock": {
+      "title": "Add to your Portyo",
+      "searchPlaceholder": "Search for everything",
+      "sidebar": "Categories",
+      "categories": {
+        "suggested": "Suggested",
+        "essentials": "Essentials",
+        "media": "Media",
+        "commerce": "Commerce",
+        "grow": "Grow"
+      },
+      "blocks": {
+        "link": "Link",
+        "linkDesc": "Link to any URL",
+        "image": "Image",
+        "imageDesc": "Upload pictures",
+        "tipJar": "Tip Jar",
+        "tipJarDesc": "Collect support",
+        "header": "Header",
+        "headerDesc": "Organize your links",
+        "tour": "Map / Tour",
+        "tourDesc": "Share locations",
+        "video": "Video",
+        "videoDesc": "Embed YouTube/TikTok",
+        "music": "Music",
+        "musicDesc": "Spotify & SoundCloud",
+        "gallery": "Gallery",
+        "galleryDesc": "Showcase photos",
+        "store": "Store",
+        "storeDesc": "Sell products",
+        "form": "Form",
+        "formDesc": "Collect emails",
+        "share": "Share",
+        "shareDesc": "Share buttons"
+      },
+      "noResults": "No blocks found matching \"{{query}}\""
     },
     "leads": {
       "steps": {
@@ -403,6 +809,8 @@
     }
   },
   "products": {
+    "metaTitle": "Products | Portyo",
+    "metaDescription": "Manage your product catalog.",
     "title": "Product Catalog",
     "subtitle": "Manage your digital products and services.",
     "addProduct": "Add Product",
@@ -1089,7 +1497,22 @@
       }
     }
   },
+  "top": {
+    "editor": "Editor",
+    "undoTitle": "Undo last change",
+    "undo": "Undo",
+    "share": "Share",
+    "openPage": "Open Page",
+    "saving": "Saving...",
+    "saveBio": "Save Bio"
+  },
   "editor": {
+    "tabs": {
+      "links": "Links",
+      "design": "Design",
+      "settings": "Settings"
+    },
+    "addLink": "Add Link",
     "defaults": {
       "headingTitle": "Introduce yourself",
       "headingBody": "In one line, tell people why they should connect with you.",
@@ -1506,45 +1929,77 @@
       "blockTypes": {
         "heading": "Heading",
         "text": "Text",
-        "button": "Button",
+        "button": "Link Button",
         "button_grid": "Button Grid",
         "image": "Image",
         "video": "Video",
-        "socials": "Socials",
-        "whatsapp": "WhatsApp",
+        "socials": "Social Links",
+        "whatsapp": "WhatsApp Button",
         "divider": "Divider",
         "qrcode": "QR Code",
         "spotify": "Spotify",
-        "instagram": "Instagram",
+        "instagram": "Instagram Feed",
         "youtube": "YouTube",
-        "blog": "Blog",
-        "product": "Product",
-        "tour": "Tour",
-        "event": "Event",
-        "calendar": "Calendar",
-        "map": "Map",
-        "form": "Form",
+        "blog": "Blog Posts",
+        "product": "Products",
+        "tour": "Tour Dates",
+        "event": "Event Countdown",
+        "calendar": "Booking Calendar",
+        "map": "Location Map",
+        "form": "Contact Form",
         "portfolio": "Portfolio",
-        "marketing": "Marketing",
-        "experience": "Experience"
+        "marketing": "Marketing Slot",
+        "experience": "Work Experience",
+        "featured": "Featured Product",
+        "affiliate": "Affiliate Offer",
+        "add": "Add Block"
+      }
+    },
+    "editorPage": {
+      "design": {
+        "title": "Design Your Page",
+        "bodyLine1": "Themes, fonts, and backgrounds are coming in the next update.",
+        "bodyLine2": "For now, your page uses the \"Bold\" system automatically.",
+        "profileImage": "Profile Image",
+        "uploadImage": "Upload Image",
+        "imageHint": "PNG, JPG or GIF (max 5MB)",
+        "imageUploadSuccess": "Profile image updated!",
+        "imageUploadError": "Failed to upload image",
+        "socialLinks": "Social Links",
+        "socialPlaceholder": "username",
+        "youtubePlaceholder": "youtube.com/channel/...",
+        "linkedinPlaceholder": "linkedin.com/in/...",
+        "facebookPlaceholder": "facebook.com/...",
+        "socialUpdateSuccess": "Social links updated!",
+        "socialUpdateError": "Failed to update social links"
+      },
+      "settings": {
+        "title": "Page Settings",
+        "body": "SEO settings, analytics, and custom domains will live here."
+      },
+      "preview": {
+        "iframeTitle": "Preview",
+        "mobileHeader": "Preview",
+        "mobileIframeTitle": "Mobile Preview"
+      },
+      "liveUpdate": "Live Update",
+      "editDrawer": {
+        "title": "Edit {{type}}",
+        "subtitle": "Configuration",
+        "fields": {
+          "titleLabel": "Title",
+          "titlePlaceholder": "Enter title...",
+          "urlLabel": "URL Destination",
+          "urlPlaceholder": "https://...",
+          "youtubeLabel": "YouTube URL",
+          "youtubePlaceholder": "https://youtube.com/watch?v=..."
+        },
+        "save": "Save Changes"
       }
     },
     "subscribeThanks": "Thanks for subscribing!",
     "noBioTitle": "No Bio Selected",
     "noBioBody": "Create or select a bio to start editing.",
-    "top": {
-      "editor": "Editor",
-      "undoTitle": "Undo last change",
-      "undo": "Undo",
-      "share": "Share",
-      "openPage": "Open page",
-      "saving": "Saving...",
-      "saveBio": "Save bio"
-    },
-    "tabs": {
-      "blocks": "Blocks",
-      "settings": "Settings"
-    },
     "searchPlaceholder": "Search blocks...",
     "noBlocks": "No blocks found",
     "settings": {
@@ -1552,6 +2007,7 @@
       "fontFamily": "Font Family",
       "uploadFont": "Upload Custom Font",
       "fontSupport": "Supports .ttf, .otf, .woff, .woff2 (max 10MB)",
+      "customFontUrl": "Custom font URL",
       "fontUploadError": "Failed to upload font. Please try a valid font file (ttf, otf, woff, woff2).",
       "background": "Background",
       "overlayColor": "Overlay Color",
@@ -1697,6 +2153,239 @@
       "cancel": "Cancel",
       "close": "Close",
       "error": "Could not submit your request. Please try again."
+    },
+    "siteAutoPost": {
+      "confirmDelete": "Are you sure you want to delete this automation?",
+      "header": {
+        "title": "Auto Posts - Site Blog",
+        "subtitle": "Configure automatic posts for your institutional blog",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "pause": "Pause",
+        "activate": "Activate"
+      },
+      "toast": {
+        "updateSuccess": "Settings updated successfully!",
+        "createSuccess": "Automation created successfully!",
+        "saveError": "Failed to save settings",
+        "pausedSuccess": "Automation paused",
+        "activatedSuccess": "Automation activated",
+        "statusError": "Failed to update status",
+        "deleteSuccess": "Automation deleted successfully",
+        "deleteError": "Failed to delete",
+        "previewSuccess": "Preview generated successfully!",
+        "previewError": "Failed to generate preview"
+      },
+      "status": {
+        "status": "Status",
+        "active": "Active",
+        "paused": "Paused",
+        "frequency": "Frequency",
+        "postsThisMonth": "Posts this month",
+        "nextPost": "Next post",
+        "notScheduled": "Not scheduled"
+      },
+      "config": {
+        "editTitle": "Edit Configuration",
+        "createTitle": "Create Automation",
+        "preview": "Generate Preview",
+        "generating": "Generating...",
+        "frequency": "Posting Frequency",
+        "postLength": "Post Length",
+        "tone": "Tone of Voice",
+        "preferredTime": "Preferred Time",
+        "topics": "Topics/Themes *",
+        "topicsPlaceholder": "Ex: Digital Marketing, SEO, Social Media, Entrepreneurship...",
+        "keywords": "Keywords (comma separated)",
+        "keywordsPlaceholder": "Ex: digital marketing, SEO, content strategy...",
+        "targetAudience": "Target audience",
+        "targetAudiencePlaceholder": "Ex: Digital entrepreneurs, marketing professionals...",
+        "bilingual": "Generate bilingual content (Portuguese + English)"
+      },
+      "frequency": {
+        "5hours": "Every 5 hours",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "biweekly": "Every 2 weeks",
+        "monthly": "Monthly"
+      },
+      "length": {
+        "short": "Short (~800 words)",
+        "medium": "Medium (~1500 words)",
+        "long": "Long (~2500 words)"
+      },
+      "tones": {
+        "professional": "Professional",
+        "casual": "Casual",
+        "friendly": "Friendly",
+        "authoritative": "Authoritative",
+        "creative": "Creative"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save": "Save Changes",
+        "create": "Create Automation",
+        "delete": "Delete"
+      },
+      "preview": {
+        "title": "Post Preview",
+        "portugueseVersion": "Portuguese Version",
+        "englishVersion": "English Version",
+        "keywords": "Keywords",
+        "suggestions": "Improvement Suggestions"
+      },
+      "logs": {
+        "title": "Recent Posts",
+        "wordCount_one": "{{count}} word",
+        "wordCount_other": "{{count}} words",
+        "status": {
+          "published": "Published",
+          "failed": "Failed",
+          "generated": "Generated"
+        }
+      }
+    },
+    "editDrawer": {
+      "tabs": {
+        "content": "Content",
+        "style": "Appearance"
+      },
+      "fields": {
+        "titleLabel": "Title",
+        "titlePlaceholder": "Enter a title...",
+        "urlLabel": "URL",
+        "urlPlaceholder": "https://...",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Enter your text here...",
+        "headingLabel": "Heading",
+        "headingPlaceholder": "Your heading...",
+        "subtitleLabel": "Subtitle",
+        "subtitlePlaceholder": "Optional subtitle...",
+        "imageUrlLabel": "Image URL",
+        "imageUrlPlaceholder": "https://...",
+        "videoUrlLabel": "Video URL",
+        "videoPlaceholder": "YouTube, Vimeo, or video file URL...",
+        "youtubeLabel": "YouTube URL",
+        "youtubePlaceholder": "https://youtube.com/watch?v=...",
+        "whatsappNumberLabel": "WhatsApp Number",
+        "whatsappNumberPlaceholder": "+1234567890",
+        "whatsappMessageLabel": "Default Message",
+        "whatsappMessagePlaceholder": "Hello! I would like to know more about...",
+        "spotifyUrlLabel": "Spotify URL",
+        "spotifyPlaceholder": "https://open.spotify.com/...",
+        "instagramUsernameLabel": "Instagram Username",
+        "instagramPlaceholder": "username",
+        "mapLocationLabel": "Location Name",
+        "mapLocationPlaceholder": "My Office",
+        "mapAddressLabel": "Address",
+        "mapAddressPlaceholder": "123 Main St, City, Country",
+        "calendarTitleLabel": "Calendar Title",
+        "calendarTitlePlaceholder": "Book an Appointment",
+        "calendarDescriptionLabel": "Description",
+        "calendarDescriptionPlaceholder": "Schedule a time with me...",
+        "eventTitleLabel": "Event Title",
+        "eventTitlePlaceholder": "My Event",
+        "eventDateLabel": "Event Date & Time",
+        "eventButtonLabel": "Button Text",
+        "eventButtonPlaceholder": "Register Now",
+        "eventUrlLabel": "Registration URL",
+        "featuredTitleLabel": "Product Title",
+        "featuredTitlePlaceholder": "Product Name",
+        "featuredPriceLabel": "Price",
+        "featuredImageLabel": "Product Image",
+        "featuredUrlLabel": "Product URL",
+        "affiliateTitleLabel": "Offer Title",
+        "affiliateTitlePlaceholder": "Special Offer",
+        "affiliateCodeLabel": "Coupon Code",
+        "affiliateCodePlaceholder": "COUPON20",
+        "affiliateImageLabel": "Offer Image",
+        "affiliateUrlLabel": "Offer URL",
+        "tourTitleLabel": "Tour Section Title",
+        "tourTitlePlaceholder": "Upcoming Tours",
+        "qrValueLabel": "QR Code Content",
+        "qrFgColorLabel": "Foreground Color",
+        "qrBgColorLabel": "Background Color"
+      },
+      "dividerHelper": "A visual divider to separate content sections.",
+      "advancedBlockHelper": "This is an advanced {{type}} block. Configure it in the detailed editor.",
+      "advancedBlockHint": "More options available in the full editor view."
+    },
+    "blockStyle": {
+      "sections": {
+        "colors": "Colors",
+        "container": "Container",
+        "border": "Border",
+        "shadow": "Shadow",
+        "animation": "Animation"
+      },
+      "background": "Background",
+      "textColor": "Text Color",
+      "opacity": "Opacity",
+      "borderRadius": "Border Radius",
+      "padding": "Padding",
+      "borderWidth": "Border Width",
+      "borderColor": "Border Color",
+      "shadow": "Shadow",
+      "shadowColor": "Shadow Color",
+      "entranceAnimation": "Entrance Animation",
+      "entranceDelay": "Animation Delay",
+      "shadows": {
+        "none": "None",
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large",
+        "xl": "Extra Large",
+        "2xl": "Maximum",
+        "glow": "Glow"
+      },
+      "animations": {
+        "none": "None",
+        "fadeIn": "Fade In",
+        "slideUp": "Slide Up",
+        "slideDown": "Slide Down",
+        "slideLeft": "Slide Left",
+        "slideRight": "Slide Right",
+        "zoomIn": "Zoom In",
+        "bounceIn": "Bounce In",
+        "flipIn": "Flip In"
+      },
+      "styled": "Styled",
+      "animation": "Animation"
+    },
+    "admin": {
+      "broadcast": {
+        "title": "Global Notification",
+        "subtitle": "Send an in-app notification to all users.",
+        "caution": "Caution",
+        "form": {
+          "title": "Title",
+          "placeholder": {
+            "title": "New Feature Alert! 🚀",
+            "icon": "Megaphone",
+            "message": "Type your message here...",
+            "link": "/dashboard/new-feature"
+          },
+          "icon": "Icon (Lucide Name)",
+          "message": "Message",
+          "link": "Action Link (Optional)"
+        },
+        "submit": "Send Notification",
+        "sending": "Sending...",
+        "sent": "Sent!",
+        "alignment": {
+          "label": "Text Alignment",
+          "left": "Left",
+          "center": "Center"
+        },
+        "visibility": "Announcement Visible"
+      }
+    },
+    "editorStatus": {
+      "updating": "Updating..."
+    },
+    "editorBadges": {
+      "beta": "BETA"
     }
   }
 }

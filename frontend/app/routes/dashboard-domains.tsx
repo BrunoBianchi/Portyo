@@ -92,14 +92,14 @@ export default function DashboardDomains() {
                                         type="text"
                                         value={customDomain}
                                         onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
-                                        className="w-full pl-4 pr-32 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm font-medium"
+                                        className="w-full pl-4 pr-32 py-3 rounded-xl border border-border bg-surface-alt focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all text-sm font-medium"
                                         placeholder={t("dashboard.domains.config.domainPlaceholder")}
                                     />
                                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                         <button
                                             onClick={handleSave}
                                             disabled={isSaving || !isDirty}
-                                            className="px-4 py-1.5 bg-black text-white rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+                                            className="px-4 py-1.5 bg-black text-white rounded-lg text-xs font-bold hover:bg-white/20 transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
                                         >
                                             {isSaving ? t("dashboard.domains.config.saving") : t("dashboard.domains.config.save")}
                                         </button>
@@ -112,12 +112,12 @@ export default function DashboardDomains() {
                             </div>
 
                             {/* DNS Instructions */}
-                            <div className="bg-blue-500/10/50 rounded-xl p-5 border border-blue-100">
-                                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+                            <div className="bg-blue-500/20/50 rounded-xl p-5 border border-blue-500/30">
+                                <h3 className="font-bold text-blue-400 mb-3 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
                                     <AlertCircle className="w-4 h-4" />
                                     {t("dashboard.domains.dns.title")}
                                 </h3>
-                                <div className="space-y-3 text-sm text-blue-800/80">
+                                <div className="space-y-3 text-sm text-blue-300">
                                     <p>{t("dashboard.domains.dns.body")}</p>
 
                                     <div className="bg-surface-card p-3 rounded-lg border border-blue-100 shadow-sm">
@@ -145,10 +145,10 @@ export default function DashboardDomains() {
 
                             {/* Verification Status - Simple placeholder for now */}
                             {originalDomain && (
-                                <div className="bg-green-500/10 rounded-xl p-4 border border-green-100 flex items-start gap-3">
+                                <div className="bg-green-500/20 rounded-xl p-4 border border-green-500/30 flex items-start gap-3">
                                     <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
                                     <div>
-                                        <h4 className="font-bold text-green-900 text-sm">{t("dashboard.domains.status.title")}</h4>
+                                        <h4 className="font-bold text-green-400 text-sm">{t("dashboard.domains.status.title")}</h4>
                                         <p className="text-xs text-green-700 mt-1">
                                             {t("dashboard.domains.status.body", { domain: originalDomain })}
                                         </p>

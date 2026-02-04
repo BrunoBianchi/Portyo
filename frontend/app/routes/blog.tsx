@@ -4,43 +4,27 @@ import { getPublicSitePosts, type SitePost } from "~/services/site-blog.service"
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
-import { Calendar, Clock, Eye, ArrowRight } from "lucide-react";
+import { Calendar, Clock, ArrowRight, ArrowUpRight } from "lucide-react";
 
-export function meta() {
-    return [{ title: "Portyo Blog" }];
-}
+import type { MetaFunction } from "react-router";
+import i18n from "~/i18n";
 
-// Dark theme card styles
-const cardStyles = [
-    {
-        bg: "bg-gradient-to-br from-primary/20 to-primary/5",
-        textColor: "text-foreground",
-        titleColor: "text-primary",
-        borderColor: "border-primary/30",
-        type: "gradient",
-    },
-    {
-        bg: "bg-gradient-to-br from-accent-purple/20 to-accent-purple/5",
-        textColor: "text-foreground",
-        titleColor: "text-accent-purple",
-        borderColor: "border-accent-purple/30",
-        type: "gradient-purple",
-    },
-    {
-        bg: "bg-gradient-to-br from-accent-blue/20 to-accent-blue/5",
-        textColor: "text-foreground",
-        titleColor: "text-accent-blue",
-        borderColor: "border-accent-blue/30",
-        type: "gradient-blue",
-    },
-    {
-        bg: "bg-surface-card",
-        textColor: "text-foreground",
-        titleColor: "text-foreground",
-        borderColor: "border-border",
-        type: "card",
-    },
-];
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    const title = lang === "pt"
+        ? "Blog Portyo - Insights para Criadores"
+        : "Portyo Blog - Insights for Creators";
+    const description = lang === "pt"
+        ? "Dicas, estratégias e histórias para crescer sua presença online."
+        : "Tips, strategies, and stories to grow your online presence.";
+
+    return [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+    ];
+};
 
 // Calculate estimated reading time
 function getReadingTime(content: string): number {
@@ -50,7 +34,7 @@ function getReadingTime(content: string): number {
     return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
-function getExcerpt(content: string, maxChars = 150): string {
+function getExcerpt(content: string, maxChars = 140): string {
     const textOnly = content.replace(/<[^>]*>/g, "").trim();
     if (textOnly.length <= maxChars) return textOnly;
     return `${textOnly.slice(0, maxChars).trimEnd()}...`;
@@ -60,8 +44,6 @@ export default function BlogIndex() {
     const { t, i18n } = useTranslation("blogPage");
     const [posts, setPosts] = useState<SitePost[]>([]);
     const [loading, setLoading] = useState(true);
-    const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
-    const cardRefs = useRef<(HTMLElement | null)[]>([]);
 
     useEffect(() => {
         const lang = i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en";
@@ -71,168 +53,156 @@ export default function BlogIndex() {
         });
     }, [i18n.language, i18n.resolvedLanguage]);
 
-    // Intersection Observer for staggered entrance animations
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const index = Number(entry.target.getAttribute("data-index"));
-                        setTimeout(() => {
-                            setVisibleCards((prev) => new Set([...prev, index]));
-                        }, index * 100);
-                    }
-                });
-            },
-            { threshold: 0.1, rootMargin: "50px" }
-        );
-
-        cardRefs.current.forEach((ref) => {
-            if (ref) observer.observe(ref);
-        });
-
-        return () => observer.disconnect();
-    }, [posts]);
+    const featuredPost = posts[0];
+    const regularPosts = posts.slice(1);
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen flex items-center justify-center bg-[#F3F3F1]">
+                <div className="w-8 h-8 border-4 border-[#1A1A1A] border-t-[#D2E823] rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <main className="min-h-screen bg-background">
-            {/* Hero Header */}
-            <section className="relative py-20 md:py-28 overflow-hidden">
-                {/* Background glow */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
-                </div>
-                
-                <div className="max-w-7xl mx-auto px-6 relative">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-center max-w-3xl mx-auto"
-                    >
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-card border border-border text-sm font-semibold text-primary mb-6">
-                            <Calendar className="w-4 h-4" />
-                            {t("badge", "Our Blog")}
+        <main className="min-h-screen bg-[#F3F3F1] pt-24 pb-20">
+            {/* Header */}
+            <header className="max-w-[1400px] mx-auto px-6 mb-20">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b-4 border-[#1A1A1A] pb-8">
+                    <div>
+                        <span className="inline-block px-4 py-2 bg-[#D2E823] text-[#1A1A1A] font-black text-sm uppercase tracking-widest mb-4 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                            {t("badge", "The Blog")}
                         </span>
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                            {t("title", "Insights & Stories")}
+                        <h1 className="text-6xl md:text-8xl lg:text-[7rem] font-black text-[#1A1A1A] leading-[0.9] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                            INSIGHTS
                         </h1>
-                        <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
-                            {t("subtitle", "Discover tips, strategies, and stories to help you grow your online presence.")}
-                        </p>
-                    </motion.div>
+                    </div>
+                    <p className="text-xl font-bold text-[#1A1A1A] max-w-sm leading-tight text-right md:text-left self-end md:self-auto">
+                        {t("subtitle", "Stories and strategies for the modern creator economy.")}
+                    </p>
                 </div>
-            </section>
+            </header>
 
-            <div className="max-w-7xl mx-auto px-6 pb-20">
+            <div className="max-w-[1400px] mx-auto px-6">
                 {posts.length === 0 ? (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="rounded-2xl border border-border bg-surface-card p-12 text-center text-muted-foreground"
-                    >
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                            <Calendar className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                        {t("empty", "No posts yet. Check back soon!")}
-                    </motion.div>
+                    <div className="text-center py-20 border-2 border-dashed border-[#1A1A1A]/20 rounded-3xl">
+                        <p className="text-xl font-bold text-[#1A1A1A]/40">{t("empty", "No posts yet.")}</p>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {posts.map((post, index) => {
-                            const style = cardStyles[index % cardStyles.length];
-                            const readingTime = post.content ? getReadingTime(post.content) : 2;
-                            const isVisible = visibleCards.has(index);
-                            const category = post.keywords?.[0] || t("categoryFallback", "Article");
-                            const hasThumbnail = Boolean(post.thumbnail);
-                            const excerpt = post.content ? getExcerpt(post.content, 120) : "";
-
-                            return (
-                                <Link
-                                    key={post.id}
-                                    to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${post.slug || post.id}`}
-                                    ref={(el) => { cardRefs.current[index] = el; }}
-                                    data-index={index}
-                                    className={`
-                                        group block rounded-2xl overflow-hidden
-                                        transform transition-all duration-500 ease-out
-                                        hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10
-                                        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
-                                    `}
-                                    style={{
-                                        transitionDelay: `${index * 50}ms`,
-                                    }}
-                                >
-                                    {/* Card Content */}
-                                    <div
-                                        className={`
-                                            ${style.bg} rounded-2xl overflow-hidden relative
-                                            border ${style.borderColor}
-                                            transition-all duration-300
-                                            aspect-[4/3] min-h-[240px]
-                                            ${hasThumbnail ? "bg-cover bg-center" : ""}
-                                        `}
-                                        style={
-                                            hasThumbnail
-                                                ? { backgroundImage: `url(${post.thumbnail})` }
-                                                : undefined
-                                        }
-                                    >
-                                        {/* Overlay for images */}
-                                        {hasThumbnail && (
-                                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-                                        )}
-
-                                        {/* Content */}
-                                        <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                                            {/* Top: Category & Meta */}
-                                            <div className="flex items-center justify-between">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary text-background">
-                                                    {category}
-                                                </span>
-                                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                    <span className="flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
-                                                        {t("readTime", { count: readingTime })}
-                                                    </span>
-                                                </div>
+                    <div className="space-y-16">
+                        {/* Featured Post */}
+                        {featuredPost && (
+                            <Link
+                                to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${featuredPost.slug || featuredPost.id}`}
+                                className="group block relative"
+                            >
+                                <article className="grid lg:grid-cols-12 gap-0 border-2 border-[#1A1A1A] bg-white shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] hover:shadow-[12px_12px_0px_0px_rgba(210,232,35,1)] hover:-translate-y-1 transition-all duration-300">
+                                    {/* Image */}
+                                    <div className="lg:col-span-7 relative h-[400px] lg:h-[600px] overflow-hidden border-b-2 lg:border-b-0 lg:border-r-2 border-[#1A1A1A] bg-[#1A1A1A]">
+                                        {featuredPost.thumbnail ? (
+                                            <img
+                                                src={featuredPost.thumbnail}
+                                                alt={featuredPost.title}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-[#D2E823]">
+                                                <span className="text-9xl font-black text-[#1A1A1A]/10">IMG</span>
                                             </div>
+                                        )}
+                                        <div className="absolute top-6 left-6">
+                                            <span className="px-4 py-2 bg-white text-[#1A1A1A] font-black text-xs uppercase tracking-widest border-2 border-[#1A1A1A]">
+                                                Featured
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                            {/* Bottom: Title & Excerpt */}
-                                            <div>
-                                                <h3 className={`text-xl font-bold leading-tight mb-2 ${style.titleColor} group-hover:underline decoration-2 underline-offset-4`}>
-                                                    {post.title}
-                                                </h3>
-                                                {excerpt && !hasThumbnail && (
-                                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                                        <ReactMarkdown
-                                                            skipHtml
-                                                            allowedElements={["p", "strong", "em", "a", "code", "span", "br"]}
-                                                            components={{
-                                                                p: ({ children }) => <span>{children}</span>,
-                                                            }}
-                                                        >
-                                                            {excerpt}
-                                                        </ReactMarkdown>
-                                                    </p>
-                                                )}
-                                                <div className="flex items-center gap-2 mt-3 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <span>{t("readMore", "Read more")}</span>
-                                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    {/* Content */}
+                                    <div className="lg:col-span-5 p-8 lg:p-12 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex flex-wrap gap-2 mb-6">
+                                                {(Array.isArray(featuredPost.keywords) ? featuredPost.keywords : [featuredPost.keywords || t("categoryFallback", "Article")]).slice(0, 2).map((keyword, i) => (
+                                                    <span key={i} className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/60">#{keyword}</span>
+                                                ))}
+                                            </div>
+                                            <h2 className="text-4xl lg:text-5xl font-black text-[#1A1A1A] leading-none mb-6 group-hover:underline decoration-4 underline-offset-4 decoration-[#D2E823]" style={{ fontFamily: 'var(--font-display)' }}>
+                                                {featuredPost.title}
+                                            </h2>
+                                            <p className="text-lg font-medium text-[#1A1A1A]/70 line-clamp-3 mb-8 leading-relaxed">
+                                                {featuredPost.content ? getExcerpt(featuredPost.content, 200) : ""}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-8 border-t-2 border-[#1A1A1A]/10">
+                                            <div className="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
+                                                <Clock className="w-4 h-4" />
+                                                <span>{getReadingTime(featuredPost.content || "")} min read</span>
+                                            </div>
+                                            <span className="flex items-center gap-2 font-black text-[#1A1A1A] bg-[#D2E823] px-6 py-3 border-2 border-[#1A1A1A] shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] group-hover:translate-x-1 transition-transform">
+                                                READ NOW <ArrowRight className="w-5 h-5" />
+                                            </span>
+                                        </div>
+                                    </div>
+                                </article>
+                            </Link>
+                        )}
+
+                        {/* Regular Posts Grid */}
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {regularPosts.map((post, index) => {
+                                const readingTime = post.content ? getReadingTime(post.content) : 2;
+                                const category = (Array.isArray(post.keywords) ? post.keywords[0] : post.keywords) || t("categoryFallback", "Article");
+
+                                return (
+                                    <Link
+                                        key={post.id}
+                                        to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${post.slug || post.id}`}
+                                        className="group flex flex-col h-full bg-white border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,71,255,1)] hover:-translate-y-1 transition-all duration-300"
+                                    >
+                                        {/* Image */}
+                                        <div className="aspect-[4/3] bg-[#1A1A1A] overflow-hidden border-b-2 border-[#1A1A1A] relative">
+                                            {post.thumbnail ? (
+                                                <img
+                                                    src={post.thumbnail}
+                                                    alt={post.title}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-[#F3F3F1]">
+                                                    <span className="text-5xl font-black text-[#1A1A1A]/10">IMG</span>
+                                                </div>
+                                            )}
+                                            <div className="absolute top-4 right-4">
+                                                <div className="bg-white border-2 border-[#1A1A1A] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <ArrowUpRight className="w-5 h-5 text-[#1A1A1A]" />
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
+
+                                        {/* Content */}
+                                        <div className="p-6 flex flex-col flex-1">
+                                            <div className="mb-4">
+                                                <span className="inline-block px-3 py-1 bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-wider mb-3">
+                                                    {category}
+                                                </span>
+                                                <h3 className="text-2xl font-black text-[#1A1A1A] leading-tight group-hover:text-[#0047FF] transition-colors line-clamp-2" style={{ fontFamily: 'var(--font-display)' }}>
+                                                    {post.title}
+                                                </h3>
+                                            </div>
+
+                                            <p className="text-[#1A1A1A]/70 font-medium text-sm line-clamp-3 mb-6 flex-1">
+                                                {post.content ? getExcerpt(post.content, 110) : ""}
+                                            </p>
+
+                                            <div className="flex items-center gap-2 text-xs font-bold text-[#1A1A1A]/40 pt-4 border-t-2 border-[#1A1A1A]/5">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                <span>{readingTime} min read</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
             </div>

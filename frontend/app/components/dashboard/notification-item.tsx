@@ -39,7 +39,7 @@ export function NotificationItem({
         booking: "text-green-400 bg-green-500/10",
         sale: "text-emerald-600 bg-emerald-50",
         announcement: "text-purple-600 bg-purple-50",
-        update: "text-muted-foreground bg-muted",
+        update: "text-white/70 bg-white/10",
     };
 
     const colorClass = typeColors[notification.type] || typeColors.update;
@@ -66,16 +66,16 @@ export function NotificationItem({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                        <h4 className={`text-sm font-bold ${notification.isRead ? 'text-muted-foreground' : 'text-foreground'}`}>
+                        <h4 className={`text-sm font-bold ${notification.isRead ? 'text-white/70' : 'text-white'}`}>
                             {notification.title}
                         </h4>
                         {!notification.isRead && (
                             <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-1"></div>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
+                    <p className="text-sm text-white/70 mb-2">{notification.message}</p>
                     <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{relativeTime}</span>
+                        <span className="text-xs text-white/50">{relativeTime}</span>
                         <div className="flex items-center gap-2">
                             {!notification.isRead && (
                                 <button
@@ -93,7 +93,7 @@ export function NotificationItem({
                                     e.stopPropagation();
                                     onDelete(notification.id);
                                 }}
-                                className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100"
+                                className="p-1.5 rounded-full text-white/70 hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100"
                                 title={i18n.language === "pt" ? "Excluir notificação" : "Delete notification"}
                             >
                                 <Icons.Trash2 className="w-4 h-4" />

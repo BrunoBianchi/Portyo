@@ -1,6 +1,10 @@
 {
   "tagline": "Transforme sua bio no seu negócio. A plataforma tudo-em-um para criadores crescerem, monetizarem e dominarem sua audiência.",
   "cta": "Começar grátis",
+  "forCreators": "para criadores em todo lugar",
+  "privacy": "Privacidade",
+  "terms": "Termos",
+  "status": "Todos os sistemas operacionais",
   "product": {
     "title": "Produto",
     "features": "Recursos",
@@ -22,5 +26,5 @@
     "terms": "Termos de serviço",
     "contact": "Contato"
   },
-  "copyright": "© 2025 Portyo Inc. Todos os direitos reservados."
+  "copyright": "© 2025 Portyo. Feito com"
 }

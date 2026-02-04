@@ -1,6 +1,10 @@
 {
   "tagline": "Turn your bio into your business. The all-in-one platform for creators to grow, monetize, and own their audience.",
   "cta": "Get Started for Free",
+  "forCreators": "for creators everywhere",
+  "privacy": "Privacy",
+  "terms": "Terms",
+  "status": "All systems operational",
   "product": {
     "title": "Product",
     "features": "Features",
@@ -22,5 +26,5 @@
     "terms": "Terms of Service",
     "contact": "Contact"
   },
-  "copyright": "© 2025 Portyo Inc. All rights reserved."
+  "copyright": "© 2025 Portyo. Made with"
 }

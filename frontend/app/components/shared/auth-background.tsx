@@ -3,45 +3,52 @@ import React from 'react';
 export function AuthBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <svg className="absolute w-full h-[350px] top-1/2 -translate-y-1/2 text-text-muted" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="waves" x="0" y="0" width="400" height="50" patternUnits="userSpaceOnUse">
-            <path d="M0 25 Q 100 5, 200 25 T 400 25" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.2" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#waves)" />
-      </svg>
-
-      {/* Floating Heads */}
-      <img
-        src="/Street Life - Head.svg"
-        alt="Character"
-        className="absolute left-[5%] top-[30%] w-24 h-24 -rotate-12 opacity-90 hidden lg:block animate-float"
-        style={{ animationDelay: '0s', animationDuration: '6s' }}
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+      
+      {/* Animated gradient orbs */}
+      <div 
+        className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-30"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          animation: 'float 20s ease-in-out infinite'
+        }}
       />
-      <img
-        src="/Street Life - Head (1).svg"
-        alt="Character"
-        className="absolute left-[15%] bottom-[20%] w-28 h-28 rotate-12 opacity-90 hidden lg:block animate-float"
-        style={{ animationDelay: '1.5s', animationDuration: '7s' }}
-      />
-      <img
-        src="/Street Life - Head (2).svg"
-        alt="Character"
-        className="absolute right-[10%] top-[20%] w-32 h-32 -rotate-6 opacity-90 hidden lg:block animate-float"
-        style={{ animationDelay: '0.5s', animationDuration: '5.5s' }}
-      />
-      <img
-        src="/Street Life - Head (3).svg"
-        alt="Character"
-        className="absolute right-[15%] bottom-[25%] w-20 h-20 rotate-12 opacity-90 hidden lg:block animate-float"
-        style={{ animationDelay: '2s', animationDuration: '6.5s' }}
+      <div 
+        className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full opacity-20"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+          animation: 'float 25s ease-in-out infinite reverse'
+        }}
       />
 
-      {/* Footer */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-text-muted z-10">
-        Copyright @portyo <span suppressHydrationWarning>{new Date().getFullYear()}</span> | Privacy Policy
-      </div>
+      {/* Grid pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px'
+        }}
+      />
+
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -30px) scale(1.05);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.95);
+          }
+        }
+      `}</style>
     </div>
   );
 }

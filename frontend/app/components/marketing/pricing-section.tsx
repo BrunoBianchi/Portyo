@@ -1,217 +1,151 @@
+"use client";
+
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { useCookies } from "react-cookie";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, ArrowRight, Star } from "lucide-react";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import { useTranslation } from "react-i18next";
-import { FadeInUp, GlowCard } from "./animation-components";
+import { FadeInUp } from "./animation-components";
 
 const plansConfig = [
   {
     id: "free" as const,
     icon: Sparkles,
-    iconBg: "bg-muted",
-    iconColor: "text-muted-foreground",
-    buttonStyle: "bg-muted text-foreground hover:bg-muted-hover",
     popular: false,
+    price: { monthly: 0, annually: 0 },
     features: ["onePage", "oneForm", "noBranding", "noDomain", "basicAnalytics", "storeFee3"] as const,
     moreFeatures: ["limitedIntegrations"] as const,
   },
   {
     id: "standard" as const,
     icon: Zap,
-    iconBg: "bg-primary/20",
-    iconColor: "text-primary",
-    buttonStyle: "bg-primary text-background hover:bg-primary-hover shadow-lg shadow-primary/20",
-    popular: true,
+    popular: false,
+    price: { monthly: 5.50, annually: 4.12 },
     features: ["twoBios", "threeForms", "branding", "domain", "email", "storeFee1", "emails150"] as const,
     moreFeatures: ["automation2", "templates2", "seo", "analytics", "customizations"] as const,
   },
   {
     id: "pro" as const,
     icon: Crown,
-    iconBg: "bg-accent-purple/20",
-    iconColor: "text-accent-purple",
-    buttonStyle: "bg-gradient-to-r from-accent-purple to-accent-pink text-white hover:opacity-90",
-    popular: false,
+    popular: true,
+    price: { monthly: 15, annually: 11.25 },
     features: ["everything", "fiveBios", "fourForms", "scheduler", "automation4", "templates4", "storeFee0", "emails500", "customizationsPro"] as const,
     moreFeatures: [] as const,
   }
 ];
 
-function PricingCard({ plan, billingCycle, onSelect, index }: { 
-  plan: typeof plansConfig[0]; 
+function PricingCard({ plan, billingCycle, onSelect, index }: {
+  plan: typeof plansConfig[0];
   billingCycle: 'monthly' | 'annually';
   onSelect: () => void;
   index: number;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const Icon = plan.icon;
-  
-  const price = billingCycle === 'monthly' 
-    ? (plan.id === 'free' ? 0 : plan.id === 'standard' ? 5.50 : 15)
-    : (plan.id === 'free' ? 0 : plan.id === 'standard' ? 4.12 : 11.25);
-  
+
+  const price = billingCycle === 'monthly' ? plan.price.monthly : plan.price.annually;
+  const isPro = plan.id === 'pro';
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.15, duration: 0.6 }}
-      whileHover={{ y: -8 }}
-      className={`relative ${plan.popular ? 'lg:-mt-4 lg:mb-4' : ''}`}
-    >
+    <div className={`relative flex flex-col h-full bg-white border-4 border-[#1A1A1A] p-8 transition-transform duration-300 hover:-translate-y-2 ${isPro ? 'shadow-[12px_12px_0px_0px_#D2E823]' : 'shadow-[8px_8px_0px_0px_#1A1A1A]'}`}>
       {/* Popular Badge */}
-      <AnimatePresence>
-        {plan.popular && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute -top-4 left-1/2 -translate-x-1/2 z-10"
-          >
-            <div className="bg-primary text-background text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              {t(`home.pricing.cards.${plan.id}.badge`)}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      <GlowCard 
-        glowColor={plan.id === 'pro' ? 'rgba(168, 85, 247, 0.2)' : plan.id === 'standard' ? 'rgba(187, 255, 0, 0.2)' : 'transparent'}
-        className="h-full"
-      >
-        <div className={`h-full rounded-[2rem] p-8 flex flex-col ${
-          plan.popular 
-            ? 'bg-primary border-2 border-primary shadow-2xl shadow-primary/20' 
-            : plan.id === 'pro'
-            ? 'bg-surface-card border border-border'
-            : 'bg-surface-card border border-border shadow-xl'
-        }`}>
-          
-          {/* Icon & Name */}
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className={`w-12 h-12 rounded-2xl ${plan.iconBg} flex items-center justify-center mb-4`}>
-                <Icon className={`w-6 h-6 ${plan.iconColor}`} />
-              </div>
-              <h3 className={`text-2xl font-bold ${
-                plan.popular ? 'text-background' : 'text-foreground'
-              }`}>
-                {t(`home.pricing.cards.${plan.id}.title`)}
-              </h3>
-              <p className={`text-sm mt-1 ${
-                plan.popular ? 'text-background/70' : 'text-muted-foreground'
-              }`}>
-                {t(`home.pricing.cards.${plan.id}.subtitle`)}
-              </p>
-            </div>
-          </div>
-          
-          {/* Price */}
-          <div className="mb-8">
-            <div className="flex items-baseline gap-1">
-              <span className={`text-5xl font-bold ${
-                plan.popular ? 'text-background' : 'text-foreground'
-              }`}>
-                ${price}
-              </span>
-              <span className={`text-lg ${
-                plan.popular ? 'text-background/70' : 'text-muted-foreground'
-              }`}>
-                /mo
-              </span>
-            </div>
-            {billingCycle === 'annually' && price > 0 && (
-              <p className={`text-sm mt-2 ${
-                plan.popular ? 'text-background/70' : 'text-muted-foreground'
-              }`}>
-                {t(`home.pricing.cards.${plan.id}.billedYearly`)}
-              </p>
-            )}
-          </div>
-          
-          {/* Features */}
-          <div className="flex-1 space-y-4 mb-8">
-            {plan.features.map((featureKey, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 + i * 0.05 }}
-                className="flex items-start gap-3"
-              >
-                <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                  plan.popular ? 'bg-background/20' : 'bg-primary/20'
-                }`}>
-                  <Check className={`w-3 h-3 ${
-                    plan.popular ? 'text-background' : 'text-primary'
-                  }`} />
-                </div>
-                <span className={`text-sm ${
-                  plan.popular ? 'text-background/90' : 'text-muted-foreground'
-                }`}>
-                  {t(`home.pricing.cards.${plan.id}.features.${featureKey}`)}
-                </span>
-              </motion.div>
-            ))}
-            
-            {/* Expandable More Features */}
-            <AnimatePresence>
-              {expanded && plan.moreFeatures.map((featureKey, i) => (
-                <motion.div
-                  key={`more-${i}`}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-start gap-3"
-                >
-                  <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                    plan.popular ? 'bg-background/20' : 'bg-primary/20'
-                  }`}>
-                    <Check className={`w-3 h-3 ${
-                      plan.popular ? 'text-background' : 'text-primary'
-                    }`} />
-                  </div>
-                  <span className={`text-sm ${
-                    plan.popular ? 'text-background/90' : 'text-muted-foreground'
-                  }`}>
-                    {t(`home.pricing.cards.${plan.id}.more.${featureKey}`)}
-                  </span>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            
-            {/* Show More/Less */}
-            {plan.moreFeatures.length > 0 && (
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                  plan.popular ? 'text-background/70 hover:text-background' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {expanded ? t("home.pricing.showLess", "Show less") : t("home.pricing.showMore", "Show more")}
-                <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-              </button>
-            )}
-          </div>
-          
-          {/* CTA Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onSelect}
-            className={`w-full py-4 rounded-xl font-bold transition-all duration-300 ${plan.buttonStyle}`}
-          >
-            {t(`home.pricing.cards.${plan.id}.cta`)}
-          </motion.button>
+      {plan.popular && (
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#D2E823] text-[#1A1A1A] text-sm font-black uppercase tracking-widest py-2 px-6 border-4 border-[#1A1A1A] flex items-center gap-2 whitespace-nowrap z-10">
+          <Star className="w-4 h-4 fill-[#1A1A1A]" />
+          MOST POPULAR
         </div>
-      </GlowCard>
-    </motion.div>
+      )}
+
+      {/* Header */}
+      <div className="mb-8 border-b-4 border-[#1A1A1A] pb-8">
+        <h3 className="text-3xl font-black text-[#1A1A1A] uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+          {t(`home.pricing.cards.${plan.id}.title`)}
+        </h3>
+        <p className="text-[#1A1A1A]/70 font-medium mt-2 min-h-[40px]">
+          {t(`home.pricing.cards.${plan.id}.subtitle`)}
+        </p>
+      </div>
+
+      {/* Price */}
+      <div className="mb-8">
+        <div className="flex items-baseline gap-1">
+          <span className="text-6xl font-black text-[#1A1A1A] tracking-tighter">
+            ${price}
+          </span>
+          <span className="text-xl font-bold text-[#1A1A1A]/50">
+            /mo
+          </span>
+        </div>
+        {billingCycle === 'annually' && price > 0 && (
+          <p className="text-sm font-bold text-[#0047FF] mt-2 uppercase tracking-wide">
+            {t(`home.pricing.cards.${plan.id}.billedYearly`)}
+          </p>
+        )}
+      </div>
+
+      {/* CTA Button */}
+      <button
+        onClick={onSelect}
+        className={`w-full py-4 text-lg font-black uppercase tracking-wider border-4 border-[#1A1A1A] mb-10 transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none active:translate-x-1 active:translate-y-1 ${isPro
+            ? 'bg-[#1A1A1A] text-[#D2E823] shadow-[6px_6px_0px_0px_#D2E823]'
+            : 'bg-white text-[#1A1A1A] hover:bg-[#F3F3F1] shadow-[6px_6px_0px_0px_#1A1A1A]'
+          }`}
+      >
+        {t(`home.pricing.cards.${plan.id}.cta`)}
+      </button>
+
+      {/* Features */}
+      <div className="space-y-4 flex-1">
+        <p className="text-xs font-black uppercase tracking-widest text-[#1A1A1A]/40 mb-4">Features</p>
+        {plan.features.map((featureKey, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className={`mt-1 p-0.5 border-2 border-[#1A1A1A] ${isPro ? 'bg-[#D2E823]' : 'bg-white'}`}>
+              <Check className="w-3 h-3 text-[#1A1A1A]" strokeWidth={4} />
+            </div>
+            <span className="text-sm font-bold text-[#1A1A1A] leading-tight">
+              {t(`home.pricing.cards.${plan.id}.features.${featureKey}`)}
+            </span>
+          </div>
+        ))}
+
+        {/* More Features Toggle */}
+        {plan.moreFeatures.length > 0 && (
+          <div className="pt-4">
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-sm font-black underline decoration-2 underline-offset-4 hover:text-[#0047FF] transition-colors"
+            >
+              {expanded ? t("home.pricing.showLess", "Show less") : t("home.pricing.showMore", "Show more features")}
+            </button>
+
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="space-y-4 pt-4 overflow-hidden"
+                >
+                  {plan.moreFeatures.map((featureKey, i) => (
+                    <div key={`more-${i}`} className="flex items-start gap-3">
+                      <div className="mt-1 p-0.5 border-2 border-[#1A1A1A] bg-white">
+                        <Check className="w-3 h-3 text-[#1A1A1A]" strokeWidth={4} />
+                      </div>
+                      <span className="text-sm font-medium text-[#1A1A1A]/80 leading-tight">
+                        {t(`home.pricing.cards.${plan.id}.more.${featureKey}`)}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -255,65 +189,59 @@ export default function PricingSection() {
   };
 
   return (
-    <section className="w-full py-24 bg-background relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-purple/5 rounded-full blur-3xl" />
-      </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section className="w-full py-24 bg-[#F3F3F1] relative overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6 relative z-10">
+
         {/* Header */}
-        <FadeInUp>
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-card border border-border shadow-lg mb-6">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">
-                {t("home.pricing.badge", "Simple, transparent pricing")}
+        <div className="text-center mb-20">
+          <span className="inline-block px-4 py-2 bg-[#D2E823] text-[#1A1A1A] font-black text-sm uppercase tracking-widest mb-6 border-2 border-[#1A1A1A] shadow-[4px_4px_0px_0px_#1A1A1A]">
+            {t("home.pricing.badge", "Simple Pricing")}
+          </span>
+          <h2 className="text-6xl md:text-8xl font-black text-[#1A1A1A] leading-[0.9] tracking-tighter mb-8" style={{ fontFamily: 'var(--font-display)' }}>
+            CHOOSE YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0047FF] to-[#0047FF]">PLAN</span>
+          </h2>
+          <p className="text-xl md:text-2xl font-medium text-[#1A1A1A]/60 max-w-2xl mx-auto leading-relaxed">
+            {t("home.pricing.subtitle", "Start free. Upgrade for power. Cancel anytime.")}
+          </p>
+        </div>
+
+        {/* Toggle */}
+        <div className="flex justify-center mb-20">
+          <div className="relative inline-flex bg-white border-4 border-[#1A1A1A] p-1.5 shadow-[8px_8px_0px_0px_#1A1A1A]">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`relative z-10 px-8 py-3 text-sm font-black uppercase tracking-wider transition-all duration-300 ${billingCycle === 'monthly' ? 'text-white' : 'text-[#1A1A1A] hover:bg-[#1A1A1A]/5'}`}
+            >
+              {t("home.pricing.monthly", "Monthly")}
+            </button>
+            <button
+              onClick={() => setBillingCycle('annually')}
+              className={`relative z-10 px-8 py-3 text-sm font-black uppercase tracking-wider transition-all duration-300 ${billingCycle === 'annually' ? 'text-white' : 'text-[#1A1A1A] hover:bg-[#1A1A1A]/5'}`}
+            >
+              {t("home.pricing.annually", "Annually")}
+            </button>
+
+            {/* Sliding Background */}
+            <div
+              className="absolute top-1.5 bottom-1.5 bg-[#1A1A1A] transition-all duration-300 ease-out"
+              style={{
+                left: billingCycle === 'monthly' ? '6px' : 'calc(50% + 3px)',
+                width: 'calc(50% - 9px)'
+              }}
+            />
+
+            {/* Save Badges */}
+            <div className="absolute -right-24 top-1/2 -translate-y-1/2 hidden md:block">
+              <span className="bg-[#D2E823] text-[#1A1A1A] text-xs font-black px-2 py-1 border-2 border-[#1A1A1A] -rotate-12 inline-block">
+                SAVE 25%
               </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] mb-6" style={{ fontFamily: 'var(--font-display)' }}>
-              {t("home.pricing.title", "Choose your plan")}
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {t("home.pricing.subtitle", "Start free, upgrade when you're ready. No hidden fees, cancel anytime.")}
-            </p>
-          </div>
-        </FadeInUp>
-
-        {/* Billing Toggle */}
-        <FadeInUp delay={0.1}>
-          <div className="flex justify-center mb-16">
-            <div className="bg-surface-card p-1.5 rounded-full shadow-xl inline-flex items-center border border-border">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
-                  billingCycle === 'monthly'
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t("home.pricing.monthly", "Monthly")}
-              </button>
-              <button
-                onClick={() => setBillingCycle('annually')}
-                className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
-                  billingCycle === 'annually'
-                    ? 'bg-primary text-background shadow-lg'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t("home.pricing.annually", "Annually")}
-                <span className="text-xs bg-background/20 text-background px-2 py-0.5 rounded-full">
-                  {t("home.pricing.save", "Save 25%")}
-                </span>
-              </button>
+              <ArrowRight className="w-6 h-6 text-[#1A1A1A] inline-block ml-2 -rotate-12" strokeWidth={3} />
             </div>
           </div>
-        </FadeInUp>
+        </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start max-w-7xl mx-auto">
           {plansConfig.map((plan, index) => (
             <PricingCard
               key={plan.id}
@@ -326,22 +254,21 @@ export default function PricingSection() {
         </div>
 
         {/* Trust Badges */}
-        <FadeInUp delay={0.4}>
-          <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" />
-              <span>{t("home.pricing.cancelAnytime", "Cancel anytime")}</span>
+        <div className="mt-24 pt-12 border-t-4 border-[#1A1A1A]/10 flex flex-wrap justify-center gap-12 text-[#1A1A1A]">
+          {[
+            { text: t("home.pricing.cancelAnytime", "Cancel anytime") },
+            { text: t("home.pricing.noHiddenFees", "No hidden fees") },
+            { text: t("home.pricing.securePayment", "Secure payment") },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 font-bold text-lg">
+              <div className="w-8 h-8 bg-[#D2E823] border-2 border-[#1A1A1A] flex items-center justify-center shadow-[3px_3px_0px_0px_#1A1A1A]">
+                <Check className="w-5 h-5 text-[#1A1A1A]" strokeWidth={4} />
+              </div>
+              <span>{item.text}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" />
-              <span>{t("home.pricing.noHiddenFees", "No hidden fees")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" />
-              <span>{t("home.pricing.securePayment", "Secure payment")}</span>
-            </div>
-          </div>
-        </FadeInUp>
+          ))}
+        </div>
+
       </div>
     </section>
   );
