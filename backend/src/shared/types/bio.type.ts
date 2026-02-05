@@ -25,6 +25,9 @@ export type Bio = BaseType & {
     bgVideo?: string | null;
     usernameColor?: string;
     imageStyle?: string;
+    profileImageLayout?: string;
+    profileImageSize?: string;
+    titleStyle?: string;
     cardStyle?: string;
     cardBackgroundColor?: string;
     cardOpacity?: number;
@@ -38,6 +41,12 @@ export type Bio = BaseType & {
     font?: string;
     customFontUrl?: string | null;
     customFontName?: string | null;
+    theme?: string;
+    buttonStyle?: string;
+    buttonRadius?: string;
+    buttonShadow?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
     enableParallax?: boolean;
     parallaxIntensity?: number;
     parallaxDepth?: number;

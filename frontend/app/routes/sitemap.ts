@@ -7,8 +7,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const origin = `${url.protocol}//${host}`;
   const hostname = host.split(':')[0];
   const isOnRenderDomain = hostname.endsWith('.onrender.com');
-  const isPortyoDomain = hostname.endsWith('portyo.me');
   const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+  const isPortyoRoot = hostname === 'portyo.me' || hostname === 'www.portyo.me';
+  const isSaasSubdomain = hostname.endsWith('.portyo.me') && !isPortyoRoot;
+  const subdomain = isSaasSubdomain ? hostname.replace(/\.portyo\.me$/, '') : null;
+  const isSaasReservedSubdomain = subdomain ? ['api', 'www'].includes(subdomain) : false;
+  const isCustomDomain = !isPortyoRoot && !isSaasSubdomain && !isOnRenderDomain && !isLocalhost;
 
   // Define XML builder helper
   const toUrl = (loc: string, lastmod?: string, changefreq: string = 'weekly', priority: number = 0.8) => {
@@ -30,13 +34,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { username } = params as { username?: string };
   
   // Custom Domain Logic (simplified)
-  let customDomainBioIdentifier: string | null = null;
-  if (!isPortyoDomain && !isOnRenderDomain && !isLocalhost) {
-      customDomainBioIdentifier = host;
-  }
+    let customDomainBioIdentifier: string | null = null;
+    if (isCustomDomain) {
+      customDomainBioIdentifier = hostname;
+    }
 
-  const bioIdentifier = username || customDomainBioIdentifier;
-  const siteBase = isPortyoDomain ? `https://portyo.me` : origin;
+    const bioIdentifier = username || customDomainBioIdentifier || (!isSaasReservedSubdomain ? subdomain : null);
+    const siteBase = isPortyoRoot ? `https://portyo.me` : origin;
   const localePaths = (paths: string[]) => [
       ...paths.map(p => `/en${p}`),
       ...paths.map(p => `/pt${p}`)
@@ -45,9 +49,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     if (bioIdentifier) {
       // User Specific Sitemap
-     const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+     const rawApiUrl = isLocalhost
+      ? `${origin}/api`
+      : (process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me');
      const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
-    const baseUrl = username ? `https://portyo.me/p/${username}` : `https://${host}`;
+    const baseUrl = username ? `${origin}/p/${username}` : `${origin}`;
     const bioBasePath = username ? `/p/${username}` : "";
 
      // Always add root
@@ -55,9 +61,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
       try {
         // 1. Fetch Bio Details to get ID
-        const bioFetchUrl = username 
-           ? `${apiUrl}/public/bio/${username}`
-           : `${apiUrl}/public/bio/domain/${bioIdentifier}`;
+          const bioFetchUrl = username 
+            ? `${apiUrl}/public/bio/${username}`
+            : `${apiUrl}/public/bio/domain/${bioIdentifier}`;
          
         const bioRes = await fetch(bioFetchUrl);
         if(bioRes.ok) {
@@ -87,7 +93,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
                      addUrl(postUrl, post.updatedAt, 'monthly', 0.7);
                      supportedLangs.forEach((lang) => {
                        const localizedBase = username
-                         ? `https://portyo.me/${lang}${bioBasePath}`
+                         ? `${origin}/${lang}${bioBasePath}`
                          : `${origin}/${lang}`;
                        addUrl(`${localizedBase}/blog/post/${postSlug}`, post.updatedAt, 'monthly', 0.7);
                      });

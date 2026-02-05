@@ -6,7 +6,6 @@ import BioContext from "~/contexts/bio.context";
 import {
     LayoutDashboard,
     PenTool,
-    Settings,
     LogOut,
     Globe,
     ChevronDown,
@@ -36,13 +35,20 @@ import {
     Home,
     MessageSquare,
     Mail,
-    Globe2
+    Globe2,
+    Settings,
+    ArrowRight,
+    CheckCircle2,
+    Circle,
+    ExternalLinkIcon,
+    Palette
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
 import { useTranslation } from "react-i18next";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { motion, AnimatePresence } from "framer-motion";
+import { NotificationBell } from "./notification-bell";
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -50,42 +56,8 @@ interface SidebarProps {
     handleChangeBio?: () => void;
 }
 
-// Donut Chart Component for Setup Widget
-function DonutChart({ progress, size = 60, strokeWidth = 6, color = "#C6F035" }: { progress: number; size?: number; strokeWidth?: number; color?: string }) {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = radius * 2 * Math.PI;
-    const offset = circumference - (progress / 100) * circumference;
+// Donut Chart Removed
 
-    return (
-        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-            <svg width={size} height={size} className="transform -rotate-90">
-                {/* Background Circle */}
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke="#E5E7EB"
-                    strokeWidth={strokeWidth}
-                    fill="transparent"
-                />
-                {/* Progress Circle */}
-                <circle
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    stroke={color}
-                    strokeWidth={strokeWidth}
-                    fill="transparent"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000 ease-out"
-                />
-            </svg>
-            <span className="absolute text-[10px] font-bold text-gray-900">{progress}%</span>
-        </div>
-    );
-}
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const location = useLocation();
@@ -116,7 +88,12 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const pathnameNoLang = location.pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
-    const isActive = (path: string) => pathnameNoLang === path || pathnameNoLang.startsWith(path + "/");
+    const isActive = (path: string) => {
+        if (path === "/dashboard") {
+            return pathnameNoLang === "/dashboard";
+        }
+        return pathnameNoLang === path || pathnameNoLang.startsWith(path + "/");
+    };
     const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1] || i18n.resolvedLanguage || i18n.language || "en";
 
     const withLang = (to: string) => {
@@ -139,6 +116,125 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const userPlan = (user?.plan || 'free') as PlanType;
     const bioLimit = PLAN_LIMITS[userPlan]?.bios || 1;
     const canCreateBio = bios.length < bioLimit;
+
+    // --- Onboarding Logic ---
+    const [onboardingState, setOnboardingState] = useState({
+        hasLink: false,
+        visitedPages: false,
+        visitedSettings: false,
+        visitedBio: false
+    });
+
+    useEffect(() => {
+        // Load initial state from local storage
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("portyo:onboarding-state");
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Merge with current derived state (hasLink should always be fresh)
+                    setOnboardingState(prev => ({ ...prev, ...parsed }));
+                } catch (e) {
+                    console.error("Failed to parse onboarding state", e);
+                }
+            }
+        }
+    }, [user?.id]); // Re-run if user changes
+
+    useEffect(() => {
+        if (!bio) return;
+
+        // 1. Check for links (derived from bio prop)
+        const hasContent = (bio.blocks && bio.blocks.length > 0) || false;
+
+        let newState = { ...onboardingState };
+        let hasChanged = false;
+
+        if (hasContent !== newState.hasLink) {
+            newState.hasLink = hasContent;
+            hasChanged = true;
+        }
+
+        // 2. Track visited pages (basic logic: if path is NOT dashboard root, count as visited pages)
+        // Allow /dashboard/editor, /dashboard/portfolio etc.
+        if (pathnameNoLang !== "/dashboard" && !newState.visitedPages) {
+            newState.visitedPages = true;
+            hasChanged = true;
+        }
+
+        // 3. Track settings visit
+        if (pathnameNoLang.includes("/settings") && !newState.visitedSettings) {
+            newState.visitedSettings = true;
+            hasChanged = true;
+        }
+
+        if (hasChanged) {
+            setOnboardingState(newState);
+            localStorage.setItem("portyo:onboarding-state", JSON.stringify(newState));
+        }
+
+    }, [bio, pathnameNoLang]);
+
+    const handleVisitBio = () => {
+        if (!onboardingState.visitedBio) {
+            const newState = { ...onboardingState, visitedBio: true };
+            setOnboardingState(newState);
+            localStorage.setItem("portyo:onboarding-state", JSON.stringify(newState));
+        }
+    };
+
+    const calculateProgress = () => {
+        let completed = 0;
+        if (onboardingState.hasLink) completed++;
+        if (onboardingState.visitedPages) completed++;
+        if (onboardingState.visitedSettings) completed++;
+        if (onboardingState.visitedBio) completed++;
+        return (completed / 4) * 100;
+    };
+
+    const progress = calculateProgress();
+    const isSetupComplete = progress === 100;
+
+    // Helper for next step
+    const getNextStep = () => {
+        if (!onboardingState.hasLink) return {
+            label: t("dashboard.sidebar.steps.actionAddLink", { defaultValue: "Add Link" }),
+            action: () => {
+                // Open editor if in editor, or navigate there
+                if (location.pathname.includes("/dashboard/editor")) {
+                    setIsCreateModalOpen(true); // Fallback if no direct "add" trigger, but ideally navigate to links tab
+                } else {
+                    navigate("/dashboard/editor");
+                }
+            },
+            icon: Plus
+        };
+        if (!onboardingState.visitedPages) return {
+            label: t("dashboard.sidebar.steps.actionExplore", { defaultValue: "Explore Dashboard" }),
+            action: () => navigate("/dashboard/analytics"), // Example destination
+            icon: LayoutDashboard // Changed from Compass (not imported) to LayoutDashboard
+        };
+        if (!onboardingState.visitedSettings) return {
+            label: t("dashboard.sidebar.steps.actionSettings", { defaultValue: "Go to Settings" }),
+            action: () => navigate("/dashboard/settings"),
+            icon: Settings
+        };
+        if (!onboardingState.visitedBio) return {
+            label: t("dashboard.sidebar.steps.actionVisitBio", { defaultValue: "Visit your Bio" }),
+            action: handleVisitBio,
+            icon: ExternalLinkIcon // Need to import this or use Globe
+        };
+        return null;
+    };
+
+    // Import navigate
+    const navigate = (path: string) => {
+        window.location.href = withLang(path);
+    };
+
+    const nextStep = getNextStep();
+
+    // --- End Onboarding Logic ---
 
     const handleCreateBio = async () => {
         if (!canCreateBio) {
@@ -176,7 +272,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             key: "myPortyo",
             label: t("dashboard.sidebar.groupMyPortyo", { defaultValue: "MY PORTYO" }),
             items: [
+                { name: t("dashboard.nav.overview", { defaultValue: "Overview" }), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
                 { name: t("dashboard.nav.editor", { defaultValue: "Editor" }), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
+                { name: t("dashboard.nav.design", { defaultValue: "Design" }), path: "/dashboard/design", icon: Palette },
                 { name: t("dashboard.nav.portfolio", { defaultValue: "Portfolio" }), path: "/dashboard/portfolio", icon: Briefcase },
                 { name: t("dashboard.nav.blog", { defaultValue: "Blog" }), path: "/dashboard/blog", icon: FileText },
                 { name: t("dashboard.nav.products", { defaultValue: "Products" }), path: "/dashboard/products", icon: Store, tourId: "dashboard-nav-products" },
@@ -194,7 +292,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             key: "audience",
             label: t("dashboard.sidebar.groupAudience", { defaultValue: "AUDIENCE" }),
             items: [
-                { name: t("dashboard.nav.overview", { defaultValue: "Overview" }), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
                 { name: t("dashboard.nav.analytics", { defaultValue: "Analytics" }), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
                 { name: t("dashboard.nav.leads", { defaultValue: "Leads" }), path: "/dashboard/leads", icon: Users, isPro: true },
                 { name: t("dashboard.nav.forms", { defaultValue: "Forms" }), path: "/dashboard/forms", icon: MessageSquare, tourId: "dashboard-nav-forms" },
@@ -210,7 +307,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 { name: t("dashboard.nav.integrations", { defaultValue: "Integrations" }), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
                 { name: t("dashboard.nav.qrCode", { defaultValue: "QR Codes" }), path: "/dashboard/qrcode", icon: QrCode },
                 { name: t("dashboard.nav.customDomains", { defaultValue: "Custom Domains" }), path: "/dashboard/custom-domains", icon: Globe2, isPro: true },
-                { name: t("dashboard.nav.seoSettings", { defaultValue: "SEO" }), path: "/dashboard/seo", icon: Settings, isPro: true },
             ]
         }
     ];
@@ -336,7 +432,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                 <span className="text-sm font-bold truncate w-24 text-left text-[#1a1a1a]">
                                     {user?.fullname || user?.email?.split('@')[0]}
                                 </span>
-                                <span className="text-[10px] text-gray-500 truncate w-full text-left font-medium">
+                                <span className="text-sm text-gray-500 truncate w-full text-left font-medium">
                                     {bio?.sufix ? `@${bio.sufix}` : t("dashboard.sidebar.selectPage")}
                                 </span>
                             </div>
@@ -382,6 +478,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                         <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Plus className="w-3 h-3" /></div>
                                         <span className="font-medium text-sm">{t("dashboard.sidebar.createNewPage")}</span>
                                     </button>
+                                    <Link
+                                        to={withLang("/dashboard/settings")}
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-left transition-colors text-gray-500 hover:text-black"
+                                    >
+                                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Settings className="w-3 h-3" /></div>
+                                        <span className="font-medium text-sm">{t("dashboard.sidebar.settings", { defaultValue: "Settings" })}</span>
+                                    </Link>
                                     <button
                                         onClick={() => { setIsDropdownOpen(false); logout(); }}
                                         className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 text-left transition-colors text-gray-500 hover:text-red-600 mt-1"
@@ -394,10 +498,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         </AnimatePresence>
                     </div>
 
-                    <button className="p-2.5 rounded-full hover:bg-black/5 text-gray-500 transition-colors relative group">
-                        <Bell className="w-5 h-5 stroke-[2px]" />
-                        <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#F3F3F1]"></span>
-                    </button>
+                    <NotificationBell />
                 </div>
 
                 {/* Navigation */}
@@ -440,6 +541,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                                                     if (item.isProOnly) { setForcedPlan('pro'); } else { setForcedPlan(undefined); }
                                                                     setIsUpgradePopupOpen(true);
                                                                 }
+                                                                // Handle sidebar closing on mobile AND bio visit for onboarding
+                                                                if (onClose) onClose();
                                                             }}
                                                             className={`
                                                                 flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
@@ -475,26 +578,52 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     )}
                 </div>
 
-                {/* Setup Widget (Donut Chart) */}
-                {bio && (
-                    <div className="p-4 bg-[#F3F3F1] border-t border-[#E5E5E5]">
+                {/* Setup Widget (Checklist) */}
+                {bio && !isSetupComplete && (
+                    <div className="p-4 bg-[#F3F3F1] border-t border-[#E5E5E5] animate-in slide-in-from-bottom duration-500">
                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-4">
-                            <div className="flex items-start justify-between">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup", { defaultValue: "SETUP" })}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup", { defaultValue: "SETUP" })}</span>
+                                <div className="flex items-center justify-between">
                                     <span className="text-sm font-bold text-black leading-tight">{t("dashboard.sidebar.checklist", { defaultValue: "Onboarding" })}</span>
+                                    <span className="text-xs font-bold text-[#C6F035] bg-black px-2 py-0.5 rounded-full">{Math.round(progress)}%</span>
                                 </div>
-                                <DonutChart progress={85} size={42} strokeWidth={5} color="#C6F035" />
                             </div>
 
-                            <button className="w-full py-2.5 bg-[#1A1A1A] hover:bg-black text-white hover:text-[#C6F035] rounded-full text-xs font-bold transition-all hover:scale-[1.02] shadow-md flex items-center justify-center gap-2">
-                                {t("dashboard.sidebar.finishSetup", { defaultValue: "Finish Setup" })}
-                                <ChevronRight className="w-3 h-3" />
-                            </button>
+                            {/* Checklist Items */}
+                            <div className="space-y-2">
+                                <ChecklistItem label={t("dashboard.sidebar.steps.addLink", { defaultValue: "Add a link" })} isDone={onboardingState.hasLink} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.explore", { defaultValue: "Explore modules" })} isDone={onboardingState.visitedPages} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.settings", { defaultValue: "Configure settings" })} isDone={onboardingState.visitedSettings} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.bio", { defaultValue: "Visit bio" })} isDone={onboardingState.visitedBio} />
+                            </div>
+
+                            {nextStep && (
+                                <button
+                                    onClick={nextStep.action}
+                                    className="w-full py-3 bg-[#1A1A1A] hover:bg-black text-white hover:text-[#C6F035] rounded-xl text-xs font-bold transition-all hover:scale-[1.02] shadow-md flex items-center justify-center gap-2 mt-2 group"
+                                >
+                                    <span>{nextStep.label}</span>
+                                    {nextStep.icon ? <nextStep.icon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" /> : <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />}
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
             </aside>
         </>
+    );
+}
+
+function ChecklistItem({ label, isDone }: { label: string; isDone: boolean }) {
+    return (
+        <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDone ? "text-gray-400 line-through" : "text-gray-700"}`}>
+            {isDone ? (
+                <CheckCircle2 className="w-4 h-4 text-[#C6F035] fill-black shrink-0" />
+            ) : (
+                <Circle className="w-4 h-4 text-gray-300 shrink-0" />
+            )}
+            <span>{label}</span>
+        </div>
     );
 }

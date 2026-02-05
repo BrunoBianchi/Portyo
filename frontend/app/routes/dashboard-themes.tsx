@@ -418,14 +418,35 @@ function ThemesPage() {
                 // New Properties
                 buttonStyle: theme.styles.buttonStyle as any,
                 customFontUrl: theme.styles.customFontUrl,
-                customFontName: theme.styles.customFontName
+                customFontName: theme.styles.customFontName,
+                // Button styles
+                buttonColor: theme.styles.buttonColor,
+                buttonTextColor: theme.styles.buttonTextColor
             };
 
             if (targetBioId) {
                 // Apply theme to existing bio
-                await updateBio(targetBioId, themeStyles);
                 const targetBio = bios.find((b) => b.id === targetBioId);
-                if (targetBio) selectBio(targetBio);
+                if (targetBio) {
+                    // Create updated bio object with new theme styles
+                    const updatedBio = { ...targetBio, ...themeStyles };
+                    
+                    // Regenerate HTML from blocks with new theme styles
+                    const { blocksToHtml } = await import("~/services/html-generator");
+                    const regeneratedHtml = await blocksToHtml(
+                        targetBio.blocks || [],
+                        user,
+                        updatedBio
+                    );
+                    
+                    // Update bio with both theme styles and regenerated HTML
+                    await updateBio(targetBioId, {
+                        ...themeStyles,
+                        html: regeneratedHtml
+                    });
+                    
+                    selectBio(targetBio);
+                }
             } else {
                 // Create new bio with theme
                 const newSufix = `my-bio-${Date.now()}`;

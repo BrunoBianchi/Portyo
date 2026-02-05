@@ -29,7 +29,7 @@ const baseRoutes: RouteConfig = [
         children: [
             { index: true, file: "routes/dashboard-home.tsx" },
             { path: "editor", file: "routes/dashboard-editor.tsx" },
-            { path: "seo", file: "routes/dashboard-seo.tsx" },
+            { path: "design", file: "routes/dashboard-design.tsx" },
             { path: "analytics", file: "routes/dashboard-analytics.tsx" },
             { path: "leads", file: "routes/dashboard-leads.tsx" },
             { path: "automation", file: "routes/dashboard-automation._index.tsx" },

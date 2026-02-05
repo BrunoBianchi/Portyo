@@ -66,13 +66,82 @@ export default function DashboardLeads() {
     }
   }, [bio?.id]);
 
+  const leadsTourSteps = useMemo<DriveStep[]>(
+    () => [
+      {
+        element: "[data-tour=\"leads-header\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.header"),
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-toggle\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.toggle"),
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-export\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.export"),
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-stats\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.stats"),
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-search\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.search"),
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-table\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.table"),
+          side: "top",
+          align: "center",
+        },
+      },
+      {
+        element: "[data-tour=\"leads-bulk-actions\"]",
+        popover: {
+          title: t("dashboard.tours.leads.title", { defaultValue: "Leads" }),
+          description: t("dashboard.tours.leads.steps.bulk"),
+          side: "top",
+          align: "center",
+        },
+      },
+    ],
+    [t]
+  );
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (isMobile) return;
 
     const hasSeenTour = window.localStorage.getItem("portyo:leads-tour-done");
     if (!hasSeenTour) {
-      setTourRun(true);
+      startTour(leadsTourSteps);
     }
 
     const rootStyles = getComputedStyle(document.documentElement);
@@ -80,64 +149,7 @@ export default function DashboardLeads() {
     if (primaryFromTheme) {
       setTourPrimaryColor(primaryFromTheme);
     }
-  }, [isMobile]);
-
-  const leadsTourSteps: Step[] = [
-    {
-      target: "[data-tour=\"leads-header\"]",
-      content: t("dashboard.tours.leads.steps.header"),
-      placement: "bottom",
-      disableBeacon: true,
-    },
-    {
-      target: "[data-tour=\"leads-toggle\"]",
-      content: t("dashboard.tours.leads.steps.toggle"),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour=\"leads-export\"]",
-      content: t("dashboard.tours.leads.steps.export"),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour=\"leads-stats\"]",
-      content: t("dashboard.tours.leads.steps.stats"),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour=\"leads-search\"]",
-      content: t("dashboard.tours.leads.steps.search"),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour=\"leads-table\"]",
-      content: t("dashboard.tours.leads.steps.table"),
-      placement: "top",
-    },
-    {
-      target: "[data-tour=\"leads-bulk-actions\"]",
-      content: t("dashboard.tours.leads.steps.bulk"),
-      placement: "top",
-    },
-  ];
-
-  const handleLeadsTourCallback = (data: CallBackProps) => {
-    const { status, type, index, action } = data;
-
-    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-      const delta = action === ACTIONS.PREV ? -1 : 1;
-      setTourStepIndex(index + delta);
-      return;
-    }
-
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
-      setTourRun(false);
-      setTourStepIndex(0);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("portyo:leads-tour-done", "true");
-      }
-    }
-  };
+  }, [isMobile, leadsTourSteps, startTour]);
 
   /* Handlers */
   const filteredLeads = leads.filter(

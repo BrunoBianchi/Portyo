@@ -34,20 +34,22 @@ export function NotificationItem({
 
     // Get type color
     const typeColors = {
-        achievement: "text-yellow-600 bg-yellow-50",
-        lead: "text-blue-400 bg-blue-500/10",
-        booking: "text-green-400 bg-green-500/10",
-        sale: "text-emerald-600 bg-emerald-50",
-        announcement: "text-purple-600 bg-purple-50",
-        update: "text-white/70 bg-white/10",
+        achievement: "text-yellow-600 bg-yellow-100",
+        lead: "text-blue-600 bg-blue-100",
+        booking: "text-green-600 bg-green-100",
+        sale: "text-emerald-700 bg-emerald-100",
+        announcement: "text-purple-600 bg-purple-100",
+        update: "text-gray-600 bg-gray-100",
     };
 
     const colorClass = typeColors[notification.type] || typeColors.update;
 
     const content = (
         <div
-            className={`p-4 hover:bg-muted transition-colors cursor-pointer border-l-4 ${notification.isRead ? "border-transparent" : "border-primary bg-blue-50/30"
-                }`}
+            className={`p-4 transition-colors cursor-pointer border-b border-gray-100 last:border-0 ${notification.isRead
+                    ? "bg-white hover:bg-gray-50"
+                    : "bg-[#FAFAFA] hover:bg-white"
+                } relative group`}
             onClick={() => {
                 if (!notification.isRead) {
                     onMarkAsRead(notification.id);
@@ -57,25 +59,28 @@ export function NotificationItem({
                 }
             }}
         >
-            <div className="flex items-start gap-3 group relative">
+            {/* Indicator for unread */}
+            {!notification.isRead && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#C6F035]" />
+            )}
+
+            <div className="flex items-start gap-3">
                 {/* Icon */}
-                <div className={`p-2 rounded-lg ${colorClass} shrink-0`}>
-                    <IconComponent className="w-4 h-4" />
+                <div className={`p-2 rounded-xl ${colorClass} shrink-0`}>
+                    <IconComponent className="w-5 h-5" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                        <h4 className={`text-sm font-bold ${notification.isRead ? 'text-white/70' : 'text-white'}`}>
+                        <h4 className={`text-sm font-bold ${notification.isRead ? 'text-gray-600' : 'text-[#1A1A1A]'}`}>
                             {notification.title}
                         </h4>
-                        {!notification.isRead && (
-                            <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-1"></div>
-                        )}
                     </div>
-                    <p className="text-sm text-white/70 mb-2">{notification.message}</p>
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/50">{relativeTime}</span>
+                    <p className={`text-sm mb-2 ${notification.isRead ? 'text-gray-500' : 'text-gray-700'}`}>{notification.message}</p>
+                    <div className="flex items-center justify-between mt-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{relativeTime}</span>
+
                         <div className="flex items-center gap-2">
                             {!notification.isRead && (
                                 <button
@@ -83,9 +88,9 @@ export function NotificationItem({
                                         e.stopPropagation();
                                         onMarkAsRead(notification.id);
                                     }}
-                                    className="text-xs text-primary hover:text-primary-hover font-medium transition-colors"
+                                    className="text-xs text-black hover:text-[#C6F035] bg-gray-100 hover:bg-black font-bold px-2 py-1 rounded transition-colors"
                                 >
-                                    {i18n.language === "pt" ? "Marcar como lida" : "Mark as read"}
+                                    {i18n.language === "pt" ? "Marcar lida" : "Mark read"}
                                 </button>
                             )}
                             <button
@@ -93,7 +98,7 @@ export function NotificationItem({
                                     e.stopPropagation();
                                     onDelete(notification.id);
                                 }}
-                                className="p-1.5 rounded-full text-white/70 hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100"
+                                className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
                                 title={i18n.language === "pt" ? "Excluir notificação" : "Delete notification"}
                             >
                                 <Icons.Trash2 className="w-4 h-4" />

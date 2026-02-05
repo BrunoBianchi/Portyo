@@ -28,6 +28,7 @@ const getMetaText = (lang: "en" | "pt", key: string, fallback: string) => {
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const hostname = url.hostname;
+  const origin = url.origin;
 
   const isOnRenderDomain = hostname.endsWith('.onrender.com');
   const isPortyoDomain = hostname.endsWith('portyo.me');
@@ -42,12 +43,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
       if (res.ok) {
         const bio = await res.json();
-        return { type: 'bio', bio, hostname };
+        return { type: 'bio', bio, hostname, origin };
       }
     } catch (e) {
       console.error("Failed to fetch bio for domain", hostname, e);
     }
-    return { type: 'bio', bio: null, hostname }; // Bio not found
+    return { type: 'bio', bio: null, hostname, origin }; // Bio not found
   }
 
   return { type: 'marketing' };
@@ -61,7 +62,7 @@ export function meta({ data, params }: Route.MetaArgs) {
     const title = bio.seoTitle || bio.ogTitle || `${bio.subdomain} | Portyo`;
     const description = bio.seoDescription || bio.ogDescription || "";
     const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
-    const url = data.hostname ? `https://${data.hostname}` : undefined;
+    const url = data.origin || (data.hostname ? `https://${data.hostname}` : undefined);
     return [
       { title },
       { name: "description", content: description },

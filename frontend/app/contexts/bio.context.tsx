@@ -28,6 +28,11 @@ export type BioBlock = {
     }[];
     // Button specific
     buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline" | "architect" | "material" | "brutalist" | "outline-thick";
+    theme?: string;
+    buttonRadius?: string;
+    buttonShadow?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
     buttonShape?: "pill" | "rounded" | "square";
     buttonShadowColor?: string;
     buttonImage?: string;
@@ -40,6 +45,7 @@ export type BioBlock = {
     whatsappMessage?: string;
     whatsappStyle?: "solid" | "outline" | "glass" | "gradient" | "neon" | "minimal" | "soft" | "dark";
     whatsappShape?: "pill" | "rounded" | "square";
+    whatsappVariation?: "direct-button" | "pre-filled-form";
     // Socials specific
     socials?: {
         instagram?: string;
@@ -50,10 +56,16 @@ export type BioBlock = {
     };
     socialsLayout?: "row" | "column";
     socialsLabel?: boolean;
+    socialsVariation?: "icon-grid" | "detailed-list" | "floating-buttons";
+    // Block reference
+    bioId?: string;
     // Blog specific
     blogLayout?: "carousel" | "list" | "grid";
     blogCardStyle?: "featured" | "minimal" | "modern";
     blogPostCount?: number;
+    blogPostIds?: string[];
+    blogShowImages?: boolean;
+    blogShowDates?: boolean;
     blogBackgroundColor?: string;
     blogTitleColor?: string;
     blogTextColor?: string;
@@ -73,8 +85,11 @@ export type BioBlock = {
         image: string;
         url: string;
     }[];
+    productIds?: string[];
     productLayout?: "grid" | "list" | "carousel";
     productCardStyle?: "default" | "minimal";
+    productShowPrices?: boolean;
+    productShowDescriptions?: boolean;
     productBackgroundColor?: string;
     productTextColor?: string;
     productAccentColor?: string;
@@ -116,6 +131,7 @@ export type BioBlock = {
     instagramTextColor?: string;
     instagramTextPosition?: "top" | "bottom";
     instagramShowText?: boolean;
+    instagramVariation?: "grid-shop" | "visual-gallery" | "simple-link";
     // Youtube specific
     youtubeUrl?: string;
     // QR Code specific
@@ -135,6 +151,7 @@ export type BioBlock = {
     youtubeTextColor?: string;
     youtubeTextPosition?: "top" | "bottom";
     youtubeShowText?: boolean;
+    youtubeVariation?: "full-channel" | "single-video" | "playlist";
     // Tour specific
     tourTitle?: string;
     tours?: {
@@ -150,6 +167,7 @@ export type BioBlock = {
     // Spotify specific
     spotifyUrl?: string;
     spotifyCompact?: boolean;
+    spotifyVariation?: "artist-profile" | "single-track" | "playlist" | "album";
     // Portfolio specific
     portfolioTitle?: string;
     // Experience specific
@@ -227,9 +245,21 @@ interface Bio {
     bgColor?: string;
     bgSecondaryColor?: string;
     bgImage?: string;
+    bgImageFit?: "cover" | "contain" | "fill" | "none" | "scale-down" | "repeat";
+    bgImageOverlay?: number;
     bgVideo?: string;
+    bgVideoLoop?: boolean;
+    bgVideoMuted?: boolean;
+    bgVideoOverlay?: number;
     usernameColor?: string;
+    gradientDirection?: string;
+    blurIntensity?: number;
+    patternType?: string;
+    patternColor?: string;
     imageStyle?: string;
+    profileImageLayout?: "classic" | "hero";
+    profileImageSize?: "small" | "large";
+    titleStyle?: "text" | "logo";
     displayProfileImage?: boolean;
     profileImage?: string;
     description?: string;
@@ -273,6 +303,11 @@ interface Bio {
     verified?: boolean;
     verificationStatus?: "none" | "pending" | "verified";
     buttonStyle?: "solid" | "outline" | "ghost" | "hard-shadow" | "soft-shadow" | "3d" | "glass" | "gradient" | "neumorphism" | "clay" | "cyberpunk" | "pixel" | "neon" | "sketch" | "gradient-border" | "minimal-underline" | "architect" | "material" | "brutalist" | "outline-thick";
+    theme?: string;
+    buttonRadius?: string;
+    buttonShadow?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
     // Parallax settings
     enableParallax?: boolean;
     parallaxIntensity?: number;   // 0-100
@@ -331,8 +366,12 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             if (savedBio) {
                 setBio(savedBio);
+                // Fetch full details to ensure blocks are loaded (list might be partial)
+                getBio(savedBio.id);
             } else if (response.data.length > 0 && !bio) {
-                setBio(response.data[0]);
+                const firstBio = response.data[0];
+                setBio(firstBio);
+                getBio(firstBio.id);
             }
         } catch (error) {
             console.error("Failed to fetch bios", error);
@@ -372,6 +411,8 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const selectBio = (selectedBio: Bio) => {
         setBio(selectedBio);
         localStorage.setItem("selectedBioId", selectedBio.id);
+        // Refresh full details to ensure we have blocks/settings
+        getBio(selectedBio.id);
     };
 
     useEffect(() => {

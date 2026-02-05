@@ -128,11 +128,6 @@ export default function DashboardIntegrations() {
     if (typeof window === "undefined") return;
     if (isMobile) return;
 
-    const hasSeenTour = window.localStorage.getItem("portyo:integrations-tour-done");
-    if (!hasSeenTour) {
-      setTourRun(true);
-    }
-
     const rootStyles = getComputedStyle(document.documentElement);
     const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
     if (primaryFromTheme) {
@@ -140,52 +135,41 @@ export default function DashboardIntegrations() {
     }
   }, [isMobile]);
 
-  const integrationsTourSteps: Step[] = [
-    {
-      target: "[data-tour=\"integrations-header\"]",
-      content: t("dashboard.tours.integrations.steps.header"),
-      placement: "bottom",
-      disableBeacon: true,
-    },
-    {
-      target: "[data-tour=\"integrations-filters\"]",
-      content: t("dashboard.tours.integrations.steps.filters"),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour=\"integrations-grid\"]",
-      content: t("dashboard.tours.integrations.steps.grid"),
-      placement: "top",
-    },
-    {
-      target: "[data-tour=\"integrations-card\"]",
-      content: t("dashboard.tours.integrations.steps.card"),
-      placement: "top",
-    },
-    {
-      target: "[data-tour=\"integrations-action\"]",
-      content: t("dashboard.tours.integrations.steps.action"),
-      placement: "top",
-    },
-  ];
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isMobile) return;
 
-  const handleIntegrationsTourCallback = (data: CallBackProps) => {
-    const { status, type, index, action } = data;
-
-    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-      const delta = action === ACTIONS.PREV ? -1 : 1;
-      setTourStepIndex(index + delta);
-      return;
+    const hasSeenTour = window.localStorage.getItem("portyo:integrations-tour-done");
+    if (!hasSeenTour) {
+      const timer = setTimeout(() => {
+        startTour(integrationsTourSteps);
+      }, 500);
+      return () => clearTimeout(timer);
     }
+  }, [isMobile, startTour]);
 
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
-      setTourRun(false);
-      setTourStepIndex(0);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("portyo:integrations-tour-done", "true");
-      }
-    }
-  };
+  const integrationsTourSteps: DriveStep[] = useMemo(() => [
+    {
+      element: "[data-tour=\"integrations-header\"]",
+      popover: { title: t("dashboard.tours.integrations.steps.header"), description: t("dashboard.tours.integrations.steps.header"), side: "bottom", align: "start" },
+    },
+    {
+      element: "[data-tour=\"integrations-filters\"]",
+      popover: { title: t("dashboard.tours.integrations.steps.filters"), description: t("dashboard.tours.integrations.steps.filters"), side: "bottom", align: "start" },
+    },
+    {
+      element: "[data-tour=\"integrations-grid\"]",
+      popover: { title: t("dashboard.tours.integrations.steps.grid"), description: t("dashboard.tours.integrations.steps.grid"), side: "top", align: "start" },
+    },
+    {
+      element: "[data-tour=\"integrations-card\"]",
+      popover: { title: t("dashboard.tours.integrations.steps.card"), description: t("dashboard.tours.integrations.steps.card"), side: "top", align: "start" },
+    },
+    {
+      element: "[data-tour=\"integrations-action\"]",
+      popover: { title: t("dashboard.tours.integrations.steps.action"), description: t("dashboard.tours.integrations.steps.action"), side: "top", align: "start" },
+    },
+  ], [t]);
 
   useEffect(() => {
     const fetchIntegrations = async () => {

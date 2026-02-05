@@ -1,7 +1,8 @@
+import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { ProductCollectionSelector } from "../integration-selectors";
 import { BlockStyleSettings } from "../block-style-settings";
-import type { BioBlock } from "~/contexts/bio.context";
+import BioContext, { type BioBlock } from "~/contexts/bio.context";
 
 interface Props {
   block: BioBlock;
@@ -17,7 +18,11 @@ interface ProductConfig {
 
 export function ProductBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
-  
+  const { bio } = useContext(BioContext);
+
+  // Use block.bioId or fallback to context bio.id
+  const effectiveBioId = block.bioId || bio?.id || null;
+
   const config: ProductConfig = {
     productIds: block.productIds || [],
     layout: block.productLayout || "grid",
@@ -38,7 +43,7 @@ export function ProductBlockEditor({ block, onChange }: Props) {
     <div className="space-y-6">
       {/* Product Collection Selector */}
       <ProductCollectionSelector
-        bioId={block.bioId}
+        bioId={effectiveBioId}
         config={config}
         onChange={handleConfigChange}
       />

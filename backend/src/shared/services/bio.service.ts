@@ -7,6 +7,7 @@ import { findUserByEmail, findUserById } from "./user.service"
 import { PLAN_LIMITS, PlanType } from "../constants/plan-limits"
 import { BillingService } from "../../services/billing.service"
 import redisClient from "../../config/redis.client"
+import { CustomDomainService } from "./custom-domain.service"
 
 const repository = AppDataSource.getRepository(BioEntity)
 
@@ -20,6 +21,9 @@ export interface BackgroundSettings {
     bgVideo?: string;
     usernameColor?: string;
     imageStyle?: string;
+    profileImageLayout?: string;
+    profileImageSize?: string;
+    titleStyle?: string;
     description?: string;
     socials?: any;
     displayProfileImage?: boolean;
@@ -84,6 +88,12 @@ export interface UpdateBioOptions {
     font?: string;
     customFontUrl?: string;
     customFontName?: string;
+    theme?: string;
+    buttonStyle?: string;
+    buttonRadius?: string;
+    buttonShadow?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
 }
 
 import { env } from "../../config/env"
@@ -216,12 +226,19 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     if (options.font !== undefined) bio.font = options.font;
     if (options.customFontUrl !== undefined) bio.customFontUrl = options.customFontUrl;
     if (options.customFontName !== undefined) bio.customFontName = options.customFontName;
+    if (options.theme !== undefined) bio.theme = options.theme as any;
+    if (options.buttonStyle !== undefined) bio.buttonStyle = options.buttonStyle as any;
+    if (options.buttonRadius !== undefined) bio.buttonRadius = options.buttonRadius as any;
+    if (options.buttonShadow !== undefined) bio.buttonShadow = options.buttonShadow as any;
+    if (options.buttonColor !== undefined) bio.buttonColor = options.buttonColor as any;
+    if (options.buttonTextColor !== undefined) bio.buttonTextColor = options.buttonTextColor as any;
 
     // Background settings
     if (bgSettings) {
         applySettings(bio, bgSettings, [
             'bgType', 'bgColor', 'bgSecondaryColor', 'bgImage', 'bgVideo',
-            'usernameColor', 'imageStyle', 'description', 'socials', 'displayProfileImage'
+            'usernameColor', 'imageStyle', 'profileImageLayout', 'profileImageSize', 'titleStyle',
+            'description', 'socials', 'displayProfileImage'
         ]);
     }
 
@@ -255,15 +272,20 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
 
     // Refresh Cache
     try {
+        const customDomains = await CustomDomainService.findDomainsByBioId(bio.id);
+        const domainList = customDomains.map((domain) => domain.domain).filter(Boolean);
+
         // 1. Invalidate old keys
-        await invalidateBioCache(bio as BioEntity);
+        await invalidateBioCache(bio as BioEntity, domainList);
         
         // 2. Refresh/Pre-warm: Generate public version for sufix
         // (This simulates a visit to the public page to store the "compiled" version)
         await getPublicBio(bio.sufix, 'sufix');
 
-        if (bio.customDomain) {
-            await getPublicBio(bio.customDomain, 'domain');
+        const activeDomains = await CustomDomainService.findActiveDomainsByBioId(bio.id);
+
+        for (const domain of activeDomains) {
+            await getPublicBio(domain.domain, 'domain');
         }
     } catch (err) {
         console.error("Redis Cache Refresh Error:", err);
@@ -328,9 +350,13 @@ export const createNewBio = async (sufix: string, userEmail: string): Promise<Pa
  * that the user's current plan does not support.
  */
 export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain'): Promise<Bio | null> => {
+    const normalizedIdentifier = type === 'domain'
+        ? CustomDomainService.extractDomain(identifier)
+        : identifier;
+
     // 1. Try Cache
     try {
-        const cacheKey = getBioCacheKey(identifier, type);
+        const cacheKey = getBioCacheKey(normalizedIdentifier, type);
         const cached = await redisClient.get(cacheKey);
         if (cached) {
             return JSON.parse(cached);
@@ -340,9 +366,21 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
     }
 
     let bio: Bio | null = null;
+    let isCustomDomainRequest = false;
     
     if (type === 'domain') {
-        bio = await findBioByCustomDomain(identifier);
+        const cleanDomain = CustomDomainService.extractDomain(identifier);
+        const sufix = CustomDomainService.extractSaasSubdomain(cleanDomain);
+
+        if (sufix) {
+            bio = await findBioBySufixWithUser(sufix);
+        } else {
+            isCustomDomainRequest = true;
+            const activeDomain = await CustomDomainService.findActiveByDomain(cleanDomain);
+            if (activeDomain?.bioId) {
+                bio = await findBioById(activeDomain.bioId, ['user']);
+            }
+        }
     } else {
         bio = await findBioBySufixWithUser(identifier);
     }
@@ -367,7 +405,7 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
         // Reset Custom Domain if accessed via custom domain? 
         // If accessed via custom domain but user is free, strictly speaking we should probably 404 or redirect, 
         // but the router handles the lookup. If we return null here, it will 404.
-        if (type === 'domain') return null; 
+        if (isCustomDomainRequest) return null; 
     }
 
     if (Array.isArray(bio.blocks)) {
@@ -389,7 +427,7 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
     }
 
     // Cache the verified result
-    await cacheBioData(identifier, type, bio);
+    await cacheBioData(normalizedIdentifier, type, bio);
 
     return bio;
 }
@@ -411,13 +449,21 @@ async function cacheBioData(identifier: string, type: 'sufix' | 'domain', data: 
     }
 }
 
-async function invalidateBioCache(bio: BioEntity): Promise<void> {
+async function invalidateBioCache(bio: BioEntity, extraDomains: string[] = []): Promise<void> {
     try {
-        const keys = [
-            getBioCacheKey(bio.sufix, 'sufix')
-        ];
+        const keys = [getBioCacheKey(bio.sufix, 'sufix')];
+
+        const subdomain = CustomDomainService.getSaasSubdomainDomain(bio.sufix);
+        keys.push(getBioCacheKey(subdomain, 'domain'));
+
         if (bio.customDomain) {
-            keys.push(getBioCacheKey(bio.customDomain, 'domain'));
+            const clean = CustomDomainService.extractDomain(bio.customDomain);
+            keys.push(getBioCacheKey(clean, 'domain'));
+        }
+
+        for (const domain of extraDomains) {
+            const clean = CustomDomainService.extractDomain(domain);
+            keys.push(getBioCacheKey(clean, 'domain'));
         }
         await redisClient.del(...keys);
     } catch (err) {

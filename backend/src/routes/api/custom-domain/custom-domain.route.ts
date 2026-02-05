@@ -88,8 +88,8 @@ router.post("/", requireAuth, isUserPro, async (req, res) => {
                 verificationToken: result.domain!.verificationToken
             },
             instructions: {
-                dns: `Configure um registro DNS A apontando ${domain} para o IP do servidor`,
-                cname: `Ou configure um CNAME apontando www.${domain} para portyo.me`
+                dns: `Configure um registro DNS A apontando ${domain} para cname.portyo.me`,
+                cname: `Domínios serão verificados apenas quando o registro A apontar para cname.portyo.me`
             }
         });
     } catch (error) {
@@ -201,6 +201,16 @@ router.post("/:id/verify", requireAuth, async (req, res) => {
             return res.status(404).json({ message: "Domínio não encontrado" });
         }
 
+        const dnsCheck = await CustomDomainService.checkDnsConfiguration(domain.domain);
+
+        if (!dnsCheck.configured) {
+            return res.json({
+                success: true,
+                dnsConfigured: false,
+                message: "DNS ainda não configurado. Crie um registro A apontando para cname.portyo.me."
+            });
+        }
+
         // Inicia verificação em background
         CustomDomainService.processDomainVerification(domain.id).catch(error => {
             logger.error(`Erro ao reprocessar verificação do domínio ${domain.domain}:`, error);
@@ -208,7 +218,8 @@ router.post("/:id/verify", requireAuth, async (req, res) => {
 
         res.json({
             success: true,
-            message: "Verificação iniciada. Isso pode levar alguns minutos."
+            dnsConfigured: true,
+            message: "DNS configurado. Iniciando validação do domínio."
         });
     } catch (error) {
         logger.error("Erro ao verificar domínio:", error);

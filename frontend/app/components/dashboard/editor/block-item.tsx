@@ -27,6 +27,7 @@ import {
   WhatsAppIcon
 } from "~/components/shared/icons";
 import { ColorPicker } from "./ColorPicker";
+import { BlogBlockEditor } from "./block-editors/BlogBlockEditor";
 import { FormInput, FormTextarea } from "./FormInput";
 import { FormSelect } from "./FormSelect";
 import { ImageUpload } from "./image-upload";
@@ -1630,19 +1631,16 @@ const BlockItem = memo((props: BlockItemProps) => {
             )}
 
             {block.type === "blog" && (
-              <div className="pt-3 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <ColorPicker
-                    label={t("dashboard.editor.blockItem.common.background")}
-                    value={block.blogBackgroundColor || "#ffffff"}
-                    onChange={(val) => handleFieldChange("blogBackgroundColor", val)}
-                  />
-                  <ColorPicker
-                    label={t("dashboard.editor.blockItem.common.textColor")}
-                    value={block.blogTextColor || "#1f2937"}
-                    onChange={(val) => handleFieldChange("blogTextColor", val)}
-                  />
-                </div>
+              <div className="pt-3">
+                <BlogBlockEditor
+                  block={block}
+                  bioId={bio?.id}
+                  onChange={(updates) => {
+                    Object.entries(updates).forEach(([key, value]) => {
+                      handleFieldChange(key as keyof BioBlock, value);
+                    });
+                  }}
+                />
               </div>
             )}
 

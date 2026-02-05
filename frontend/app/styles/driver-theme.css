@@ -33,18 +33,18 @@
 /* Título do popover */
 .driver-popover.portyo-driver-theme .driver-popover-title {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 900;
   color: var(--driver-text);
   padding: 24px 24px 0 24px;
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
 /* Descrição do popover */
 .driver-popover.portyo-driver-theme .driver-popover-description {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   color: #4b5563;
   padding: 0 24px;
   margin: 0 0 24px 0;
@@ -67,10 +67,10 @@
 .driver-popover.portyo-driver-theme .driver-popover-close-btn,
 .driver-popover.portyo-driver-theme .driver-popover-prev-btn,
 .driver-popover.portyo-driver-theme .driver-popover-next-btn {
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: var(--driver-radius-sm);
   font-weight: 800;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 2px solid #000000;
   cursor: pointer;
@@ -80,6 +80,7 @@
   justify-content: center;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  height: 48px;
 }
 
 /* Botão de próximo (Primary) */
@@ -117,16 +118,16 @@
 /* Botão de fechar (X) */
 .driver-popover.portyo-driver-theme .driver-popover-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  padding: 8px;
+  top: 12px;
+  right: 12px;
+  padding: 6px;
   background: transparent;
-  color: #9ca3af;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
-  transition: all 0.2s;
+  color: #9ca3af;
+  box-shadow: none;
 }
 
 .driver-popover.portyo-driver-theme .driver-popover-close-btn:hover {
@@ -139,10 +140,12 @@
 .driver-popover.portyo-driver-theme .driver-popover-progress-text {
   font-size: 0.75rem;
   color: #9ca3af;
-  font-weight: 700;
-  padding: 0 24px 12px 24px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  order: -1; /* Move para o início (esquerda) */
+  margin-right: auto;
+  white-space: nowrap;
 }
 
 /* Highlight do elemento */
@@ -214,48 +217,35 @@
 
   .driver-popover.portyo-driver-theme .driver-popover-footer {
     padding: 0 20px 20px 20px;
-    flex-direction: row;
-    /* Keep side-by-side on mobile */
-    align-items: center;
-    justify-content: space-between;
     gap: 12px;
+    flex-wrap: wrap; /* Permitir quebrar linha se necessário */
   }
 
   .driver-popover.portyo-driver-theme .driver-popover-prev-btn,
   .driver-popover.portyo-driver-theme .driver-popover-next-btn {
-    width: auto;
     flex: 1;
-    /* Make buttons share width evenly */
-    padding: 12px 10px;
-    /* Reduced vertical padding */
-    font-size: 0.8125rem;
-    /* Slightly smaller text */
-    height: 48px;
-    /* Fixed height for consistency */
-    white-space: nowrap;
-  }
-
-  /* Ensure text doesn't overflow */
-  .driver-popover.portyo-driver-theme .driver-popover-prev-btn {
+    padding: 0 12px;
+    font-size: 0.75rem;
+    height: 44px; /* Altura menor no mobile */
     min-width: 80px;
-    border-width: 1.5px;
   }
 
-  .driver-popover.portyo-driver-theme .driver-popover-next-btn {
-    min-width: 100px;
-  }
-
+  /* Progress Text no mobile */
   .driver-popover.portyo-driver-theme .driver-popover-progress-text {
-    padding: 0 20px 10px 20px;
-    font-size: 0.7rem;
+    width: 100%;
+    text-align: center;
+    order: 3; /* Move para o final (abaixo dos botões) */
+    margin-top: 8px;
+    padding: 0;
+    font-size: 0.65rem;
   }
 
   .driver-popover.portyo-driver-theme .driver-popover-close-btn {
     top: 10px;
     right: 10px;
     padding: 6px;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 }
 

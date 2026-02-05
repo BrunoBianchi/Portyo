@@ -130,8 +130,23 @@ export const BlockIntegrationService = {
   // Products
   async getProducts(bioId: string): Promise<Product[]> {
     try {
-      const response = await api.get(`/products/bio/${bioId}`);
-      return response.data || [];
+      const response = await api.get(`/stripe/products`, {
+        params: { bioId }
+      });
+      
+      const products = response.data || [];
+      
+      // Map Stripe product format to our Product interface
+      return products.map((product: any) => ({
+        id: product.id,
+        name: product.name || product.title,
+        description: product.description,
+        price: product.default_price?.unit_amount 
+          ? product.default_price.unit_amount / 100 
+          : product.price || 0,
+        imageUrl: product.images?.[0] || product.image || product.imageUrl,
+        category: product.metadata?.category || product.category,
+      }));
     } catch (error) {
       console.error("Failed to fetch products:", error);
       return [];
@@ -151,10 +166,20 @@ export const BlockIntegrationService = {
   // Blog Posts
   async getBlogPosts(bioId: string, limit?: number): Promise<BlogPost[]> {
     try {
-      const response = await api.get(`/blog/bio/${bioId}/posts`, {
+      const response = await api.get(`/blog/${bioId}`, {
         params: { limit },
       });
-      return response.data || [];
+      
+      const posts = response.data || [];
+      
+      return posts.map((post: any) => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt || post.content?.substring(0, 100),
+        publishedAt: post.scheduledAt || post.createdAt,
+        coverImage: post.thumbnail || post.coverImage, // handle both just in case
+        slug: post.slug
+      }));
     } catch (error) {
       console.error("Failed to fetch blog posts:", error);
       return [];

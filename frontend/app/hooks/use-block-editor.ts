@@ -23,6 +23,7 @@ interface UseBlockEditorReturn {
   undo: () => void;
   getBlockById: (id: string) => BioBlock | undefined;
   replaceBlock: (id: string, newBlock: BioBlock) => void;
+  setBlocks: React.Dispatch<React.SetStateAction<BioBlock[]>>;
 }
 
 export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEditorReturn {
@@ -32,14 +33,18 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
   const [history, setHistory] = useState<BioBlock[][]>([]);
   const historyRef = useRef(history);
   const blocksRef = useRef(blocks);
+  const prevKeyRef = useRef(key);
+
+
 
   // Reset state when key changes (e.g. switching bios)
   useEffect(() => {
-    if (key) {
+    if (key && key !== prevKeyRef.current) {
       setBlocks(initialBlocks);
       setHistory([]);
       historyRef.current = [];
       blocksRef.current = initialBlocks;
+      prevKeyRef.current = key;
     }
   }, [key, initialBlocks]);
   
@@ -324,6 +329,7 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
       undo,
       getBlockById,
       replaceBlock,
+      setBlocks,
     }),
     [blocks, history, canUndo, addBlock, updateBlock, deleteBlock, reorderBlocks, undo, getBlockById, replaceBlock]
   );

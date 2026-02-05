@@ -135,8 +135,8 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   }
 
   // Helper to wrap content with block styles
-  const wrap = (content: string): string => {
-    return wrapWithBlockStyles(block, content, animationStyle, animationClass);
+  const wrap = (content: string, customBlock?: BioBlock): string => {
+    return wrapWithBlockStyles(customBlock || block, content, animationStyle, animationClass);
   };
 
   if (block.type === "heading") {
@@ -197,10 +197,26 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const label = block.title || "Falar no WhatsApp";
     const style = block.whatsappStyle || "solid";
     const shape = block.whatsappShape || "pill";
-    const accent = block.accent || "#25D366";
+    const variation = block.whatsappVariation || "direct-button";
+    const accent = block.blockBackground || block.accent || "#25D366";
     const textColor = block.textColor || "#ffffff";
     const href = phone ? `https://wa.me/${phone}${message ? `?text=${encodeURIComponent(message)}` : ""}` : "#";
 
+    // Pre-filled form variation
+    if (variation === "pre-filled-form") {
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:16px; background:#f9fafb; border-radius:16px; ${animationStyle}">
+        <form onsubmit="event.preventDefault(); const msg = this.querySelector('textarea').value; window.open('https://wa.me/${phone}?text=' + encodeURIComponent(msg), '_blank');" style="display:flex; flex-direction:column; gap:12px;">
+          <label style="font-weight:600; font-size:14px; color:#374151;">Mensagem para WhatsApp</label>
+          <textarea name="message" rows="3" placeholder="Digite sua mensagem..." style="width:100%; padding:12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:14px; resize:vertical; font-family:inherit;" required>${escapeHtml(message)}</textarea>
+          <button type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px; background:${accent}; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; transition:all 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
+            Enviar no WhatsApp
+          </button>
+        </form>
+      </section>`);
+    }
+
+    // Direct button (default)
     let css = "display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; padding:14px 20px; font-weight:700; font-size:15px; text-decoration:none; transition:all 240ms ease;";
 
     if (shape === "pill") css += " border-radius:999px;";
@@ -227,18 +243,24 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>`;
     const targetAttr = phone ? " target=\"_blank\" rel=\"noopener noreferrer\"" : "";
+    const wrapperBlock = block.blockBackground ? { ...block, blockBackground: undefined } : block;
 
-    return wrap(`\n${extraHtml}<section style="padding:12px 0;">\n  <a href="${escapeHtml(href)}"${targetAttr} class="${animationClass}" style="${css} ${animationStyle}">${icon}<span>${escapeHtml(label)}</span></a>\n</section>`);
+    return wrap(`\n${extraHtml}<section style="padding:12px 0;">\n  <a href="${escapeHtml(href)}"${targetAttr} class="${animationClass}" style="${css} ${animationStyle}">${icon}<span>${escapeHtml(label)}</span></a>\n</section>`, wrapperBlock);
   }
 
 
   if (block.type === "button") {
-    const bg = block.accent || "#111827";
-    const color = block.textColor || "#ffffff";
+    const bg = block.blockBackground || block.accent || bio.buttonColor || "#111827";
+    const color = block.textColor || bio.buttonTextColor || "#ffffff";
     const style = block.buttonStyle || bio.buttonStyle || "solid";
-    const shape = block.buttonShape || "rounded";
+    const shape = block.buttonShape || (bio.buttonRadius === "square"
+      ? "square"
+      : bio.buttonRadius === "full"
+        ? "pill"
+        : "rounded");
     const shadowColor = block.buttonShadowColor || bg;
     const textAlign = block.buttonTextAlign || "center";
+    const shadowPreset = block.buttonShadow || bio.buttonShadow || "none";
     
     const normalized = normalizeExternalUrl(block.href);
     const cleanHref = isValidUrl(normalized) ? normalized : '#';
@@ -329,6 +351,14 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       css += ` background:${bg}; color:${color}; border:1px solid rgba(0,0,0,0.06); box-shadow:0 4px 12px -2px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);`;
     }
 
+    if (shadowPreset === "soft") {
+      css += ` box-shadow:0 8px 18px rgba(0,0,0,0.15);`;
+    } else if (shadowPreset === "strong") {
+      css += ` box-shadow:0 12px 28px rgba(0,0,0,0.25);`;
+    } else if (shadowPreset === "hard") {
+      css += ` box-shadow:4px 4px 0px rgba(0,0,0,0.35);`;
+    }
+
     const imageHtml = block.buttonImage ? `<img src="${escapeHtml(block.buttonImage)}" alt="${escapeHtml(block.title || "Imagem do botão")}" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:8px; object-fit:cover;" />` : "";
     
     const textPadding = block.buttonImage ? "padding-left:66px;" : "";
@@ -342,7 +372,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     return wrap(`\n${extraHtml}<section style="padding:12px 0;">\n  <${tag}${hrefAttr} class="${animationClass}" style="${css} ${cursorStyle}"${nsfwAttr}>${imageHtml}<span style="${textStyle}">${escapeHtml(
       block.title || "Abrir link"
-    )}</span>${shareButtonHtml}</${tag}>\n</section>`);
+    )}</span>${shareButtonHtml}</${tag}>\n</section>`, block.blockBackground ? { ...block, blockBackground: undefined } : block);
   }
 
   if (block.type === "image") {
@@ -406,6 +436,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const links = block.socials || {};
     const layout = block.socialsLayout || "row";
     const showLabel = block.socialsLabel || false;
+    const variation = block.socialsVariation || "icon-grid";
 
     const icons = Object.entries(links).map(([platform, url]) => {
       if (!url) return "";
@@ -420,8 +451,32 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       };
 
       const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgPaths[platform] || ''}</svg>`;
-      const label = showLabel ? `<span style="margin-left:8px; text-transform:capitalize;">${platform}</span>` : "";
       
+      // Detailed list variation shows labels and descriptions
+      if (variation === "detailed-list") {
+        const descriptions: Record<string, string> = {
+          instagram: 'Siga no Instagram',
+          twitter: 'Conecte no Twitter',
+          linkedin: 'Adicione no LinkedIn',
+          youtube: 'Inscreva-se no YouTube',
+          github: 'Confira no GitHub'
+        };
+        return `<a href="${escapeHtml(isValidUrl(url) ? url : '#')}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:white; border:1.5px solid rgba(0,0,0,0.08); border-radius:12px; text-decoration:none; transition:all 0.2s; width:100%;" onmouseover="this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'>
+          <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border-radius:8px;">${iconSvg}</div>
+          <div style="flex:1; text-align:left;">
+            <div style="font-weight:700; color:#1f2937; text-transform:capitalize;">${platform}</div>
+            <div style="font-size:12px; color:#6b7280;">${descriptions[platform] || ''}</div>
+          </div>
+        </a>`;
+      }
+      
+      // Floating buttons - will be positioned fixed
+      if (variation === "floating-buttons") {
+        return `<a href="${escapeHtml(isValidUrl(url) ? url : '#')}" aria-label="${escapeHtml(platform)}" style="display:flex; align-items:center; justify-content:center; width:48px; height:48px; background:white; border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:50%; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 280ms ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${iconSvg}</a>`;
+      }
+      
+      // Icon grid (default)
+      const label = showLabel ? `<span style="margin-left:8px; text-transform:capitalize;">${platform}</span>` : "";
       const style = showLabel 
         ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; font-weight:700; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`
         : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`;
@@ -430,7 +485,12 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       return `<a href="${escapeHtml(safeUrl)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
     }).join("");
 
-    const containerStyle = layout === 'column' 
+    // Floating buttons get fixed positioning
+    if (variation === "floating-buttons") {
+      return wrap(`\n${extraHtml}<div style="position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:12px; z-index:1000;">${icons}</div>`);
+    }
+
+    const containerStyle = variation === "detailed-list" || layout === 'column'
         ? `display:flex; flex-direction:column; gap:12px; align-items:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; ${animationStyle}`
         : `display:flex; gap:12px; justify-content:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; flex-wrap:wrap; ${animationStyle}`;
 
@@ -876,10 +936,15 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "spotify") {
     const url = block.spotifyUrl;
     const isCompact = block.spotifyCompact;
+    const variation = block.spotifyVariation || "single-track";
+    
+    console.log(`[DEBUG HTML] Spotify block - variation: ${variation}, url: ${url}`);
     
     if (!url) return "";
 
     let embedUrl = "";
+    let height = "152";
+    
     try {
       if (url.startsWith("spotify:")) {
         const parts = url.split(":");
@@ -899,8 +964,17 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     if (!embedUrl) return "";
 
+    // Adjust height based on variation
+    if (variation === "artist-profile") {
+      height = "380";
+    } else if (variation === "album" || variation === "playlist") {
+      height = "380";
+    } else if (variation === "single-track") {
+      height = isCompact ? "80" : "152";
+    }
+
     return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; overflow:hidden; ${animationStyle}">
-      <iframe style="border-radius:24px; overflow:hidden; border:0;" src="${embedUrl}" width="100%" height="${isCompact ? "80" : "152"}" frameBorder="0" scrolling="no" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:24px; overflow:hidden; border:0;" src="${embedUrl}" width="100%" height="${height}" frameBorder="0" scrolling="no" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
     </section>`);
   }
 
@@ -908,10 +982,38 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     const username = block.instagramUsername || "instagram";
     const url = `https://instagram.com/${username}`;
     const displayType = block.instagramDisplayType || "grid";
+    const variation = block.instagramVariation || "grid-shop";
     const uniqueId = `instagram-${block.id}`;
     const showText = block.instagramShowText !== false;
     const textPosition = block.instagramTextPosition || "bottom";
     const textColor = block.instagramTextColor || "#0095f6";
+    
+    console.log(`[DEBUG HTML] Instagram block - variation: ${variation}, username: ${username}`);
+    
+    // Different rendering based on variation
+    if (variation === "simple-link") {
+      // Render as a simple button link
+      const buttonStyle = `
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:12px 24px;
+        background:linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+        color:white;
+        text-decoration:none;
+        border-radius:12px;
+        font-weight:600;
+        font-size:14px;
+        transition:transform 0.2s;
+      `;
+      
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; text-align:center; ${animationStyle}">
+        <a href="${escapeHtml(url)}" target="_blank" style="${buttonStyle}" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+          Siga @${escapeHtml(username)} no Instagram
+        </a>
+      </section>`);
+    }
     
     const gridStyle = displayType === 'grid' 
       ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;" 
@@ -942,7 +1044,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     // We add 'custom-instagram-feed' class and data attributes for the BioRenderer to pick up
     return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
-      <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+      <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
       </div>
       ${textPosition === 'bottom' ? textHtml : ''}
@@ -952,9 +1054,22 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
   if (block.type === "youtube") {
     const url = block.youtubeUrl || "https://youtube.com/@youtube";
     const displayType = block.youtubeDisplayType || "grid";
+    const variation = block.youtubeVariation || "full-channel";
     const showText = block.youtubeShowText !== false;
     const textPosition = block.youtubeTextPosition || "bottom";
     const textColor = block.youtubeTextColor || "#ff0000";
+    
+    // Single video variation - embed the video directly
+    if (variation === "single-video" && url.includes('watch?v=')) {
+      const videoId = url.split('watch?v=')[1]?.split('&')[0];
+      if (videoId) {
+        return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+          <div style="position:relative; width:100%; padding-bottom:56.25%; border-radius:12px; overflow:hidden;">
+            <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </section>`);
+      }
+    }
     
     const gridStyle = displayType === 'grid' 
       ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;" 
@@ -983,7 +1098,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
 
     return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
-      <div class="custom-youtube-feed" data-url="${escapeHtml(url)}" data-display-type="${displayType}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+      <div class="custom-youtube-feed" data-url="${escapeHtml(url)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
       </div>
       ${textPosition === 'bottom' ? textHtml : ''}
@@ -1076,8 +1191,14 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     hexagon: 'clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);',
     amoeba: 'border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: amoeba-pulse 6s ease-in-out infinite;'
   };
-  
-  const imgStyle = imageStyles[bio.imageStyle || 'circle'] || imageStyles.circle;
+
+  const layoutFromImageStyle = bio.imageStyle === 'hero' ? 'hero' : 'classic';
+  const profileImageLayout = bio.profileImageLayout || layoutFromImageStyle;
+  const profileImageSize = bio.profileImageSize || 'small';
+  const titleStyle = bio.titleStyle || 'text';
+
+  const imageStyleKey = imageStyles[bio.imageStyle || ''] ? (bio.imageStyle || 'circle') : 'circle';
+  const imgStyle = imageStyles[imageStyleKey] || imageStyles.circle;
   const usernameColor = bio.usernameColor || '#111827';
 
   const hasProducts = blocks.some(b => b.type === 'product' || b.type === 'featured');
@@ -1088,6 +1209,47 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const displayProfileImage = bio.displayProfileImage !== false;
   const handle = bio.username || bio.sufix || 'user';
   const displayName = bio.sufix || 'User';
+  const profileImageSrc = normalizeProfileImageSrc(bio.profileImage, user?.id, baseUrl);
+  const titleLogoSrc = bio.favicon || bio.ogImage || profileImageSrc;
+
+  const classicImageSize = profileImageSize === 'large' ? 160 : 120;
+  const heroImageHeight = profileImageSize === 'large' ? 220 : 160;
+
+  const profileImageHtml = displayProfileImage ? (profileImageLayout === 'hero'
+    ? `
+        <div style="width:100%; height:${heroImageHeight}px; border-radius:24px; overflow:hidden; box-shadow:0 14px 30px -10px rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.4); margin-bottom: 18px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
+               <img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/base-img/card_base_image.png')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />
+               ${bio.isPreview ? `
+               <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+               </div>
+               ` : ''}
+        </div>
+      `
+    : `
+        <div style="width:${classicImageSize}px; height:${classicImageSize}px; ${imgStyle} overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
+               <img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/base-img/card_base_image.png')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />
+               ${bio.isPreview ? `
+               <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+               </div>
+               ` : ''}
+        </div>
+      `
+  ) : '';
+
+  const titleHtml = (titleStyle === 'logo' && titleLogoSrc)
+    ? `
+        <div style="display:flex; justify-content:center; align-items:center; margin:0 0 8px 0;">
+          <img loading="lazy" src="${titleLogoSrc}" onerror="this.style.display='none'" alt="${escapeHtml(displayName)}" style="max-width:180px; max-height:64px; object-fit:contain;" />
+        </div>
+      `
+    : `
+        <h1 style="font-size:28px; font-weight:800; color:${usernameColor}; margin:0 0 4px 0; text-align:center; letter-spacing:-0.5px; line-height:1.2;">
+            ${escapeHtml(displayName)}
+            ${bio.verified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" aria-label="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+        </h1>
+      `;
 
   const socialIcons: Record<string, string> = {
     instagram: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>',
@@ -1175,33 +1337,39 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     }
   }
 
-  const profileImageSrc = normalizeProfileImageSrc(bio.profileImage, user?.id, baseUrl);
-
-  const headerHtml = `
-    <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; align-items:center; position:relative; z-index:10; padding-top: 40px;">
-        
-        ${bio.enableSubscribeButton ? `
-        <button type="button" data-open-subscribe onclick="window.openSubscribe()" aria-label="Subscribe" style="position:absolute; top:10px; right:10px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.1); color:#111827; transition:all 0.2s ease; z-index:20;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+  const subscribeButtonHtml = bio.enableSubscribeButton ? `
+        <button type="button" data-open-subscribe onclick="window.openSubscribe()" aria-label="Subscribe" style="position:absolute; top:12px; right:12px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.9); border:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.1); color:#111827; transition:all 0.2s ease; z-index:20;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         </button>
-        ` : ''}
+  ` : '';
+
+  const heroHeaderHtml = `
+    <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; position:relative; z-index:10;">
+        <div style="width:100%; height:${profileImageSize === 'large' ? 380 : 320}px; border-radius:32px; overflow:hidden; box-shadow:0 28px 60px -28px rgba(0,0,0,0.65); background:#0f172a; position:relative;">
+          ${subscribeButtonHtml}
+          ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/base-img/card_base_image.png')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : ''}
+          <div style="position:absolute; inset:0; pointer-events:none; background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0) 65%);"></div>
+          <div style="position:absolute; bottom:0; left:0; right:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:0 20px 28px; gap:8px;">
+            ${(titleStyle === 'logo' && titleLogoSrc)
+              ? `<img loading="lazy" src="${titleLogoSrc}" onerror="this.style.display='none'" alt="${escapeHtml(displayName)}" style="max-width:220px; max-height:78px; object-fit:contain; filter:drop-shadow(0 6px 16px rgba(0,0,0,0.6));" />`
+              : `<div style="font-size:32px; font-weight:900; color:#ffffff; text-shadow:0 6px 18px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);">${escapeHtml(displayName)}${bio.verified ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" aria-label="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" style="display:inline-block; vertical-align:middle; margin-left:6px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</div>`}
+            <div style="font-size:16px; font-weight:600; color:rgba(255,255,255,0.85); text-shadow:0 2px 8px rgba(0,0,0,0.4);">@${escapeHtml(handle)}</div>
+            ${socialLinksHtml ? `<div style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-top:4px;">${socialLinksHtml}</div>` : ''}
+          </div>
+        </div>
+        ${bio.description ? `<p style="font-size:15px; font-weight:500; color:${usernameColor}; opacity:0.85; margin:20px auto 0; line-height:1.6; text-align:center; max-width:520px; padding:0 20px;">${escapeHtml(bio.description)}</p>` : ''}
+    </div>
+  `;
+
+  const classicHeaderHtml = `
+    <div id="profile-header-card" style="width:100%; max-width:${maxWidth}px; margin:0 auto 20px auto; display:flex; flex-direction:column; align-items:center; position:relative; z-index:10; padding-top:40px;">
+        ${subscribeButtonHtml}
 
         <!-- Profile Image -->
-        <div style="width:120px; height:120px; ${imgStyle} overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); border:4px solid white; margin-bottom: 16px; background:#f3f4f6; position:relative;" ${bio.isPreview ? 'onmouseover="this.querySelector(\'.upload-overlay\').style.opacity=\'1\'" onmouseout="this.querySelector(\'.upload-overlay\').style.opacity=\'0\'"' : ''}>
-               ${displayProfileImage ? `<img loading="lazy" src="${profileImageSrc}" onerror="this.src='${joinBaseUrl(baseUrl, '/base-img/card_base_image.png')}'" alt="${escapeHtml(displayName)}" style="width:100%; height:100%; object-fit:cover;" />` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#e5e7eb; color:#9ca3af; font-size:40px;">U</div>`}
-               
-               ${bio.isPreview ? `
-               <div class="upload-overlay" onclick="window.parent.postMessage({type: 'TRIGGER_IMAGE_UPLOAD'}, '*')" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; color:white; backdrop-filter:blur(2px);">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-               </div>
-               ` : ''}
-        </div>
+        ${profileImageHtml}
 
         <!-- Name & Handle -->
-        <h1 style="font-size:28px; font-weight:800; color:${usernameColor}; margin:0 0 4px 0; text-align:center; letter-spacing:-0.5px; line-height:1.2;">
-            ${escapeHtml(displayName)}
-            ${bio.verified ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" aria-label="Portyo.me verificou a autenticidade desta página e confirmou que ela e seu dono são condizentes" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
-        </h1>
+        ${titleHtml}
         <div style="font-size:15px; font-weight:600; color:${usernameColor}; opacity:0.6; margin-bottom:16px;">@${escapeHtml(handle)}</div>
 
         <!-- Description -->
@@ -1212,6 +1380,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
     </div>
   `;
+
+  const headerHtml = profileImageLayout === 'hero' ? heroHeaderHtml : classicHeaderHtml;
 
   let bgStyle = 'background:#f8fafc;';
   const bgColor = bio.bgColor || '#f8fafc';
@@ -1564,7 +1734,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
 
   const backgroundHtml = `${videoBgHtml}${extraHtml}`;
 
-  const previewEffectsScript = bio.isPreview ? `
+  const effectsScript = (bio.enableParallax || bio.floatingElements) ? `
     <script>
       (function() {
         try {
@@ -1731,7 +1901,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
             }
           }
         } catch (e) {
-          console.warn('Preview effects failed', e);
+          console.warn('Effects failed', e);
         }
       })();
     </script>
@@ -1864,7 +2034,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
       ${animationsCss}
     </style>
     ${backgroundHtml}
-    ${previewEffectsScript}
+    ${effectsScript}
 
     <main id="profile-container" style="${containerStyle} ${cardCss} position:relative; z-index:10;">
       ${headerHtml}

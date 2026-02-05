@@ -223,9 +223,9 @@ const PreviewPanel = memo(function PreviewPanel({
   const { t } = useTranslation("dashboard");
 
   return (
-    <aside className="hidden lg:flex w-[40%] max-w-[500px] border-l-2 border-black bg-white flex-col items-center justify-center p-8 shrink-0 relative bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
-      <div className="relative w-full max-w-[320px] aspect-[9/19] bg-[#1A1A1A] rounded-[48px] border-[8px] border-[#1A1A1A] shadow-[20px_20px_0px_0px_rgba(0,0,0,0.1)] overflow-hidden transform transition-all hover:scale-[1.01]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#1A1A1A] rounded-b-2xl z-20" />
+    <aside className="hidden lg:flex w-[45%] max-w-[540px] border-l-2 border-black bg-[#f5f5f5] flex-col items-center justify-center p-8 shrink-0 relative" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+      <div className="relative w-full max-w-[380px] aspect-[9/19.5] bg-[#1A1A1A] rounded-[52px] border-[10px] border-[#1A1A1A] shadow-[20px_20px_0px_0px_rgba(0,0,0,0.1)] overflow-hidden transform transition-all hover:scale-[1.01]">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-[#1A1A1A] rounded-b-2xl z-20" />
         {isGenerating ? (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-[#8129D9] rounded-full animate-spin" />
@@ -277,8 +277,8 @@ const MobilePreviewOverlay = memo(function MobilePreviewOverlay({
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="flex-1 p-8 flex items-center justify-center overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
-            <div className="relative w-full max-w-[320px] aspect-[9/19] bg-[#1A1A1A] rounded-[40px] border-[8px] border-[#1A1A1A] shadow-2xl overflow-hidden">
+          <div className="flex-1 p-8 flex items-center justify-center overflow-hidden bg-[#f5f5f5]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+            <div className="relative w-full max-w-[380px] aspect-[9/19.5] bg-[#1A1A1A] rounded-[52px] border-[10px] border-[#1A1A1A] shadow-2xl overflow-hidden">
               {isGenerating ? (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                   <div className="w-8 h-8 border-2 border-gray-300 border-t-[#8129D9] rounded-full animate-spin" />
@@ -309,6 +309,8 @@ export default function DashboardEditor() {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const lastSavedBlocksRef = useRef<string>("");
+  const designSaveTimeoutRef = useRef<number | null>(null);
 
   // Block Editor Hook
   const {
@@ -321,6 +323,7 @@ export default function DashboardEditor() {
     reorderBlocks,
     undo,
     replaceBlock,
+    setBlocks,
   } = useBlockEditor({
     initialBlocks: bio?.blocks || [],
     key: bio?.id
@@ -329,15 +332,26 @@ export default function DashboardEditor() {
   // Sync blocks with bio
   useEffect(() => {
     if (bio?.blocks) {
-      // Only update if different to avoid loops
       const bioBlocksJson = JSON.stringify(bio.blocks);
       const currentBlocksJson = JSON.stringify(blocks);
-      if (bioBlocksJson !== currentBlocksJson) {
-        // This would cause a loop, so we need to handle it differently
-        // We'll update via a ref or use a different approach
+
+      // If we have blocks from server, but local blocks are empty (or different on fresh load), sync them.
+      // This fixes the issue where initial load was empty (summary) and full load (details) came later.
+      if (bio.blocks.length > 0 && bioBlocksJson !== currentBlocksJson) {
+        // Check if it's safe to sync (e.g. if local history is empty implies no user edits yet)
+        // OR if local blocks are empty, definitely sync.
+        if (blocks.length === 0 || history.length === 0) {
+          setBlocks(bio.blocks);
+        }
       }
     }
-  }, [bio?.blocks]);
+  }, [bio?.blocks, blocks.length, history.length, setBlocks]);
+
+  // Track last saved blocks per bio
+  useEffect(() => {
+    if (!bio) return;
+    lastSavedBlocksRef.current = JSON.stringify(bio.blocks || []);
+  }, [bio?.id]);
 
   // HTML Generator Hook
   const { html, isGenerating } = useHtmlGenerator({
@@ -346,6 +360,29 @@ export default function DashboardEditor() {
     user,
     delay: 400,
   });
+
+  // Auto-save blocks when they change
+  useEffect(() => {
+    if (!bio) return;
+
+    const currentBlocksJson = JSON.stringify(blocks);
+    if (!lastSavedBlocksRef.current) {
+      lastSavedBlocksRef.current = JSON.stringify(bio.blocks || []);
+    }
+
+    if (currentBlocksJson === lastSavedBlocksRef.current) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        await updateBio(bio.id, { blocks, html: html || undefined });
+        lastSavedBlocksRef.current = currentBlocksJson;
+      } catch (error) {
+        console.error("Failed to auto-save blocks", error);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeout);
+  }, [blocks, bio, updateBio, html]);
 
   // SEO State
   const [seoState, setSeoState] = useState({
@@ -390,26 +427,27 @@ export default function DashboardEditor() {
     toast.success(t("editor.linkCopied"));
   }, [bio, t]);
 
-  const handleAddBlock = useCallback((type: BioBlock["type"]) => {
-    const newBlock = addBlock(type, t("editor.defaults.headingTitle"));
+  const handleAddBlock = useCallback((type: BioBlock["type"], variation?: string) => {
+    const newBlock = addBlock(type, undefined, variation);
     setEditingBlock(newBlock);
-  }, [addBlock, t]);
+  }, [addBlock]);
 
   const handleUpdateBlocks = useCallback(async (newBlocks: BioBlock[]) => {
     reorderBlocks(newBlocks);
     if (bio) {
-      await updateBio(bio.id, { blocks: newBlocks });
+      await updateBio(bio.id, { blocks: newBlocks, html: html || undefined });
     }
-  }, [reorderBlocks, bio, updateBio]);
+  }, [reorderBlocks, bio, updateBio, html]);
 
   const handleSaveBlock = useCallback((block: BioBlock) => {
     replaceBlock(block.id, block);
     if (bio) {
       updateBio(bio.id, {
-        blocks: blocks.map(b => b.id === block.id ? block : b)
+        blocks: blocks.map(b => b.id === block.id ? block : b),
+        html: html || undefined
       });
     }
-  }, [replaceBlock, blocks, bio, updateBio]);
+  }, [replaceBlock, blocks, bio, updateBio, html]);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -436,27 +474,25 @@ export default function DashboardEditor() {
     }
   }, [bio, updateBio, t]);
 
-  const handleSocialChange = useCallback(async (platform: string, value: string) => {
+  const handleDesignUpdate = useCallback((payload: Parameters<typeof updateBio>[1]) => {
     if (!bio) return;
-
-    let formattedValue = value.trim();
-    if (formattedValue && ['instagram', 'tiktok', 'twitter', 'github'].includes(platform)) {
-      formattedValue = formattedValue.replace(/^@/, '');
+    if (designSaveTimeoutRef.current) {
+      window.clearTimeout(designSaveTimeoutRef.current);
     }
+    designSaveTimeoutRef.current = window.setTimeout(() => {
+      updateBio(bio.id, payload).catch((error) => {
+        console.error("Design update failed:", error);
+      });
+    }, 350);
+  }, [bio, updateBio]);
 
-    const newSocials = { ...bio.socials, [platform]: formattedValue };
-    if (!formattedValue) {
-      delete (newSocials as Record<string, string | undefined>)[platform];
-    }
-
-    try {
-      await updateBio(bio.id, { socials: newSocials });
-      toast.success(t("editor.design.socialUpdateSuccess"));
-    } catch (error) {
-      console.error('Social update failed:', error);
-      toast.error(t("editor.design.socialUpdateError"));
-    }
-  }, [bio, updateBio, t]);
+  useEffect(() => {
+    return () => {
+      if (designSaveTimeoutRef.current) {
+        window.clearTimeout(designSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const generateSeoWithAI = useCallback(async (field: string) => {
     if (!bio?.id) {
@@ -537,7 +573,7 @@ export default function DashboardEditor() {
                     bio={bio}
                     uploadingImage={uploadingImage}
                     onImageUpload={handleImageUpload}
-                    onSocialChange={handleSocialChange}
+                    onUpdateBio={handleDesignUpdate}
                   />
                 )}
 

@@ -52,6 +52,15 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "varchar", default: "circle" })
     imageStyle: string = "circle";
 
+    @Column({ type: "varchar", default: "classic" })
+    profileImageLayout: string = "classic";
+
+    @Column({ type: "varchar", default: "small" })
+    profileImageSize: string = "small";
+
+    @Column({ type: "varchar", default: "text" })
+    titleStyle: string = "text";
+
     @Column({ type: "boolean", default: true })
     displayProfileImage: boolean = true;
 
@@ -151,6 +160,24 @@ export class BioEntity extends BaseEntity {
 
     @Column({ type: "varchar", nullable: true })
     customFontName: string | null = null;
+
+    @Column({ type: "varchar", nullable: true })
+    theme: string | null = null;
+
+    @Column({ type: "varchar", default: "solid" })
+    buttonStyle: string = "solid";
+
+    @Column({ type: "varchar", default: "rounder" })
+    buttonRadius: string = "rounder";
+
+    @Column({ type: "varchar", default: "none" })
+    buttonShadow: string = "none";
+
+    @Column({ type: "varchar", default: "#FFFFFF" })
+    buttonColor: string = "#FFFFFF";
+
+    @Column({ type: "varchar", default: "#000000" })
+    buttonTextColor: string = "#000000";
 
     @Column({ type: "boolean", default: false })
     verified: boolean = false;

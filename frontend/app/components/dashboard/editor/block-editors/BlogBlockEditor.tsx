@@ -1,15 +1,21 @@
+import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { BlogPostSelector } from "../integration-selectors";
 import { BlockStyleSettings } from "../block-style-settings";
-import type { BioBlock } from "~/contexts/bio.context";
+import BioContext, { type BioBlock } from "~/contexts/bio.context";
 
 interface Props {
   block: BioBlock;
   onChange: (updates: Partial<BioBlock>) => void;
+  bioId?: string;
 }
 
-export function BlogBlockEditor({ block, onChange }: Props) {
+export function BlogBlockEditor({ block, onChange, bioId }: Props) {
   const { t } = useTranslation("dashboard");
+  const { bio } = useContext(BioContext);
+
+  // Use prop bioId, then block.bioId, then context bio.id
+  const effectiveBioId = bioId || block.bioId || bio?.id || null;
 
   const handlePostsSelect = (posts: { id: string }[]) => {
     onChange({
@@ -25,10 +31,9 @@ export function BlogBlockEditor({ block, onChange }: Props) {
           {t("editor.blockIntegration.blog.title")}
         </label>
         <BlogPostSelector
-          bioId={block.bioId}
-          selectedPostIds={block.blogPostIds || []}
+          bioId={effectiveBioId}
+          selectedPostIds={block.blogPostIds}
           onSelect={handlePostsSelect}
-          maxSelection={5}
         />
       </div>
 

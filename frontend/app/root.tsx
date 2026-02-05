@@ -161,6 +161,10 @@ export const links: Route.LinksFunction = () => [
 
 // Headers de segurança e performance
 export function headers() {
+  const isDev = process.env.NODE_ENV !== "production";
+  const connectSrc = isDev
+    ? "'self' https://api.portyo.me http://localhost:3000 http://localhost:5173 http://localhost:5174 ws://localhost:5173 ws://localhost:5174 ws://localhost:3000"
+    : "'self' https://api.portyo.me";
   return {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Frame-Options": "SAMEORIGIN",
@@ -178,8 +182,8 @@ export function headers() {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
-      "img-src 'self' data: https: blob: http://localhost:3000 http://localhost:5173; " +
-      "connect-src 'self' https://api.portyo.me http://localhost:3000 http://localhost:5173 ws://localhost:5173 ws://localhost:3000; " +
+      "img-src 'self' data: https: blob: http://localhost:3000 http://localhost:5173 http://localhost:5174; " +
+      `connect-src ${connectSrc}; ` +
       "frame-src 'self'; " +
       "worker-src 'self' blob:; " +
       "media-src 'self' https:;",

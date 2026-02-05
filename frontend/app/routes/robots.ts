@@ -2,28 +2,35 @@ import type { LoaderFunctionArgs } from "react-router";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const host = url.host;
+    const host = url.host;
+    const origin = url.origin;
   const hostname = host.split(':')[0];
   
-  const isOnRenderDomain = hostname.endsWith('.onrender.com');
-  const isPortyoDomain = hostname.endsWith('portyo.me');
-  const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+    const isOnRenderDomain = hostname.endsWith('.onrender.com');
+    const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+    const isPortyoRoot = hostname === 'portyo.me' || hostname === 'www.portyo.me';
+    const isSaasSubdomain = hostname.endsWith('.portyo.me') && !isPortyoRoot;
+    const subdomain = isSaasSubdomain ? hostname.replace(/\.portyo\.me$/, '') : null;
+    const isSaasReservedSubdomain = subdomain ? ['api', 'www'].includes(subdomain) : false;
+    const isCustomDomain = !isPortyoRoot && !isSaasSubdomain && !isOnRenderDomain && !isLocalhost;
 
   // Determine if this is a bio request
   const { username } = params as { username?: string };
   
   // Custom Domain Logic (simplified)
   let customDomainBioIdentifier: string | null = null;
-  if (!isPortyoDomain && !isOnRenderDomain && !isLocalhost) {
-      customDomainBioIdentifier = host;
+  if (isCustomDomain) {
+      customDomainBioIdentifier = hostname;
   }
 
-  const bioIdentifier = username || customDomainBioIdentifier;
+  const bioIdentifier = username || customDomainBioIdentifier || (!isSaasReservedSubdomain ? subdomain : null);
 
   if (bioIdentifier) {
       // It's a bio!
       // Fetch public bio to check noIndex
-      const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
+      const rawApiUrl = isLocalhost
+          ? `${origin}/api`
+          : (process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me');
       const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
       let bioData = null;
 
@@ -42,8 +49,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
       const noIndex = bioData?.noIndex;
       const sitemapUrl = username 
-          ? `https://portyo.me/p/${username}/sitemap.xml`
-          : `https://${host}/sitemap.xml`;
+          ? `${origin}/p/${username}/sitemap.xml`
+          : `${origin}/sitemap.xml`;
 
       const bioContent = `User-agent: *
 # Bio Configuration

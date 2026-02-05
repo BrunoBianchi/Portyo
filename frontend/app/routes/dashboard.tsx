@@ -12,6 +12,7 @@ import { MenuIcon } from "~/components/shared/icons";
 import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
+import { NotificationBell } from "~/components/dashboard/notification-bell";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -158,32 +159,35 @@ export default function Dashboard() {
                 <BlogProvider>
                     <SiteBlogProvider>
                         <SiteAutoPostProvider>
-                        <AutoPostProvider>
-                        <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
-                            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                            <AutoPostProvider>
+                                <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
+                                    <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-                            <main className="flex-1 md:ml-64 transition-all duration-300 min-w-0">
-                                {/* Mobile Header */}
-                                <div className="md:hidden bg-surface/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
-                                            P
+                                    <main className="flex-1 md:ml-64 transition-all duration-300 min-w-0">
+                                        {/* Mobile Header */}
+                                        <div className="md:hidden bg-surface/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
+                                                    P
+                                                </div>
+                                                <span className="font-bold text-xl tracking-tight text-text-main">Portyo</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <NotificationBell />
+                                                <button
+                                                    className="p-2.5 bg-surface-alt rounded-xl text-text-main hover:bg-primary/20 transition-colors"
+                                                    onClick={() => setIsSidebarOpen(true)}
+                                                >
+                                                    <MenuIcon />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <span className="font-bold text-xl tracking-tight text-text-main">Portyo</span>
-                                    </div>
-                                    <button
-                                        className="p-2.5 bg-surface-alt rounded-xl text-text-main hover:bg-primary/20 transition-colors"
-                                        onClick={() => setIsSidebarOpen(true)}
-                                    >
-                                        <MenuIcon />
-                                    </button>
-                                </div>
 
-                                <Outlet />
-                            </main>
-                        </div>
-                    </AutoPostProvider>
-                    </SiteAutoPostProvider>
+                                        <Outlet />
+                                    </main>
+                                </div>
+                            </AutoPostProvider>
+                        </SiteAutoPostProvider>
                     </SiteBlogProvider>
                 </BlogProvider>
             </BioProvider>

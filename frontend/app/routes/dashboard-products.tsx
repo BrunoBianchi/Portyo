@@ -249,8 +249,16 @@ export default function DashboardProducts() {
 
     const hasSeenTour = window.localStorage.getItem("portyo:products-tour-done");
     if (!hasSeenTour) {
-      setTourRun(true);
+      const timer = setTimeout(() => {
+        startTour(productsTourSteps);
+      }, 500);
+      return () => clearTimeout(timer);
     }
+  }, [isMobile, startTour]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isMobile) return;
 
     const rootStyles = getComputedStyle(document.documentElement);
     const primaryFromTheme = rootStyles.getPropertyValue("--color-primary").trim();
@@ -259,62 +267,71 @@ export default function DashboardProducts() {
     }
   }, [isMobile]);
 
-  const productsTourSteps: Step[] = [
+  const productsTourSteps: DriveStep[] = useMemo(() => [
     {
-      target: "[data-tour=\"products-header\"]",
-      content: t("dashboard.tours.products.steps.header"),
-      placement: "bottom",
-      disableBeacon: true,
+      element: "[data-tour=\"products-header\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.header"),
+        description: t("dashboard.tours.products.steps.header"),
+        side: "bottom",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-add\"]",
-      content: t("dashboard.tours.products.steps.add"),
-      placement: "bottom",
+      element: "[data-tour=\"products-add\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.add"),
+        description: t("dashboard.tours.products.steps.add"),
+        side: "bottom",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-fee\"]",
-      content: t("dashboard.tours.products.steps.fee"),
-      placement: "bottom",
+      element: "[data-tour=\"products-fee\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.fee"),
+        description: t("dashboard.tours.products.steps.fee"),
+        side: "bottom",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-search\"]",
-      content: t("dashboard.tours.products.steps.search"),
-      placement: "bottom",
+      element: "[data-tour=\"products-search\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.search"),
+        description: t("dashboard.tours.products.steps.search"),
+        side: "bottom",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-grid\"]",
-      content: t("dashboard.tours.products.steps.grid"),
-      placement: "top",
+      element: "[data-tour=\"products-grid\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.grid"),
+        description: t("dashboard.tours.products.steps.grid"),
+        side: "top",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-card\"]",
-      content: t("dashboard.tours.products.steps.card"),
-      placement: "top",
+      element: "[data-tour=\"products-card\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.card"),
+        description: t("dashboard.tours.products.steps.card"),
+        side: "top",
+        align: "start",
+      },
     },
     {
-      target: "[data-tour=\"products-add-placeholder\"]",
-      content: t("dashboard.tours.products.steps.addPlaceholder"),
-      placement: "top",
+      element: "[data-tour=\"products-add-placeholder\"]",
+      popover: {
+        title: t("dashboard.tours.products.steps.addPlaceholder"),
+        description: t("dashboard.tours.products.steps.addPlaceholder"),
+        side: "top",
+        align: "start",
+      },
     },
-  ];
-
-  const handleProductsTourCallback = (data: CallBackProps) => {
-    const { status, type, index, action } = data;
-
-    if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type as any)) {
-      const delta = action === ACTIONS.PREV ? -1 : 1;
-      setTourStepIndex(index + delta);
-      return;
-    }
-
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
-      setTourRun(false);
-      setTourStepIndex(0);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("portyo:products-tour-done", "true");
-      }
-    }
-  };
+  ], [t]);
 
   const handleCreateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

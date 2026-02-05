@@ -49,8 +49,8 @@ export default defineConfig(({ mode }) => ({
       filter: /\.(js|css|html|json|svg)$/,
       ext: '.br',
     }),
-    // Injetar Service Worker
-    injectSWPlugin(),
+    // Injetar Service Worker (somente em produção)
+    mode === "production" && injectSWPlugin(),
     // Visualizador de bundle (apenas em análise)
     mode === 'analyze' && visualizer({
       open: true,
@@ -61,15 +61,11 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   
   optimizeDeps: {
-    include: ["date-fns", "react", "react-dom", "framer-motion", "driver.js"],
+    include: ["date-fns", "react", "react-dom", "framer-motion"],
     exclude: ["@react-router/dev", "i18next-fs-backend"],
     esbuildOptions: {
-      target: 'esnext',
+      target: 'es2020',
     },
-  },
-
-  ssr: {
-    noExternal: ["driver.js"],
   },
   
   server: {

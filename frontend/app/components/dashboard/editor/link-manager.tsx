@@ -283,18 +283,23 @@ function getBlockPreview(block: BioBlock, t: any): string {
             return block.mediaUrl ? safeT(t, "editor.preview.mediaAttached") : safeT(t, "editor.preview.noMedia");
         case 'socials': {
             const count = Object.values(block.socials || {}).filter(Boolean).length;
-            return count ? safeT(t, "editor.preview.links", { count }) : safeT(t, "editor.preview.noLinks");
+            const socialsVariationText = block.socialsVariation ? ` - ${block.socialsVariation === 'icon-grid' ? 'Grid' : block.socialsVariation === 'detailed-list' ? 'Lista' : 'Flutuante'}` : '';
+            return count ? safeT(t, "editor.preview.links", { count }) + socialsVariationText : safeT(t, "editor.preview.noLinks");
         }
         case 'qrcode':
             return block.qrCodeValue ? safeT(t, "editor.preview.qrConfigured") : safeT(t, "editor.preview.noQrValue");
         case 'whatsapp':
-            return block.whatsappNumber || safeT(t, "editor.preview.noWhatsappNumber");
+            const whatsappVariationText = block.whatsappVariation ? ` - ${block.whatsappVariation === 'direct-button' ? 'Direto' : 'Formulário'}` : '';
+            return (block.whatsappNumber || safeT(t, "editor.preview.noWhatsappNumber")) + whatsappVariationText;
         case 'spotify':
-            return block.spotifyUrl ? safeT(t, "editor.preview.spotifyConfigured") : safeT(t, "editor.preview.noSpotify");
+            const spotifyVariationText = block.spotifyVariation ? ` - ${block.spotifyVariation === 'artist-profile' ? 'Perfil' : block.spotifyVariation === 'single-track' ? 'Faixa' : block.spotifyVariation === 'playlist' ? 'Playlist' : 'Álbum'}` : '';
+            return block.spotifyUrl ? safeT(t, "editor.preview.spotifyConfigured") + spotifyVariationText : safeT(t, "editor.preview.noSpotify");
         case 'youtube':
-            return block.youtubeUrl ? safeT(t, "editor.preview.youtubeConfigured") : safeT(t, "editor.preview.noYoutube");
+            const youtubeVariationText = block.youtubeVariation ? ` - ${block.youtubeVariation === 'full-channel' ? 'Canal' : block.youtubeVariation === 'single-video' ? 'Vídeo' : 'Playlist'}` : '';
+            return block.youtubeUrl ? safeT(t, "editor.preview.youtubeConfigured") + youtubeVariationText : safeT(t, "editor.preview.noYoutube");
         case 'instagram':
-            return block.instagramUsername ? `@${block.instagramUsername}` : safeT(t, "editor.preview.noInstagram");
+            const instagramVariationText = block.instagramVariation ? ` - ${block.instagramVariation === 'grid-shop' ? 'Grid' : block.instagramVariation === 'visual-gallery' ? 'Galeria' : 'Link'}` : '';
+            return block.instagramUsername ? `@${block.instagramUsername}${instagramVariationText}` : safeT(t, "editor.preview.noInstagram");
         case 'map':
             return block.mapTitle || block.mapAddress || safeT(t, "editor.preview.mapFallback");
         case 'calendar':

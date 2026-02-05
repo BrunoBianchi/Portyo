@@ -38,6 +38,8 @@ export interface ThemeStyles {
     customFontUrl?: string;
     customFontName?: string;
     buttonStyle?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
 }
 
 export interface ThemePreset {
@@ -232,7 +234,32 @@ export const THEME_PRESETS: ThemePreset[] = [
         styles: { bgType: "noise", bgColor: "#18181b", bgSecondaryColor: "#27272a", cardStyle: "solid", cardBackgroundColor: "#1f1f23", cardBorderColor: "#52525b", cardBorderWidth: 1, cardBorderRadius: 8, cardShadow: "xl", cardPadding: 28, cardOpacity: 100, cardBlur: 0, usernameColor: "#fafafa", font: "Roboto", maxWidth: 520, imageStyle: "rounded", ...noEffects }, sampleBlocks },
     { name: "Adventure", description: "Outdoor mountains & nature", category: "travel", tier: "pro", emoji: "⛰️",
         features: ["Nature", "Adventure", "Green"], colors: ["#14532d", "#bbf7d0", "#166534"],
-        styles: { bgType: "gradient", bgColor: "#14532d", bgSecondaryColor: "#166534", cardStyle: "frosted", cardBackgroundColor: "rgba(34,197,94,0.12)", cardBorderColor: "#4ade80", cardBorderWidth: 1, cardBorderRadius: 12, cardShadow: "lg", cardPadding: 28, cardOpacity: 85, cardBlur: 18, usernameColor: "#bbf7d0", font: "Cabin", maxWidth: 500, imageStyle: "circle", enableParallax: true, parallaxIntensity: 35, parallaxDepth: 45, floatingElements: true, floatingElementsType: "leaves", floatingElementsColor: "#4ade80", floatingElementsDensity: 10, floatingElementsSize: 28, floatingElementsSpeed: 18, floatingElementsOpacity: 0.18, floatingElementsBlur: 2 }, sampleBlocks }
+        styles: { bgType: "gradient", bgColor: "#14532d", bgSecondaryColor: "#166534", cardStyle: "frosted", cardBackgroundColor: "rgba(34,197,94,0.12)", cardBorderColor: "#4ade80", cardBorderWidth: 1, cardBorderRadius: 12, cardShadow: "lg", cardPadding: 28, cardOpacity: 85, cardBlur: 18, usernameColor: "#bbf7d0", font: "Cabin", maxWidth: 500, imageStyle: "circle", enableParallax: true, parallaxIntensity: 35, parallaxDepth: 45, floatingElements: true, floatingElementsType: "leaves", floatingElementsColor: "#4ade80", floatingElementsDensity: 10, floatingElementsSize: 28, floatingElementsSpeed: 18, floatingElementsOpacity: 0.18, floatingElementsBlur: 2 }, sampleBlocks },
+
+    // ============ CUSTOM BACKGROUNDS FROM /public/themes ============
+    { name: "Ocean Wave", description: "Cool blue-green aquatic gradient", category: "art", tier: "pro", emoji: "🌊",
+        features: ["Blue-Green", "Aquatic", "Gradient", "Image Background"], colors: ["#1a4d5c", "#2d8a9f", "#4ecdc4"],
+        styles: { bgType: "image", bgColor: "/themes/blue-green.png", bgSecondaryColor: "#2d8a9f", cardStyle: "frosted", cardBackgroundColor: "rgba(255,255,255,0.15)", cardBorderColor: "rgba(78,205,196,0.3)", cardBorderWidth: 1, cardBorderRadius: 20, cardShadow: "2xl", cardPadding: 32, cardOpacity: 15, cardBlur: 25, usernameColor: "#ffffff", font: "Poppins", maxWidth: 500, imageStyle: "circle", enableParallax: true, parallaxIntensity: 35, parallaxDepth: 45, floatingElements: true, floatingElementsType: "bubbles", floatingElementsColor: "#4ecdc4", floatingElementsDensity: 12, floatingElementsSize: 25, floatingElementsSpeed: 18, floatingElementsOpacity: 0.3, floatingElementsBlur: 2 }, sampleBlocks },
+    
+    { name: "Deep Blue", description: "Pure blue calming background", category: "business", tier: "pro", emoji: "💙",
+        features: ["Blue", "Professional", "Calm", "Image Background"], colors: ["#0a2f5c", "#1a4d8f", "#2d6cb3"],
+        styles: { bgType: "image", bgColor: "/themes/blue.png", bgSecondaryColor: "#1a4d8f", cardStyle: "frosted", cardBackgroundColor: "rgba(255,255,255,0.12)", cardBorderColor: "rgba(45,108,179,0.4)", cardBorderWidth: 1, cardBorderRadius: 16, cardShadow: "xl", cardPadding: 36, cardOpacity: 12, cardBlur: 22, usernameColor: "#ffffff", font: "Inter", maxWidth: 520, imageStyle: "circle", enableParallax: true, parallaxIntensity: 30, parallaxDepth: 40, floatingElements: false, floatingElementsType: "circles", floatingElementsColor: "#ffffff", floatingElementsDensity: 0, floatingElementsSize: 0, floatingElementsSpeed: 0, floatingElementsOpacity: 0, floatingElementsBlur: 0 }, sampleBlocks },
+    
+    { name: "Orange Noise", description: "Warm orange textured noise", category: "art", tier: "pro", emoji: "🧡",
+        features: ["Orange", "Textured", "Warm", "Image Background"], colors: ["#d96b2f", "#e88a4d", "#f0a968"],
+        styles: { bgType: "image", bgColor: "/themes/orange-noise.png", bgSecondaryColor: "#e88a4d", cardStyle: "frosted", cardBackgroundColor: "rgba(255,255,255,0.18)", cardBorderColor: "rgba(240,169,104,0.35)", cardBorderWidth: 1, cardBorderRadius: 18, cardShadow: "2xl", cardPadding: 32, cardOpacity: 18, cardBlur: 20, usernameColor: "#ffffff", font: "Montserrat", maxWidth: 500, imageStyle: "rounded", enableParallax: true, parallaxIntensity: 25, parallaxDepth: 35, floatingElements: true, floatingElementsType: "sparkles", floatingElementsColor: "#f0a968", floatingElementsDensity: 15, floatingElementsSize: 18, floatingElementsSpeed: 15, floatingElementsOpacity: 0.25, floatingElementsBlur: 1 }, sampleBlocks },
+    
+    { name: "Geometric Orange", description: "Bold quadricular orange patterns", category: "architecture", tier: "pro", emoji: "📐",
+        features: ["Geometric", "Orange", "Pattern", "Image Background"], colors: ["#d65c28", "#e87a45", "#f29860"],
+        styles: { bgType: "image", bgColor: "/themes/quadricular-orange.png", bgSecondaryColor: "#e87a45", cardStyle: "solid", cardBackgroundColor: "rgba(255,255,255,0.95)", cardBorderColor: "#d65c28", cardBorderWidth: 2, cardBorderRadius: 12, cardShadow: "2xl", cardPadding: 32, cardOpacity: 95, cardBlur: 5, usernameColor: "#d65c28", font: "Space Grotesk", maxWidth: 500, imageStyle: "rounded", enableParallax: true, parallaxIntensity: 40, parallaxDepth: 50, floatingElements: true, floatingElementsType: "circles", floatingElementsColor: "#e87a45", floatingElementsDensity: 10, floatingElementsSize: 30, floatingElementsSpeed: 12, floatingElementsOpacity: 0.2, floatingElementsBlur: 3 }, sampleBlocks },
+    
+    { name: "Sunset Glow", description: "Vibrant red-pink-orange gradient", category: "onlyfans", tier: "pro", emoji: "🌅",
+        features: ["Sunset", "Vibrant", "Gradient", "Image Background"], colors: ["#e84855", "#f28a94", "#f5a961"],
+        styles: { bgType: "image", bgColor: "/themes/red-pink-orange.png", bgSecondaryColor: "#f28a94", cardStyle: "frosted", cardBackgroundColor: "rgba(255,255,255,0.16)", cardBorderColor: "rgba(245,169,97,0.4)", cardBorderWidth: 1, cardBorderRadius: 24, cardShadow: "2xl", cardPadding: 32, cardOpacity: 16, cardBlur: 28, usernameColor: "#ffffff", font: "Playfair Display", maxWidth: 480, imageStyle: "circle", enableParallax: true, parallaxIntensity: 40, parallaxDepth: 50, floatingElements: true, floatingElementsType: "hearts", floatingElementsColor: "#ff9eb1", floatingElementsDensity: 18, floatingElementsSize: 24, floatingElementsSpeed: 14, floatingElementsOpacity: 0.3, floatingElementsBlur: 2 }, sampleBlocks },
+    
+    { name: "Light Spectrum", description: "Soft white-blue-orange blend", category: "business", tier: "pro", emoji: "✨",
+        features: ["Soft", "Multi-color", "Professional", "Image Background"], colors: ["#f0f5fa", "#5a8db8", "#e89660"],
+        styles: { bgType: "image", bgColor: "/themes/white-blue-orange.jpg", bgSecondaryColor: "#5a8db8", cardStyle: "frosted", cardBackgroundColor: "rgba(255,255,255,0.22)", cardBorderColor: "rgba(90,141,184,0.3)", cardBorderWidth: 1, cardBorderRadius: 16, cardShadow: "xl", cardPadding: 36, cardOpacity: 22, cardBlur: 18, usernameColor: "#2a4a66", font: "Inter", maxWidth: 520, imageStyle: "circle", enableParallax: true, parallaxIntensity: 28, parallaxDepth: 38, floatingElements: true, floatingElementsType: "sparkles", floatingElementsColor: "#5a8db8", floatingElementsDensity: 12, floatingElementsSize: 20, floatingElementsSpeed: 16, floatingElementsOpacity: 0.2, floatingElementsBlur: 2 }, sampleBlocks }
 ];
 
 export default THEME_PRESETS;

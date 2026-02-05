@@ -51,6 +51,7 @@ export function useHtmlGenerator(options: UseHtmlGeneratorOptions): UseHtmlGener
   }, [blocks, bio, user]);
 
   useEffect(() => {
+    setIsGenerating(true);
     // Clear previous timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);

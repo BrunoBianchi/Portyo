@@ -6,7 +6,6 @@ import BioContext from "~/contexts/bio.context";
 import {
     LayoutDashboard,
     PenTool,
-    Settings,
     LogOut,
     Globe,
     ChevronDown,
@@ -114,7 +113,6 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
         { name: "Email Templates", path: "/dashboard/templates", icon: LayoutTemplate, isPro: true, isProOnly: true },
         { name: "Integrations", path: "/dashboard/integrations", icon: Puzzle },
         { name: "Automation", path: "/dashboard/automation", icon: Zap, isPro: true },
-        { name: "SEO Settings", path: "/dashboard/seo", icon: Settings, isPro: true },
         { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3, isPro: true },
     ];
 

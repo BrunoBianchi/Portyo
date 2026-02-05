@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { Bell } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Bell, X, Check } from "lucide-react";
 import { notificationService, type Notification } from "~/services/notification.service";
 import { NotificationItem } from "~/components/dashboard/notification-item";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,7 @@ export function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
-    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 384 }); // Default w-96
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 384 });
 
     const buttonRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -32,26 +33,28 @@ export function NotificationBell() {
 
         if (isMobile) {
             setDropdownPos({
-                top: 0, // Not used for mobile bottom sheet style
+                top: 0,
                 left: 0,
                 width: window.innerWidth
             });
         } else {
-            // Desktop: Align left edge of dropdown with left edge of button (since it's in left sidebar)
-            // But verify if it fits
+            // Desktop: Align left edge or right edge depending on space
+            const width = 400;
             let left = rect.left;
-            const width = 384; // w-96
 
-            // If it would overflow right, shift it? (Unlikely for left sidebar)
-            // Just in case:
+            // Try to align left, but checking overflow right
             if (left + width > window.innerWidth) {
-                left = window.innerWidth - width - 16;
+                // Align right edge with button right edge if possible, or just stick to window right
+                left = window.innerWidth - width - 24;
             }
 
+            // Vertical position: below button
+            const top = rect.bottom + 12;
+
             setDropdownPos({
-                top: rect.bottom + 8,
-                left: left,
-                width: width
+                top,
+                left,
+                width
             });
         }
     };
@@ -168,107 +171,119 @@ export function NotificationBell() {
                     setIsOpen(!isOpen);
                     if (!isOpen) fetchNotifications();
                 }}
-                className="relative p-2 hover:bg-muted rounded-lg transition-colors"
+                className="relative p-2.5 rounded-full hover:bg-black/5 text-gray-500 transition-colors group"
                 aria-label={t("dashboard.notifications.bell")}
             >
-                <Bell className={`w-5 h-5 text-muted-foreground ${unreadCount > 0 ? 'animate-pulse' : ''}`} />
+                <Bell className={`w-5 h-5 stroke-[2px] ${isOpen ? 'text-black' : ''}`} />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-destructive/100 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#F3F3F1]"></span>
                 )}
             </button>
 
-            {isOpen && (
-                <div
-                    ref={dropdownRef}
-                    className="fixed z-[9999] bg-surface-card rounded-xl shadow-2xl border border-border overflow-hidden ring-1 ring-black/5 flex flex-col"
-                    style={{
-                        ...(window.innerWidth < 768 ? {
-                            top: 'auto',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            width: '100%',
-                            borderBottomLeftRadius: 0,
-                            borderBottomRightRadius: 0,
-                            maxHeight: '80vh'
-                        } : {
-                            top: dropdownPos.top,
-                            left: dropdownPos.left,
-                            width: dropdownPos.width,
-                            maxHeight: '600px'
-                        })
-                    }}
-                >
-                    {/* Header */}
-                    <div className="p-4 border-b border-border flex items-center justify-between bg-muted flex-shrink-0">
-                        <h3 className="font-bold text-foreground">{t("dashboard.notifications.title")}</h3>
-                        {unreadCount > 0 && (
-                            <button
-                                onClick={handleMarkAllAsRead}
-                                className="text-xs font-medium text-primary hover:text-primary-hover transition-colors"
-                            >
-                                {t("dashboard.notifications.markAllRead")}
-                            </button>
-                        )}
-                        {/* Mobile close button */}
-                        <button
+            {isOpen && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[9999]">
+                    {/* Helper to calculate position relative to button in mobile? No, mobile uses fixed bottom */}
+
+                    {/* Mobile Overlay */}
+                    {window.innerWidth < 768 && (
+                        <div
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                             onClick={() => setIsOpen(false)}
-                            className="md:hidden p-1 hover:bg-muted rounded-full"
-                        >
-                            <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
+                        />
+                    )}
 
-                    {/* Notifications List - flexible height */}
-                    <div className="overflow-y-auto flex-1 overscroll-contain">
-                        {loading && notifications.length === 0 ? (
-                            <div className="p-8 text-center text-muted-foreground">
-                                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                    <div
+                        ref={dropdownRef}
+                        className="absolute bg-white flex flex-col overflow-hidden"
+                        style={{
+                            ...(window.innerWidth < 768 ? {
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                width: '100%',
+                                maxHeight: '85vh',
+                                borderTopLeftRadius: '24px',
+                                borderTopRightRadius: '24px',
+                                borderBottom: 'none',
+                                borderLeft: 'none',
+                                borderRight: 'none',
+                                boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+                            } : {
+                                top: dropdownPos.top,
+                                left: dropdownPos.left,
+                                width: dropdownPos.width,
+                                maxHeight: '600px',
+                                borderRadius: '16px',
+                                border: '2px solid black',
+                                boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)'
+                            })
+                        }}
+                    >
+                        {/* Header */}
+                        <div className="p-4 border-b-2 border-gray-100 flex items-center justify-between bg-white flex-shrink-0">
+                            <h3 className="font-black text-lg text-[#1A1A1A]">{t("dashboard.notifications.title")}</h3>
+                            <div className="flex items-center gap-3">
+                                {unreadCount > 0 && (
+                                    <button
+                                        onClick={handleMarkAllAsRead}
+                                        className="text-xs font-bold text-gray-500 hover:text-black transition-colors flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md"
+                                    >
+                                        <Check className="w-3 h-3" />
+                                        {t("dashboard.notifications.markAllRead")}
+                                    </button>
+                                )}
+                                {/* Mobile close button */}
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="md:hidden p-1 hover:bg-gray-100 rounded-full"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
                             </div>
-                        ) : notifications.length === 0 ? (
-                            <div className="p-8 text-center text-muted-foreground">
-                                <Bell className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                                <p className="text-sm font-medium">{t("dashboard.notifications.empty")}</p>
+                        </div>
+
+                        {/* Notifications List */}
+                        <div className="overflow-y-auto flex-1 overscroll-contain bg-white">
+                            {loading && notifications.length === 0 ? (
+                                <div className="p-12 text-center text-gray-400">
+                                    <div className="animate-spin w-6 h-6 border-2 border-black border-t-transparent rounded-full mx-auto mb-2"></div>
+                                    <p className="text-xs font-bold uppercase tracking-wider">Loading...</p>
+                                </div>
+                            ) : notifications.length === 0 ? (
+                                <div className="p-12 text-center text-gray-400">
+                                    <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                                    <p className="text-sm font-bold text-gray-900">{t("dashboard.notifications.empty")}</p>
+                                    <p className="text-xs mt-1">{t("dashboard.notifications.emptyDesc", "You're all caught up!")}</p>
+                                </div>
+                            ) : (
+                                notifications.map(notification => (
+                                    <NotificationItem
+                                        key={notification.id}
+                                        notification={notification}
+                                        onMarkAsRead={handleMarkAsRead}
+                                        onDelete={handleDelete}
+                                        onClose={() => setIsOpen(false)}
+                                        withLang={withLang}
+                                    />
+                                ))
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        {notifications.length > 0 && (
+                            <div className="p-3 border-t-2 border-gray-100 bg-gray-50 flex-shrink-0">
+                                <Link
+                                    to={withLang("/dashboard/notifications")}
+                                    className="block text-center text-sm font-black text-[#1A1A1A] hover:underline uppercase tracking-wide"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {t("dashboard.notifications.viewAll")}
+                                </Link>
                             </div>
-                        ) : (
-                            notifications.map(notification => (
-                                <NotificationItem
-                                    key={notification.id}
-                                    notification={notification}
-                                    onMarkAsRead={handleMarkAsRead}
-                                    onDelete={handleDelete}
-                                    onClose={() => setIsOpen(false)}
-                                    withLang={withLang}
-                                />
-                            ))
                         )}
                     </div>
-
-                    {/* Footer - fixed at bottom */}
-                    {notifications.length > 0 && (
-                        <div className="p-3 border-t border-border bg-muted flex-shrink-0">
-                            <Link
-                                to={withLang("/dashboard/notifications")}
-                                className="block text-center text-sm font-medium text-primary hover:text-primary-hover transition-colors"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                {t("dashboard.notifications.viewAll")}
-                            </Link>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Mobile Overlay */}
-            {isOpen && window.innerWidth < 768 && (
-                <div
-                    className="fixed inset-0 bg-black/20 z-[9998] md:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
+                </div>,
+                document.body
             )}
         </>
     );

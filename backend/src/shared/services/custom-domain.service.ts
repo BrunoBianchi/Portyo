@@ -3,13 +3,26 @@ import { CustomDomainEntity, CustomDomainStatus } from "../../database/entity/cu
 import { BioEntity } from "../../database/entity/bio-entity";
 import { UserEntity } from "../../database/entity/user-entity";
 import { logger } from "../utils/logger";
+import redisClient from "../../config/redis.client";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as dns from "dns";
 import * as util from "util";
+import { In } from "typeorm";
 
 const execAsync = promisify(exec);
 const dnsLookup = util.promisify(dns.lookup);
+const dnsResolve4 = util.promisify(dns.resolve4);
+const dnsResolveCname = util.promisify(dns.resolveCname);
+
+const CUSTOM_DOMAIN_DNS_QUEUE_KEY = "custom-domain:dns-queue";
+const CUSTOM_DOMAIN_DNS_QUEUE_LOCK_PREFIX = "custom-domain:dns-lock";
+const CUSTOM_DOMAIN_DNS_QUEUE_BATCH = 10;
+
+const isLocalhostDomain = (value: string) => {
+    const clean = value.toLowerCase();
+    return clean === "localhost" || clean.endsWith(".localhost");
+};
 
 const SAAS_DOMAINS = [
     'portyo.me',
@@ -53,7 +66,11 @@ export class CustomDomainService {
      */
     static extractDomain(host: string): string {
         if (!host) return '';
-        return host.split(':')[0].toLowerCase().trim();
+        const trimmed = host.trim().toLowerCase();
+        const withoutProtocol = trimmed.replace(/^https?:\/\//, "");
+        const withoutPath = withoutProtocol.split("/")[0];
+        const withoutPort = withoutPath.split(":")[0].trim();
+        return withoutPort.replace(/\.$/, "");
     }
 
     /**
@@ -83,6 +100,49 @@ export class CustomDomainService {
     }
 
     /**
+     * Busca todos os domínios personalizados de uma bio
+     */
+    static async findDomainsByBioId(bioId: string): Promise<CustomDomainEntity[]> {
+        return this.repository.find({
+            where: { bioId }
+        });
+    }
+
+    /**
+     * Busca domínios ativos de uma bio (prontos para uso público)
+     */
+    static async findActiveDomainsByBioId(bioId: string): Promise<CustomDomainEntity[]> {
+        return this.repository.find({
+            where: {
+                bioId,
+                status: CustomDomainStatus.ACTIVE,
+                sslActive: true
+            }
+        });
+    }
+
+    /**
+     * Extrai o sufix de um subdomínio do SaaS (ex: user.portyo.me => user)
+     */
+    static extractSaasSubdomain(host: string): string | null {
+        const cleanHost = this.extractDomain(host);
+        if (!cleanHost) return null;
+        if (SAAS_DOMAINS.includes(cleanHost)) return null;
+        if (!cleanHost.endsWith('.portyo.me')) return null;
+
+        const sub = cleanHost.replace(/\.portyo\.me$/, "");
+        if (!sub || sub.includes('.')) return null;
+        return sub;
+    }
+
+    /**
+     * Retorna o domínio do SaaS para um sufix (ex: user => user.portyo.me)
+     */
+    static getSaasSubdomainDomain(sufix: string): string {
+        return `${sufix}.portyo.me`;
+    }
+
+    /**
      * Verifica se um domínio DNS está apontando para o servidor correto
      */
     static async checkDnsConfiguration(domain: string): Promise<{ 
@@ -92,30 +152,52 @@ export class CustomDomainService {
         message: string 
     }> {
         try {
-            const { address } = await dnsLookup(domain);
-            
-            // Em produção, você deve obter o IP real do servidor
-            // Por enquanto, vamos apenas verificar se resolve
-            const serverIp = process.env.SERVER_IP || process.env.VM_IP || '127.0.0.1';
-            
-            // Verifica se o IP é público (não localhost)
-            const isPublicIp = !address.startsWith('127.') && 
-                              !address.startsWith('10.') && 
-                              !address.startsWith('192.168.') &&
-                              !address.startsWith('172.');
-            
+            const cnameTarget = "cname.portyo.me";
+
+            const [domainIps, cnameIps, cnames] = await Promise.all([
+                dnsResolve4(domain).catch(() => [] as string[]),
+                dnsResolve4(cnameTarget).catch(() => [] as string[]),
+                dnsResolveCname(domain).catch(() => [] as string[])
+            ]);
+
+            logger.info(`[CustomDomain][DNS] ${domain} -> CNAMEs: ${cnames.join(", ") || "(none)"}; A: ${domainIps.join(", ") || "(none)"}; ${cnameTarget} A: ${cnameIps.join(", ") || "(none)"}`);
+
+            const hasValidCname = cnames.some((value) =>
+                value.toLowerCase().replace(/\.$/, "") === cnameTarget
+            );
+
+            if (hasValidCname) {
+                return {
+                    configured: true,
+                    actualIp: domainIps.join(", ") || undefined,
+                    expectedIp: cnameIps.join(", ") || undefined,
+                    message: `CNAME configurado corretamente (${cnameTarget})`
+                };
+            }
+
+            const expectedIps = new Set(cnameIps);
+            const matchingIp = domainIps.find((ip) => expectedIps.has(ip));
+
+            if (!matchingIp) {
+                return {
+                    configured: false,
+                    actualIp: domainIps.join(', '),
+                    expectedIp: cnameIps.join(', '),
+                    message: `O registro DNS deve apontar para ${cnameTarget}.`
+                };
+            }
+
             return {
-                configured: isPublicIp,
-                actualIp: address,
-                expectedIp: serverIp,
-                message: isPublicIp 
-                    ? `DNS configurado corretamente (${address})`
-                    : `DNS aponta para IP privado (${address})`
+                configured: true,
+                actualIp: matchingIp,
+                expectedIp: cnameIps.join(', '),
+                message: `DNS configurado corretamente (${matchingIp})`
             };
         } catch (error) {
+            logger.error(`[CustomDomain][DNS] Falha na resolução para ${domain}:`, error);
             return {
                 configured: false,
-                message: `Não foi possível resolver o DNS: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: `Não foi possível resolver o DNS. Verifique se o registro A aponta para cname.portyo.me.`
             };
         }
     }
@@ -132,7 +214,7 @@ export class CustomDomainService {
         }
 
         // Valida formato do domínio
-        const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+        const domainRegex = /^(?=.{1,253}$)(?!-)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
         if (!domainRegex.test(cleanDomain)) {
             return { valid: false, message: 'Formato de domínio inválido' };
         }
@@ -224,7 +306,7 @@ export class CustomDomainService {
 
             if (!dnsCheck.configured) {
                 domain.status = CustomDomainStatus.PENDING;
-                domain.errorMessage = dnsCheck.message;
+                domain.errorMessage = "Falha na verificação do domínio. Verifique o DNS e tente novamente.";
                 await this.repository.save(domain);
                 logger.warn(`DNS não configurado para ${domain.domain}: ${dnsCheck.message}`);
                 return;
@@ -241,7 +323,7 @@ export class CustomDomainService {
         } catch (error) {
             logger.error(`Erro na verificação do domínio ${domain.domain}:`, error);
             domain.status = CustomDomainStatus.FAILED;
-            domain.errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            domain.errorMessage = "Falha ao verificar o domínio. Tente novamente mais tarde.";
             domain.lastErrorAt = new Date();
             domain.retryCount++;
             await this.repository.save(domain);
@@ -253,6 +335,18 @@ export class CustomDomainService {
      */
     static async generateSSLCertificate(domain: CustomDomainEntity): Promise<boolean> {
         try {
+            const isLocalEnv = process.env.NODE_ENV !== "production";
+            if (isLocalEnv || isLocalhostDomain(domain.domain)) {
+                domain.status = CustomDomainStatus.ACTIVE;
+                domain.sslActive = false;
+                domain.forceHttps = false;
+                domain.activatedAt = new Date();
+                domain.errorMessage = undefined;
+                await this.repository.save(domain);
+                logger.info(`SSL generation skipped in localhost/dev for ${domain.domain}`);
+                return true;
+            }
+
             domain.status = CustomDomainStatus.GENERATING_SSL;
             await this.repository.save(domain);
 
@@ -295,7 +389,8 @@ export class CustomDomainService {
         } catch (error) {
             logger.error(`Erro ao gerar certificado para ${domain.domain}:`, error);
             domain.status = CustomDomainStatus.FAILED;
-            domain.errorMessage = `Falha ao gerar certificado SSL: ${error instanceof Error ? error.message : 'Unknown'}`;
+            const rawMessage = error instanceof Error ? error.message : 'Unknown';
+            domain.errorMessage = "Falha ao gerar certificado SSL. Tente novamente mais tarde.";
             domain.lastErrorAt = new Date();
             domain.retryCount++;
             await this.repository.save(domain);
@@ -390,6 +485,72 @@ export class CustomDomainService {
                 logger.error(`Erro ao verificar saúde do domínio ${domain.domain}:`, error);
             }
         }
+    }
+
+    /**
+     * Enfileira domínios pendentes para verificação DNS
+     */
+    static async enqueuePendingDomainsForDnsCheck(): Promise<number> {
+        const pendingDomains = await this.repository.find({
+            where: { status: In([CustomDomainStatus.PENDING, CustomDomainStatus.VERIFYING_DNS]) },
+            select: ["id"]
+        });
+
+        let enqueued = 0;
+        const score = Date.now();
+
+        for (const domain of pendingDomains) {
+            try {
+                const added = await redisClient.zadd(
+                    CUSTOM_DOMAIN_DNS_QUEUE_KEY,
+                    "NX",
+                    score,
+                    domain.id
+                );
+                if (added) enqueued++;
+            } catch (error) {
+                logger.error(`Falha ao enfileirar verificação DNS para ${domain.id}:`, error);
+            }
+        }
+
+        if (enqueued > 0) {
+            logger.info(`[CustomDomain] Enfileirados ${enqueued} domínios para verificação DNS`);
+        }
+
+        return enqueued;
+    }
+
+    /**
+     * Processa a fila de verificação DNS em paralelo via Redis
+     */
+    static async processDnsVerificationQueue(): Promise<void> {
+        const now = Date.now();
+        const domainIds: string[] = await redisClient.zrangebyscore(
+            CUSTOM_DOMAIN_DNS_QUEUE_KEY,
+            0,
+            now,
+            "LIMIT",
+            0,
+            CUSTOM_DOMAIN_DNS_QUEUE_BATCH
+        );
+
+        if (!domainIds.length) return;
+
+        await Promise.all(domainIds.map(async (domainId) => {
+            const lockKey = `${CUSTOM_DOMAIN_DNS_QUEUE_LOCK_PREFIX}:${domainId}`;
+            const lockAcquired = await redisClient.set(lockKey, "1", "NX", "EX", 600);
+
+            if (!lockAcquired) return;
+
+            try {
+                await redisClient.zrem(CUSTOM_DOMAIN_DNS_QUEUE_KEY, domainId);
+                await this.processDomainVerification(domainId);
+            } catch (error) {
+                logger.error(`[CustomDomain] Erro ao processar DNS para ${domainId}:`, error);
+            } finally {
+                await redisClient.del(lockKey);
+            }
+        }));
     }
 
     /**

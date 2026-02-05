@@ -197,7 +197,7 @@ export default function DashboardCustomDomains() {
 
     // Get status icon and color
     const getStatusConfig = (status: CustomDomain["status"], sslActive: boolean, isHealthy: boolean) => {
-        if (status === "active" && sslActive && isHealthy) {
+        if (status === "active" && isHealthy) {
             return {
                 icon: CheckCircle2,
                 color: "text-green-500",
@@ -410,7 +410,7 @@ export default function DashboardCustomDomains() {
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-2">
-                                            {domain.status !== "active" && (
+                                            {!(domain.status === "active" && domain.isHealthy && !domain.errorMessage) && (
                                                 <button
                                                     onClick={() => handleVerifyDomain(domain.id)}
                                                     disabled={checkingDomain === domain.id}
@@ -427,9 +427,9 @@ export default function DashboardCustomDomains() {
                                                 </button>
                                             )}
 
-                                            {domain.status === "active" && (
+                                            {domain.status === "active" && domain.isHealthy && !domain.errorMessage && (
                                                 <a
-                                                    href={`https://${domain.domain}`}
+                                                    href={`${domain.sslActive ? "https" : "http"}://${domain.domain}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center gap-2 px-4 py-2.5 bg-[#C6F035] text-black rounded-xl font-bold text-sm border-2 border-black hover:bg-[#b8e830] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"

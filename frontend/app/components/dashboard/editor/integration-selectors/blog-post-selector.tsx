@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, ChevronDown, Plus, ExternalLink, Calendar } from "lucide-react";
+import { FileText, ChevronDown, Plus, ExternalLink, Calendar, Check } from "lucide-react";
 import { Link } from "react-router";
 import { useBlogPosts } from "~/hooks/use-block-integration";
 import type { BlogPost } from "~/services/block-integration.service";
@@ -16,16 +16,37 @@ interface BlogPostSelectorProps {
 
 export function BlogPostSelector({
   bioId,
-  selectedPostIds = [],
+  selectedPostIds,
   onSelect,
-  maxSelection = 5,
+  maxSelection,
   className = "",
 }: BlogPostSelectorProps) {
   const { t } = useTranslation("dashboard");
   const { posts, isLoading, error } = useBlogPosts({ bioId, limit: 20 });
   const [isOpen, setIsOpen] = useState(false);
+  const hasAutoSelectedRef = useRef(false);
 
-  const selectedPosts = posts.filter((p) => selectedPostIds.includes(p.id));
+  // Local state for immediate UI updates
+  const [localSelectedIds, setLocalSelectedIds] = useState<string[]>([]);
+
+  // Sync local state with props when props change
+  useEffect(() => {
+    if (selectedPostIds !== undefined) {
+      setLocalSelectedIds(selectedPostIds);
+    }
+  }, [selectedPostIds]);
+
+  // Auto-select all posts when they first load and selectedPostIds is undefined (never set)
+  useEffect(() => {
+    if (posts.length > 0 && selectedPostIds === undefined && !hasAutoSelectedRef.current) {
+      hasAutoSelectedRef.current = true;
+      const allIds = posts.map(p => p.id);
+      setLocalSelectedIds(allIds);
+      onSelect(posts);
+    }
+  }, [posts, selectedPostIds, onSelect]);
+
+  const selectedPosts = posts.filter((p) => localSelectedIds.includes(p.id));
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -37,24 +58,32 @@ export function BlogPostSelector({
   };
 
   const togglePost = (post: BlogPost) => {
-    const isSelected = selectedPostIds.includes(post.id);
+    const isSelected = localSelectedIds.includes(post.id);
+    let newIds: string[];
     let newSelection: BlogPost[];
-    
+
     if (isSelected) {
+      // Deselect
+      newIds = localSelectedIds.filter((id) => id !== post.id);
       newSelection = selectedPosts.filter((p) => p.id !== post.id);
     } else {
-      if (selectedPosts.length >= maxSelection) {
+      // Select
+      if (maxSelection && selectedPosts.length >= maxSelection) {
         return;
       }
+      newIds = [...localSelectedIds, post.id];
       newSelection = [...selectedPosts, post];
     }
-    
+
+    // Update local state immediately for instant UI feedback
+    setLocalSelectedIds(newIds);
+    // Notify parent for persistence
     onSelect(newSelection);
   };
 
   if (isLoading) {
     return (
-      <div className={`neo-card p-3 ${className}`}>
+      <div className={`bg-white border border-gray-200 rounded-xl p-4 ${className}`}>
         <div className="flex items-center gap-3 animate-pulse">
           <div className="w-10 h-10 bg-gray-200 rounded-lg" />
           <div className="flex-1 h-4 bg-gray-200 rounded" />
@@ -65,7 +94,7 @@ export function BlogPostSelector({
 
   if (error) {
     return (
-      <div className={`neo-card p-3 border-red-500 ${className}`}>
+      <div className={`bg-white border border-red-200 rounded-xl p-4 ${className}`}>
         <p className="text-sm text-red-600">
           {t("editor.blockIntegration.blog.error")}
         </p>
@@ -75,14 +104,14 @@ export function BlogPostSelector({
 
   if (posts.length === 0) {
     return (
-      <div className={`neo-card p-4 text-center ${className}`}>
-        <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-        <p className="text-sm text-gray-600 mb-3">
+      <div className={`bg-white border border-gray-200 rounded-xl p-6 text-center ${className}`}>
+        <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+        <p className="text-sm text-gray-600 mb-4">
           {t("editor.blockIntegration.blog.empty")}
         </p>
         <Link
           to="/dashboard/blog"
-          className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-semibold"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           {t("editor.blockIntegration.blog.create")}
@@ -93,81 +122,75 @@ export function BlogPostSelector({
 
   return (
     <div className={`relative ${className}`}>
+      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="neo-input w-full flex items-center justify-between gap-3 p-3 text-left"
+        className="w-full flex items-center justify-between gap-3 p-4 bg-white border border-gray-200 rounded-xl text-left hover:border-gray-300 transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {selectedPosts.length === 0 ? (
-            <>
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-gray-600" />
-              </div>
-              <p className="font-semibold text-sm">
-                {t("editor.blockIntegration.blog.select")}
-              </p>
-            </>
-          ) : (
-            <div className="flex items-center gap-2 flex-wrap flex-1">
-              <span className="text-sm font-semibold text-primary-700">
-                {selectedPosts.length} {t("editor.blockIntegration.blog.postsSelected")}
-              </span>
-              <span className="text-xs text-gray-500">
-                {t("editor.blockIntegration.blog.max", { max: maxSelection })}
-              </span>
-            </div>
-          )}
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileText className="w-5 h-5 text-gray-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-sm text-gray-900">
+              {t("editor.blockIntegration.blog.select")}
+            </p>
+            <p className="text-xs text-gray-500">
+              {selectedPosts.length} de {posts.length} posts selecionados
+            </p>
+          </div>
         </div>
         <ChevronDown
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
+      {/* Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* Backdrop */}
             <div
               className="fixed inset-0 z-40"
               onClick={() => setIsOpen(false)}
             />
+
+            {/* Dropdown Panel */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute z-50 top-full left-0 right-0 mt-2 neo-card max-h-80 overflow-hidden flex flex-col"
+              className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-96 overflow-hidden flex flex-col"
             >
               {/* Header */}
-              {selectedPosts.length > 0 && (
-                <div className="border-b border-gray-200 p-3 bg-gray-50">
-                  <p className="text-sm text-gray-600">
-                    {t("editor.blockIntegration.blog.selectedCount", { 
-                      count: selectedPosts.length,
-                      max: maxSelection 
-                    })}
-                  </p>
-                </div>
-              )}
+              <div className="p-3 border-b border-gray-100 bg-gray-50">
+                <p className="text-sm font-medium text-gray-700">
+                  {selectedPosts.length} de {posts.length} posts selecionados
+                </p>
+              </div>
 
               {/* Posts List */}
               <div className="overflow-auto flex-1 p-2">
-                <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-1">
                   {posts.map((post) => {
-                    const isSelected = selectedPostIds.includes(post.id);
+                    const isSelected = localSelectedIds.includes(post.id);
                     return (
                       <button
                         key={post.id}
                         type="button"
-                        onClick={() => togglePost(post)}
-                        className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                          isSelected
-                            ? "bg-primary-100 border-2 border-primary-500"
-                            : "hover:bg-gray-50 border-2 border-transparent"
-                        }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          togglePost(post);
+                        }}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all cursor-pointer ${isSelected
+                          ? "bg-blue-50 border-2 border-blue-500"
+                          : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                          }`}
                       >
-                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {/* Thumbnail */}
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {post.coverImage ? (
                             <img
                               src={post.coverImage}
@@ -175,11 +198,13 @@ export function BlogPostSelector({
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <FileText className="w-6 h-6 text-gray-400" />
+                            <FileText className="w-5 h-5 text-gray-400" />
                           )}
                         </div>
+
+                        {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">
+                          <p className="font-semibold text-sm text-gray-900 truncate">
                             {post.title}
                           </p>
                           {post.excerpt && (
@@ -192,25 +217,16 @@ export function BlogPostSelector({
                             {formatDate(post.publishedAt)}
                           </div>
                         </div>
+
+                        {/* Checkbox */}
                         <div
-                          className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
-                            isSelected
-                              ? "bg-primary-600"
-                              : "border-2 border-gray-300"
-                          }`}
+                          className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${isSelected
+                            ? "bg-blue-600"
+                            : "bg-white border-2 border-gray-300"
+                            }`}
                         >
                           {isSelected && (
-                            <svg
-                              className="w-3 h-3 text-white"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
+                            <Check className="w-4 h-4 text-white" />
                           )}
                         </div>
                       </button>
@@ -220,13 +236,13 @@ export function BlogPostSelector({
               </div>
 
               {/* Footer */}
-              <div className="border-t border-gray-200 p-2">
+              <div className="p-2 border-t border-gray-100 bg-gray-50">
                 <Link
                   to="/dashboard/blog"
-                  className="flex items-center justify-center gap-2 w-full p-3 text-sm text-primary-600 hover:bg-primary-50 rounded-lg font-semibold"
+                  className="flex items-center justify-center gap-2 w-full p-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-semibold transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  {t("editor.blockIntegration.blog.manage")}
+                  Gerenciar blog
                 </Link>
               </div>
             </motion.div>
@@ -236,3 +252,4 @@ export function BlogPostSelector({
     </div>
   );
 }
+

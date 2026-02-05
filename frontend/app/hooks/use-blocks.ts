@@ -155,12 +155,29 @@ export function useBlocks(options: UseBlocksOptions = {}): UseBlocksReturn {
     });
   }, [historyIndex, maxHistory]);
 
-  const addBlock = useCallback((type: BioBlock["type"], position?: number): BioBlock => {
+  const addBlock = useCallback((type: BioBlock["type"], position?: number, variation?: string): BioBlock => {
     const newBlock: BioBlock = {
       id: makeId(),
       type,
       ...getDefaultBlockData(type),
     };
+
+    // Apply variation if provided
+    if (variation) {
+      console.log(`[DEBUG] Adding block type=${type} with variation=${variation}`);
+      if (type === "instagram") {
+        newBlock.instagramVariation = variation as any;
+      } else if (type === "youtube") {
+        newBlock.youtubeVariation = variation as any;
+      } else if (type === "spotify") {
+        newBlock.spotifyVariation = variation as any;
+      } else if (type === "socials") {
+        newBlock.socialsVariation = variation as any;
+      } else if (type === "whatsapp") {
+        newBlock.whatsappVariation = variation as any;
+      }
+      console.log(`[DEBUG] New block created:`, newBlock);
+    }
 
     setBlocks((prev) => {
       const index = position ?? prev.length;

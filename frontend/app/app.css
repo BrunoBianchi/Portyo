@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Poppins:wght@300..800&display=swap');
+@import "tailwindcss";
+@import "driver.js/dist/driver.css";
+@import "./styles/driver-theme.css";
+
 @font-face {
   font-family: 'Syne';
   src: url('/fonts/Syne-Regular.ttf') format('truetype');
@@ -37,11 +42,6 @@
   font-style: normal;
   font-display: swap;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Poppins:wght@300..800&display=swap');
-@import "tailwindcss";
-@import "driver.js/dist/driver.css";
-@import "./styles/driver-theme.css";
 
 @theme {
   /* Font Families */

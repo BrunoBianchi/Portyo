@@ -48,6 +48,16 @@ export class CronService {
             this.checkCustomDomainsHealth();
         });
 
+        // Enqueue pending custom domains DNS check every 30 minutes
+        schedule.scheduleJob("*/30 * * * *", () => {
+            this.enqueuePendingCustomDomainsDnsCheck();
+        });
+
+        // Process custom domains DNS queue every minute
+        schedule.scheduleJob("* * * * *", () => {
+            this.processCustomDomainsDnsQueue();
+        });
+
         // Renew SSL certificates daily at 3 AM
         schedule.scheduleJob("0 3 * * *", () => {
             this.renewSSLCertificates();
@@ -155,6 +165,22 @@ export class CronService {
             logger.info("✅ Custom domains health check completed");
         } catch (error) {
             logger.error("❌ Error in checkCustomDomainsHealth:", error);
+        }
+    }
+
+    static async enqueuePendingCustomDomainsDnsCheck() {
+        try {
+            await CustomDomainService.enqueuePendingDomainsForDnsCheck();
+        } catch (error) {
+            logger.error("❌ Error enqueuing custom domains DNS checks:", error);
+        }
+    }
+
+    static async processCustomDomainsDnsQueue() {
+        try {
+            await CustomDomainService.processDnsVerificationQueue();
+        } catch (error) {
+            logger.error("❌ Error processing custom domains DNS queue:", error);
         }
     }
 

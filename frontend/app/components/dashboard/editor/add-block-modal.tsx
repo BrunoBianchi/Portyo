@@ -27,80 +27,191 @@ import {
     Ticket,
     Map,
     Gem,
-    TrendingUp
+    TrendingUp,
+    ChevronRight,
+    ChevronDown,
+    Lightbulb,
+    Store,
+    Heart,
+    Play,
+    Users,
+    CalendarDays,
+    FileText,
+    MoreHorizontal
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AddBlockModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAdd: (type: BioBlock['type']) => void;
+    onAdd: (type: BioBlock['type'], variation?: string) => void;
 }
 
 export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
     const { t } = useTranslation("dashboard");
     const [search, setSearch] = useState("");
     const [activeCategory, setActiveCategory] = useState("suggested");
+    const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set());
+
+    // Toggle block expansion
+    const toggleBlockExpansion = (blockType: string) => {
+        setExpandedBlocks(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(blockType)) {
+                newSet.delete(blockType);
+            } else {
+                newSet.add(blockType);
+            }
+            return newSet;
+        });
+    };
+
+    // Quick action items that appear at the top as cards
+    const QUICK_ACTIONS = [
+        { type: "button_grid", label: "Coleção", icon: LayoutGrid },
+        { type: "button", label: "Link", icon: LinkIcon },
+        { type: "product", label: "Produto", icon: Tag },
+        { type: "form", label: "Formulário", icon: FileText },
+    ];
+
+    // Block variations - each block can have multiple variations
+    const BLOCK_VARIATIONS: { [key: string]: Array<{ type: string; label: string; description: string; icon: any; color: string; variation: string }> } = {
+        instagram: [
+            { type: "instagram", label: "Replique seu Instagram grid e adicione links", description: "Exiba seu Instagram e adicione links aos produtos, eventos e artigos para que seguidores possam navegar e comprar no seu grid do Instagram.", icon: LayoutGrid, color: "#E1306C", variation: "grid-shop" },
+            { type: "instagram", label: "Compartilhe visualmente seus últimos Posts ou Reels", description: "Exiba seus Posts ou Reels em galeria para enviar visitantes diretamente ao seu perfil para explorar e seguir seu conteúdo social.", icon: ImageIcon, color: "#E1306C", variation: "visual-gallery" },
+            { type: "instagram", label: "Adicione seu perfil do Instagram como um link simples", description: "Direcione visitantes ao seu perfil do Instagram com um link clássico do Linktree listado na sua página, depois reordene para ajustar.", icon: LinkIcon, color: "#E1306C", variation: "simple-link" },
+        ],
+        youtube: [
+            { type: "youtube", label: "Canal completo do YouTube", description: "Mostre seu canal completo com últimos vídeos publicados e estatísticas do canal.", icon: Play, color: "#DC2626", variation: "full-channel" },
+            { type: "youtube", label: "Vídeo único em destaque", description: "Destaque um vídeo específico do YouTube com player incorporado.", icon: Video, color: "#DC2626", variation: "single-video" },
+            { type: "youtube", label: "Playlist completa", description: "Compartilhe uma playlist completa do YouTube para navegação sequencial.", icon: LayoutGrid, color: "#DC2626", variation: "playlist" },
+        ],
+        spotify: [
+            { type: "spotify", label: "Perfil completo do artista", description: "Compartilhe seu perfil completo do Spotify com todas suas músicas e playlists.", icon: Users, color: "#1DB954", variation: "artist-profile" },
+            { type: "spotify", label: "Faixa única em destaque", description: "Destaque uma música específica com player incorporado do Spotify.", icon: Music, color: "#1DB954", variation: "single-track" },
+            { type: "spotify", label: "Playlist personalizada", description: "Compartilhe uma playlist específica do Spotify com suas músicas favoritas.", icon: LayoutGrid, color: "#1DB954", variation: "playlist" },
+            { type: "spotify", label: "Álbum completo", description: "Mostre um álbum completo com todas as faixas disponíveis.", icon: LayoutGrid, color: "#1DB954", variation: "album" },
+        ],
+        socials: [
+            { type: "socials", label: "Grid de ícones das redes sociais", description: "Ícones clicáveis e coloridos de todas suas redes sociais em formato de grade.", icon: LayoutGrid, color: "#14B8A6", variation: "icon-grid" },
+            { type: "socials", label: "Lista vertical detalhada", description: "Lista vertical com descrições e informações detalhadas de cada rede social.", icon: Text, color: "#14B8A6", variation: "detailed-list" },
+            { type: "socials", label: "Botões flutuantes fixos", description: "Botões flutuantes fixados no canto da tela para acesso rápido às redes.", icon: Share2, color: "#14B8A6", variation: "floating-buttons" },
+        ],
+        whatsapp: [
+            { type: "whatsapp", label: "Botão de contato direto", description: "Abra uma conversa do WhatsApp diretamente com um clique no botão.", icon: MessageCircle, color: "#25D366", variation: "direct-button" },
+            { type: "whatsapp", label: "Formulário com mensagem pré-preenchida", description: "Formulário de contato que abre o WhatsApp com mensagem pré-configurada.", icon: Contact, color: "#25D366", variation: "pre-filled-form" },
+        ],
+    };
 
     const CATEGORIES = useMemo(() => [
         {
             id: "suggested",
-            label: t("addBlock.categories.suggested", { defaultValue: "Sugestões" }),
+            label: t("addBlock.categories.suggested", { defaultValue: "Sugeridos" }),
+            icon: Lightbulb,
             items: [
-                { type: "button", label: t("addBlock.blocks.link", { defaultValue: "Link" }), description: t("addBlock.blocks.linkDesc", { defaultValue: "Adicione um botão de link" }), icon: LinkIcon, color: "#EF4444" },
-                { type: "heading", label: t("addBlock.blocks.header", { defaultValue: "Título" }), description: t("addBlock.blocks.headerDesc", { defaultValue: "Destaque um título" }), icon: Type, color: "#3B82F6" },
-                { type: "text", label: t("addBlock.blocks.text", { defaultValue: "Texto" }), description: t("addBlock.blocks.textDesc", { defaultValue: "Adicione um parágrafo" }), icon: Text, color: "#64748B" },
-                { type: "image", label: t("addBlock.blocks.image", { defaultValue: "Imagem" }), description: t("addBlock.blocks.imageDesc", { defaultValue: "Mostre uma imagem" }), icon: ImageIcon, color: "#10B981" },
-                { type: "socials", label: t("addBlock.blocks.socials", { defaultValue: "Redes Sociais" }), description: t("addBlock.blocks.socialsDesc", { defaultValue: "Liste seus perfis" }), icon: Share2, color: "#14B8A6" },
-            ]
-        },
-        {
-            id: "essentials",
-            label: t("addBlock.categories.essentials", { defaultValue: "Essenciais" }),
-            items: [
-                { type: "button", label: t("addBlock.blocks.link", { defaultValue: "Link" }), description: t("addBlock.blocks.linkDesc", { defaultValue: "Adicione um botão de link" }), icon: LinkIcon, color: "#EF4444" },
-                { type: "heading", label: t("addBlock.blocks.header", { defaultValue: "Título" }), description: t("addBlock.blocks.headerDesc", { defaultValue: "Destaque um título" }), icon: Type, color: "#3B82F6" },
-                { type: "text", label: t("addBlock.blocks.text", { defaultValue: "Texto" }), description: t("addBlock.blocks.textDesc", { defaultValue: "Adicione um parágrafo" }), icon: Text, color: "#64748B" },
-                { type: "divider", label: t("addBlock.blocks.divider", { defaultValue: "Divisor" }), description: t("addBlock.blocks.dividerDesc", { defaultValue: "Separe seções" }), icon: Minus, color: "#6B7280" },
-                { type: "button_grid", label: t("addBlock.blocks.buttonGrid", { defaultValue: "Grid de Botões" }), description: t("addBlock.blocks.buttonGridDesc", { defaultValue: "Grade de links" }), icon: LayoutGrid, color: "#6366F1" },
-            ]
-        },
-        {
-            id: "media",
-            label: t("addBlock.categories.media", { defaultValue: "Mídia" }),
-            items: [
-                { type: "image", label: t("addBlock.blocks.gallery", { defaultValue: "Imagem" }), description: t("addBlock.blocks.galleryDesc", { defaultValue: "Mostre imagens" }), icon: ImageIcon, color: "#EC4899" },
-                { type: "video", label: t("addBlock.blocks.video", { defaultValue: "Vídeo" }), description: t("addBlock.blocks.videoDesc", { defaultValue: "Incorpore um vídeo" }), icon: Video, color: "#EF4444" },
-                { type: "youtube", label: t("addBlock.blocks.youtube", { defaultValue: "YouTube" }), description: t("addBlock.blocks.youtubeDesc", { defaultValue: "Canal ou vídeos" }), icon: Youtube, color: "#DC2626" },
-                { type: "spotify", label: t("addBlock.blocks.music", { defaultValue: "Spotify" }), description: t("addBlock.blocks.musicDesc", { defaultValue: "Música ou podcast" }), icon: Music, color: "#1DB954" },
-                { type: "instagram", label: t("addBlock.blocks.instagram", { defaultValue: "Instagram" }), description: t("addBlock.blocks.instagramDesc", { defaultValue: "Feed do Instagram" }), icon: Instagram, color: "#E1306C" },
+                { type: "instagram", label: "Instagram", description: "Exiba seus posts e reels", icon: Instagram, color: "#E1306C" },
+                { type: "youtube", label: "YouTube", description: "Compartilhe vídeos do YouTube", icon: Youtube, color: "#DC2626" },
+                { type: "spotify", label: "Spotify", description: "Compartilhe suas músicas favoritas", icon: Music, color: "#1DB954" },
+                { type: "socials", label: "Redes Sociais", description: "Liste todos os seus perfis", icon: Share2, color: "#14B8A6" },
+                { type: "whatsapp", label: "WhatsApp", description: "Botão de contato direto", icon: MessageCircle, color: "#25D366" },
             ]
         },
         {
             id: "commerce",
             label: t("addBlock.categories.commerce", { defaultValue: "Comércio" }),
+            icon: Store,
             items: [
-                { type: "product", label: t("addBlock.blocks.product", { defaultValue: "Produtos" }), description: t("addBlock.blocks.productDesc", { defaultValue: "Catálogo de produtos" }), icon: ShoppingBag, color: "#F97316" },
-                { type: "featured", label: t("addBlock.blocks.featured", { defaultValue: "Destaque" }), description: t("addBlock.blocks.featuredDesc", { defaultValue: "Item em destaque" }), icon: Star, color: "#F59E0B" },
-                { type: "affiliate", label: t("addBlock.blocks.affiliate", { defaultValue: "Afiliado" }), description: t("addBlock.blocks.affiliateDesc", { defaultValue: "Cupom/afiliado" }), icon: Tag, color: "#22C55E" },
+                { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
+                { type: "featured", label: "Destaque", description: "Item em destaque", icon: Star, color: "#F59E0B" },
+                { type: "affiliate", label: "Afiliado", description: "Link de cupom/afiliado", icon: Tag, color: "#22C55E" },
             ]
         },
         {
-            id: "grow",
-            label: t("addBlock.categories.grow", { defaultValue: "Crescer" }),
+            id: "social",
+            label: t("addBlock.categories.social", { defaultValue: "Social" }),
+            icon: Heart,
             items: [
-                { type: "form", label: t("addBlock.blocks.form", { defaultValue: "Formulário" }), description: t("addBlock.blocks.formDesc", { defaultValue: "Capture contatos" }), icon: Contact, color: "#6366F1" },
-                { type: "marketing", label: t("addBlock.blocks.marketing", { defaultValue: "Marketing" }), description: t("addBlock.blocks.marketingDesc", { defaultValue: "Bloco promocional" }), icon: TrendingUp, color: "#8B5CF6" },
-                { type: "portfolio", label: t("addBlock.blocks.portfolio", { defaultValue: "Portfólio" }), description: t("addBlock.blocks.portfolioDesc", { defaultValue: "Seção de projetos" }), icon: Briefcase, color: "#F43F5E" },
-                { type: "experience", label: t("addBlock.blocks.experience", { defaultValue: "Experiência" }), description: t("addBlock.blocks.experienceDesc", { defaultValue: "Histórico profissional" }), icon: Gem, color: "#38BDF8" },
-                { type: "blog", label: t("addBlock.blocks.blog", { defaultValue: "Blog" }), description: t("addBlock.blocks.blogDesc", { defaultValue: "Feed do blog" }), icon: Newspaper, color: "#F97316" },
-                { type: "calendar", label: t("addBlock.blocks.calendar", { defaultValue: "Agenda" }), description: t("addBlock.blocks.calendarDesc", { defaultValue: "Agendamentos" }), icon: Calendar, color: "#0EA5E9" },
-                { type: "map", label: t("addBlock.blocks.map", { defaultValue: "Mapa" }), description: t("addBlock.blocks.mapDesc", { defaultValue: "Localização" }), icon: Map, color: "#84CC16" },
-                { type: "event", label: t("addBlock.blocks.event", { defaultValue: "Evento" }), description: t("addBlock.blocks.eventDesc", { defaultValue: "Chamada para evento" }), icon: Ticket, color: "#22D3EE" },
-                { type: "tour", label: t("addBlock.blocks.tour", { defaultValue: "Turnê" }), description: t("addBlock.blocks.tourDesc", { defaultValue: "Datas de turnê" }), icon: MapPin, color: "#F59E0B" },
-                { type: "qrcode", label: t("addBlock.blocks.qrcode", { defaultValue: "QR Code" }), description: t("addBlock.blocks.qrcodeDesc", { defaultValue: "QR personalizado" }), icon: QrCode, color: "#F59E0B" },
-                { type: "whatsapp", label: t("addBlock.blocks.whatsapp", { defaultValue: "WhatsApp" }), description: t("addBlock.blocks.whatsappDesc", { defaultValue: "Botão WhatsApp" }), icon: MessageCircle, color: "#25D366" },
+                { type: "socials", label: "Redes Sociais", description: "Liste seus perfis", icon: Share2, color: "#14B8A6" },
+                { type: "instagram", label: "Instagram", description: "Feed do Instagram", icon: Instagram, color: "#E1306C" },
+                { type: "whatsapp", label: "WhatsApp", description: "Botão WhatsApp", icon: MessageCircle, color: "#25D366" },
+            ]
+        },
+        {
+            id: "media",
+            label: t("addBlock.categories.media", { defaultValue: "Mídia" }),
+            icon: Play,
+            items: [
+                { type: "image", label: "Imagem", description: "Adicione uma imagem", icon: ImageIcon, color: "#EC4899" },
+                { type: "video", label: "Vídeo", description: "Incorpore um vídeo", icon: Video, color: "#EF4444" },
+                { type: "youtube", label: "YouTube", description: "Canal ou vídeos", icon: Youtube, color: "#DC2626" },
+                { type: "spotify", label: "Spotify", description: "Música ou podcast", icon: Music, color: "#1DB954" },
+            ]
+        },
+        {
+            id: "contact",
+            label: t("addBlock.categories.contact", { defaultValue: "Contato" }),
+            icon: Users,
+            items: [
+                { type: "form", label: "Formulário", description: "Capture contatos", icon: Contact, color: "#6366F1" },
+                { type: "calendar", label: "Agenda", description: "Agendamentos", icon: Calendar, color: "#0EA5E9" },
+                { type: "map", label: "Mapa", description: "Localização", icon: Map, color: "#84CC16" },
+                { type: "qrcode", label: "QR Code", description: "QR personalizado", icon: QrCode, color: "#F59E0B" },
+            ]
+        },
+        {
+            id: "events",
+            label: t("addBlock.categories.events", { defaultValue: "Eventos" }),
+            icon: CalendarDays,
+            items: [
+                { type: "event", label: "Evento", description: "Chamada para evento", icon: Ticket, color: "#22D3EE" },
+                { type: "tour", label: "Turnê", description: "Datas de turnê", icon: MapPin, color: "#F59E0B" },
+                { type: "calendar", label: "Agenda", description: "Agendamentos", icon: Calendar, color: "#0EA5E9" },
+            ]
+        },
+        {
+            id: "text",
+            label: t("addBlock.categories.text", { defaultValue: "Texto" }),
+            icon: FileText,
+            items: [
+                { type: "heading", label: "Título", description: "Destaque um título", icon: Type, color: "#3B82F6" },
+                { type: "text", label: "Texto", description: "Adicione um parágrafo", icon: Text, color: "#64748B" },
+                { type: "divider", label: "Divisor", description: "Separe seções", icon: Minus, color: "#6B7280" },
+                { type: "button", label: "Link", description: "Adicione um botão de link", icon: LinkIcon, color: "#EF4444" },
+                { type: "button_grid", label: "Grid de Botões", description: "Grade de links", icon: LayoutGrid, color: "#6366F1" },
+            ]
+        },
+        {
+            id: "all",
+            label: t("addBlock.categories.all", { defaultValue: "Ver todos" }),
+            icon: MoreHorizontal,
+            items: [
+                { type: "button", label: "Link", description: "Adicione um botão de link", icon: LinkIcon, color: "#EF4444" },
+                { type: "heading", label: "Título", description: "Destaque um título", icon: Type, color: "#3B82F6" },
+                { type: "text", label: "Texto", description: "Adicione um parágrafo", icon: Text, color: "#64748B" },
+                { type: "image", label: "Imagem", description: "Mostre uma imagem", icon: ImageIcon, color: "#10B981" },
+                { type: "video", label: "Vídeo", description: "Incorpore um vídeo", icon: Video, color: "#EF4444" },
+                { type: "divider", label: "Divisor", description: "Separe seções", icon: Minus, color: "#6B7280" },
+                { type: "button_grid", label: "Grid de Botões", description: "Grade de links", icon: LayoutGrid, color: "#6366F1" },
+                { type: "socials", label: "Redes Sociais", description: "Liste seus perfis", icon: Share2, color: "#14B8A6" },
+                { type: "instagram", label: "Instagram", description: "Feed do Instagram", icon: Instagram, color: "#E1306C" },
+                { type: "youtube", label: "YouTube", description: "Canal ou vídeos", icon: Youtube, color: "#DC2626" },
+                { type: "spotify", label: "Spotify", description: "Música ou podcast", icon: Music, color: "#1DB954" },
+                { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
+                { type: "featured", label: "Destaque", description: "Item em destaque", icon: Star, color: "#F59E0B" },
+                { type: "affiliate", label: "Afiliado", description: "Cupom/afiliado", icon: Tag, color: "#22C55E" },
+                { type: "form", label: "Formulário", description: "Capture contatos", icon: Contact, color: "#6366F1" },
+                { type: "marketing", label: "Marketing", description: "Bloco promocional", icon: TrendingUp, color: "#8B5CF6" },
+                { type: "portfolio", label: "Portfólio", description: "Seção de projetos", icon: Briefcase, color: "#F43F5E" },
+                { type: "experience", label: "Experiência", description: "Histórico profissional", icon: Gem, color: "#38BDF8" },
+                { type: "blog", label: "Blog", description: "Feed do blog", icon: Newspaper, color: "#F97316" },
+                { type: "calendar", label: "Agenda", description: "Agendamentos", icon: Calendar, color: "#0EA5E9" },
+                { type: "map", label: "Mapa", description: "Localização", icon: Map, color: "#84CC16" },
+                { type: "event", label: "Evento", description: "Chamada para evento", icon: Ticket, color: "#22D3EE" },
+                { type: "tour", label: "Turnê", description: "Datas de turnê", icon: MapPin, color: "#F59E0B" },
+                { type: "qrcode", label: "QR Code", description: "QR personalizado", icon: QrCode, color: "#F59E0B" },
+                { type: "whatsapp", label: "WhatsApp", description: "Botão WhatsApp", icon: MessageCircle, color: "#25D366" },
             ]
         }
     ], [t]);
@@ -117,7 +228,25 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
         return CATEGORIES.find(c => c.id === activeCategory)?.items || [];
     }, [search, activeCategory, CATEGORIES]);
 
-    return (
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    // Reset expanded blocks when closing modal or changing category
+    useEffect(() => {
+        if (!isOpen) {
+            setExpandedBlocks(new Set());
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        setExpandedBlocks(new Set());
+    }, [activeCategory, search]);
+
+    const modalContent = (
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -127,7 +256,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
                     >
                         {/* Modal */}
                         <motion.div
@@ -135,46 +264,48 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white md:rounded-[24px] w-full md:max-w-4xl h-full md:h-[80vh] flex flex-col shadow-2xl overflow-hidden relative"
+                            className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative"
                         >
-                            {/* Close Button */}
-                            <button
-                                onClick={onClose}
-                                className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
-                            >
-                                <X className="w-6 h-6 text-gray-500" />
-                            </button>
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                                <h2 className="text-xl font-bold text-gray-900">Adicionar</h2>
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
 
-                            {/* Header & Search */}
-                            <div className="p-8 pb-4 shrink-0">
-                                <h2 className="text-3xl font-black tracking-tight text-[#1A1A1A] mb-6">{t("addBlock.title")}</h2>
-                                <div className="relative max-w-2xl">
+                            {/* Search */}
+                            <div className="px-6 py-4">
+                                <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="text"
-                                        placeholder={t("addBlock.searchPlaceholder")}
+                                        placeholder="Cole ou pesquise um link"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-[#F3F3F5] hover:bg-[#EAEAEB] focus:bg-white border-2 border-transparent focus:border-black rounded-[16px] text-lg font-medium outline-none transition-all placeholder:text-gray-500"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-gray-100 hover:bg-gray-200/70 focus:bg-white border-2 border-transparent focus:border-[#c8e600] rounded-xl text-base font-medium outline-none transition-all placeholder:text-gray-400 text-gray-900"
                                         autoFocus
                                     />
                                 </div>
                             </div>
 
                             <div className="flex flex-1 overflow-hidden">
-                                {/* Sidebar (Categories) - Desktop */}
-                                <div className="w-64 p-4 pl-8 overflow-y-auto hidden md:block shrink-0">
-                                    <div className="space-y-1">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-4 py-2 mb-2">{t("addBlock.sidebar")}</h3>
+                                {/* Sidebar (Categories) */}
+                                <div className="w-52 border-r border-gray-100 overflow-y-auto hidden md:block shrink-0">
+                                    <div className="py-2">
                                         {CATEGORIES.map(cat => (
                                             <button
                                                 key={cat.id}
                                                 onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
-                                                className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-3 ${activeCategory === cat.id && !search
-                                                    ? 'bg-[#EEEFF1] text-black'
-                                                    : 'text-gray-500 hover:bg-gray-50 hover:text-black'
+                                                className={`w-full text-left px-5 py-3.5 font-medium text-sm transition-all flex items-center gap-3 ${activeCategory === cat.id && !search
+                                                    ? 'bg-[#c8e600]/15 text-gray-900 border-l-2 border-[#c8e600]'
+                                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 border-l-2 border-transparent'
                                                     }`}
                                             >
+                                                <cat.icon className="w-4 h-4" />
                                                 {cat.label}
                                             </button>
                                         ))}
@@ -182,14 +313,14 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                 </div>
 
                                 {/* Categories (Mobile) */}
-                                <div className="md:hidden px-6 pb-2 overflow-x-auto flex gap-2 no-scrollbar shrink-0">
+                                <div className="md:hidden px-4 py-3 overflow-x-auto flex gap-2 no-scrollbar shrink-0 border-b border-gray-100">
                                     {CATEGORIES.map(cat => (
                                         <button
                                             key={cat.id}
                                             onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
-                                            className={`px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all border ${activeCategory === cat.id && !search
-                                                ? 'bg-black text-white border-black'
-                                                : 'bg-white text-gray-500 border-gray-200'
+                                            className={`px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all ${activeCategory === cat.id && !search
+                                                ? 'bg-[#c8e600] text-gray-900'
+                                                : 'bg-gray-100 text-gray-600'
                                                 }`}
                                         >
                                             {cat.label}
@@ -197,48 +328,132 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                     ))}
                                 </div>
 
-                                {/* Content Grid */}
-                                <div className="flex-1 overflow-y-auto p-4 pr-8 md:pl-4">
-                                    {!search && (
-                                        <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                            {CATEGORIES.find(c => c.id === activeCategory)?.label}
-                                        </h3>
-                                    )}
-                                    {search && (
-                                        <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                            {t("addBlock.searchPlaceholder")}
-                                        </h3>
+                                {/* Content */}
+                                <div className="flex-1 overflow-y-auto">
+                                    {/* Quick Actions (only on suggested) */}
+                                    {activeCategory === "suggested" && !search && (
+                                        <div className="p-6 grid grid-cols-4 gap-3">
+                                            {QUICK_ACTIONS.map((item, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => {
+                                                        onAdd(item.type as BioBlock['type']);
+                                                        onClose();
+                                                    }}
+                                                    className="flex flex-col items-center p-4 bg-gray-50 hover:bg-[#c8e600]/10 border border-gray-100 hover:border-[#c8e600]/30 rounded-xl transition-all group"
+                                                >
+                                                    <div className="w-10 h-10 rounded-lg bg-[#c8e600]/20 flex items-center justify-center mb-2 group-hover:bg-[#c8e600]/30 transition-colors">
+                                                        <item.icon className="w-5 h-5 text-[#9eb800]" />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{item.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pb-20">
-                                        {displayedItems.map((item, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => {
-                                                    onAdd(item.type as BioBlock['type']);
-                                                    onClose();
-                                                }}
-                                                className="flex flex-col items-start p-4 sm:p-5 bg-white border border-gray-200 hover:border-black rounded-[16px] sm:rounded-[20px] hover:shadow-lg transition-all group text-left h-full"
-                                            >
-                                                <div className="flex items-start justify-between w-full mb-4">
-                                                    <div
-                                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm"
-                                                        style={{ backgroundColor: item.color }}
+                                    {/* Section Title */}
+                                    <div className="px-6 py-3 sticky top-0 bg-white z-10 border-b border-gray-50">
+                                        <h3 className="text-sm font-semibold text-gray-400">
+                                            {search ? `Resultados para "${search}"` : CATEGORIES.find(c => c.id === activeCategory)?.label}
+                                        </h3>
+                                    </div>
+
+                                    {/* Block Items List */}
+                                    <div className="px-4 pb-6">
+                                        {displayedItems.map((item, idx) => {
+                                            const hasVariations = BLOCK_VARIATIONS[item.type];
+                                            const isExpanded = expandedBlocks.has(item.type);
+
+                                            return (
+                                                <div key={idx} className="mb-2">
+                                                    {/* Main Block Button */}
+                                                    <button
+                                                        onClick={() => {
+                                                            if (hasVariations) {
+                                                                toggleBlockExpansion(item.type);
+                                                            } else {
+                                                                onAdd(item.type as BioBlock['type']);
+                                                                onClose();
+                                                            }
+                                                        }}
+                                                        className="w-full flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all group text-left"
                                                     >
-                                                        <item.icon className="w-5 h-5" strokeWidth={2.5} />
-                                                    </div>
+                                                        {/* Icon */}
+                                                        <div
+                                                            className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
+                                                            style={{ backgroundColor: `${item.color}15` }}
+                                                        >
+                                                            <item.icon className="w-6 h-6" style={{ color: item.color }} />
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="font-semibold text-gray-900 block">{item.label}</span>
+                                                            <span className="text-sm text-gray-500">{item.description}</span>
+                                                        </div>
+
+                                                        {/* Chevron */}
+                                                        {hasVariations ? (
+                                                            <ChevronDown 
+                                                                className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                                                            />
+                                                        ) : (
+                                                            <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#c8e600] group-hover:translate-x-1 transition-all flex-shrink-0" />
+                                                        )}
+                                                    </button>
+
+                                                    {/* Variations Dropdown */}
+                                                    {hasVariations && isExpanded && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            transition={{ duration: 0.2 }}
+                                                            className="ml-2 md:ml-4 mt-2 space-y-1.5"
+                                                        >
+                                                            {BLOCK_VARIATIONS[item.type].map((variation, vIdx) => (
+                                                                <button
+                                                                    key={vIdx}
+                                                                    onClick={() => {
+                                                                        onAdd(variation.type as BioBlock['type'], variation.variation);
+                                                                        onClose();
+                                                                    }}
+                                                                    className="w-full flex items-start md:items-center gap-2.5 md:gap-3 p-2.5 md:p-3 bg-white hover:bg-gradient-to-r hover:from-[#c8e600]/5 hover:to-transparent border border-gray-100 hover:border-[#c8e600]/30 rounded-lg transition-all group text-left"
+                                                                >
+                                                                    {/* Visual Icon with colored background */}
+                                                                    <div 
+                                                                        className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-105"
+                                                                        style={{ backgroundColor: `${variation.color}15` }}
+                                                                    >
+                                                                        <variation.icon className="w-5 h-5 md:w-6 md:h-6" style={{ color: variation.color }} />
+                                                                    </div>
+
+                                                                    {/* Content */}
+                                                                    <div className="flex-1 min-w-0 pr-2">
+                                                                        <h4 className="font-semibold text-gray-900 text-xs md:text-sm mb-0.5 md:mb-1 leading-tight">
+                                                                            {variation.label}
+                                                                        </h4>
+                                                                        <p className="text-[10px] md:text-xs text-gray-500 leading-snug line-clamp-2">
+                                                                            {variation.description}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {/* Radio-like indicator */}
+                                                                    <div className="w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-gray-300 group-hover:border-[#c8e600] flex items-center justify-center flex-shrink-0 transition-colors mt-0.5 md:mt-0">
+                                                                        <div className="w-2 h-2 rounded-full bg-transparent group-hover:bg-[#c8e600] transition-colors" />
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </motion.div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <span className="font-bold text-[#1A1A1A] text-lg block mb-1">{item.label}</span>
-                                                    <span className="text-sm text-gray-500 font-medium leading-relaxed">{item.description}</span>
-                                                </div>
-                                            </button>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
 
                                     {displayedItems.length === 0 && (
                                         <div className="text-center py-20">
-                                            <p className="text-gray-400 font-medium">{t("addBlock.noResults", { query: search })}</p>
+                                            <p className="text-gray-400 font-medium">Nenhum resultado para "{search}"</p>
                                         </div>
                                     )}
                                 </div>
@@ -249,4 +464,8 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             )}
         </AnimatePresence>
     );
+
+    if (!mounted) return null;
+
+    return createPortal(modalContent, document.body);
 }
