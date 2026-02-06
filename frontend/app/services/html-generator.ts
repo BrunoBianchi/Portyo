@@ -992,7 +992,7 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     
     // Different rendering based on variation
     if (variation === "simple-link") {
-      // Render as a simple button link
+      // Variation 1: Simple button link
       const buttonStyle = `
         display:inline-flex;
         align-items:center;
@@ -1015,17 +1015,92 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       </section>`);
     }
     
+    // Variation 2: Grid-shop (with shopping/link indicators on hover)
+    if (variation === "grid-shop") {
+      const gridStyle = displayType === 'grid' 
+        ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;" 
+        : "display:flex; flex-direction:column; gap:12px;";
+
+      const imageStyle = displayType === 'grid'
+        ? "aspect-ratio:1; width:100%;"
+        : "aspect-ratio:1; width:100%; max-height:400px;";
+
+      // Initial placeholders with loading spinner (SSR)
+      const placeholders = [1, 2, 3].map(() => `
+        <div style="position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+             <div style="width:24px; height:24px; border:2px solid #d1d5db; border-top-color:#0095f6; border-radius:50%; animation:spin 1s linear infinite;"></div>
+          </div>
+        </div>
+      `).join('');
+
+      const textHtml = showText ? `
+        <div style="text-align:center; ${textPosition === 'top' ? 'margin-bottom:12px;' : 'margin-top:12px;'}">
+          <a href="${escapeHtml(url)}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:${textColor}; text-decoration:none; padding:6px 12px; background:rgba(0,149,246,0.1); border-radius:20px; transition:background 0.2s;" onmouseover="this.style.background='rgba(0,149,246,0.15)'" onmouseout="this.style.background='rgba(0,149,246,0.1)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+            @${escapeHtml(username)}
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          </a>
+        </div>
+      ` : '';
+
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+        ${textPosition === 'top' ? textHtml : ''}
+        <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+          ${placeholders}
+        </div>
+        ${textPosition === 'bottom' ? textHtml : ''}
+      </section>`);
+    }
+    
+    // Variation 3: Visual-gallery (clean, minimal, photo-focused)
+    if (variation === "visual-gallery") {
+      const gridStyle = displayType === 'grid' 
+        ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:2px;" 
+        : "display:flex; flex-direction:column; gap:8px;";
+
+      const imageStyle = displayType === 'grid'
+        ? "aspect-ratio:1; width:100%;"
+        : "aspect-ratio:1; width:100%; max-height:400px;";
+
+      // Initial placeholders with loading spinner (SSR)
+      const placeholders = [1, 2, 3].map(() => `
+        <div style="position:relative; ${imageStyle} overflow:hidden; background:#fafafa;">
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+             <div style="width:20px; height:20px; border:2px solid #e0e0e0; border-top-color:#0095f6; border-radius:50%; animation:spin 1s linear infinite;"></div>
+          </div>
+        </div>
+      `).join('');
+
+      const textHtml = showText ? `
+        <div style="text-align:center; ${textPosition === 'top' ? 'margin-bottom:8px;' : 'margin-top:8px;'}">
+          <a href="${escapeHtml(url)}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:500; color:${textColor}; text-decoration:none; opacity:0.8; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+            @${escapeHtml(username)}
+          </a>
+        </div>
+      ` : '';
+
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+        ${textPosition === 'top' ? textHtml : ''}
+        <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:16px; overflow:hidden;">
+          ${placeholders}
+        </div>
+        ${textPosition === 'bottom' ? textHtml : ''}
+      </section>`);
+    }
+    
+    // Fallback to grid-shop if variation is not recognized
     const gridStyle = displayType === 'grid' 
-      ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;" 
+      ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;" 
       : "display:flex; flex-direction:column; gap:12px;";
 
     const imageStyle = displayType === 'grid'
       ? "aspect-ratio:1; width:100%;"
       : "aspect-ratio:1; width:100%; max-height:400px;";
 
-    // Initial placeholders with loading spinner (SSR)
     const placeholders = [1, 2, 3].map(() => `
-      <div style="position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6;">
+      <div style="position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
         <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
            <div style="width:24px; height:24px; border:2px solid #d1d5db; border-top-color:#0095f6; border-radius:50%; animation:spin 1s linear infinite;"></div>
         </div>
@@ -1041,7 +1116,6 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       </div>
     ` : '';
 
-    // We add 'custom-instagram-feed' class and data attributes for the BioRenderer to pick up
     return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
       <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
