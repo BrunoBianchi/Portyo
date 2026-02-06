@@ -278,8 +278,13 @@ export const BIO_DESIGN_DEFAULTS = {
  * Helper: merge bio with defaults (only fills missing/undefined fields)
  */
 export function withDesignDefaults<T extends Record<string, any>>(bio: T | null | undefined): T & typeof BIO_DESIGN_DEFAULTS {
-  if (!bio) return { ...BIO_DESIGN_DEFAULTS } as any;
   const merged = { ...BIO_DESIGN_DEFAULTS } as any;
+  
+  // Ensure bio is an object before attempting to iterate
+  if (!bio || typeof bio !== 'object') {
+    return merged;
+  }
+  
   for (const key of Object.keys(bio)) {
     if (bio[key] !== undefined && bio[key] !== null) {
       merged[key] = bio[key];

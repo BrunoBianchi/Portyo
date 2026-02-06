@@ -44,7 +44,7 @@ import { normalizeUrl, escapeHtml } from "~/blocks/renderers/utils";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface BioRendererProps {
-  bio: Record<string, any>;
+  bio: Record<string, any> | null | undefined;
   blocks: Array<Record<string, any>>;
   /** Editor preview mode — disables analytics, hides promo banner, enables upload overlay */
   isPreview?: boolean;
