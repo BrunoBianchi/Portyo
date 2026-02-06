@@ -173,10 +173,10 @@ const BioRenderer = ({ html }: { html: string }) => {
                         
                         // Variation 1: grid-shop - with shopping/link overlay indicators
                         if (variation === 'grid-shop') {
-                            posts.slice(0, 3).forEach((post: any) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px; transition:transform 0.2s;" onmouseover="this.style.transform='scale(0.98)'; this.querySelector('.instagram-shop-overlay').style.opacity='1'" onmouseout="this.style.transform='scale(1)'; this.querySelector('.instagram-shop-overlay').style.opacity='0'">
+                            posts.slice(0, 3).forEach((post: any, index: number) => {
+                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px; transition:transform 0.2s;">
                                     <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
-                                    <div class="instagram-shop-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;">
+                                    <div class="instagram-shop-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; pointer-events:none;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
                                     </div>
                                 </a>`;
@@ -184,22 +184,50 @@ const BioRenderer = ({ html }: { html: string }) => {
                         }
                         // Variation 2: visual-gallery - clean, minimal, photo-focused
                         else if (variation === 'visual-gallery') {
-                            posts.slice(0, 3).forEach((post: any) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#fafafa; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                            posts.slice(0, 3).forEach((post: any, index: number) => {
+                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#fafafa; transition:opacity 0.2s;">
                                     <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
                                 </a>`;
                             });
                         }
                         // Fallback: default grid rendering
                         else {
-                            posts.slice(0, 3).forEach((post: any) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
+                            posts.slice(0, 3).forEach((post: any, index: number) => {
+                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
                                     <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
                                 </a>`;
                             });
                         }
                         
                         feed.innerHTML = html;
+                        
+                        // Add hover effects after HTML is injected
+                        if (variation === 'grid-shop') {
+                            const links = feed.querySelectorAll('a[data-post-index]');
+                            links.forEach((link) => {
+                                const overlay = link.querySelector('.instagram-shop-overlay') as HTMLElement;
+                                if (overlay) {
+                                    link.addEventListener('mouseenter', () => {
+                                        (link as HTMLElement).style.transform = 'scale(0.98)';
+                                        overlay.style.opacity = '1';
+                                    });
+                                    link.addEventListener('mouseleave', () => {
+                                        (link as HTMLElement).style.transform = 'scale(1)';
+                                        overlay.style.opacity = '0';
+                                    });
+                                }
+                            });
+                        } else if (variation === 'visual-gallery') {
+                            const links = feed.querySelectorAll('a[data-post-index]');
+                            links.forEach((link) => {
+                                link.addEventListener('mouseenter', () => {
+                                    (link as HTMLElement).style.opacity = '0.85';
+                                });
+                                link.addEventListener('mouseleave', () => {
+                                    (link as HTMLElement).style.opacity = '1';
+                                });
+                            });
+                        }
                     })
                     .catch(err => {
                         console.error("Instagram fetch error:", err);
