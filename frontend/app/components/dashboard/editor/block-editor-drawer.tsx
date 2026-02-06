@@ -21,28 +21,37 @@ export const BlockEditorDrawer = React.memo(function BlockEditorDrawer({
 }: BlockEditorDrawerProps) {
   const { t } = useTranslation("dashboard");
   const [activeTab, setActiveTab] = React.useState<"content" | "style">("content");
+  const [editedBlock, setEditedBlock] = React.useState<BioBlock | null>(null);
 
-  // Reset tab when block changes
+  // Initialize editedBlock when block changes
   React.useEffect(() => {
     if (block) {
+      setEditedBlock(block);
       setActiveTab("content");
     }
   }, [block?.id]);
 
   const handleBlockChange = useCallback(
     (updates: Partial<BioBlock>) => {
-      if (!block) return;
-      onSave({ ...block, ...updates });
+      if (!editedBlock) return;
+      setEditedBlock({ ...editedBlock, ...updates });
     },
-    [block, onSave]
+    [editedBlock]
   );
+
+  const handleSave = useCallback(() => {
+    if (editedBlock) {
+      onSave(editedBlock);
+    }
+    onClose();
+  }, [editedBlock, onSave, onClose]);
 
   const blockTypeLabel = useMemo(() => {
     if (!block) return "";
     return t(`editor.blockTypes.${block.type}`, { defaultValue: block.type });
   }, [block, t]);
 
-  if (!block) return null;
+  if (!block || !editedBlock) return null;
 
   return (
     <AnimatePresence>
@@ -120,11 +129,11 @@ export const BlockEditorDrawer = React.memo(function BlockEditorDrawer({
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
               {activeTab === "content" ? (
                 <div className="space-y-5">
-                  <BlockEditor block={block} onChange={handleBlockChange} />
+                  <BlockEditor block={editedBlock} onChange={handleBlockChange} />
                 </div>
               ) : (
                 <BlockStyleSettings
-                  block={block}
+                  block={editedBlock}
                   onUpdate={handleBlockChange}
                 />
               )}
@@ -133,7 +142,7 @@ export const BlockEditorDrawer = React.memo(function BlockEditorDrawer({
             {/* Footer */}
             <div className="p-6 border-t-2 border-black bg-[#F3F3F1]">
               <button
-                onClick={onClose}
+                onClick={handleSave}
                 className="w-full py-4 bg-[#D2E823] border-2 border-black rounded-xl font-black uppercase tracking-widest text-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 group"
               >
                 <BadgeCheck className="w-5 h-5" strokeWidth={2.5} />
