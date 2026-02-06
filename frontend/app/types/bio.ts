@@ -133,6 +133,7 @@ export interface Bio {
   theme?: string;
   buttonRadius?: string;
   buttonShadow?: string;
+  buttonShadowColor?: string;
   buttonColor?: string;
   buttonTextColor?: string;
   enableParallax?: boolean;

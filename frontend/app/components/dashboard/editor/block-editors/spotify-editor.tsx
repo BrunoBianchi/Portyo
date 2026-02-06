@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import type { BioBlock } from "~/contexts/bio.context";
-import { BlockStyleSettings } from "../block-style-settings";
 
 interface Props {
   block: BioBlock;
@@ -12,6 +11,7 @@ export function SpotifyBlockEditor({ block, onChange }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Spotify URL */}
       <div>
         <label className="block text-xs font-black uppercase tracking-wider mb-2 ml-1">
           {t("editor.editDrawer.fields.spotifyUrlLabel")}
@@ -24,7 +24,20 @@ export function SpotifyBlockEditor({ block, onChange }: Props) {
           placeholder={t("editor.editDrawer.fields.spotifyPlaceholder")}
         />
       </div>
-      <BlockStyleSettings block={block} onUpdate={onChange} />
+
+      {/* Compact Mode Toggle */}
+      <div className="flex items-center justify-between p-4 bg-white border-2 border-black rounded-xl">
+        <label className="text-xs font-black uppercase tracking-wider">
+          Modo compacto
+        </label>
+        <button
+          type="button"
+          onClick={() => onChange({ spotifyCompact: !block.spotifyCompact })}
+          className={`w-12 h-6 rounded-full relative transition-colors ${block.spotifyCompact ? "bg-[#D2E823] border-2 border-black" : "bg-gray-200 border-2 border-gray-300"}`}
+        >
+          <div className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${block.spotifyCompact ? "left-6" : "left-0.5"}`} />
+        </button>
+      </div>
     </div>
   );
 }

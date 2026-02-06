@@ -179,6 +179,9 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "varchar", default: "#000000" })
     buttonTextColor: string = "#000000";
 
+    @Column({ type: "varchar", nullable: true })
+    buttonShadowColor: string | null = null;
+
     @Column({ type: "boolean", default: false })
     verified: boolean = false;
 

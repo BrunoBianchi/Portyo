@@ -1,3 +1,16 @@
+/**
+ * useHtmlGenerator — SSR HTML generation for persistence only.
+ *
+ * This hook generates static HTML via `blocksToHtml()` for saving to the database.
+ * The generated HTML is used by:
+ *   - SEO crawlers (Googlebot, Bingbot) that don't execute JS
+ *   - OpenGraph/social media previews
+ *   - Email embeds and exports
+ *
+ * **Live preview rendering** now uses `<BioRenderer>` (React components) instead.
+ * This hook is NOT used for preview — it only runs in the background to keep
+ * the persisted HTML in sync with the current blocks/bio state.
+ */
 import { useEffect, useState, useRef, useCallback } from "react";
 import { blocksToHtml } from "~/services/html-generator";
 import type { BioBlock } from "~/contexts/bio.context";

@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { FormSelector } from "../integration-selectors";
-import { BlockStyleSettings } from "../block-style-settings";
 import type { BioBlock } from "~/contexts/bio.context";
 
 interface Props {
@@ -34,12 +33,6 @@ export function FormBlockEditor({ block, onChange }: Props) {
           {t("editor.blockItem.form.helper")}
         </p>
       </div>
-
-      {/* Style Settings */}
-      <BlockStyleSettings
-        block={block}
-        onUpdate={onChange}
-      />
     </div>
   );
 }

@@ -166,9 +166,10 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                         key={day.toString()}
                         className={`relative p-1 w-9 h-9 flex items-center justify-center rounded-full text-sm cursor-pointer transition-all
                             ${isDisabled ? "text-muted-foreground/30 pointer-events-none" : "hover:bg-muted text-foreground"}
-                            ${isSelected ? "bg-black text-white hover:bg-black font-semibold" : ""}
+                            ${isSelected ? "font-semibold" : ""}
                             ${isUnavailable && !isSelected ? "text-muted-foreground/50" : ""}
                         `}
+                        style={isSelected ? { background: 'var(--btn-bg, #111827)', color: 'var(--btn-text, #fff)' } : undefined}
                         onClick={(e) => {
                             e.stopPropagation();
                             if (!isDisabled) clickHandler(cloneDay);
@@ -176,7 +177,7 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                     >
                         <span>{formattedDate}</span>
                         {isUnavailable && !isDisabled && (
-                            <span className="absolute bottom-0.5 w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                            <span className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--btn-bg, #ef4444)' }}></span>
                         )}
                     </div>
                 );
@@ -246,7 +247,10 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                                         <button
                                             key={time}
                                             onClick={() => handleTimeSelect(time)}
-                                            className="py-2 px-3 bg-muted hover:bg-black hover:text-white rounded-lg text-sm font-medium transition-colors border border-border"
+                                            className="py-2 px-3 bg-muted rounded-lg text-sm font-medium transition-colors border border-border hover:opacity-90"
+                                            style={{ ['--tw-bg-opacity' as any]: undefined }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--btn-bg, #111827)'; e.currentTarget.style.color = 'var(--btn-text, #fff)'; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = ''; e.currentTarget.style.color = ''; }}
                                         >
                                             {time}
                                         </button>
@@ -315,7 +319,8 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-4 bg-black text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full py-4 font-bold text-lg transition-transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90"
+                                    style={{ background: 'var(--btn-bg, #111827)', color: 'var(--btn-text, #fff)', borderRadius: 'var(--btn-radius, 16px)' }}
                                 >
                                     {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : "Confirm Booking"}
                                 </button>
@@ -352,7 +357,7 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                 <div className="bg-surface-card border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all border-border">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-bold text-foreground">{title || "Book a Call"}</h3>
-                        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Book It</span>
+                        <span style={{ background: 'var(--btn-bg, #111827)', color: 'var(--btn-text, #fff)', borderRadius: 'var(--btn-radius, 16px)' }} className="px-3 py-1 text-xs font-bold uppercase tracking-wider">Book It</span>
                     </div>
                     {description && <p className="text-sm text-muted-foreground mb-5">{description}</p>}
 
