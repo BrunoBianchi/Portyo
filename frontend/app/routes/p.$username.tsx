@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
-import { BioLayout } from "~/components/bio/bio-layout";
+import { BioRenderer } from "~/components/bio/bio-renderer";
 import { BioNotFound } from "~/components/public-bio/not-found";
 import { BioLoading } from "~/components/public-bio/loading";
 
@@ -479,7 +479,13 @@ export default function PublicBioRoute() {
             {faqData && (
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqData) }} />
             )}
-            <BioLayout bio={bio} subdomain={username} isNested={true} />
+            <BioRenderer
+                bio={bio}
+                blocks={bio.blocks || []}
+                subdomain={username}
+                isNested={true}
+                baseUrl={origin || "https://portyo.me"}
+            />
         </>
     );
 }

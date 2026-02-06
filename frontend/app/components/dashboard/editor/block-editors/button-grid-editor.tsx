@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import type { BioBlock } from "~/contexts/bio.context";
-import { BlockStyleSettings } from "../block-style-settings";
 
 interface Props {
   block: BioBlock;
@@ -31,7 +30,6 @@ export function ButtonGridBlockEditor({ block, onChange }: Props) {
           placeholder={t("editor.editDrawer.fields.gridItemsPlaceholder")}
         />
       </div>
-      <BlockStyleSettings block={block} onUpdate={onChange} />
     </div>
   );
 }

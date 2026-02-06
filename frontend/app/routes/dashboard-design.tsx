@@ -6,7 +6,8 @@ import BioContext from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import { useContext } from "react";
 import type { Bio } from "../types/bio";
-import { blocksToHtml } from "~/services/html-generator";
+import { useDesignEditor } from "~/hooks/use-design-editor";
+import { BioRenderer } from "~/components/bio/bio-renderer";
 
 const fontOptions = [
   "Inter",
@@ -228,6 +229,66 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
   const bgColor = bio?.bgColor || "#ECEEF1";
   const buttonStyle = bio?.buttonStyle || "solid";
   const buttonRadius = bio?.buttonRadius || "rounder";
+  const buttonShadow = bio?.buttonShadow || "none";
+  const buttonColor = bio?.buttonColor || "#111827";
+  const buttonTextColor = bio?.buttonTextColor || "#ffffff";
+  const buttonShadowColor = bio?.buttonShadowColor || null;
+
+  const getButtonRadius = () => {
+    switch (buttonRadius) {
+      case "square": return "0px";
+      case "round": return "8px";
+      case "rounder": return "16px";
+      case "full": return "9999px";
+      default: return "16px";
+    }
+  };
+
+  const getButtonShadow = () => {
+    const rgb = buttonShadowColor
+      ? (() => {
+          const hex = buttonShadowColor.replace("#", "");
+          return `${parseInt(hex.substring(0, 2), 16)},${parseInt(hex.substring(2, 4), 16)},${parseInt(hex.substring(4, 6), 16)}`;
+        })()
+      : "0,0,0";
+    switch (buttonShadow) {
+      case "soft": return `0 8px 18px rgba(${rgb},0.15)`;
+      case "strong": return `0 12px 28px rgba(${rgb},0.25)`;
+      case "hard": return `4px 4px 0px rgba(${rgb},0.35)`;
+      default: return "none";
+    }
+  };
+
+  const getButtonStyles = (): React.CSSProperties => {
+    const base: React.CSSProperties = {
+      width: "100%",
+      padding: "12px 16px",
+      textAlign: "center" as const,
+      fontSize: "13px",
+      fontWeight: 500,
+      borderRadius: getButtonRadius(),
+      boxShadow: getButtonShadow(),
+      transition: "all 0.2s ease",
+      border: "none",
+    };
+
+    switch (buttonStyle) {
+      case "outline":
+        return { ...base, background: "transparent", color: buttonColor, border: `2px solid ${buttonColor}` };
+      case "glass":
+        return { ...base, background: `${buttonColor}33`, backdropFilter: "blur(8px)", color: buttonTextColor, border: `1px solid ${buttonColor}44` };
+      case "ghost":
+        return { ...base, background: "transparent", color: buttonColor };
+      case "hard-shadow":
+        return { ...base, background: buttonColor, color: buttonTextColor, boxShadow: `4px 4px 0px ${buttonColor}88` };
+      case "soft-shadow":
+        return { ...base, background: buttonColor, color: buttonTextColor, boxShadow: `0 8px 24px ${buttonColor}40` };
+      case "gradient":
+        return { ...base, background: `linear-gradient(135deg, ${buttonColor}, ${buttonColor}99)`, color: buttonTextColor };
+      default: // solid
+        return { ...base, background: buttonColor, color: buttonTextColor };
+    }
+  };
 
   return (
     <div className="sticky top-8">
@@ -251,19 +312,7 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`w-full py-3 px-4 text-center text-sm font-medium ${buttonStyle === "solid"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : buttonStyle === "outline"
-                        ? "bg-transparent border-2 border-white text-white"
-                        : "bg-white/20 backdrop-blur text-white"
-                      } ${buttonRadius === "square"
-                        ? "rounded-none"
-                        : buttonRadius === "round"
-                          ? "rounded-lg"
-                          : buttonRadius === "rounder"
-                            ? "rounded-2xl"
-                            : "rounded-full"
-                      }`}
+                    style={getButtonStyles()}
                   >
                     Seu link aqui
                   </div>
@@ -387,86 +436,24 @@ export default function DashboardDesign() {
   const [activeSection, setActiveSection] = useState("header");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [wallpaperPopup, setWallpaperPopup] = useState<string | null>(null);
-  const [draftBio, setDraftBio] = useState<Bio | null>(null);
-  const saveTimeoutRef = useRef<number | null>(null);
-  const pendingPayloadRef = useRef<Partial<Bio>>({});
-  const pendingBioRef = useRef<Bio | null>(null);
-  const bio = draftBio ?? contextBio;
 
-  const commitUpdates = useCallback(async () => {
-    if (!contextBio) return;
-    const payload = pendingPayloadRef.current;
-    pendingPayloadRef.current = {};
-
-    const nextBio = pendingBioRef.current || { ...contextBio, ...payload };
-    try {
-      const html = await blocksToHtml(nextBio.blocks || [], user, nextBio);
-      await updateBio(contextBio.id, { ...payload, html });
-    } catch (error) {
-      console.error("Design update failed:", error);
-    }
-  }, [contextBio, updateBio, user]);
-
-  const scheduleCommit = useCallback((delay: number) => {
-    if (saveTimeoutRef.current) {
-      window.clearTimeout(saveTimeoutRef.current);
-    }
-    saveTimeoutRef.current = window.setTimeout(commitUpdates, delay);
-  }, [commitUpdates]);
-
-  const updateField = useCallback(
-    <K extends keyof Bio>(field: K, value: Bio[K]) => {
-      if (!contextBio) return;
-      pendingPayloadRef.current = { ...pendingPayloadRef.current, [field]: value } as Partial<Bio>;
-      setDraftBio((prev) => {
-        const base = prev ?? contextBio;
-        const next = { ...base, [field]: value } as Bio;
-        pendingBioRef.current = next;
-        return next;
-      });
-      scheduleCommit(350);
-    },
-    [contextBio, scheduleCommit]
-  );
-
-  const updateRangeField = useCallback(
-    <K extends keyof Bio>(field: K, value: Bio[K]) => {
-      if (!contextBio) return;
-      pendingPayloadRef.current = { ...pendingPayloadRef.current, [field]: value } as Partial<Bio>;
-      setDraftBio((prev) => {
-        const base = prev ?? contextBio;
-        const next = { ...base, [field]: value } as Bio;
-        pendingBioRef.current = next;
-        return next;
-      });
-      scheduleCommit(650);
-    },
-    [contextBio, scheduleCommit]
-  );
-
-  const updateFields = useCallback((payload: Partial<Bio>) => {
-    if (!contextBio) return;
-    pendingPayloadRef.current = { ...pendingPayloadRef.current, ...payload };
-    setDraftBio((prev) => {
-      const base = prev ?? contextBio;
-      const next = { ...base, ...payload } as Bio;
-      pendingBioRef.current = next;
-      return next;
-    });
-    scheduleCommit(350);
-  }, [contextBio, scheduleCommit]);
-
-  useEffect(() => {
-    setDraftBio(contextBio);
-  }, [contextBio]);
-
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
+  // Design Editor Hook — replaces manual draftBio, pendingPayloadRef, commitUpdates, etc.
+  const {
+    liveBio: bio,
+    updateField,
+    updateRangeField,
+    updateFields,
+    isSaving,
+    isDirty,
+    flush,
+  } = useDesignEditor({
+    bio: contextBio,
+    user,
+    updateBio,
+    delay: 350,
+    rangeDelay: 650,
+    regenerateHtml: true,
+  });
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -606,10 +593,26 @@ export default function DashboardDesign() {
 
   // Button shadow options
   const shadowOptions = [
-    { value: "none", label: "None" },
-    { value: "soft", label: "Soft" },
-    { value: "strong", label: "Strong" },
-    { value: "hard", label: "Hard" },
+    {
+      value: "none", label: "None", preview: (
+        <div className="w-12 h-8 bg-gray-300 rounded-lg" />
+      )
+    },
+    {
+      value: "soft", label: "Soft", preview: (
+        <div className="w-12 h-8 bg-gray-300 rounded-lg" style={{ boxShadow: "0 8px 18px rgba(0,0,0,0.15)" }} />
+      )
+    },
+    {
+      value: "strong", label: "Strong", preview: (
+        <div className="w-12 h-8 bg-gray-300 rounded-lg" style={{ boxShadow: "0 12px 28px rgba(0,0,0,0.25)" }} />
+      )
+    },
+    {
+      value: "hard", label: "Hard", preview: (
+        <div className="w-12 h-8 bg-gray-300 rounded-lg" style={{ boxShadow: "4px 4px 0px rgba(0,0,0,0.35)" }} />
+      )
+    },
   ];
 
   const parallaxAxisOptions = [
@@ -1267,6 +1270,14 @@ export default function DashboardDesign() {
                     columns={4}
                   />
 
+                  {bio?.buttonShadow && bio.buttonShadow !== "none" && (
+                    <ColorPicker
+                      label="Shadow color"
+                      value={bio?.buttonShadowColor || "#000000"}
+                      onChange={(value) => updateField("buttonShadowColor", value)}
+                    />
+                  )}
+
                   <ColorPicker
                     label="Button color"
                     value={bio?.buttonColor || "#FFFFFF"}
@@ -1437,7 +1448,25 @@ export default function DashboardDesign() {
 
           {/* Preview */}
           <div className="hidden lg:block sticky top-8 h-fit">
-            <PreviewCard bio={bio} />
+            <div className="w-[280px] rounded-[32px] bg-[#f5f5f5] p-4 shadow-xl border border-gray-200">
+              <div className="w-full h-[480px] rounded-[24px] border border-gray-200 bg-white overflow-hidden overflow-y-auto scrollbar-hide">
+                {bio ? (
+                  <BioRenderer
+                    bio={bio}
+                    blocks={bio.blocks || []}
+                    isPreview
+                    subdomain={bio.sufix || ""}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                    Loading...
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 text-center text-xs text-gray-400">
+                Junte-se a @{bio?.sufix || "username"} no Portyo
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import type { Route } from "./+types/home";
 import { lazy, Suspense } from "react";
 import LandingPage from "~/components/marketing/landing-page";
-import BioLayout from "~/components/bio/bio-layout";
+import { BioRenderer } from "~/components/bio/bio-renderer";
 import { BioNotFound } from "~/components/public-bio/not-found";
 import type { ay } from "node_modules/react-router/dist/development/router-5iOvts3c.mjs";
 import i18n from "~/i18n";
@@ -101,16 +101,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     const { bio, hostname } = loaderData;
     if (!bio) return <BioNotFound username={hostname as any} />; // Or generic "Domain not claimed"
 
-    // We pass isNested={false} because on custom domain root, 
-    // the root layout is hidden, so BioLayout receives the main scroll container
-    // BUT `root.tsx` renders `html` and `body`. 
-    // If `BioLayout` is `isNested={false}`, it tries to render `html`/`body` tags?
-    // Wait, `BioLayout` `isNested={false}` renders `html`/`body`.
-    // `root.tsx` ALWAYS renders `html`/`body`.
-    // So even on custom domain root, we are inside `root.tsx`. 
-    // So we MUST pass `isNested={true}` to avoid hydration error!
+    // We pass isNested={true} because on custom domain root,
+    // root.tsx ALWAYS renders html/body tags, so we must render as nested content.
 
-    return <BioLayout bio={bio} subdomain={bio.sufix || ''} isNested={true} />;
+    return <BioRenderer bio={bio} blocks={bio.blocks || []} subdomain={bio.sufix || ''} isNested={true} baseUrl={loaderData.origin || `https://${hostname}`} />;
   }
 
   return <LandingPage />;

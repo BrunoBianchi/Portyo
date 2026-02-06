@@ -232,6 +232,7 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     if (options.buttonShadow !== undefined) bio.buttonShadow = options.buttonShadow as any;
     if (options.buttonColor !== undefined) bio.buttonColor = options.buttonColor as any;
     if (options.buttonTextColor !== undefined) bio.buttonTextColor = options.buttonTextColor as any;
+    if (options.buttonShadowColor !== undefined) bio.buttonShadowColor = options.buttonShadowColor as any;
 
     // Background settings
     if (bgSettings) {

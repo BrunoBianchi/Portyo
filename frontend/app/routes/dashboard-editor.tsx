@@ -13,14 +13,16 @@ import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 
-// Hooks otimizados
+// Hooks
 import { useBlockEditor } from "~/hooks/use-block-editor";
 import { useHtmlGenerator } from "~/hooks/use-html-generator";
+import { useDesignEditor } from "~/hooks/use-design-editor";
 
-// Componentes
+// Components
 import { EditorNav } from "~/components/dashboard/editor/editor-nav";
 import { BlockEditorDrawer } from "~/components/dashboard/editor/block-editor-drawer";
 import { LinksTab, DesignTab, SettingsTab } from "~/components/dashboard/editor/tabs";
+import { BioRenderer } from "~/components/bio/bio-renderer";
 import type { BioBlock } from "~/contexts/bio.context";
 
 export const meta: MetaFunction = () => {
@@ -212,12 +214,14 @@ const ShareButton = memo(function ShareButton({ onClick }: { onClick: () => void
   );
 });
 
-// Memoized Preview Component
+// Memoized Preview Component — now uses BioRenderer instead of iframe
 const PreviewPanel = memo(function PreviewPanel({
-  html,
-  isGenerating
+  bio,
+  blocks,
+  isGenerating,
 }: {
-  html: string | null;
+  bio: any;
+  blocks: BioBlock[];
   isGenerating: boolean;
 }) {
   const { t } = useTranslation("dashboard");
@@ -231,12 +235,14 @@ const PreviewPanel = memo(function PreviewPanel({
             <div className="w-8 h-8 border-2 border-gray-300 border-t-[#8129D9] rounded-full animate-spin" />
           </div>
         ) : (
-          <iframe
-            srcDoc={html || ""}
-            className="w-full h-full bg-white scrollbar-hide"
-            title={t("editor.editorPage.preview.iframeTitle")}
-            sandbox="allow-same-origin allow-scripts"
-          />
+          <div className="w-full h-full overflow-y-auto scrollbar-hide">
+            <BioRenderer
+              bio={bio}
+              blocks={blocks}
+              isPreview
+              subdomain={bio?.sufix || ""}
+            />
+          </div>
         )}
       </div>
       <div className="mt-8 flex items-center gap-2 text-xs font-bold text-black/40 uppercase tracking-widest">
@@ -247,16 +253,18 @@ const PreviewPanel = memo(function PreviewPanel({
   );
 });
 
-// Mobile Preview Overlay
+// Mobile Preview Overlay — now uses BioRenderer instead of iframe
 const MobilePreviewOverlay = memo(function MobilePreviewOverlay({
   isOpen,
   onClose,
-  html,
+  bio,
+  blocks,
   isGenerating,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  html: string | null;
+  bio: any;
+  blocks: BioBlock[];
   isGenerating: boolean;
 }) {
   const { t } = useTranslation("dashboard");
@@ -284,12 +292,14 @@ const MobilePreviewOverlay = memo(function MobilePreviewOverlay({
                   <div className="w-8 h-8 border-2 border-gray-300 border-t-[#8129D9] rounded-full animate-spin" />
                 </div>
               ) : (
-                <iframe
-                  srcDoc={html || ""}
-                  className="w-full h-full bg-white scrollbar-hide"
-                  title={t("editor.editorPage.preview.mobileIframeTitle")}
-                  sandbox="allow-same-origin allow-scripts"
-                />
+                <div className="w-full h-full overflow-y-auto scrollbar-hide">
+                  <BioRenderer
+                    bio={bio}
+                    blocks={blocks}
+                    isPreview
+                    subdomain={bio?.sufix || ""}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -310,7 +320,6 @@ export default function DashboardEditor() {
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const lastSavedBlocksRef = useRef<string>("");
-  const designSaveTimeoutRef = useRef<number | null>(null);
 
   // Block Editor Hook
   const {
@@ -328,6 +337,28 @@ export default function DashboardEditor() {
     initialBlocks: bio?.blocks || [],
     key: bio?.id
   });
+
+  // Design Editor Hook — replaces manual pendingDesignPayloadRef + handleDesignUpdate
+  const {
+    liveBio,
+    updateField: updateDesignField,
+    updateRangeField: updateDesignRangeField,
+    updateFields: updateDesignFields,
+    isSaving: isDesignSaving,
+    isDirty: isDesignDirty,
+    flush: flushDesign,
+  } = useDesignEditor({
+    bio,
+    user,
+    updateBio,
+    delay: 350,
+    rangeDelay: 650,
+    regenerateHtml: true,
+  });
+
+  // Ref for latest blocks — eliminates stale closure in handleSaveBlock
+  const blocksRef = useRef(blocks);
+  useEffect(() => { blocksRef.current = blocks; }, [blocks]);
 
   // Sync blocks with bio
   useEffect(() => {
@@ -442,12 +473,12 @@ export default function DashboardEditor() {
   const handleSaveBlock = useCallback((block: BioBlock) => {
     replaceBlock(block.id, block);
     if (bio) {
+      const latestBlocks = blocksRef.current;
       updateBio(bio.id, {
-        blocks: blocks.map(b => b.id === block.id ? block : b),
-        html: html || undefined
+        blocks: latestBlocks.map(b => b.id === block.id ? block : b),
       });
     }
-  }, [replaceBlock, blocks, bio, updateBio, html]);
+  }, [replaceBlock, bio, updateBio]);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -474,25 +505,9 @@ export default function DashboardEditor() {
     }
   }, [bio, updateBio, t]);
 
-  const handleDesignUpdate = useCallback((payload: Parameters<typeof updateBio>[1]) => {
-    if (!bio) return;
-    if (designSaveTimeoutRef.current) {
-      window.clearTimeout(designSaveTimeoutRef.current);
-    }
-    designSaveTimeoutRef.current = window.setTimeout(() => {
-      updateBio(bio.id, payload).catch((error) => {
-        console.error("Design update failed:", error);
-      });
-    }, 350);
-  }, [bio, updateBio]);
-
-  useEffect(() => {
-    return () => {
-      if (designSaveTimeoutRef.current) {
-        window.clearTimeout(designSaveTimeoutRef.current);
-      }
-    };
-  }, []);
+  const handleDesignUpdate = useCallback((payload: Partial<Bio>) => {
+    updateDesignFields(payload);
+  }, [updateDesignFields]);
 
   const generateSeoWithAI = useCallback(async (field: string) => {
     if (!bio?.id) {
@@ -570,7 +585,7 @@ export default function DashboardEditor() {
 
                 {activeTab === 'design' && (
                   <DesignTab
-                    bio={bio}
+                    bio={liveBio}
                     uploadingImage={uploadingImage}
                     onImageUpload={handleImageUpload}
                     onUpdateBio={handleDesignUpdate}
@@ -605,13 +620,14 @@ export default function DashboardEditor() {
           </main>
 
           {/* Desktop Preview */}
-          <PreviewPanel html={html} isGenerating={isGenerating} />
+          <PreviewPanel bio={liveBio} blocks={blocks} isGenerating={isGenerating} />
 
           {/* Mobile Preview */}
           <MobilePreviewOverlay
             isOpen={showMobilePreview}
             onClose={() => setShowMobilePreview(false)}
-            html={html}
+            bio={liveBio}
+            blocks={blocks}
             isGenerating={isGenerating}
           />
         </div>

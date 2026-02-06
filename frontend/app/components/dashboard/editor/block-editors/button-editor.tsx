@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { BlockEditorProps } from "./index";
+import { ColorPicker } from "../ColorPicker";
 
 const buttonStyleOptions = [
   "solid", "outline", "gradient", "glass", "neon", 
@@ -76,6 +77,20 @@ export function ButtonBlockEditor({ block, onChange }: BlockEditorProps) {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Colors */}
+      <div className="grid grid-cols-2 gap-4">
+        <ColorPicker
+          label="Cor de fundo"
+          value={block.accent || "#000000"}
+          onChange={(val) => onChange({ accent: val })}
+        />
+        <ColorPicker
+          label="Cor do texto"
+          value={block.textColor || "#ffffff"}
+          onChange={(val) => onChange({ textColor: val })}
+        />
       </div>
     </div>
   );

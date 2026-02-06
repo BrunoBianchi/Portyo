@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
 import type { BlockEditorProps } from "./index";
+import { ColorPicker } from "../ColorPicker";
 
 export function YouTubeBlockEditor({ block, onChange }: BlockEditorProps) {
   const { t } = useTranslation("dashboard");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* YouTube URL */}
       <div>
         <label className="block text-xs font-black uppercase tracking-wider mb-2 ml-1">
           {t("editor.editDrawer.fields.youtubeLabel")}
@@ -18,6 +20,76 @@ export function YouTubeBlockEditor({ block, onChange }: BlockEditorProps) {
           placeholder={t("editor.editDrawer.fields.youtubePlaceholder")}
         />
       </div>
+
+      {/* Display Type */}
+      <div>
+        <label className="block text-xs font-black uppercase tracking-wider mb-2 ml-1">
+          Tipo de exibição
+        </label>
+        <select
+          value={block.youtubeDisplayType || "grid"}
+          onChange={(e) => onChange({ youtubeDisplayType: e.target.value })}
+          className="w-full p-3 bg-white border-2 border-black rounded-xl font-medium text-sm focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none"
+        >
+          <option value="grid">Grade</option>
+          <option value="list">Lista</option>
+        </select>
+      </div>
+
+      {/* Show Channel Name Toggle */}
+      <div className="flex items-center justify-between p-4 bg-white border-2 border-black rounded-xl">
+        <label className="text-xs font-black uppercase tracking-wider">
+          Mostrar nome do canal
+        </label>
+        <button
+          type="button"
+          onClick={() => onChange({ youtubeShowText: block.youtubeShowText === false ? true : false })}
+          className={`w-12 h-6 rounded-full relative transition-colors ${block.youtubeShowText !== false ? "bg-[#D2E823] border-2 border-black" : "bg-gray-200 border-2 border-gray-300"}`}
+        >
+          <div className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${block.youtubeShowText !== false ? "left-6" : "left-0.5"}`} />
+        </button>
+      </div>
+
+      {/* Text Position & Color (when text is shown) */}
+      {block.youtubeShowText !== false && (
+        <>
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider mb-2 ml-1">
+              Posição do texto
+            </label>
+            <div className="flex bg-gray-100 border-2 border-black rounded-xl p-1">
+              <button
+                type="button"
+                onClick={() => onChange({ youtubeTextPosition: "top" })}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  block.youtubeTextPosition === "top"
+                    ? "bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-black"
+                    : "text-black/50 hover:text-black"
+                }`}
+              >
+                Topo
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange({ youtubeTextPosition: "bottom" })}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  (block.youtubeTextPosition || "bottom") === "bottom"
+                    ? "bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-black"
+                    : "text-black/50 hover:text-black"
+                }`}
+              >
+                Abaixo
+              </button>
+            </div>
+          </div>
+
+          <ColorPicker
+            label="Cor do texto"
+            value={block.youtubeTextColor || "#ff0000"}
+            onChange={(val) => onChange({ youtubeTextColor: val })}
+          />
+        </>
+      )}
     </div>
   );
 }

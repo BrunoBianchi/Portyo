@@ -34,8 +34,6 @@ const getDefaultBlockData = (type: BioBlock["type"]): Partial<BioBlock> => {
     button: {
       title: "Novo Link",
       href: "",
-      buttonStyle: "solid",
-      buttonShape: "rounded",
     },
     heading: {
       title: "Título",

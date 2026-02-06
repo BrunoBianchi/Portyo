@@ -257,8 +257,10 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
       ? "square"
       : bio.buttonRadius === "full"
         ? "pill"
-        : "rounded");
-    const shadowColor = block.buttonShadowColor || bg;
+        : bio.buttonRadius === "round"
+          ? "rounded"
+          : "rounder");
+    const shadowColor = block.buttonShadowColor || bio.buttonShadowColor || bg;
     const textAlign = block.buttonTextAlign || "center";
     const shadowPreset = block.buttonShadow || bio.buttonShadow || "none";
     
@@ -275,8 +277,9 @@ export const blockToHtml = (block: BioBlock, bio: any): string => {
     let css = `display:flex; align-items:center; position:relative; min-height:48px; padding:14px 28px; text-decoration:none; font-weight:700; font-size:15px; letter-spacing:-0.3px; width:100%; transition:all 280ms cubic-bezier(0.34, 1.56, 0.64, 1); ${animationStyle}`;
     
     if (shape === "pill") css += " border-radius:9999px;";
-    else if (shape === "square") css += " border-radius:8px;";
-    else css += " border-radius:14px;";
+    else if (shape === "square") css += " border-radius:0px;";
+    else if (shape === "rounded") css += " border-radius:8px;";
+    else css += " border-radius:16px;"; // rounder (default)
 
     if (style === "outline") {
       css += ` border:2px solid ${bg}; color:${bg}; background:transparent;`;
