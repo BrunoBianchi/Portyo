@@ -16,7 +16,7 @@ interface UseBlockEditorReturn {
   blocks: BioBlock[];
   history: BioBlock[][];
   canUndo: boolean;
-  addBlock: (type: BioBlock["type"], defaultTitle?: string) => BioBlock;
+  addBlock: (type: BioBlock["type"], defaultTitle?: string, variation?: string) => BioBlock;
   updateBlock: (id: string, updates: Partial<BioBlock>) => void;
   deleteBlock: (id: string) => void;
   reorderBlocks: (newOrder: BioBlock[]) => void;
@@ -61,7 +61,7 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
     setHistory((prev) => [...prev.slice(-19), blocksRef.current]); // Keep last 20 states
   }, []);
 
-  const addBlock = useCallback((type: BioBlock["type"], defaultTitle = "Novo Bloco"): BioBlock => {
+  const addBlock = useCallback((type: BioBlock["type"], defaultTitle = "Novo Bloco", variation?: string): BioBlock => {
     const baseBlock: BioBlock = {
       id: makeId(),
       type,
@@ -117,18 +117,21 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
           return {
             ...baseBlock,
             youtubeUrl: "",
+            youtubeVariation: variation as any || "full-channel",
           };
         case "spotify":
           return {
             ...baseBlock,
             spotifyUrl: "",
             spotifyCompact: false,
+            spotifyVariation: variation as any || "artist-profile",
           };
         case "socials":
           return {
             ...baseBlock,
             socials: {},
             socialsLayout: "row",
+            socialsVariation: variation as any || "icon-grid",
           };
         case "divider":
           return {
@@ -253,6 +256,7 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             whatsappShape: "pill",
             accent: "#25D366",
             textColor: "#ffffff",
+            whatsappVariation: variation as any || "direct-button",
           };
         case "instagram":
           return {
@@ -262,6 +266,7 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             instagramTextColor: "#000000",
             instagramTextPosition: "bottom",
             instagramShowText: true,
+            instagramVariation: variation as any || "grid-shop",
           };
         default:
           return {
