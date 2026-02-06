@@ -500,7 +500,7 @@ export default function DashboardSiteAutoPost() {
                                                     <button
                                                         key={style.id}
                                                         onClick={() => setFormData({ ...formData, tone: style.id })}
-                                                        className={`p-3 rounded-xl border-2 transition-all text-left ${formData.tone === style.id
+                                                        className={`group p-3 rounded-xl border-2 transition-all text-left ${formData.tone === style.id
                                                                 ? "border-black bg-purple-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                                                                 : "border-gray-200 bg-white hover:border-black text-gray-400 hover:text-black"
                                                             }`}
