@@ -9,13 +9,30 @@ export class InstagramService {
   private readonly clientId = env.INSTAGRAM_CLIENT_ID;
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
   private readonly redirectUri = `${env.BACKEND_URL}/api/instagram/auth/callback`;
+  private readonly graphVersion = "v21.0";
+
+  private get graphBaseUrl() {
+    return `https://graph.facebook.com/${this.graphVersion}`;
+  }
 
   public getAuthUrl() {
     if (!this.clientId) {
       throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
     }
-    const scopes = ["instagram_basic", "instagram_manage_messages"];
-    const url = `https://api.instagram.com/oauth/authorize?client_id=${this.clientId}&redirect_uri=${this.redirectUri}&scope=${scopes.join(",")}&response_type=code`;
+    const scopes = [
+      "instagram_basic",
+      "instagram_content_publish",
+      "pages_show_list",
+      "pages_read_engagement",
+      "business_management",
+    ];
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      response_type: "code",
+      scope: scopes.join(","),
+    });
+    const url = `https://www.facebook.com/${this.graphVersion}/dialog/oauth?${params.toString()}`;
     return url;
   }
 
@@ -25,54 +42,74 @@ export class InstagramService {
     }
 
     try {
-      // 1. Exchange short-lived code for short-lived access token
-      const params = new URLSearchParams();
-      params.append("client_id", this.clientId);
-      params.append("client_secret", this.clientSecret);
-      params.append("grant_type", "authorization_code");
-      params.append("redirect_uri", this.redirectUri);
-      params.append("code", code);
+      const shortLivedTokenResponse = await axios.get(`${this.graphBaseUrl}/oauth/access_token`, {
+        params: {
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          redirect_uri: this.redirectUri,
+          code,
+        },
+      });
 
-      const response = await axios.post(
-        "https://api.instagram.com/oauth/access_token",
-        params,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const shortLivedUserToken = shortLivedTokenResponse.data?.access_token;
+      if (!shortLivedUserToken) {
+        throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
+      }
 
-      const { access_token, user_id } = response.data;
+      const longLivedResponse = await axios.get(`${this.graphBaseUrl}/oauth/access_token`, {
+        params: {
+          grant_type: "fb_exchange_token",
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          fb_exchange_token: shortLivedUserToken,
+        },
+      });
 
-      // 2. Exchange short-lived token for long-lived token
-      const longLivedResponse = await axios.get(
-        "https://graph.instagram.com/access_token",
-        {
-          params: {
-            grant_type: "ig_exchange_token",
-            client_secret: this.clientSecret,
-            access_token: access_token,
-          },
-        }
-      );
+      const longLivedUserToken = longLivedResponse.data?.access_token || shortLivedUserToken;
+      const expiresIn = longLivedResponse.data?.expires_in;
+
+      const pagesResponse = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
+        params: {
+          fields: "id,name,access_token,instagram_business_account{id,username}",
+          access_token: longLivedUserToken,
+        },
+      });
+
+      const pages = Array.isArray(pagesResponse.data?.data) ? pagesResponse.data.data : [];
+      const pageWithInstagram = pages.find((page: any) => page?.instagram_business_account?.id && page?.access_token);
+
+      if (!pageWithInstagram) {
+        throw new ApiError(
+          APIErrors.badRequestError,
+          "No Instagram Business account linked to any Facebook Page for this user.",
+          400
+        );
+      }
 
       return {
-        accessToken: longLivedResponse.data.access_token,
-        userId: user_id, // Note: For Basic Display this is different from Graph API ID, but for our scopes it should be fine or mapped.
-        expiresIn: longLivedResponse.data.expires_in
+        accessToken: pageWithInstagram.access_token,
+        userToken: longLivedUserToken,
+        userId: shortLivedTokenResponse.data?.user_id || null,
+        instagramBusinessAccountId: pageWithInstagram.instagram_business_account.id,
+        instagramUsername: pageWithInstagram.instagram_business_account.username || null,
+        pageId: pageWithInstagram.id,
+        pageName: pageWithInstagram.name || null,
+        expiresIn,
       };
     } catch (error: any) {
       logger.error("Instagram OAuth exchange failed", { error: error.response?.data || error.message });
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
     }
   }
 
   public async getUserProfile(accessToken: string) {
     try {
-      const response = await axios.get("https://graph.instagram.com/me", {
+      const response = await axios.get(`${this.graphBaseUrl}/me`, {
         params: {
-          fields: "id,username,account_type,media_count",
+          fields: "id,name",
           access_token: accessToken,
         },
       });
@@ -80,6 +117,84 @@ export class InstagramService {
     } catch (error: any) {
        logger.error("Instagram profile fetch failed", { error: error.response?.data || error.message });
        throw new ApiError(APIErrors.badRequestError, "Failed to fetch Instagram profile", 400);
+    }
+  }
+
+  public async publishImagePost(params: {
+    instagramBusinessAccountId: string;
+    accessToken: string;
+    imageUrl: string;
+    caption: string;
+  }) {
+    const { instagramBusinessAccountId, accessToken, imageUrl, caption } = params;
+
+    try {
+      const containerResponse = await axios.post(
+        `${this.graphBaseUrl}/${instagramBusinessAccountId}/media`,
+        null,
+        {
+          params: {
+            image_url: imageUrl,
+            caption,
+            access_token: accessToken,
+          },
+        }
+      );
+
+      const creationId = containerResponse.data?.id;
+      if (!creationId) {
+        throw new ApiError(APIErrors.badRequestError, "Instagram media container was not created", 400);
+      }
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const statusResponse = await axios.get(`${this.graphBaseUrl}/${creationId}`, {
+          params: {
+            fields: "status_code",
+            access_token: accessToken,
+          },
+        });
+
+        const statusCode = statusResponse.data?.status_code;
+        if (!statusCode || statusCode === "FINISHED") {
+          break;
+        }
+
+        if (statusCode === "ERROR") {
+          throw new ApiError(APIErrors.badRequestError, "Instagram failed to process media", 400);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      const publishResponse = await axios.post(
+        `${this.graphBaseUrl}/${instagramBusinessAccountId}/media_publish`,
+        null,
+        {
+          params: {
+            creation_id: creationId,
+            access_token: accessToken,
+          },
+        }
+      );
+
+      const publishedPostId = publishResponse.data?.id;
+      if (!publishedPostId) {
+        throw new ApiError(APIErrors.badRequestError, "Instagram did not return a published post ID", 400);
+      }
+
+      return {
+        id: publishedPostId,
+        creationId,
+      };
+    } catch (error: any) {
+      logger.error("Instagram publish failed", {
+        error: error.response?.data || error.message,
+        instagramBusinessAccountId,
+      });
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(APIErrors.badRequestError, "Failed to publish on Instagram", 400);
     }
   }
 

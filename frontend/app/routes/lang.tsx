@@ -59,6 +59,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw redirect(`${nextPath}${url.search}${url.hash}`);
   }
 
+  // On company subdomain, redirect bare /:lang to company login
+  const hostname = url.hostname;
+  if (hostname.startsWith("company.")) {
+    const pathAfterLang = url.pathname.replace(/^\/(en|pt)\/?/, "");
+    if (!pathAfterLang) {
+      throw redirect(`/${langParam}/company/login${url.search}${url.hash}`);
+    }
+  }
+
   return { lang: langParam as SupportedLang };
 }
 

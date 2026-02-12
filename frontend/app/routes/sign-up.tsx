@@ -1,11 +1,10 @@
 import type { Route } from "./+types/sign-up";
 import { Link, useLocation, useNavigate } from "react-router";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthBackground } from "~/components/shared/auth-background";
 import AuthContext from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
-import { api } from "~/services/api";
 import { AuthLayoutBold } from "~/components/auth/auth-layout-bold";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -31,18 +30,10 @@ export default function Signup() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [bioSufix, setBioSufix] = useState("");
-    const [showBioModal, setShowBioModal] = useState(false);
-    const [bioError, setBioError] = useState<string | null>(null);
-    const [bioLoading, setBioLoading] = useState(false);
+    const [signupError, setSignupError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate()
     const { register, socialLogin, logout, user } = useContext(AuthContext);
-
-    const suggestedSufix = useMemo(() => {
-        if (!email) return "";
-        const raw = email.split("@")[0] || "";
-        return raw.replace(/\./g, "-").replace(/\s+/g, "-").toLowerCase();
-    }, [email]);
 
     const hasUppercase = /[A-Z]/.test(password);
     const hasMinLength = password.length >= 8;
@@ -62,32 +53,23 @@ export default function Signup() {
 
     const handleContinue = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        setSignupError(null);
+        setIsSubmitting(true);
         try {
-            await register(email, password, username);
-            setBioSufix(suggestedSufix || username.replace(/\s+/g, "-").toLowerCase());
-            setShowBioModal(true);
-        } catch (e) {
-            console.error("Registration failed", e);
-            alert(t("auth.signup.createError"));
-        }
-    };
+            // Register and auto-create bio with suggested sufix
+            const suggestedSufix = email.split("@")[0]?.replace(/\./g, "-").replace(/\s+/g, "-").toLowerCase()
+                || username.replace(/\s+/g, "-").toLowerCase();
+            await register(email, password, username, suggestedSufix);
 
-    const handleCreateBio = async () => {
-        if (!bioSufix.trim()) return;
-        setBioLoading(true);
-        setBioError(null);
-        try {
-            await api.post("/bio", { sufix: bioSufix.trim() });
-            if (!user?.verified) {
-                navigate(withLang("/verify-email"));
-            } else {
-                navigate(withLang("/onboarding"));
-            }
-        } catch (err: any) {
-            console.error("Failed to create bio", err);
-            setBioError(err.response?.data?.message || t("auth.signup.createError"));
+            // Navigate to email verification before onboarding
+            navigate(withLang("/verify-email"));
+        } catch (e: any) {
+            console.error("Registration failed", e);
+            const message = e?.response?.data?.message || e?.response?.data?.error || t("auth.signup.createError");
+            setSignupError(message);
         } finally {
-            setBioLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -129,6 +111,11 @@ export default function Signup() {
             subtitle={t("auth.signup.subtitleStep1", "Comece grátis, sem cartão de crédito.")}
         >
             <form className="space-y-6" onSubmit={handleContinue}>
+                {signupError && (
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
+                        <p className="text-sm text-red-600 font-medium">{signupError}</p>
+                    </div>
+                )}
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
@@ -204,10 +191,10 @@ export default function Signup() {
                 <div className="space-y-4 pt-4">
                     <button
                         type="submit"
-                        disabled={!isFormValid}
+                        disabled={!isFormValid || isSubmitting}
                         className="w-full bg-[#1A1A1A] text-white font-display font-bold text-lg py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#1A1A1A]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {t("auth.signup.submit", "Criar conta")}
+                        {isSubmitting ? t("auth.signup.submitting", "Criando...") : t("auth.signup.submit", "Criar conta")}
                     </button>
                 </div>
             </form>
@@ -259,54 +246,6 @@ export default function Signup() {
                     <>{t("auth.signup.haveAccount")} <Link to={withLang("/login")} className="ml-1 font-bold text-[#1A1A1A] underline decoration-2 underline-offset-4 hover:text-[#0047FF] hover:decoration-[#0047FF] transition-colors">{t("auth.signup.signIn")}</Link></>
                 </p>
             </div>
-
-            {/* Bio Claim Modal - Updated for Bold Theme */}
-            {showBioModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1A1A]/80 backdrop-blur-md px-4">
-                    <div className="w-full max-w-[580px] rounded-[2.5rem] bg-white p-10 sm:p-12 text-center shadow-2xl relative overflow-hidden">
-                        {/* Decorative Background Blob */}
-                        <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#D2E823] rounded-full blur-[60px] opacity-20"></div>
-
-                        <h2 className="font-display font-black text-4xl text-[#1A1A1A] mb-3 relative z-10">Escolha seu link</h2>
-                        <p className="font-body text-lg text-[#1A1A1A]/60 font-medium relative z-10">Garanta seu espaço único no Portyo.</p>
-
-                        <div className="mt-10 mb-8 relative z-10">
-                            <div className="group flex items-center justify-center flex-wrap bg-[#F3F3F1] border-2 border-transparent focus-within:border-[#1A1A1A] focus-within:bg-white rounded-[1.5rem] px-6 py-6 transition-all duration-300">
-                                <span className="font-display font-bold text-2xl text-[#1A1A1A]/40 tracking-tight">portyo.me/</span>
-                                <input
-                                    value={bioSufix}
-                                    onChange={(e) => setBioSufix(e.target.value)}
-                                    className="bg-transparent text-[#1A1A1A] outline-none font-display font-black text-2xl min-w-[4ch] tracking-tight placeholder:text-[#1A1A1A]/20"
-                                    autoFocus
-                                    spellCheck={false}
-                                    placeholder="voce"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <button
-                                type="button"
-                                onClick={handleCreateBio}
-                                disabled={!bioSufix.trim() || bioLoading}
-                                className="w-full rounded-full bg-[#D2E823] text-[#1A1A1A] font-display font-black text-lg py-4 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                            >
-                                {bioLoading ? "Criando..." : "Confirmar meu link"}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setShowBioModal(false);
-                                    logout();
-                                }}
-                                className="text-sm font-bold text-[#1A1A1A]/40 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest"
-                            >
-                                Voltar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AuthLayoutBold>
     );
 }

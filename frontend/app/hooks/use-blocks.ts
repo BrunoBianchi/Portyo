@@ -110,6 +110,10 @@ const getDefaultBlockData = (type: BioBlock["type"]): Partial<BioBlock> => {
     video: {
       mediaUrl: "",
     },
+    sponsored_links: {
+      title: "Sponsored Links",
+      visible: true,
+    },
   };
 
   return defaults[type] || {};

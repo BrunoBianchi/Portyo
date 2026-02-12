@@ -72,8 +72,6 @@ export const parseGoogleAccessToken = async (accessToken: string) => {
     });
   }
 
-  // Ensure the 7-day Standard trial exists for Gmail signups
-  await BillingService.ensureStandardTrial(user.id, 7);
   const activePlan = await BillingService.getActivePlan(user.id);
 
   const payload = {

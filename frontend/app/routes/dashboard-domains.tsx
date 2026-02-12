@@ -121,18 +121,18 @@ export default function DashboardDomains() {
                                     <p>{t("dashboard.domains.dns.body")}</p>
 
                                     <div className="bg-surface-card p-3 rounded-lg border border-blue-100 shadow-sm">
-                                        <div className="grid grid-cols-3 gap-4 text-xs">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.type")}</span>
                                                 <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">CNAME</span>
                                             </div>
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.nameHost")}</span>
-                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">@</span>
+                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">@ ou www</span>
                                             </div>
                                             <div>
                                                 <span className="block font-bold text-blue-900 uppercase tracking-wider mb-1">{t("dashboard.domains.dns.valueTarget")}</span>
-                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">portyo.me</span>
+                                                <span className="font-mono bg-blue-500/10 px-2 py-1 rounded">cname.portyo.me</span>
                                             </div>
                                         </div>
                                     </div>

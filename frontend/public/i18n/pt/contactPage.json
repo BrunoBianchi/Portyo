@@ -1,0 +1,40 @@
+{
+  "title": "Entre em contato",
+  "subtitle": "Tem alguma dúvida ou feedback? Adoraríamos ouvir de você.",
+  "form": {
+    "name": "Nome",
+    "email": "E-mail",
+    "message": "Mensagem",
+    "messagePlaceholder": "Como podemos ajudar?",
+    "send": "Enviar Mensagem",
+    "sent": "Mensagem Enviada",
+    "sentMessage": "Obrigado por entrar em contato. Retornaremos em breve.",
+    "sendAnother": "Enviar outra mensagem"
+  },
+  "info": {
+    "emailTitle": "E-mail",
+    "responseTime": "Tempo de resposta típico: 24 horas.",
+    "socials": "Redes Sociais"
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "items": [
+      {
+        "question": "Como eu começo?",
+        "answer": "Basta criar uma conta gratuita, escolher seu nome de usuário e começar a personalizar sua página de bio."
+      },
+      {
+        "question": "Posso usar um domínio personalizado?",
+        "answer": "Sim! Domínios personalizados estão disponíveis nos planos Standard e Pro."
+      },
+      {
+        "question": "Quais formas de pagamento vocês aceitam?",
+        "answer": "Aceitamos todos os principais cartões de crédito, incluindo Visa, Mastercard e American Express."
+      },
+      {
+        "question": "Como cancelo minha assinatura?",
+        "answer": "Você pode cancelar sua assinatura a qualquer momento nas configurações do seu painel."
+      }
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { api } from "../services/api";
 import { format, addDays, startOfDay, isBefore, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, isSameMonth } from "date-fns";
 import { Calendar, Clock, CheckCircle, XCircle, RefreshCw, AlertTriangle, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -16,6 +17,7 @@ interface BookingInfo {
 }
 
 export default function BookingManage() {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
 
@@ -36,7 +38,7 @@ export default function BookingManage() {
 
     useEffect(() => {
         if (!token) {
-            setError("No booking token provided.");
+            setError(t("booking.error.noToken"));
             setLoading(false);
             return;
         }
@@ -48,7 +50,7 @@ export default function BookingManage() {
             const res = await api.get(`/public/bookings/manage/${token}`);
             setBooking(res.data);
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to load booking.");
+            setError(err.response?.data?.message || t("booking.error.loadFailed"));
         } finally {
             setLoading(false);
         }
@@ -61,7 +63,7 @@ export default function BookingManage() {
             await api.post(`/public/bookings/confirm/${token}`);
             await fetchBooking();
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to confirm booking.");
+            setError(err.response?.data?.message || t("booking.errorMessages.confirmFailed"));
         } finally {
             setActionLoading(false);
         }
@@ -75,7 +77,7 @@ export default function BookingManage() {
             await fetchBooking();
             setShowCancelReason(false);
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to cancel booking.");
+            setError(err.response?.data?.message || t("booking.errorMessages.cancelFailed"));
         } finally {
             setActionLoading(false);
         }
@@ -83,7 +85,7 @@ export default function BookingManage() {
 
     const handleReschedule = async () => {
         if (!rescheduleDate || !rescheduleTime) {
-            setError("Please select a new date and time.");
+            setError(t("booking.error.selectDateTime"));
             return;
         }
 
@@ -100,7 +102,7 @@ export default function BookingManage() {
             setRescheduleDate(null);
             setRescheduleTime("");
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to reschedule booking.");
+            setError(err.response?.data?.message || t("booking.errorMessages.rescheduleFailed"));
         } finally {
             setActionLoading(false);
         }
@@ -168,7 +170,7 @@ export default function BookingManage() {
                     </button>
                 </div>
                 <div className="grid grid-cols-7 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="text-center">{d}</div>)}
+                    {[t("booking.days.su"), t("booking.days.mo"), t("booking.days.tu"), t("booking.days.we"), t("booking.days.th"), t("booking.days.fr"), t("booking.days.sa")].map(d => <div key={d} className="text-center">{d}</div>)}
                 </div>
                 <div className="grid grid-cols-7 gap-1">{days}</div>
             </div>
@@ -190,7 +192,7 @@ export default function BookingManage() {
                     <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <AlertTriangle className="w-10 h-10 text-red-500" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Booking Not Found</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("booking.error.notFound")}</h1>
                     <p className="text-gray-600">{error}</p>
                 </div>
             </div>
@@ -226,15 +228,15 @@ export default function BookingManage() {
                         <div className="flex items-center gap-3 mb-3">
                             {getStatusIcon()}
                             <h1 className="text-2xl font-bold">
-                                {isCancelled ? 'Booking Cancelled' :
-                                    isPending ? 'Confirm Your Booking' :
-                                        'Booking Confirmed'}
+                                {isCancelled ? t("booking.status.cancelled.title") :
+                                    isPending ? t("booking.status.pending.title") :
+                                        t("booking.status.confirmed.title")}
                             </h1>
                         </div>
                         <p className="opacity-90 text-white/80">
-                            {isCancelled ? 'This appointment has been cancelled.' :
-                                isPending ? 'Please confirm your appointment below.' :
-                                    'Your appointment is scheduled.'}
+                            {isCancelled ? t("booking.status.cancelled.description") :
+                                isPending ? t("booking.status.pending.description") :
+                                    t("booking.status.confirmed.description")}
                         </p>
                     </div>
 
@@ -247,7 +249,7 @@ export default function BookingManage() {
                                     <Calendar className="w-6 h-6 text-[#1e3a5f]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</p>
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t("booking.details.date")}</p>
                                     <p className="font-bold text-gray-900 text-lg">{format(bookingDate, 'EEEE, MMMM do, yyyy')}</p>
                                 </div>
                             </div>
@@ -256,7 +258,7 @@ export default function BookingManage() {
                                     <Clock className="w-6 h-6 text-[#1e3a5f]" />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Time</p>
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t("booking.details.time")}</p>
                                     <p className="font-bold text-gray-900 text-lg">{format(bookingDate, 'h:mm a')}</p>
                                 </div>
                             </div>
@@ -268,21 +270,21 @@ export default function BookingManage() {
                                 {booking.bioName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Booked with</p>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t("booking.details.bookedWith")}</p>
                                 <p className="font-bold text-gray-900 text-lg">{booking.bioName}</p>
                             </div>
                         </div>
 
                         {/* Your Details */}
                         <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Your Details</p>
+                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">{t("booking.details.yourDetails")}</p>
                             <p className="font-semibold text-gray-900">{booking.customerName}</p>
                             <p className="text-gray-600 text-sm">{booking.customerEmail}</p>
                         </div>
 
                         {booking.notes && (
                             <div className="bg-gray-50 rounded-xl p-4">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Notes</p>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">{t("booking.details.notes")}</p>
                                 <p className="text-gray-700">{booking.notes}</p>
                             </div>
                         )}
@@ -306,7 +308,7 @@ export default function BookingManage() {
                                     ) : (
                                         <>
                                             <CheckCircle className="w-5 h-5" />
-                                            Confirm Booking
+                                            {t("booking.actions.confirm")}
                                         </>
                                     )}
                                 </button>
@@ -316,13 +318,13 @@ export default function BookingManage() {
                                         className="flex-1 py-3 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 text-[#1e3a5f] font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                                     >
                                         <RefreshCw className="w-4 h-4" />
-                                        Reschedule
+                                        {t("booking.actions.reschedule")}
                                     </button>
                                     <button
                                         onClick={() => setShowCancelReason(true)}
                                         className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
                                     >
-                                        Cancel
+                                        {t("booking.actions.cancel")}
                                     </button>
                                 </div>
                             </div>
@@ -333,8 +335,8 @@ export default function BookingManage() {
                             <div className="space-y-4 pt-2">
                                 <div className="bg-emerald-50 text-emerald-700 p-5 rounded-2xl text-center border border-emerald-100">
                                     <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500" />
-                                    <p className="font-bold text-lg">Your booking is confirmed!</p>
-                                    <p className="text-sm text-emerald-600/80">We look forward to seeing you.</p>
+                                    <p className="font-bold text-lg">{t("booking.status.confirmed.message")}</p>
+                                    <p className="text-sm text-emerald-600/80">{t("booking.status.confirmed.subtitle")}</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <button
@@ -342,14 +344,14 @@ export default function BookingManage() {
                                         className="flex-1 py-3 bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 text-[#1e3a5f] font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                                     >
                                         <RefreshCw className="w-4 h-4" />
-                                        Reschedule
+                                        {t("booking.actions.reschedule")}
                                     </button>
                                     <button
                                         onClick={() => setShowCancelReason(true)}
                                         className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                                     >
                                         <XCircle className="w-4 h-4" />
-                                        Cancel
+                                        {t("booking.actions.cancel")}
                                     </button>
                                 </div>
                             </div>
@@ -359,7 +361,7 @@ export default function BookingManage() {
                         {isCancelled && (
                             <div className="bg-red-50 text-red-700 p-5 rounded-2xl text-center border border-red-100">
                                 <XCircle className="w-8 h-8 mx-auto mb-2 text-red-500" />
-                                <p className="font-bold text-lg">This booking has been cancelled.</p>
+                                <p className="font-bold text-lg">{t("booking.status.cancelled.message")}</p>
                             </div>
                         )}
                     </div>
@@ -367,7 +369,7 @@ export default function BookingManage() {
 
                 {/* Footer */}
                 <p className="text-center text-gray-400 text-sm mt-6">
-                    Powered by <span className="font-semibold text-gray-600">Portyo</span>
+                    {t("booking.poweredBy")} <span className="font-semibold text-gray-600">Portyo</span>
                 </p>
             </div>
 
@@ -376,12 +378,12 @@ export default function BookingManage() {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">Reschedule Booking</h3>
+                            <h3 className="text-xl font-bold text-gray-900">{t("booking.rescheduleModal.title")}</h3>
                             <button onClick={() => setShowReschedule(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
-                        <p className="text-gray-600 mb-6">Select a new date and time for your appointment.</p>
+                        <p className="text-gray-600 mb-6">{t("booking.rescheduleModal.description")}</p>
 
                         {/* Calendar */}
                         <div className="mb-6 border border-gray-100 rounded-2xl p-4">
@@ -392,14 +394,14 @@ export default function BookingManage() {
                         {rescheduleDate && (
                             <div className="mb-6">
                                 <p className="text-sm font-bold text-gray-700 mb-3">
-                                    Available times for {format(rescheduleDate, 'MMMM d')}:
+                                    {t("booking.rescheduleModal.availableTimes", { date: format(rescheduleDate, 'MMMM d') })}
                                 </p>
                                 {loadingSlots ? (
                                     <div className="flex justify-center py-6">
                                         <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#1e3a5f] border-t-transparent"></div>
                                     </div>
                                 ) : availableSlots.length === 0 ? (
-                                    <p className="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-xl">No available slots for this date.</p>
+                                    <p className="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-xl">{t("booking.rescheduleModal.noSlots")}</p>
                                 ) : (
                                     <div className="grid grid-cols-3 gap-2">
                                         {availableSlots.map(slot => (
@@ -430,14 +432,14 @@ export default function BookingManage() {
                                 onClick={() => setShowReschedule(false)}
                                 className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
                             >
-                                Cancel
+                                {t("booking.actions.cancel")}
                             </button>
                             <button
                                 onClick={handleReschedule}
                                 disabled={actionLoading || !rescheduleDate || !rescheduleTime}
                                 className="flex-1 py-3 bg-[#1e3a5f] hover:bg-[#2d4a6f] text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {actionLoading ? "Rescheduling..." : "Confirm New Time"}
+                                {actionLoading ? t("booking.actions.rescheduling") : t("booking.actions.confirmNewTime")}
                             </button>
                         </div>
                     </div>
@@ -448,12 +450,12 @@ export default function BookingManage() {
             {showCancelReason && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Cancel Booking</h3>
-                        <p className="text-gray-600 mb-6">Are you sure you want to cancel this appointment?</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{t("booking.cancelModal.title")}</h3>
+                        <p className="text-gray-600 mb-6">{t("booking.cancelModal.description")}</p>
                         <textarea
                             value={cancelReason}
                             onChange={(e) => setCancelReason(e.target.value)}
-                            placeholder="Reason for cancellation (optional)"
+                            placeholder={t("booking.cancelModal.reasonPlaceholder")}
                             className="w-full p-4 border border-gray-200 rounded-2xl mb-4 min-h-[120px] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f]/30 resize-none"
                         />
                         <div className="flex gap-3">
@@ -461,14 +463,14 @@ export default function BookingManage() {
                                 onClick={() => setShowCancelReason(false)}
                                 className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
                             >
-                                Keep Booking
+                                {t("booking.actions.keepBooking")}
                             </button>
                             <button
                                 onClick={handleCancel}
                                 disabled={actionLoading}
                                 className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors disabled:opacity-50"
                             >
-                                {actionLoading ? "Cancelling..." : "Cancel Booking"}
+                                {actionLoading ? t("booking.actions.cancelling") : t("booking.actions.cancelBooking")}
                             </button>
                         </div>
                     </div>

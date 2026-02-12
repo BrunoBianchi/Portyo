@@ -9,6 +9,7 @@ export const PLAN_LIMITS = {
         customDomain: false,
         seoSettings: false,
         scheduler: false,
+        socialPlanner: false,
         autoPost: false,
         autoPostPerMonth: 0,
         storeFee: 0.03, // 3%
@@ -26,6 +27,7 @@ export const PLAN_LIMITS = {
         customDomain: true,
         seoSettings: true,
         scheduler: false,
+        socialPlanner: true,
         autoPost: false,
         autoPostPerMonth: 0,
         storeFee: 0.01, // 1%
@@ -43,6 +45,7 @@ export const PLAN_LIMITS = {
         customDomain: true,
         seoSettings: true, // Everything from standard
         scheduler: true,
+        socialPlanner: true,
         autoPost: true,
         autoPostPerMonth: 10,
         storeFee: 0,

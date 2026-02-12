@@ -30,6 +30,7 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
     const [loading, setLoading] = useState(false);
     const [slots, setSlots] = useState<string[]>([]);
     const [settings, setSettings] = useState<BookingSettings | null>(null);
+    const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -39,9 +40,21 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
         notes: ""
     });
     const [error, setError] = useState("");
+    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     // Calendar view state
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [hoveredDay, setHoveredDay] = useState<string | null>(null);
+
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isOpen]);
 
     // Fetch booking settings on mount
     useEffect(() => {
@@ -92,7 +105,7 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
     };
 
     const handleDateSelect = async (date: Date) => {
-        if (isBefore(date, startOfDay(new Date()))) return; // Disable past dates
+        if (isBefore(date, startOfDay(new Date()))) return;
         setSelectedDate(date);
         await fetchSlots(date);
     };
@@ -134,41 +147,86 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
         if (isBefore(date, startOfDay(new Date()))) return;
         setIsOpen(true);
         setSelectedDate(date);
-        // We set step to time immediately
         await fetchSlots(date);
     };
 
-    // Modified renderCalendar to accept an onClick override
+    const navBtnStyle: React.CSSProperties = {
+        padding: '6px',
+        background: 'none',
+        border: 'none',
+        borderRadius: '9999px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#374151',
+        transition: 'background-color 0.15s',
+    };
+
+    // Renders the calendar grid with inline styles
     const renderCalendar = (onDateSelect?: (date: Date) => void) => {
         const monthStart = startOfMonth(currentMonth);
         const monthEnd = endOfMonth(monthStart);
-        const startDate = startOfWeek(monthStart);
-        const endDate = endOfWeek(monthEnd);
+        const startDateCal = startOfWeek(monthStart);
+        const endDateCal = endOfWeek(monthEnd);
 
         const dateFormat = "d";
-        const rows = [];
-        let days = [];
-        let day = startDate;
-        let formattedDate = "";
+        const rows: React.ReactNode[] = [];
+        let days: React.ReactNode[] = [];
+        let day = startDateCal;
 
         const clickHandler = onDateSelect || handleDateSelect;
 
-        while (day <= endDate) {
+        while (day <= endDateCal) {
             for (let i = 0; i < 7; i++) {
-                formattedDate = format(day, dateFormat);
+                const formattedDate = format(day, dateFormat);
                 const cloneDay = day;
                 const isDisabled = !isSameMonth(day, monthStart) || isBefore(day, startOfDay(new Date()));
                 const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
                 const isUnavailable = !isDisabled && isSameMonth(day, monthStart) && isDayUnavailable(day);
+                const dayKey = day.toISOString();
+                const isHovered = hoveredDay === dayKey && !isDisabled && !isSelected;
+
+                let cellColor = '#111827';
+                let cellBg = 'transparent';
+                let cellFontWeight: number = 400;
+                let cellCursor = 'pointer';
+
+                if (isDisabled) {
+                    cellColor = 'rgba(156,163,175,0.3)';
+                    cellCursor = 'default';
+                } else if (isSelected) {
+                    cellBg = '#111827';
+                    cellColor = '#fff';
+                    cellFontWeight = 600;
+                } else if (isUnavailable) {
+                    cellColor = 'rgba(156,163,175,0.5)';
+                } else if (isHovered) {
+                    cellBg = '#f3f4f6';
+                }
 
                 days.push(
                     <div
-                        key={day.toString()}
-                        className={`relative p-1 w-9 h-9 flex items-center justify-center rounded-full text-sm cursor-pointer transition-all
-                            ${isDisabled ? "text-muted-foreground/30 pointer-events-none" : "hover:bg-muted text-foreground"}
-                            ${isSelected ? "bg-black text-white hover:bg-black font-semibold" : ""}
-                            ${isUnavailable && !isSelected ? "text-muted-foreground/50" : ""}
-                        `}
+                        key={dayKey}
+                        style={{
+                            position: 'relative',
+                            padding: '4px',
+                            width: '36px',
+                            height: '36px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '9999px',
+                            fontSize: '14px',
+                            cursor: cellCursor,
+                            transition: 'all 0.15s',
+                            color: cellColor,
+                            backgroundColor: cellBg,
+                            fontWeight: cellFontWeight,
+                            pointerEvents: isDisabled ? 'none' : 'auto',
+                        }}
+                        onMouseEnter={() => setHoveredDay(dayKey)}
+                        onMouseLeave={() => setHoveredDay(null)}
                         onClick={(e) => {
                             e.stopPropagation();
                             if (!isDisabled) clickHandler(cloneDay);
@@ -176,77 +234,245 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                     >
                         <span>{formattedDate}</span>
                         {isUnavailable && !isDisabled && (
-                            <span className="absolute bottom-0.5 w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                            <span style={{
+                                position: 'absolute',
+                                bottom: '2px',
+                                width: '6px',
+                                height: '6px',
+                                backgroundColor: '#f87171',
+                                borderRadius: '9999px',
+                            }} />
                         )}
                     </div>
                 );
                 day = addDays(day, 1);
             }
             rows.push(
-                <div className="flex justify-between items-center" key={day.toString()}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} key={day.toString()}>
                     {days}
                 </div>
             );
             days = [];
         }
 
+        const containerStyle: React.CSSProperties = isOpen ? {
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+        } : {
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+            padding: '16px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        };
+
         return (
-            <div className={`bg-surface-card rounded-2xl ${!isOpen ? 'border border-border p-4 shadow-sm' : ''}`}>
-                <div className="flex items-center justify-between mb-4 px-1">
-                    <button onClick={(e) => { e.stopPropagation(); setCurrentMonth(subMonths(currentMonth, 1)); }} className="p-1 hover:bg-muted rounded-full transition-colors"><ChevronLeft className="w-5 h-5" /></button>
-                    <span className="font-bold text-foreground">{format(currentMonth, "MMMM yyyy")}</span>
-                    <button onClick={(e) => { e.stopPropagation(); setCurrentMonth(addMonths(currentMonth, 1)); }} className="p-1 hover:bg-muted rounded-full transition-colors"><ChevronRight className="w-5 h-5" /></button>
+            <div style={containerStyle}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                    padding: '0 4px',
+                }}>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setCurrentMonth(subMonths(currentMonth, 1)); }}
+                        style={navBtnStyle}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                        <ChevronLeft style={{ width: 20, height: 20 }} />
+                    </button>
+                    <span style={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>
+                        {format(currentMonth, "MMMM yyyy")}
+                    </span>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setCurrentMonth(addMonths(currentMonth, 1)); }}
+                        style={navBtnStyle}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                        <ChevronRight style={{ width: 20, height: 20 }} />
+                    </button>
                 </div>
-                <div className="flex justify-between mb-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="w-9 text-center">{d}</div>)}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                    padding: '0 4px',
+                }}>
+                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+                        <div key={d} style={{
+                            width: '36px',
+                            textAlign: 'center',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            color: '#9ca3af',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                        }}>{d}</div>
+                    ))}
                 </div>
-                <div className="space-y-1">{rows}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>{rows}</div>
             </div>
         );
     };
 
-    const modalContent = (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setIsOpen(false)}>
-            <div className="bg-surface-card rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative" onClick={(e) => e.stopPropagation()}>
+    const inputStyle = (field: string): React.CSSProperties => ({
+        width: '100%',
+        padding: '12px 16px',
+        borderRadius: '12px',
+        backgroundColor: focusedField === field ? '#fff' : '#f3f4f6',
+        border: focusedField === field ? '1px solid rgba(0,0,0,0.1)' : '1px solid transparent',
+        outline: 'none',
+        fontSize: '14px',
+        color: '#111827',
+        transition: 'all 0.2s',
+        boxSizing: 'border-box' as const,
+    });
 
+    const labelStyle: React.CSSProperties = {
+        display: 'block',
+        fontSize: '11px',
+        fontWeight: 700,
+        color: '#111827',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: '4px',
+    };
+
+    const backBtnStyle: React.CSSProperties = {
+        fontSize: '14px',
+        color: '#6b7280',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        marginBottom: '8px',
+        padding: 0,
+    };
+
+    const modalContent = (
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px',
+            }}
+            onClick={() => setIsOpen(false)}
+        >
+            <div
+                style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '24px',
+                    width: '100%',
+                    maxWidth: '420px',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
-                <div className="sticky top-0 bg-surface-card z-10 border-b border-border p-4 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-foreground">
+                <div style={{
+                    position: 'sticky',
+                    top: 0,
+                    backgroundColor: '#ffffff',
+                    zIndex: 10,
+                    borderBottom: '1px solid #e5e7eb',
+                    padding: '16px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderRadius: '24px 24px 0 0',
+                }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: 0 }}>
                         {step === 'success' ? 'Confirmed' : title || 'Book Appointment'}
                     </h2>
-                    <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-muted rounded-full text-muted-foreground">
-                        <X className="w-5 h-5" />
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        style={{
+                            padding: '8px',
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '9999px',
+                            cursor: 'pointer',
+                            color: '#6b7280',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'background-color 0.15s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                        <X style={{ width: 20, height: 20 }} />
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div style={{ padding: '24px' }}>
                     {step === 'date' && (
-                        <div className="space-y-4">
-                            <p className="text-muted-foreground text-sm text-center">Select a date for your appointment.</p>
+                        <div>
+                            <p style={{ color: '#6b7280', fontSize: '14px', textAlign: 'center', marginBottom: '16px' }}>
+                                Select a date for your appointment.
+                            </p>
                             {renderCalendar()}
                         </div>
                     )}
 
                     {step === 'time' && (
-                        <div className="space-y-4">
-                            <button onClick={() => setStep('date')} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2">
-                                <ChevronLeft className="w-4 h-4" /> Back to calendar
+                        <div>
+                            <button onClick={() => setStep('date')} style={backBtnStyle}>
+                                <ChevronLeft style={{ width: 16, height: 16 }} /> Back to calendar
                             </button>
-                            <div className="text-center">
-                                <h3 className="font-bold text-foreground text-lg mb-1">{format(selectedDate!, 'EEEE, MMMM do')}</h3>
-                                <p className="text-muted-foreground text-sm">Select a time</p>
+                            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                                <h3 style={{ fontWeight: 700, color: '#111827', fontSize: '18px', margin: '0 0 4px 0' }}>
+                                    {format(selectedDate!, 'EEEE, MMMM do')}
+                                </h3>
+                                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Select a time</p>
                             </div>
                             {loading ? (
-                                <div className="h-40 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-900 border-t-transparent"></div></div>
+                                <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{
+                                        width: '32px', height: '32px', border: '2px solid #111827',
+                                        borderTopColor: 'transparent', borderRadius: '9999px',
+                                        animation: 'spin 0.8s linear infinite',
+                                    }} />
+                                </div>
                             ) : slots.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">No slots available on this date.</div>
+                                <div style={{ textAlign: 'center', padding: '32px 0', color: '#6b7280' }}>
+                                    No slots available on this date.
+                                </div>
                             ) : (
-                                <div className="grid grid-cols-3 gap-2">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                                     {slots.map(time => (
                                         <button
                                             key={time}
                                             onClick={() => handleTimeSelect(time)}
-                                            className="py-2 px-3 bg-muted hover:bg-black hover:text-white rounded-lg text-sm font-medium transition-colors border border-border"
+                                            style={{
+                                                padding: '10px 12px',
+                                                backgroundColor: hoveredSlot === time ? '#111827' : '#f3f4f6',
+                                                color: hoveredSlot === time ? '#fff' : '#111827',
+                                                borderRadius: '10px',
+                                                fontSize: '14px',
+                                                fontWeight: 500,
+                                                border: '1px solid #e5e7eb',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s',
+                                            }}
+                                            onMouseEnter={() => setHoveredSlot(time)}
+                                            onMouseLeave={() => setHoveredSlot(null)}
                                         >
                                             {time}
                                         </button>
@@ -257,86 +483,163 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
                     )}
 
                     {step === 'form' && (
-                        <div className="space-y-4">
-                            <button onClick={() => setStep('time')} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2">
-                                <ChevronLeft className="w-4 h-4" /> Back to times
+                        <div>
+                            <button onClick={() => setStep('time')} style={backBtnStyle}>
+                                <ChevronLeft style={{ width: 16, height: 16 }} /> Back to times
                             </button>
-                            <div className="bg-muted p-4 rounded-xl mb-4 text-sm border border-border">
-                                <div className="font-semibold text-foreground">{format(selectedDate!, 'EEEE, MMMM do, yyyy')}</div>
-                                <div className="text-muted-foreground flex items-center gap-2 mt-1">
-                                    <Clock className="w-3 h-3" /> {selectedTime}
+                            <div style={{
+                                backgroundColor: '#f3f4f6',
+                                padding: '16px',
+                                borderRadius: '12px',
+                                marginBottom: '16px',
+                                fontSize: '14px',
+                                border: '1px solid #e5e7eb',
+                            }}>
+                                <div style={{ fontWeight: 600, color: '#111827' }}>
+                                    {format(selectedDate!, 'EEEE, MMMM do, yyyy')}
+                                </div>
+                                <div style={{ color: '#6b7280', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                    <Clock style={{ width: 12, height: 12 }} /> {selectedTime}
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Name</label>
+                            <form onSubmit={handleSubmit}>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={labelStyle}>Name</label>
                                     <input
                                         required
-                                        className="w-full px-4 py-3 rounded-xl bg-muted border-transparent focus:bg-surface-card focus:ring-2 focus:ring-black/5 focus:border-black/10 outline-none transition-all"
+                                        style={inputStyle('name')}
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        onFocus={() => setFocusedField('name')}
+                                        onBlur={() => setFocusedField(null)}
                                         placeholder="John Doe"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Email</label>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={labelStyle}>Email</label>
                                     <input
                                         required
                                         type="email"
-                                        className="w-full px-4 py-3 rounded-xl bg-muted border-transparent focus:bg-surface-card focus:ring-2 focus:ring-black/5 focus:border-black/10 outline-none transition-all"
+                                        style={inputStyle('email')}
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        onFocus={() => setFocusedField('email')}
+                                        onBlur={() => setFocusedField(null)}
                                         placeholder="john@example.com"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Phone (Optional)</label>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={labelStyle}>Phone (Optional)</label>
                                     <input
                                         type="tel"
-                                        className="w-full px-4 py-3 rounded-xl bg-muted border-transparent focus:bg-surface-card focus:ring-2 focus:ring-black/5 focus:border-black/10 outline-none transition-all"
+                                        style={inputStyle('phone')}
                                         value={formData.phone}
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        onFocus={() => setFocusedField('phone')}
+                                        onBlur={() => setFocusedField(null)}
                                         placeholder="+1 (555) 000-0000"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Notes (Optional)</label>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={labelStyle}>Notes (Optional)</label>
                                     <textarea
-                                        className="w-full px-4 py-3 rounded-xl bg-muted border-transparent focus:bg-surface-card focus:ring-2 focus:ring-black/5 focus:border-black/10 outline-none transition-all min-h-[80px]"
+                                        style={{ ...inputStyle('notes'), minHeight: '80px', resize: 'vertical' as const }}
                                         value={formData.notes}
                                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                        onFocus={() => setFocusedField('notes')}
+                                        onBlur={() => setFocusedField(null)}
                                         placeholder="Anything else we should know?"
                                     />
                                 </div>
 
-                                {error && <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-lg">{error}</div>}
+                                {error && (
+                                    <div style={{
+                                        color: '#dc2626',
+                                        fontSize: '14px',
+                                        backgroundColor: 'rgba(220,38,38,0.08)',
+                                        padding: '12px',
+                                        borderRadius: '10px',
+                                        marginBottom: '12px',
+                                    }}>{error}</div>
+                                )}
 
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-4 bg-black text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px',
+                                        backgroundColor: '#111827',
+                                        color: '#fff',
+                                        borderRadius: '12px',
+                                        fontWeight: 700,
+                                        fontSize: '16px',
+                                        border: 'none',
+                                        cursor: loading ? 'not-allowed' : 'pointer',
+                                        opacity: loading ? 0.7 : 1,
+                                        transition: 'all 0.15s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                    }}
                                 >
-                                    {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : "Confirm Booking"}
+                                    {loading ? (
+                                        <div style={{
+                                            width: '20px', height: '20px', border: '2px solid #fff',
+                                            borderTopColor: 'transparent', borderRadius: '9999px',
+                                            animation: 'spin 0.8s linear infinite',
+                                        }} />
+                                    ) : "Confirm Booking"}
                                 </button>
                             </form>
                         </div>
                     )}
 
                     {step === 'success' && (
-                        <div className="text-center py-8 animate-in zoom-in-50 duration-300">
-                            <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Clock className="w-10 h-10" />
+                        <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                            <div style={{
+                                width: '80px', height: '80px',
+                                backgroundColor: '#fef3c7', color: '#d97706',
+                                borderRadius: '9999px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '0 auto 24px',
+                            }}>
+                                <Clock style={{ width: 40, height: 40 }} />
                             </div>
-                            <h3 className="text-2xl font-bold text-foreground mb-2">Almost Done!</h3>
-                            <p className="text-muted-foreground max-w-xs mx-auto mb-4">
+                            <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginBottom: '8px' }}>
+                                Almost Done!
+                            </h3>
+                            <p style={{ color: '#6b7280', maxWidth: '280px', margin: '0 auto 16px', lineHeight: 1.5 }}>
                                 We've sent a confirmation email to<br />
-                                <strong className="text-foreground">{formData.email}</strong>
+                                <strong style={{ color: '#111827' }}>{formData.email}</strong>
                             </p>
-                            <div className="bg-amber-50 text-amber-800 p-4 rounded-xl mb-6 text-sm">
+                            <div style={{
+                                backgroundColor: '#fffbeb',
+                                color: '#92400e',
+                                padding: '16px',
+                                borderRadius: '12px',
+                                marginBottom: '24px',
+                                fontSize: '14px',
+                            }}>
                                 <strong>Please check your email</strong> and click the confirmation link to complete your booking for <strong>{format(selectedDate!, 'MMMM do')} at {selectedTime}</strong>.
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="px-8 py-3 bg-muted font-bold rounded-xl hover:bg-muted/80 transition-colors">
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                style={{
+                                    padding: '12px 32px',
+                                    backgroundColor: '#f3f4f6',
+                                    color: '#111827',
+                                    fontWeight: 700,
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.15s',
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e5e7eb'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
+                            >
                                 Close
                             </button>
                         </div>
@@ -348,20 +651,47 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({ bioId, triggerElem
 
     return (
         <>
-            <div className="w-full relative group">
-                <div className="bg-surface-card border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all border-border">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-foreground">{title || "Book a Call"}</h3>
-                        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Book It</span>
+            <div style={{ width: '100%', position: 'relative' }}>
+                <div style={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '24px',
+                    padding: '20px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    transition: 'box-shadow 0.2s',
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                    }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', margin: 0 }}>
+                            {title || "Book a Call"}
+                        </h3>
+                        <span style={{
+                            backgroundColor: '#eff6ff',
+                            color: '#2563eb',
+                            padding: '4px 12px',
+                            borderRadius: '9999px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                        }}>Book It</span>
                     </div>
-                    {description && <p className="text-sm text-muted-foreground mb-5">{description}</p>}
+                    {description && (
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+                            {description}
+                        </p>
+                    )}
 
                     {/* Inline Calendar */}
                     {renderCalendar(onDateClick)}
                 </div>
             </div>
 
-            {isOpen && createPortal(modalContent, document.body)}
+            {isOpen && typeof document !== 'undefined' && createPortal(modalContent, document.body)}
         </>
     );
 };

@@ -60,6 +60,41 @@ export interface BlogPost {
   coverImage?: string;
 }
 
+// Booking types
+export interface BookingSettings {
+  bioId: string;
+  updatesPaused: boolean;
+  durationMinutes: number;
+  availability: Record<string, string[]>; // e.g. { "mon": ["09:00-12:00", "14:00-17:00"] }
+  blockedDates: string[]; // ISO date strings "YYYY-MM-DD"
+}
+
+// QR Code types
+export interface QRCodeItem {
+  id: string;
+  value: string;
+  clicks: number;
+  views: number;
+  country?: string;
+  device?: string;
+  lastScannedAt?: string;
+}
+
+// Instagram types
+export interface InstagramPost {
+  id: string;
+  url: string;
+  imageUrl: string;
+}
+
+// YouTube types
+export interface YouTubeVideo {
+  id: string;
+  url: string;
+  imageUrl: string;
+  title?: string;
+}
+
 /**
  * Service for integrating blocks with other dashboard features
  */
@@ -198,6 +233,74 @@ export const BlockIntegrationService = {
     } catch (error) {
       console.error("Failed to fetch autopost status:", error);
       return null;
+    }
+  },
+
+  // Booking Settings
+  async getBookingSettings(bioId: string): Promise<BookingSettings | null> {
+    try {
+      const response = await api.get(`/bookings/settings/${bioId}`);
+      return response.data || null;
+    } catch (error) {
+      console.error("Failed to fetch booking settings:", error);
+      return null;
+    }
+  },
+
+  // QR Codes
+  async getQRCodes(bioId: string): Promise<QRCodeItem[]> {
+    try {
+      const response = await api.get(`/qrcode/${bioId}`);
+      const items = response.data || [];
+      return items.map((item: any) => ({
+        id: item.id,
+        value: item.value,
+        clicks: item.clicks || 0,
+        views: item.views || 0,
+        country: item.country,
+        device: item.device,
+        lastScannedAt: item.lastScannedAt,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch QR codes:", error);
+      return [];
+    }
+  },
+
+  // Instagram Posts
+  async getInstagramPosts(username: string): Promise<InstagramPost[]> {
+    try {
+      const response = await api.get(`/public/instagram/${encodeURIComponent(username)}`);
+      const data = response.data;
+      const items = Array.isArray(data) ? data : data?.posts || [];
+      return items.slice(0, 3).map((post: any) => ({
+        id: post.id || post.shortcode,
+        url: post.url,
+        imageUrl: post.imageUrl,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch Instagram posts:", error);
+      return [];
+    }
+  },
+
+  // YouTube Videos
+  async getYouTubeVideos(url: string): Promise<YouTubeVideo[]> {
+    try {
+      const response = await api.get(`/public/youtube/fetch`, {
+        params: { url },
+      });
+      const data = response.data;
+      const items = Array.isArray(data) ? data : data?.videos || [];
+      return items.slice(0, 3).map((video: any) => ({
+        id: video.id,
+        url: video.url,
+        imageUrl: video.imageUrl,
+        title: video.title,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch YouTube videos:", error);
+      return [];
     }
   },
 

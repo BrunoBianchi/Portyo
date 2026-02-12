@@ -55,6 +55,15 @@ export class BioEntity extends BaseEntity {
     @Column({ type: "varchar", default: "classic" })
     profileImageLayout: string = "classic";
 
+    @Column({ type: "boolean", default: true })
+    heroTransition: boolean = true;
+
+    @Column({ type: "varchar", default: "#000000" })
+    navTabColor: string = "#000000";
+
+    @Column({ type: "varchar", default: "#ffffff" })
+    navTabTextColor: string = "#ffffff";
+
     @Column({ type: "varchar", default: "small" })
     profileImageSize: string = "small";
 
@@ -80,6 +89,17 @@ export class BioEntity extends BaseEntity {
         email?: string;
         website?: string;
         github?: string;
+        facebook?: string;
+        threads?: string;
+        twitch?: string;
+        discord?: string;
+        pinterest?: string;
+        snapchat?: string;
+        whatsapp?: string;
+        telegram?: string;
+        spotify?: string;
+        behance?: string;
+        dribbble?: string;
     } | null = null;
 
     // Card/Container Styling

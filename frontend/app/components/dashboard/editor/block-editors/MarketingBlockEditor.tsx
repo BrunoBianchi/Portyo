@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { MarketingSlotSelector } from "../integration-selectors";
-import { BlockStyleSettings } from "../block-style-settings";
 import type { BioBlock } from "~/contexts/bio.context";
 
 interface Props {
@@ -43,12 +42,6 @@ export function MarketingBlockEditor({ block, onChange }: Props) {
           </p>
         </div>
       )}
-
-      {/* Style Settings */}
-      <BlockStyleSettings
-        block={block}
-        onUpdate={onChange}
-      />
     </div>
   );
 }

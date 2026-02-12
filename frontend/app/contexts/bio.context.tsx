@@ -4,7 +4,7 @@ import AuthContext from "~/contexts/auth.context";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp" | "experience";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp" | "experience" | "sponsored_links";
     title?: string;
     body?: string;
     // Form specific
@@ -49,10 +49,24 @@ export type BioBlock = {
     // Socials specific
     socials?: {
         instagram?: string;
+        tiktok?: string;
         twitter?: string;
-        linkedin?: string;
         youtube?: string;
+        linkedin?: string;
+        email?: string;
+        website?: string;
         github?: string;
+        facebook?: string;
+        threads?: string;
+        twitch?: string;
+        discord?: string;
+        pinterest?: string;
+        snapchat?: string;
+        whatsapp?: string;
+        telegram?: string;
+        spotify?: string;
+        behance?: string;
+        dribbble?: string;
     };
     socialsLayout?: "row" | "column";
     socialsLabel?: boolean;
@@ -60,8 +74,8 @@ export type BioBlock = {
     // Block reference
     bioId?: string;
     // Blog specific
-    blogLayout?: "carousel" | "list" | "grid";
-    blogCardStyle?: "featured" | "minimal" | "modern";
+    blogLayout?: "carousel" | "list" | "grid" | "magazine";
+    blogCardStyle?: "featured" | "minimal" | "modern" | "overlay" | "horizontal";
     blogPostCount?: number;
     blogPostIds?: string[];
     blogShowImages?: boolean;
@@ -100,6 +114,9 @@ export type BioBlock = {
     calendarColor?: string;
     calendarTextColor?: string;
     calendarAccentColor?: string;
+    calendarUseBooking?: boolean;
+    // QR Code - backend integration
+    qrCodeSourceIds?: string[]; // IDs of QR codes from backend
     // Map specific
     mapTitle?: string;
     mapAddress?: string;
@@ -258,6 +275,9 @@ interface Bio {
     patternColor?: string;
     imageStyle?: string;
     profileImageLayout?: "classic" | "hero";
+    heroTransition?: boolean;
+    navTabColor?: string;
+    navTabTextColor?: string;
     profileImageSize?: "small" | "large";
     titleStyle?: "text" | "logo";
     displayProfileImage?: boolean;

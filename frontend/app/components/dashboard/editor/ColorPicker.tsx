@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { HexColorPicker } from "react-colorful";
-import { PlusIcon, TrashIcon, XIcon, CheckIcon } from "lucide-react";
+import { PlusIcon, XIcon, Pipette } from "lucide-react";
 
 interface ColorPickerProps {
     label?: string;
@@ -14,11 +14,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     const [isOpen, setIsOpen] = useState(false);
     const [recentColors, setRecentColors] = useState<string[]>([]);
     const [savedPalette, setSavedPalette] = useState<string[]>([]);
-    const [coords, setCoords] = useState({ top: 0, left: 0 });
+    const [coords, setCoords] = useState({ top: 0, left: 0, openUp: false });
     const triggerRef = useRef<HTMLButtonElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
 
-    // Load from LS
     useEffect(() => {
         try {
             const recent = JSON.parse(localStorage.getItem('portyo_recent_colors') || '[]');
@@ -30,10 +29,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         }
     }, []);
 
-    // Save to Recent on change (debounced or on selection)
     const handleColorSelect = (color: string) => {
         onChange(color);
-        // Do NOT add to recent immediately while dragging
     };
 
     const handleInteractionEnd = () => {
@@ -44,7 +41,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         if (!color) return;
         setRecentColors(prev => {
             const filtered = prev.filter(c => c !== color);
-            const next = [color, ...filtered].slice(0, 10); // Limit 10
+            const next = [color, ...filtered].slice(0, 10);
             localStorage.setItem('portyo_recent_colors', JSON.stringify(next));
             return next;
         });
@@ -68,93 +65,99 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         });
     };
 
-    // Handle toggle and positioning
-    const updatePosition = () => {
-        if (triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            const top = rect.bottom + 8; // rect.bottom is already viewport relative for fixed
-            const left = rect.left; // rect.left is already viewport relative
-            setCoords({ top, left });
-        }
-    };
+    const updatePosition = useCallback(() => {
+        if (!triggerRef.current) return;
+        const rect = triggerRef.current.getBoundingClientRect();
+        const popupHeight = 420;
+        const popupWidth = 272;
+        const viewportH = window.innerHeight;
+        const viewportW = window.innerWidth;
+
+        const spaceBelow = viewportH - rect.bottom;
+        const openUp = spaceBelow < popupHeight && rect.top > spaceBelow;
+
+        let top = openUp ? rect.top - popupHeight - 8 : rect.bottom + 8;
+        let left = rect.left;
+
+        // Keep within viewport
+        if (left + popupWidth > viewportW - 12) left = viewportW - popupWidth - 12;
+        if (left < 12) left = 12;
+        if (top < 12) top = 12;
+        if (top + popupHeight > viewportH - 12) top = viewportH - popupHeight - 12;
+
+        setCoords({ top, left, openUp });
+    }, []);
 
     const togglePicker = () => {
-        if (!isOpen) {
-            updatePosition();
-        }
+        if (!isOpen) updatePosition();
         setIsOpen(!isOpen);
     };
 
-    // Update position on scroll/resize to keep attached
     useEffect(() => {
         if (!isOpen) return;
-
-        const handleScrollOrResize = () => {
-            requestAnimationFrame(updatePosition);
-        };
-
-        window.addEventListener('scroll', handleScrollOrResize, true); // Capture is important for nested scrolls
-        window.addEventListener('resize', handleScrollOrResize);
-
-        // Initial update in case of layout shifts
+        const handle = () => requestAnimationFrame(updatePosition);
+        window.addEventListener('scroll', handle, true);
+        window.addEventListener('resize', handle);
         updatePosition();
-
         return () => {
-            window.removeEventListener('scroll', handleScrollOrResize, true);
-            window.removeEventListener('resize', handleScrollOrResize);
+            window.removeEventListener('scroll', handle, true);
+            window.removeEventListener('resize', handle);
         };
-    }, [isOpen]);
+    }, [isOpen, updatePosition]);
 
-    // Close on click outside
     useEffect(() => {
         if (!isOpen) return;
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                popupRef.current &&
-                !popupRef.current.contains(event.target as Node) &&
-                triggerRef.current &&
-                !triggerRef.current.contains(event.target as Node)
+                popupRef.current && !popupRef.current.contains(event.target as Node) &&
+                triggerRef.current && !triggerRef.current.contains(event.target as Node)
             ) {
                 setIsOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen]);
+
+    // Determine if color is light to pick contrasting check
+    const isLightColor = (hex: string) => {
+        try {
+            const c = hex.replace('#', '');
+            const r = parseInt(c.substring(0, 2), 16);
+            const g = parseInt(c.substring(2, 4), 16);
+            const b = parseInt(c.substring(4, 6), 16);
+            return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+        } catch { return true; }
+    };
 
     return (
         <div className={`relative ${className}`}>
             {label && (
-                <label className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 block">
+                <label className="text-[10px] font-black uppercase tracking-wider mb-1.5 block text-black/40">
                     {label}
                 </label>
             )}
 
-            <div className="flex items-center h-11 w-full rounded-xl border border-border bg-surface-card overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 hover:border-gray-300 relative">
-
-                {/* Visual Swatch Trigger */}
+            <div className="flex items-center h-10 w-full rounded-xl border-2 border-gray-200 bg-white overflow-hidden transition-all focus-within:border-black hover:border-gray-300">
+                {/* Swatch trigger */}
                 <button
                     ref={triggerRef}
                     type="button"
                     onClick={togglePicker}
-                    className="h-full w-12 border-r border-border p-0 cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center relative group"
+                    className="h-full w-11 border-r-2 border-gray-200 p-0 cursor-pointer transition-opacity flex items-center justify-center relative group shrink-0"
                     style={{ backgroundColor: value }}
                 >
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                    <Pipette className={`w-3.5 h-3.5 opacity-0 group-hover:opacity-80 transition-opacity ${isLightColor(value) ? 'text-black/60' : 'text-white/80'}`} />
                 </button>
 
-                {/* Text Input */}
+                {/* Text input */}
                 <input
                     type="text"
                     value={value}
-                    onChange={(e) => {
-                        onChange(e.target.value);
-                    }}
+                    onChange={(e) => onChange(e.target.value)}
                     onBlur={() => addToRecent(value)}
                     onFocus={(e) => e.target.select()}
-                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-white/70 border-0 focus:ring-0 outline-none bg-transparent placeholder:text-white/40"
+                    className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent placeholder:text-gray-300"
                     placeholder="#000000"
                     maxLength={9}
                 />
@@ -162,87 +165,115 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
 
             {/* Popup Portal */}
             {isOpen && typeof document !== 'undefined' && createPortal(
-                <div
-                    ref={popupRef}
-                    className="fixed z-[9999] w-64 bg-surface-card rounded-xl shadow-2xl border border-border p-4 animate-in fade-in zoom-in-95 duration-200 origin-top-left"
-                    style={{
-                        top: coords.top - window.scrollY, // Fixed position needs viewport relative coords
-                        left: coords.left - window.scrollX
-                    }}
-                >
+                <>
+                    {/* Backdrop */}
+                    <div className="fixed inset-0 z-[9998]" onClick={() => setIsOpen(false)} />
 
-                    {/* Native Picker Wrapper */}
-                    <div className="mb-4">
-                        <label className="text-[10px] font-bold text-white/80 uppercase tracking-wider mb-2 block">Pick Custom Color</label>
+                    <div
+                        ref={popupRef}
+                        className={`fixed z-[9999] w-[272px] bg-white rounded-2xl shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)] p-0 overflow-hidden ${
+                            coords.openUp
+                                ? 'animate-in fade-in slide-in-from-bottom-2'
+                                : 'animate-in fade-in slide-in-from-top-2'
+                        } duration-200`}
+                        style={{ top: coords.top, left: coords.left }}
+                    >
+                        {/* Header with current color preview */}
+                        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+                            <div
+                                className="w-9 h-9 rounded-xl border-2 border-gray-200 shadow-inner shrink-0"
+                                style={{ backgroundColor: value }}
+                            />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Cor selecionada</p>
+                                <p className="text-sm font-bold font-mono text-gray-800 uppercase">{value}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsOpen(false)}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <XIcon className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
+                        {/* Color picker */}
                         <div
-                            className="w-full"
+                            className="px-4 pb-3"
                             onMouseUp={handleInteractionEnd}
                             onTouchEnd={handleInteractionEnd}
                         >
                             <HexColorPicker
                                 color={value}
                                 onChange={handleColorSelect}
-                                style={{ width: '100%', height: '160px' }}
+                                style={{ width: '100%', height: '152px' }}
                             />
                         </div>
-                    </div>
 
-                    {/* Recent Colors */}
-                    {recentColors.length > 0 && (
-                        <div className="mb-4">
-                            <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Recent</label>
-                            <div className="grid grid-cols-5 gap-2">
-                                {recentColors.map((c, i) => (
-                                    <button
-                                        key={`${c}-${i}`}
-                                        onClick={() => handleColorSelect(c)}
-                                        className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform relative group"
-                                        style={{ backgroundColor: c }}
-                                        title={c}
-                                    >
-                                        {value === c && <div className="absolute inset-0 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-surface-card rounded-full shadow-sm" /></div>}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Saved Palette */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider block">My Palette</label>
-                            <button onClick={addToPalette} className="text-[10px] flex items-center gap-1 text-blue-400 hover:text-blue-700 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full transition-colors">
-                                <PlusIcon size={10} /> Add Current
-                            </button>
-                        </div>
-
-                        {savedPalette.length === 0 ? (
-                            <div className="text-center py-4 bg-muted rounded-lg border border-dashed border-border">
-                                <span className="text-[10px] text-white/50">No saved colors</span>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-5 gap-2">
-                                {savedPalette.map((c, i) => (
-                                    <button
-                                        key={`${c}-${i}-p`}
-                                        onClick={() => handleColorSelect(c)}
-                                        className="w-8 h-8 rounded-full border border-border shadow-sm hover:scale-110 transition-transform relative group"
-                                        style={{ backgroundColor: c }}
-                                        title={c}
-                                    >
-                                        <div
-                                            className="absolute -top-1 -right-1 bg-destructive/100 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                            onClick={(e) => removeFromPalette(c, e)}
-                                        >
-                                            <XIcon size={8} />
-                                        </div>
-                                    </button>
-                                ))}
+                        {/* Recent Colors */}
+                        {recentColors.length > 0 && (
+                            <div className="px-4 pb-3">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-gray-300 mb-2">Recentes</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {recentColors.map((c, i) => (
+                                        <button
+                                            key={`${c}-${i}`}
+                                            type="button"
+                                            onClick={() => { handleColorSelect(c); addToRecent(c); }}
+                                            className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
+                                                value === c ? 'border-black shadow-sm scale-110' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                            style={{ backgroundColor: c }}
+                                            title={c}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         )}
-                    </div>
 
-                </div>,
+                        {/* Saved Palette */}
+                        <div className="px-4 pb-4 pt-1 border-t border-gray-100">
+                            <div className="flex items-center justify-between mb-2 mt-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-gray-300">Minha paleta</p>
+                                <button
+                                    type="button"
+                                    onClick={addToPalette}
+                                    className="text-[10px] flex items-center gap-1 text-gray-500 hover:text-black font-bold hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
+                                >
+                                    <PlusIcon className="w-3 h-3" /> Salvar
+                                </button>
+                            </div>
+
+                            {savedPalette.length === 0 ? (
+                                <div className="text-center py-3 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                    <span className="text-[10px] text-gray-300 font-medium">Nenhuma cor salva</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {savedPalette.map((c, i) => (
+                                        <button
+                                            key={`${c}-${i}-p`}
+                                            type="button"
+                                            onClick={() => { handleColorSelect(c); addToRecent(c); }}
+                                            className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 relative group ${
+                                                value === c ? 'border-black shadow-sm scale-110' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                            style={{ backgroundColor: c }}
+                                            title={c}
+                                        >
+                                            <div
+                                                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                onClick={(e) => removeFromPalette(c, e)}
+                                            >
+                                                <XIcon className="w-2.5 h-2.5" />
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>,
                 document.body
             )}
         </div>

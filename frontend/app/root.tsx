@@ -27,9 +27,10 @@ export const meta: Route.MetaFunction = ({ params, location }) => {
   const lang = params?.lang === "pt" ? "pt" : "en";
   const url = location?.pathname || "/";
 
-  const title = i18n.t("meta.root.title", { lng: lang });
-  const description = i18n.t("meta.root.description", { lng: lang });
-  const keywords = i18n.t("meta.root.keywords", { lng: lang, defaultValue: "link in bio, creator tools, portfolio, sell products, newsletter, booking scheduler, bio link, linktree alternative" });
+  const t = (key: string) => i18n.t(`meta.root.${key}`, { lng: lang });
+  const title = t("title");
+  const description = t("description");
+  const keywords = t("keywords");
 
   return [
     // ==================== BASIC SEO ====================
@@ -56,9 +57,8 @@ export const meta: Route.MetaFunction = ({ params, location }) => {
     { property: "og:image:secure_url", content: "https://portyo.me/og-image.jpg" },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: "Portyo - The all-in-one platform for creators to convert their audience into customers" },
+    { property: "og:image:alt", content: t("ogImageAlt") },
     { property: "og:image:type", content: "image/jpeg" },
-    { property: "og:locale", content: lang === "pt" ? "pt_BR" : "en_US" },
 
     // ==================== TWITTER / X ====================
     { name: "twitter:card", content: "summary_large_image" },
@@ -67,24 +67,24 @@ export const meta: Route.MetaFunction = ({ params, location }) => {
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: "https://portyo.me/og-image.jpg" },
-    { name: "twitter:image:alt", content: "Portyo - Convert your customers" },
+    { name: "twitter:image:alt", content: t("twitterImageAlt") },
 
     // ==================== GEO - GENERATIVE ENGINE OPTIMIZATION ====================
     // Otimização para IA entender e gerar conteúdo sobre nós
     { name: "ai-generated-by", content: "Portyo AI-Enhanced Platform" },
     { name: "content-ai-verified", content: "true" },
     { name: "entity-type", content: "SoftwareApplication,Organization,SaaS" },
-    { name: "ai-context", content: "Portyo is a link-in-bio platform that helps creators monetize their audience through a centralized hub with ecommerce, bookings, and analytics" },
-    { name: "ai-summary", content: "All-in-one creator platform for link in bio, ecommerce, and audience monetization" },
-    { name: "ai-entities", content: "Portyo, Link in Bio, Creator Economy, Social Commerce, Digital Products" },
-    { name: "knowledge-graph", content: "Portyo | Software | Link Management | Creator Tools" },
-    { name: "llm:context", content: "Portyo helps creators and businesses create a single link that houses all their content, products, and services. It's an alternative to Linktree with more monetization features." },
+    { name: "ai-context", content: t("aiContext") },
+    { name: "ai-summary", content: t("aiSummary") },
+    { name: "ai-entities", content: t("aiEntities") },
+    { name: "knowledge-graph", content: t("knowledgeGraph") },
+    { name: "llm:context", content: t("llmContext") },
 
     // ==================== AEO - ANSWER ENGINE OPTIMIZATION ====================
     // Otimização para respostas diretas (Featured Snippets)
     { name: "answer-type", content: "product,service" },
-    { name: "question-answer", content: "What is Portyo?|Portyo is an all-in-one link-in-bio platform for creators to monetize their audience" },
-    { name: "featured-snippet", content: "Portyo is the best link-in-bio tool for creators who want to sell products, book appointments, and grow their email list from one central hub." },
+    { name: "question-answer", content: t("questionAnswer") },
+    { name: "featured-snippet", content: t("featuredSnippet") },
     { name: "speakable", content: "[data-speakable]" },
     { name: "speech-synthesis", content: "enabled" },
 
@@ -121,10 +121,10 @@ export const meta: Route.MetaFunction = ({ params, location }) => {
 
     // ==================== ENGAGEMENT OPTIMIZATION ====================
     // Meta tags para aumentar CTR em SERPs
-    { name: "twitter:label1", content: "Written by" },
-    { name: "twitter:data1", content: "Portyo Team" },
-    { name: "twitter:label2", content: "Est. reading time" },
-    { name: "twitter:data2", content: "3 minutes" },
+    { name: "twitter:label1", content: t("twitterWrittenBy") },
+    { name: "twitter:data1", content: t("twitterAuthor") },
+    { name: "twitter:label2", content: t("twitterReadTime") },
+    { name: "twitter:data2", content: t("twitterReadTimeValue") },
 
     // ==================== BUSINESS / RICH SNIPPETS ====================
     { name: "business:contact_data:locality", content: "São Paulo" },
@@ -199,12 +199,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const isPortyoDomain = hostname.endsWith('portyo.me');
   const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
 
-  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
+  const isCompanySubdomain = hostname.startsWith('company.');
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompanySubdomain;
 
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const initialLang = (langMatch?.[1] || null) as (typeof SUPPORTED_LANGUAGES)[number] | null;
 
-  return { isCustomDomain, origin: url.origin, isLocalhost, initialLang };
+  return { isCustomDomain, origin: url.origin, isLocalhost, initialLang, isCompanySubdomain };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -215,6 +216,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const origin = loaderData?.origin || (typeof window !== "undefined" ? window.location.origin : "");
   const isLocalhost = loaderData?.isLocalhost;
   const initialLang = loaderData?.initialLang || null;
+  const isCompanySubdomain = loaderData?.isCompanySubdomain || (typeof window !== "undefined" && window.location.hostname.startsWith("company."));
   const { i18n } = useTranslation();
 
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
@@ -238,6 +240,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     if (langMatch) return;
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
     const preferred = hostname === "localhost" || hostname.endsWith(".localhost") ? "en" : "en";
+    // On company subdomain, redirect root to company login - REMOVED to allow Landing Page
+    /* if (hostname.startsWith("company.")) {
+      const companyPath = pathname === "/" ? `/${preferred}/company/login` : `/${preferred}${pathname}`;
+      navigate(`${companyPath}${search}${hash}`, { replace: true });
+      return;
+    } */
     const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
     navigate(`${nextPath}${search}${hash}`, { replace: true });
   }, [hash, isCustomDomain, langMatch, navigate, pathname, search]);
@@ -246,6 +254,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathnameNoLang === "/login";
   const isDashboard = pathnameNoLang.startsWith("/dashboard");
   const isBioPage = pathnameNoLang.startsWith("/p/");
+  const isCompanyPage = pathnameNoLang.startsWith("/company");
+  const isCompanySubdomainPath = isCompanySubdomain;
 
   const normalizedBase = pathnameNoLang === "" ? "/" : pathnameNoLang;
   const canonicalPath = normalizedBase === "/" ? `/${activeLang}` : `/${activeLang}${normalizedBase}`;
@@ -256,8 +266,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     pt: "pt_BR",
   };
 
-  // Hide layout if dashboard, bio page, OR custom domain
-  const shouldShowLayout = !isDashboard && !isBioPage && !isCustomDomain;
+  // Hide layout for: user dashboard, bio page, custom domain, or company auth/dashboard pages
+  // Company login/register/dashboard have their own layouts
+  const isCompanyAuthOrDashboard = isCompanyPage && (pathnameNoLang.includes("/login") || pathnameNoLang.includes("/register") || pathnameNoLang.includes("/dashboard"));
+  const shouldShowLayout = !isDashboard && !isBioPage && !isCustomDomain && !isCompanyAuthOrDashboard;
   const shouldShowAnnouncement = shouldShowLayout;
 
   return (
@@ -340,13 +352,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         "https://linkedin.com/company/portyo",
                         "https://instagram.com/portyo",
                       ],
-                      description: "The all-in-one platform for creators to showcase work, sell products, and grow their audience.",
+                      description: i18n.t("meta.root.orgDescription", { lng: activeLang }),
                     },
                     {
                       "@type": "WebSite",
                       "@id": "https://portyo.me/#website",
                       url: "https://portyo.me",
                       name: "Portyo",
+                      inLanguage: activeLang === "pt" ? "pt-BR" : "en-US",
                       publisher: {
                         "@id": "https://portyo.me/#organization",
                       },
@@ -374,7 +387,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] focus:px-4 focus:py-2 focus:bg-primary focus:text-background focus:rounded-lg"
             >
-              Skip to main content
+              {i18n.t("meta.root.skipToContent", { lng: activeLang })}
             </a>
 
             {/* Announcement Bar */}
@@ -382,7 +395,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {shouldShowLayout && (
               <Suspense fallback={null}>
-                <Navbar />
+                <Navbar isCompanyMode={isCompanySubdomainPath} />
               </Suspense>
             )}
             <main
@@ -394,7 +407,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </main>
             {shouldShowLayout && (
               <Suspense fallback={null}>
-                <Footer />
+                <Footer isCompanyMode={isCompanySubdomainPath} />
               </Suspense>
             )}
             <ScrollRestoration />
@@ -415,15 +428,15 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let message = i18n.t("meta.root.errorOops");
+  let details = i18n.t("meta.root.errorUnexpected");
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    message = error.status === 404 ? i18n.t("meta.root.error404") : i18n.t("meta.root.errorGeneric");
     details =
       error.status === 404
-        ? "The requested page could not be found."
+        ? i18n.t("meta.root.error404Detail")
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
@@ -448,7 +461,7 @@ export function HydrateFallback() {
     <div className="flex items-center justify-center h-screen w-screen bg-background">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-muted-foreground text-sm font-medium">Loading Portyo...</p>
+        <p className="text-muted-foreground text-sm font-medium">{i18n.t("meta.root.loading")}</p>
       </div>
     </div>
   );

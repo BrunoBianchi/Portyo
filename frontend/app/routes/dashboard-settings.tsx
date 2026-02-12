@@ -1,4 +1,6 @@
 import type { MetaFunction } from "react-router";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 import { User, Mail, Lock, Bell, Trash2, Save, CreditCard, Shield, Check, Zap, Plus, Receipt, Clock, Download, Loader2, Megaphone, Settings } from "lucide-react";
 import { Link } from "react-router";
 import { useContext, useState, useEffect, useMemo } from "react";
@@ -8,15 +10,17 @@ import { PLAN_LIMITS, type PlanType } from "~/constants/plan-limits";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { BillingHistoryModal } from "~/components/settings/billing-history-modal";
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+  const lang = params?.lang === "pt" ? "pt" : "en";
   return [
-    { title: "Settings | Portyo" },
-    { name: "description", content: "Manage your account settings and preferences." },
+    { title: i18n.t("settings.meta.title", { lng: lang }) },
+    { name: "description", content: i18n.t("settings.meta.description", { lng: lang }) },
   ];
 };
 
 export default function DashboardSettings() {
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'billing' | 'admin'>('general');
   const [billingHistory, setBillingHistory] = useState<any[]>([]);
@@ -47,62 +51,62 @@ export default function DashboardSettings() {
   const planFeatureItems = [
     {
       key: "bios",
-      label: "Bios",
-      description: `${planLimits.bios} bio${planLimits.bios === 1 ? "" : "s"}`,
+      label: t("settings.plan.bios"),
+      description: planLimits.bios === 1 ? t("settings.plan.biosDesc", { count: planLimits.bios }) : t("settings.plan.biosDescPlural", { count: planLimits.bios }),
       enabled: planLimits.bios > 0,
     },
     {
       key: "qrcodes",
-      label: "QR codes per bio",
-      description: `${planLimits.qrcodesPerBio} QR codes available per bio`,
+      label: t("settings.plan.qrcodes"),
+      description: t("settings.plan.qrcodesDesc", { count: planLimits.qrcodesPerBio }),
       enabled: planLimits.qrcodesPerBio > 0,
     },
     {
       key: "automations",
-      label: "Automations per bio",
-      description: `${planLimits.automationsPerBio} configurable automations per bio`,
+      label: t("settings.plan.automations"),
+      description: t("settings.plan.automationsDesc", { count: planLimits.automationsPerBio }),
       enabled: planLimits.automationsPerBio > 0,
     },
     {
       key: "templates",
-      label: "Email templates per bio",
-      description: `${planLimits.emailTemplatesPerBio} email templates per bio`,
+      label: t("settings.plan.templates"),
+      description: t("settings.plan.templatesDesc", { count: planLimits.emailTemplatesPerBio }),
       enabled: planLimits.emailTemplatesPerBio > 0,
     },
     {
       key: "email-collection",
-      label: "Email capture",
-      description: planLimits.emailCollection ? "Contact capture enabled" : "Not available on this plan",
+      label: t("settings.plan.emailCollection"),
+      description: planLimits.emailCollection ? t("settings.plan.emailCollectionEnabled") : t("settings.plan.emailCollectionDisabled"),
       enabled: planLimits.emailCollection,
     },
     {
       key: "custom-domain",
-      label: "Custom domain",
-      description: planLimits.customDomain ? "Connect your own domain" : "Upgrade to use custom domains",
+      label: t("settings.plan.customDomain"),
+      description: planLimits.customDomain ? t("settings.plan.customDomainEnabled") : t("settings.plan.customDomainDisabled"),
       enabled: planLimits.customDomain,
     },
     {
       key: "remove-branding",
-      label: "Remove branding",
-      description: planLimits.removeBranding ? "Pages without Portyo branding" : "Portyo branding visible",
+      label: t("settings.plan.removeBranding"),
+      description: planLimits.removeBranding ? t("settings.plan.removeBrandingEnabled") : t("settings.plan.removeBrandingDisabled"),
       enabled: planLimits.removeBranding,
     },
     {
       key: "analytics",
-      label: `${planLimits.analytics === "advanced" ? "Advanced analytics" : "Basic analytics"}`,
-      description: planLimits.analytics === "advanced" ? "Google and Facebook analytics support" : "Core metrics included",
+      label: planLimits.analytics === "advanced" ? t("settings.plan.analyticsAdvanced") : t("settings.plan.analyticsBasic"),
+      description: planLimits.analytics === "advanced" ? t("settings.plan.analyticsAdvancedDesc") : t("settings.plan.analyticsBasicDesc"),
       enabled: true,
     },
     {
       key: "store-fee",
-      label: "Store fee",
-      description: planLimits.storeFee === 0 ? "0% fee on sales" : `${(planLimits.storeFee * 100).toFixed(1).replace(/\.0$/, "")}% fee on sales`,
+      label: t("settings.plan.storeFee"),
+      description: planLimits.storeFee === 0 ? t("settings.plan.storeFeeZero") : t("settings.plan.storeFeePercent", { percent: (planLimits.storeFee * 100).toFixed(1).replace(/\.0$/, "") }),
       enabled: planLimits.storeFee === 0,
     },
     {
       key: "integrations",
-      label: "Integrations",
-      description: planLimits.integrations === "full" ? "Full integrations enabled" : "Limited integrations",
+      label: t("settings.plan.integrations"),
+      description: planLimits.integrations === "full" ? t("settings.plan.integrationsFull") : t("settings.plan.integrationsLimited"),
       enabled: planLimits.integrations === "full",
     },
   ];
@@ -126,9 +130,9 @@ export default function DashboardSettings() {
     const months = Math.floor(totalDays / 30);
     const days = totalDays % 30;
 
-    const monthsLabel = months > 0 ? `${months} ${months === 1 ? 'month' : 'months'}` : '';
-    const daysLabel = `${days} ${days === 1 ? 'day' : 'days'}`;
-    const durationText = monthsLabel ? `${monthsLabel} and ${daysLabel}` : daysLabel;
+    const monthsLabel = months > 0 ? `${months} ${months === 1 ? t('settings.plan.month') : t('settings.plan.months')}` : '';
+    const daysLabel = `${days} ${days === 1 ? t('settings.plan.day') : t('settings.plan.days')}`;
+    const durationText = monthsLabel ? `${monthsLabel} ${t('settings.plan.and')} ${daysLabel}` : daysLabel;
 
     let remainingDays: number | null = null;
     if (end && !Number.isNaN(end.getTime())) {
@@ -139,7 +143,7 @@ export default function DashboardSettings() {
     const endLabel = end ? end.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
 
     return { durationText, startLabel, endLabel, remainingDays };
-  }, [billingHistory]);
+  }, [billingHistory, t]);
 
   useEffect(() => {
     import("~/services/api").then(({ BillingService }) => {
@@ -194,10 +198,10 @@ export default function DashboardSettings() {
     try {
       import("~/services/api").then(({ api }) => {
         api.post('/admin/announcement', adminAnnouncement).then(() => {
-          alert("Announcement updated!");
+          alert(t("settings.admin.updated"));
         }).catch(err => {
           console.error("Failed to update announcement", err);
-          alert("Failed to update announcement");
+          alert(t("settings.admin.updateFailed"));
         }).finally(() => {
           setIsAdminLoading(false);
         });
@@ -215,8 +219,8 @@ export default function DashboardSettings() {
           <Settings className="w-7 h-7" />
         </div>
         <div>
-          <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>Settings</h1>
-          <p className="text-gray-500 font-medium text-lg">Manage your account and subscription.</p>
+          <h1 className="text-2xl md:text-4xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.title")}</h1>
+          <p className="text-gray-500 font-medium text-lg">{t("settings.subtitle")}</p>
         </div>
       </div>
 
@@ -231,7 +235,7 @@ export default function DashboardSettings() {
         >
           <div className="flex items-center gap-2">
             <User className="w-4 h-4" />
-            General
+            {t("settings.tabs.general")}
           </div>
         </button>
         <button
@@ -243,7 +247,7 @@ export default function DashboardSettings() {
         >
           <div className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
-            Billing
+            {t("settings.tabs.billing")}
           </div>
         </button>
         {isAdmin && (
@@ -256,7 +260,7 @@ export default function DashboardSettings() {
           >
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Admin
+              {t("settings.tabs.admin")}
             </div>
           </button>
         )}
@@ -270,15 +274,15 @@ export default function DashboardSettings() {
                 <User className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>Profile</h2>
-                <p className="text-sm text-gray-500 font-bold">Update your basic account information.</p>
+                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.profile.title")}</h2>
+                <p className="text-sm text-gray-500 font-bold">{t("settings.profile.subtitle")}</p>
               </div>
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Full Name</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.profile.fullName")}</label>
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
                     <input
@@ -289,7 +293,7 @@ export default function DashboardSettings() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Email Address</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.profile.email")}</label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
                     <input
@@ -308,7 +312,7 @@ export default function DashboardSettings() {
                   className="px-8 py-3 bg-[#1A1A1A] text-white rounded-full font-black uppercase text-sm hover:bg-black transition-all shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center gap-2 disabled:opacity-50"
                 >
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isLoading ? t("settings.profile.saving") : t("settings.profile.save")}
                 </button>
               </div>
             </form>
@@ -321,8 +325,8 @@ export default function DashboardSettings() {
                 <Lock className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>Security</h2>
-                <p className="text-sm text-gray-500 font-bold">Manage your password and authentication.</p>
+                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.security.title")}</h2>
+                <p className="text-sm text-gray-500 font-bold">{t("settings.security.subtitle")}</p>
               </div>
             </div>
 
@@ -330,9 +334,9 @@ export default function DashboardSettings() {
               <div className="bg-gray-50 rounded-2xl p-6 border-2 border-black border-dashed">
                 <p className="text-sm font-bold text-gray-600 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#C6F035] border border-black"></span>
-                  Your account uses <span className="font-black capitalize bg-black text-white px-2 py-0.5 rounded-md">{user.provider}</span> login.
+                  {t("settings.security.socialLogin", { provider: user.provider })}
                 </p>
-                <p className="text-xs text-gray-400 mt-2 font-medium ml-4">Password change is not available for social login accounts.</p>
+                <p className="text-xs text-gray-400 mt-2 font-medium ml-4">{t("settings.security.socialLoginHint")}</p>
               </div>
             ) : (
               <form onSubmit={async (e) => {
@@ -341,18 +345,18 @@ export default function DashboardSettings() {
                 const currentPassword = (form.elements.namedItem('currentPassword') as HTMLInputElement).value;
                 const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value;
                 const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
-                if (newPassword !== confirmPassword) { alert('Passwords do not match'); return; }
-                if (newPassword.length < 8) { alert('Password must be at least 8 characters'); return; }
+                if (newPassword !== confirmPassword) { alert(t('settings.security.passwordMismatch')); return; }
+                if (newPassword.length < 8) { alert(t('settings.security.passwordTooShort')); return; }
                 setIsLoading(true);
                 try {
                   const { api } = await import('~/services/api');
                   await api.post('/user/change-password', { currentPassword, newPassword, confirmPassword });
-                  alert('Password changed successfully!');
+                  alert(t('settings.security.passwordChanged'));
                   form.reset();
-                } catch (err: any) { const message = err?.response?.data?.message || 'Failed to change password'; alert(message); } finally { setIsLoading(false); }
+                } catch (err: any) { const message = err?.response?.data?.message || t('settings.security.passwordChangeFailed'); alert(message); } finally { setIsLoading(false); }
               }} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Current Password</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.security.currentPassword")}</label>
                   <input
                     type="password"
                     name="currentPassword"
@@ -363,7 +367,7 @@ export default function DashboardSettings() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">New Password</label>
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.security.newPassword")}</label>
                     <input
                       type="password"
                       name="newPassword"
@@ -372,10 +376,10 @@ export default function DashboardSettings() {
                       minLength={8}
                       className="w-full px-5 py-3.5 rounded-xl border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-bold"
                     />
-                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wide mt-1">Min 8 chars, uppercase, lowercase, number</p>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wide mt-1">{t("settings.security.passwordHint")}</p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Confirm New Password</label>
+                    <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.security.confirmPassword")}</label>
                     <input
                       type="password"
                       name="confirmPassword"
@@ -393,7 +397,7 @@ export default function DashboardSettings() {
                     className="px-8 py-3 bg-white text-black rounded-full font-black uppercase text-sm border-2 border-black hover:bg-gray-50 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-50"
                   >
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                    {isLoading ? "Updating..." : "Update Password"}
+                    {isLoading ? t("settings.security.updating") : t("settings.security.updatePassword")}
                   </button>
                 </div>
               </form>
@@ -407,18 +411,18 @@ export default function DashboardSettings() {
                 <Trash2 className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-red-600 tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>Danger Zone</h2>
-                <p className="text-sm text-red-800 font-bold">Irreversible actions for your account.</p>
+                <h2 className="text-2xl font-black text-red-600 tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.danger.title")}</h2>
+                <p className="text-sm text-red-800 font-bold">{t("settings.danger.subtitle")}</p>
               </div>
             </div>
 
-            <div className="flex items-center justify-between bg-white p-6 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div>
-                <p className="font-black text-[#1A1A1A] text-lg uppercase tracking-tight">Delete Account</p>
-                <p className="text-xs text-gray-500 font-bold">Permanently remove your account and all data.</p>
+                <p className="font-black text-[#1A1A1A] text-lg uppercase tracking-tight">{t("settings.danger.deleteAccount")}</p>
+                <p className="text-xs text-gray-500 font-bold">{t("settings.danger.deleteHint")}</p>
               </div>
-              <button className="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-700 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 border-2 border-black">
-                Delete Account
+              <button className="w-full sm:w-auto px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-700 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 border-2 border-black">
+                {t("settings.danger.deleteAccount")}
               </button>
             </div>
           </section>
@@ -434,21 +438,21 @@ export default function DashboardSettings() {
                 </div>
 
                 <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-8">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                     <div>
-                      <h2 className="text-3xl font-black text-[#1A1A1A] mb-2 uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>Current Plan</h2>
-                      <p className="text-gray-500 font-bold">You are currently on the <span className="bg-[#C6F035] text-black px-2 py-0.5 rounded border border-black uppercase font-black">{planLabel} Plan</span></p>
+                      <h2 className="text-2xl md:text-3xl font-black text-[#1A1A1A] mb-2 uppercase tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.billing.currentPlan")}</h2>
+                      <p className="text-gray-500 font-bold">{t("settings.billing.currentlyOn")} <span className="bg-[#C6F035] text-black px-2 py-0.5 rounded border border-black uppercase font-black">{planLabel} {t("settings.billing.planWord")}</span></p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider border-2 ${billingHistory[0]?.status === 'canceled'
                         ? 'bg-red-100 text-red-600 border-black'
                         : 'bg-[#C6F035] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                         }`}>
-                        {billingHistory[0]?.status === 'canceled' ? 'Canceled' : `${planLabel} Tier`}
+                        {billingHistory[0]?.status === 'canceled' ? t("settings.billing.canceled") : `${planLabel} ${t("settings.billing.tier")}`}
                       </span>
                       {billingHistory[0]?.status === 'canceled' && planDuration?.endLabel && (
                         <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded border border-red-200">
-                          Expires on {planDuration.endLabel}
+                          {t("settings.billing.expiresOn")} {planDuration.endLabel}
                         </span>
                       )}
                     </div>
@@ -483,7 +487,7 @@ export default function DashboardSettings() {
                         className="text-xs font-black uppercase tracking-wider text-gray-500 hover:text-black hover:underline transition-colors flex items-center gap-1"
                         onClick={() => setShowAllFeatures((prev) => !prev)}
                       >
-                        {showAllFeatures ? "Show fewer features" : `Show all features (+${hiddenCount})`}
+                        {showAllFeatures ? t("settings.billing.showLess") : t("settings.billing.showMore") + ` (+${hiddenCount})`}
                       </button>
                     </div>
                   )}
@@ -491,7 +495,7 @@ export default function DashboardSettings() {
                   {/* Usage Stats Grid - simplified */}
                   <div className="bg-gray-50 rounded-2xl p-6 border-2 border-black space-y-4">
                     <h3 className="text-sm font-black text-[#1A1A1A] uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-[#C6F035] fill-current" /> Resource Usage
+                      <Zap className="w-4 h-4 text-[#C6F035] fill-current" /> {t("settings.billing.resourceUsage")}
                     </h3>
 
                     {emailUsage && (
@@ -501,8 +505,8 @@ export default function DashboardSettings() {
                             <Mail className="w-5 h-5" />
                           </div>
                           <div className="text-sm">
-                            <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">Email usage</p>
-                            <p className="text-xs text-gray-500 font-bold">Monthly automation emails</p>
+                            <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">{t("settings.billing.emailUsage")}</p>
+                            <p className="text-xs text-gray-500 font-bold">{t("settings.billing.emailUsageHint")}</p>
                           </div>
                         </div>
                         <span className="text-sm font-black text-[#1A1A1A] bg-gray-100 px-3 py-1 rounded-lg border border-black">{emailUsage.sent} / {emailUsage.limit}</span>
@@ -515,8 +519,8 @@ export default function DashboardSettings() {
                           <User className="w-5 h-5" />
                         </div>
                         <div className="text-sm">
-                          <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">Bio pages</p>
-                          <p className="text-xs text-gray-500 font-bold">Active bios online</p>
+                            <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">{t("settings.billing.bioPages")}</p>
+                            <p className="text-xs text-gray-500 font-bold">{t("settings.billing.bioPagesHint")}</p>
                         </div>
                       </div>
                       <span className="text-sm font-black text-[#1A1A1A] bg-gray-100 px-3 py-1 rounded-lg border border-black">{user?.usage?.bios || 0} / {planLimits.bios}</span>
@@ -528,8 +532,8 @@ export default function DashboardSettings() {
                           <Zap className="w-5 h-5" />
                         </div>
                         <div className="text-sm">
-                          <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">Automations</p>
-                          <p className="text-xs text-gray-500 font-bold">Total active automations</p>
+                            <p className="font-black text-[#1A1A1A] uppercase tracking-wide text-xs">{t("settings.billing.automations")}</p>
+                            <p className="text-xs text-gray-500 font-bold">{t("settings.billing.automationsHint")}</p>
                         </div>
                       </div>
                       <span className="text-sm font-black text-[#1A1A1A] bg-gray-100 px-3 py-1 rounded-lg border border-black">{user?.usage?.automations || 0}</span>
@@ -547,7 +551,7 @@ export default function DashboardSettings() {
                       }}
                       className="inline-flex justify-center items-center px-8 py-4 border-2 border-black text-sm font-black rounded-xl text-white bg-[#1A1A1A] hover:bg-black transition-all w-full md:w-auto uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
                     >
-                      {resolvedPlan === 'free' ? 'Upgrade to Pro' : 'Manage Subscription'}
+                      {resolvedPlan === 'free' ? t("settings.billing.upgrade") : t("settings.billing.manageSubscription")}
                     </button>
                   </div>
                 </div>
@@ -563,27 +567,27 @@ export default function DashboardSettings() {
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-black text-[#1A1A1A] uppercase tracking-tight leading-none" style={{ fontFamily: 'var(--font-display)' }}>Plan duration</h2>
-                      <p className="text-xs text-gray-500 font-bold mt-1">Status Overview</p>
+                      <h2 className="text-lg font-black text-[#1A1A1A] uppercase tracking-tight leading-none" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.billing.planDuration")}</h2>
+                      <p className="text-xs text-gray-500 font-bold mt-1">{t("settings.billing.statusOverview")}</p>
                     </div>
                   </div>
 
                   {planDuration ? (
                     <div className="bg-gray-50 rounded-xl p-4 border-2 border-black border-dashed">
                       <p className="text-2xl font-black text-[#1A1A1A]">{planDuration.durationText}</p>
-                      <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wider">Started on {planDuration.startLabel}</p>
+                      <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wider">{t("settings.billing.startedOn")} {planDuration.startLabel}</p>
                       {planDuration.endLabel && (
                         <div className="mt-3 pt-3 border-t-2 border-black/5">
                           <p className="text-xs font-bold text-black flex items-center gap-1.5">
                             <span className={`w-2 h-2 rounded-full ${billingHistory[0]?.status === 'canceled' ? 'bg-red-500' : 'bg-green-500'}`}></span>
-                            {billingHistory[0]?.status === 'canceled' ? 'Ends' : 'Renews'} in {planDuration.remainingDays ?? 0} days
+                            {billingHistory[0]?.status === 'canceled' ? t("settings.billing.ends") : t("settings.billing.renews")} {t("settings.billing.inDays", { count: planDuration.remainingDays ?? 0 })}
                           </p>
-                          <p className="text-[10px] text-gray-400 font-bold ml-3.5">(until {planDuration.endLabel})</p>
+                          <p className="text-[10px] text-gray-400 font-bold ml-3.5">{t("settings.billing.until", { date: planDuration.endLabel })}</p>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 font-bold italic">No history available.</p>
+                    <p className="text-sm text-gray-500 font-bold italic">{t("settings.billing.noHistory")}</p>
                   )}
                 </section>
 
@@ -593,8 +597,8 @@ export default function DashboardSettings() {
                       <Receipt className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-black text-[#1A1A1A] uppercase tracking-tight leading-none" style={{ fontFamily: 'var(--font-display)' }}>Invoices</h2>
-                      <p className="text-xs text-gray-500 font-bold mt-1">Recent Transactions</p>
+                      <h2 className="text-lg font-black text-[#1A1A1A] uppercase tracking-tight leading-none" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.billing.invoices")}</h2>
+                      <p className="text-xs text-gray-500 font-bold mt-1">{t("settings.billing.recentTransactions")}</p>
                     </div>
                   </div>
 
@@ -602,7 +606,7 @@ export default function DashboardSettings() {
                     {billingHistory.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-gray-200 rounded-xl">
                         <Receipt className="w-8 h-8 text-gray-300 mb-2" />
-                        <p className="text-gray-400 font-bold text-sm">No billing history available.</p>
+                        <p className="text-gray-400 font-bold text-sm">{t("settings.billing.noBillingHistory")}</p>
                       </div>
                     ) : (
                       billingHistory.map((bill) => (
@@ -632,7 +636,7 @@ export default function DashboardSettings() {
                     onClick={() => setShowHistoryModal(true)}
                     className="w-full mt-6 py-3 bg-white border-2 border-black text-black rounded-xl text-xs font-black uppercase tracking-wider hover:bg-gray-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5"
                   >
-                    View All Invoices
+                    {t("settings.billing.viewAll")}
                   </button>
                 </section>
               </div>
@@ -652,15 +656,15 @@ export default function DashboardSettings() {
                 <Megaphone className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>Global Announcement</h2>
-                <p className="text-sm text-gray-500 font-bold">Manage the announcement bar on the homepage.</p>
+                <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight uppercase" style={{ fontFamily: 'var(--font-display)' }}>{t("settings.admin.title")}</h2>
+                <p className="text-sm text-gray-500 font-bold">{t("settings.admin.subtitle")}</p>
               </div>
             </div>
 
             <form onSubmit={handleAdminSave} className="space-y-8">
               {/* Preview */}
               <div className="space-y-2">
-                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Live Preview</label>
+                <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.livePreview")}</label>
                 <div className="rounded-xl overflow-hidden border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div
                     style={{
@@ -692,7 +696,7 @@ export default function DashboardSettings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Announcement Text</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.announcementText")}</label>
                   <input
                     type="text"
                     value={adminAnnouncement.text || ""}
@@ -702,7 +706,7 @@ export default function DashboardSettings() {
                   />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Link URL</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.linkUrl")}</label>
                   <input
                     type="text"
                     value={adminAnnouncement.link || ""}
@@ -714,7 +718,7 @@ export default function DashboardSettings() {
 
                 {/* Badge Type */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Badge Type</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.badgeType")}</label>
                   <div className="relative">
                     <select
                       value={adminAnnouncement.badge || 'new'}
@@ -732,7 +736,7 @@ export default function DashboardSettings() {
 
                 {/* Font Size */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Font Size</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.fontSize")}</label>
                   <div className="relative">
                     <select
                       value={adminAnnouncement.fontSize || '14'}
@@ -748,7 +752,7 @@ export default function DashboardSettings() {
 
                 {/* Background Color */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Background Color</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.bgColor")}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -767,7 +771,7 @@ export default function DashboardSettings() {
 
                 {/* Text Color */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">Text Color</label>
+                  <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("settings.admin.textColor")}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="color"
@@ -792,7 +796,7 @@ export default function DashboardSettings() {
                   className="px-8 py-3 bg-[#1A1A1A] text-white rounded-full font-black uppercase text-sm hover:bg-black transition-all shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] flex items-center gap-2 disabled:opacity-50"
                 >
                   {isAdminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
-                  {isAdminLoading ? "Updating..." : "Update Announcement"}
+                  {isAdminLoading ? t("settings.admin.updating") : t("settings.admin.update")}
                 </button>
               </div>
             </form>

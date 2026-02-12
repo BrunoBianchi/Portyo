@@ -357,13 +357,13 @@ export default function DashboardProducts() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-black/5 pb-8" data-tour="products-header">
           <div>
-            <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.title")}</h1>
-            <p className="text-xl text-gray-500 font-medium">{t("dashboard.products.subtitle")}</p>
+            <h1 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.products.title")}</h1>
+            <p className="text-base md:text-xl text-gray-500 font-medium">{t("dashboard.products.subtitle")}</p>
           </div>
           <button
             data-tour="products-add"
             onClick={() => setIsCreateProductModalOpen(true)}
-            className="px-8 py-4 bg-[#1A1A1A] text-white rounded-full font-black text-lg hover:bg-black hover:scale-105 transition-all flex items-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+            className="w-full md:w-auto px-5 py-3 md:px-8 md:py-4 bg-[#1A1A1A] text-white rounded-full font-black text-sm md:text-lg hover:bg-black hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px] touch-manipulation"
           >
             <Plus className="w-6 h-6" strokeWidth={3} /> {t("dashboard.products.addProduct")}
           </button>
@@ -534,7 +534,7 @@ export default function DashboardProducts() {
                     placeholder={t("dashboard.products.form.productTitlePlaceholder")}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">
@@ -639,7 +639,7 @@ export default function DashboardProducts() {
                     className="w-full rounded-xl border-2 border-transparent bg-[#F3F3F1] px-4 py-3 text-sm font-bold text-[#1A1A1A] focus:bg-white focus:border-black outline-none transition-all placeholder:text-gray-400"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black text-[#1A1A1A] uppercase tracking-wider ml-1">{t("dashboard.products.form.price")}</label>
                     <div className="relative">

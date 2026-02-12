@@ -22,6 +22,7 @@ import { MapBlockEditor } from "./map-editor";
 import { EventBlockEditor } from "./event-editor";
 import { FeaturedBlockEditor } from "./featured-editor";
 import { AffiliateBlockEditor } from "./affiliate-editor";
+import { SponsoredLinksBlockEditor } from "./SponsoredLinksBlockEditor";
 import { GenericBlockEditor } from "./generic-editor";
 
 export interface BlockEditorProps {
@@ -54,6 +55,7 @@ export const BlockEditors: Record<string, React.ComponentType<BlockEditorProps>>
   portfolio: PortfolioBlockEditor,
   product: ProductBlockEditor,
   blog: BlogBlockEditor,
+  sponsored_links: SponsoredLinksBlockEditor,
   divider: GenericBlockEditor,
 };
 
@@ -86,3 +88,4 @@ export * from "./PortfolioBlockEditor";
 export * from "./ProductBlockEditor";
 export * from "./BlogBlockEditor";
 export * from "./MarketingBlockEditor";
+export * from "./SponsoredLinksBlockEditor";

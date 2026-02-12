@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { TikTokIcon } from "~/components/shared/icons";
@@ -13,6 +14,7 @@ export const meta: MetaFunction = ({ params }) => {
 };
 
 export default function Contact() {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -23,22 +25,10 @@ export default function Contact() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
     const faqs = [
-        {
-            question: "How do I get started?",
-            answer: "Simply sign up for a free account, claim your username, and start customizing your bio page."
-        },
-        {
-            question: "Can I use a custom domain?",
-            answer: "Yes! Custom domains are available on our Standard and Pro plans."
-        },
-        {
-            question: "What payment methods do you accept?",
-            answer: "We accept all major credit cards including Visa, Mastercard, and American Express."
-        },
-        {
-            question: "How do I cancel my subscription?",
-            answer: "You can cancel your subscription at any time from your dashboard settings."
-        },
+        { question: t("contactPage.faq.items.0.question"), answer: t("contactPage.faq.items.0.answer") },
+        { question: t("contactPage.faq.items.1.question"), answer: t("contactPage.faq.items.1.answer") },
+        { question: t("contactPage.faq.items.2.question"), answer: t("contactPage.faq.items.2.answer") },
+        { question: t("contactPage.faq.items.3.question"), answer: t("contactPage.faq.items.3.answer") },
     ];
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -54,11 +44,11 @@ export default function Contact() {
 
                 {/* Header */}
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
-                    Get in touch
+                    {t("contactPage.title")}
                 </h1>
 
                 <p className="text-xl md:text-2xl text-text-muted leading-relaxed mb-16">
-                    Have a question or feedback? We'd love to hear from you.
+                    {t("contactPage.subtitle")}
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-16 mb-24">
@@ -66,8 +56,8 @@ export default function Contact() {
                     <div>
                         {submitted ? (
                             <div className="bg-black/5 p-8 rounded-2xl text-center">
-                                <h3 className="text-2xl font-bold mb-2">Message Sent</h3>
-                                <p className="text-text-muted mb-6">Thanks for reaching out. We'll get back to you soon.</p>
+                                <h3 className="text-2xl font-bold mb-2">{t("contactPage.form.sent")}</h3>
+                                <p className="text-text-muted mb-6">{t("contactPage.form.sentDescription")}</p>
                                 <button
                                     onClick={() => {
                                         setSubmitted(false);
@@ -75,13 +65,13 @@ export default function Contact() {
                                     }}
                                     className="text-sm font-bold underline"
                                 >
-                                    Send another message
+                                    {t("contactPage.form.sendAnother")}
                                 </button>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">Name</label>
+                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">{t("contactPage.form.name")}</label>
                                     <input
                                         type="text"
                                         required
@@ -92,7 +82,7 @@ export default function Contact() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">Email</label>
+                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">{t("contactPage.form.email")}</label>
                                     <input
                                         type="email"
                                         required
@@ -103,7 +93,7 @@ export default function Contact() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">Message</label>
+                                    <label className="block text-sm font-bold uppercase tracking-wider mb-2">{t("contactPage.form.message")}</label>
                                     <textarea
                                         required
                                         rows={4}
@@ -117,7 +107,7 @@ export default function Contact() {
                                     type="submit"
                                     className="px-8 py-3 bg-black text-white font-bold rounded-full hover:bg-black/80 transition-all custom-focus mt-4"
                                 >
-                                    Send Message
+                                    {t("contactPage.form.send")}
                                 </button>
                             </form>
                         )}
@@ -126,15 +116,15 @@ export default function Contact() {
                     {/* Contact Info */}
                     <div className="space-y-12">
                         <div>
-                            <h3 className="text-lg font-bold uppercase tracking-wider mb-2">Email</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wider mb-2">{t("contactPage.info.emailTitle")}</h3>
                             <a href="mailto:support@portyo.me" className="text-xl underline decoration-2 decoration-black/20 hover:decoration-black transition-all">
                                 support@portyo.me
                             </a>
-                            <p className="text-text-muted mt-2 text-sm">Typical response time: 24 hours.</p>
+                            <p className="text-text-muted mt-2 text-sm">{t("contactPage.info.responseTime")}</p>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold uppercase tracking-wider mb-4">Socials</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wider mb-4">{t("contactPage.info.socials")}</h3>
                             <div className="flex gap-6 text-lg font-medium">
                                 <a href="#" className="hover:text-primary transition-colors">Twitter</a>
                                 <a href="#" className="hover:text-primary transition-colors">Instagram</a>
@@ -146,7 +136,7 @@ export default function Contact() {
 
                 {/* FAQ Simple */}
                 <div className="border-t border-black/10 pt-16">
-                    <h2 className="text-2xl font-bold mb-12">Common Questions</h2>
+                    <h2 className="text-2xl font-bold mb-12">{t("contactPage.faq.title")}</h2>
                     <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
                         {faqs.map((faq, index) => (
                             <div key={index}>

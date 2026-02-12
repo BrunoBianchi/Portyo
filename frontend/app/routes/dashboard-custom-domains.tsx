@@ -308,26 +308,44 @@ export default function DashboardCustomDomains() {
                     <div className="bg-[#F3F3F1] rounded-[20px] p-5 border-2 border-black/10">
                         <h3 className="font-bold text-[#1A1A1A] mb-3 flex items-center gap-2">
                             <AlertCircle className="w-4 h-4 text-amber-500" />
-                            {t("customDomains.instructions.title", "Como configurar seu domínio")}
+                            {t("customDomains.instructions.title")}
                         </h3>
                         <ol className="space-y-2 text-sm text-gray-600 font-medium">
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-black">1.</span>
-                                {t("customDomains.instructions.step1", "Adicione seu domínio no campo acima")}
+                                {t("customDomains.instructions.step1")}
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-black">2.</span>
-                                {t("customDomains.instructions.step2", "Configure um registro DNS A apontando seu domínio para o IP do servidor")}
+                                {t("customDomains.instructions.step2")}
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-black">3.</span>
-                                {t("customDomains.instructions.step3", "Aguarde a propagação do DNS (pode levar até 24h)")}
+                                {t("customDomains.instructions.step3")}
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-black">4.</span>
-                                {t("customDomains.instructions.step4", "O SSL será gerado automaticamente quando o DNS for detectado")}
+                                {t("customDomains.instructions.step4")}
                             </li>
                         </ol>
+
+                        {/* DNS Record Example */}
+                        <div className="mt-4 bg-white rounded-xl p-4 border-2 border-black/10">
+                            <div className="grid grid-cols-3 gap-3 text-xs">
+                                <div>
+                                    <span className="block font-black text-gray-500 uppercase tracking-wider mb-1">Type</span>
+                                    <span className="font-mono bg-[#C6F035]/30 px-2 py-1 rounded border border-black/10 text-black font-bold">CNAME / A</span>
+                                </div>
+                                <div>
+                                    <span className="block font-black text-gray-500 uppercase tracking-wider mb-1">Host</span>
+                                    <span className="font-mono bg-[#C6F035]/30 px-2 py-1 rounded border border-black/10 text-black font-bold">@ ou www</span>
+                                </div>
+                                <div>
+                                    <span className="block font-black text-gray-500 uppercase tracking-wider mb-1">Target</span>
+                                    <span className="font-mono bg-[#C6F035]/30 px-2 py-1 rounded border border-black/10 text-black font-bold">cname.portyo.me</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </section>

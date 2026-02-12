@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   BlockIntegrationService,
   type Form,
@@ -7,6 +7,10 @@ import {
   type Product,
   type MarketingSlot,
   type BlogPost,
+  type BookingSettings,
+  type QRCodeItem,
+  type InstagramPost,
+  type YouTubeVideo,
 } from "~/services/block-integration.service";
 
 interface UseBlockIntegrationOptions {
@@ -239,6 +243,177 @@ export function useBlogPosts({
   };
 }
 
+// Hook for Booking Settings
+export function useBookingSettings({
+  bioId,
+  enabled = true,
+}: UseBlockIntegrationOptions) {
+  const [settings, setSettings] = useState<BookingSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchSettings = useCallback(async () => {
+    if (!bioId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await BlockIntegrationService.getBookingSettings(bioId);
+      setSettings(data);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [bioId]);
+
+  useEffect(() => {
+    if (enabled && bioId) {
+      fetchSettings();
+    }
+  }, [enabled, bioId, fetchSettings]);
+
+  const isConfigured = settings !== null && settings.availability != null && Object.keys(settings.availability).length > 0;
+
+  const availableDays = settings?.availability
+    ? Object.keys(settings.availability).filter(
+        (day) => settings.availability[day]?.length > 0
+      )
+    : [];
+
+  return {
+    settings,
+    isLoading,
+    error,
+    refetch: fetchSettings,
+    isConfigured,
+    availableDays,
+  };
+}
+
+// Hook for QR Codes
+export function useQRCodes({
+  bioId,
+  enabled = true,
+}: UseBlockIntegrationOptions) {
+  const [qrcodes, setQrcodes] = useState<QRCodeItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchQRCodes = useCallback(async () => {
+    if (!bioId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await BlockIntegrationService.getQRCodes(bioId);
+      setQrcodes(data);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [bioId]);
+
+  useEffect(() => {
+    if (enabled && bioId) {
+      fetchQRCodes();
+    }
+  }, [enabled, bioId, fetchQRCodes]);
+
+  const getQRCodeById = useCallback(
+    (id: string) => {
+      return qrcodes.find((q) => q.id === id) || null;
+    },
+    [qrcodes]
+  );
+
+  return {
+    qrcodes,
+    isLoading,
+    error,
+    refetch: fetchQRCodes,
+    getQRCodeById,
+  };
+}
+
+// Hook for Instagram Preview (debounced)
+export function useInstagramPreview(username: string, enabled = true) {
+  const [posts, setPosts] = useState<InstagramPost[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (!enabled || !username || username.length < 2) {
+      setPosts([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const data = await BlockIntegrationService.getInstagramPosts(username);
+        setPosts(data);
+      } catch (err) {
+        setError(err as Error);
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 600);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [username, enabled]);
+
+  return { posts, isLoading, error };
+}
+
+// Hook for YouTube Preview (debounced)
+export function useYouTubePreview(url: string, enabled = true) {
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const isValidUrl =
+    url && (url.includes("youtube.com") || url.includes("youtu.be"));
+
+  useEffect(() => {
+    if (!enabled || !isValidUrl) {
+      setVideos([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const data = await BlockIntegrationService.getYouTubeVideos(url);
+        setVideos(data);
+      } catch (err) {
+        setError(err as Error);
+        setVideos([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 600);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [url, enabled, isValidUrl]);
+
+  return { videos, isLoading, error };
+}
+
 // Combined hook for all integrations
 export function useBlockIntegrations(bioId: string | null) {
   const forms = useForms({ bioId });
@@ -246,13 +421,17 @@ export function useBlockIntegrations(bioId: string | null) {
   const products = useProducts({ bioId });
   const marketing = useMarketingSlots({ bioId });
   const blog = useBlogPosts({ bioId });
+  const bookingSettings = useBookingSettings({ bioId });
+  const qrcodes = useQRCodes({ bioId });
 
   const isLoadingAny =
     forms.isLoading ||
     portfolio.isLoading ||
     products.isLoading ||
     marketing.isLoading ||
-    blog.isLoading;
+    blog.isLoading ||
+    bookingSettings.isLoading ||
+    qrcodes.isLoading;
 
   const refreshAll = useCallback(() => {
     forms.refetch();
@@ -260,7 +439,9 @@ export function useBlockIntegrations(bioId: string | null) {
     products.refetch();
     marketing.refetch();
     blog.refetch();
-  }, [forms, portfolio, products, marketing, blog]);
+    bookingSettings.refetch();
+    qrcodes.refetch();
+  }, [forms, portfolio, products, marketing, blog, bookingSettings, qrcodes]);
 
   return {
     forms,
@@ -268,6 +449,8 @@ export function useBlockIntegrations(bioId: string | null) {
     products,
     marketing,
     blog,
+    bookingSettings,
+    qrcodes,
     isLoadingAny,
     refreshAll,
   };

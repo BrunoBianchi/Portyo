@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const resolveBaseURL = () => {
+export const resolveApiBaseURL = () => {
     let envApiUrl: string | undefined;
 
     // Vite exposes env vars on import.meta.env; guard for SSR/build contexts.
@@ -9,7 +9,13 @@ const resolveBaseURL = () => {
     }
 
     const nodeEnvApiUrl = (typeof process !== "undefined" && process.env?.API_URL) || undefined;
-    const browserBaseUrl = (typeof window !== "undefined" && window.location?.origin) || undefined;
+
+    // In the browser, use same-origin so requests go through the Vite proxy (dev)
+    // or nginx proxy (prod) without cross-origin issues.
+    let browserBaseUrl: string | undefined;
+    if (typeof window !== "undefined" && window.location?.origin) {
+        browserBaseUrl = window.location.origin;
+    }
 
     // Prefer envs, then same-origin in browser, then fallback API domain.
     const rawBase = envApiUrl || nodeEnvApiUrl || browserBaseUrl || "https://api.portyo.me";
@@ -19,7 +25,7 @@ const resolveBaseURL = () => {
 };
 
 export const api = axios.create({
-    baseURL: resolveBaseURL(),
+    baseURL: resolveApiBaseURL(),
     withCredentials: true
 });
 
@@ -34,23 +40,31 @@ api.interceptors.response.use(
 
             // Handle authentication errors
             if (status === 401) {
-                console.error("Authentication required:", message);
-                
-                // Try to clear cookies via logout endpoint
-                api.post('/auth/logout').catch(() => {});
+                const requestUrl = error.config?.url || '';
+                const isLoginRequest = requestUrl.includes('/login');
+                const isOnAuthPage = typeof window !== 'undefined' && 
+                    (window.location.pathname.includes('/login') || window.location.pathname.includes('/sign-up'));
 
-                // Force clear cookies client-side to ensure redirect works
-                if (typeof document !== 'undefined') {
-                    document.cookie = '@App:token=; Max-Age=0; path=/; domain=' + window.location.hostname;
-                    document.cookie = '@App:user=; Max-Age=0; path=/; domain=' + window.location.hostname;
-                    // Also try without domain just in case
-                    document.cookie = '@App:token=; Max-Age=0; path=/;';
-                    document.cookie = '@App:user=; Max-Age=0; path=/;';
-                }
+                // Only clear session and redirect when a protected request fails,
+                // NOT when a login attempt returns wrong credentials.
+                if (!isLoginRequest) {
+                    console.error("Authentication required:", message);
 
-                // Optionally redirect to login
-                if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-                    window.location.href = '/login';
+                    // Try to clear cookies via logout endpoint
+                    api.post('/user/logout').catch(() => {});
+
+                    // Force clear cookies client-side
+                    if (typeof document !== 'undefined') {
+                        document.cookie = '@App:token=; Max-Age=0; path=/; domain=' + window.location.hostname;
+                        document.cookie = '@App:user=; Max-Age=0; path=/; domain=' + window.location.hostname;
+                        document.cookie = '@App:token=; Max-Age=0; path=/;';
+                        document.cookie = '@App:user=; Max-Age=0; path=/;';
+                    }
+
+                    // Redirect to login
+                    if (typeof window !== 'undefined' && !isOnAuthPage) {
+                        window.location.href = '/login';
+                    }
                 }
             }
 

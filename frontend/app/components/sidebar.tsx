@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router";
 import { useContext, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
 import AuthContext from "~/contexts/auth.context";
 import BioContext from "~/contexts/bio.context";
+import { api } from "~/services/api";
 import {
     LayoutDashboard,
     PenTool,
@@ -42,7 +44,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarProps) {
     const location = useLocation();
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout, refreshUser } = useContext(AuthContext);
     const { bio, bios, createBio, selectBio } = useContext(BioContext);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,6 +53,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
     const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
     const [forcedPlan, setForcedPlan] = useState<'standard' | 'pro' | undefined>(undefined);
+    const [startingTrial, setStartingTrial] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isActive = (path: string) => location.pathname === path;
@@ -69,6 +72,22 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
     const userPlan = (user?.plan || 'free') as PlanType;
     const bioLimit = PLAN_LIMITS[userPlan]?.bios || 1;
     const canCreateBio = bios.length < bioLimit;
+
+    const handleStartTrial = async () => {
+        if (startingTrial) return;
+
+        setStartingTrial(true);
+        try {
+            await api.post('/stripe/start-trial');
+            await refreshUser();
+            toast.success('Your 7-day trial is now active.');
+        } catch (error: any) {
+            const message = error?.response?.data?.error || 'Unable to start trial right now.';
+            toast.error(message);
+        } finally {
+            setStartingTrial(false);
+        }
+    };
 
     const handleCreateBio = async () => {
         if (!canCreateBio) {
@@ -369,6 +388,22 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         </div>
                     )}
                 </nav>
+
+                {userPlan === 'free' && (
+                    <div className="px-3 pb-3">
+                        <div className="rounded-xl border border-border bg-gradient-to-br from-primary/15 to-primary/5 p-3">
+                            <p className="text-xs font-bold uppercase tracking-wider text-primary">7-Day Free Trial</p>
+                            <p className="mt-1 text-sm font-semibold text-foreground">Unlock Standard features before subscribing.</p>
+                            <button
+                                onClick={handleStartTrial}
+                                disabled={startingTrial}
+                                className="mt-3 btn btn-primary w-full justify-center text-xs"
+                            >
+                                {startingTrial ? 'Activating...' : 'Start Free Trial'}
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Footer Actions */}
                 <div className="border-t border-border bg-surface-card flex flex-col">

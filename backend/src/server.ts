@@ -19,10 +19,33 @@ import schedule from "node-schedule";
 const app = express();
 app.set('trust proxy', 1); // Trust Nginx proxy
 
-// Helmet configuration - allow cross-origin resources for images
+// Helmet configuration - security headers
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginEmbedderPolicy: false, // Allow embedding resources from other origins
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://connect.facebook.net", "https://storage.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://api.portyo.me", "https://www.google-analytics.com", "https://www.googletagmanager.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://open.spotify.com", "https://www.google.com", "https://calendar.google.com"],
+      workerSrc: ["'self'", "blob:"],
+      mediaSrc: ["'self'", "https:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 app.use(compression());
 
@@ -45,28 +68,69 @@ app.use(
   })
 );
 
-// CORS configuration - must specify exact origins when using credentials
+// CORS configuration - validate origins against known domains
 const allowedOrigins = [
   'https://portyo.me',
   'https://www.portyo.me',
   'https://api.portyo.me',
-  'http://localhost:3000',
-  'http://localhost:5173',
+  ...(env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'] : []),
 ];
+
+// Cache validated custom domains for 5 minutes to avoid DB queries on every request
+let customDomainCache: Set<string> = new Set();
+let customDomainCacheExpiry = 0;
+const CUSTOM_DOMAIN_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const isAllowedOrigin = async (origin: string): Promise<boolean> => {
+  // Check static allowlist first
+  if (allowedOrigins.includes(origin)) return true;
+  
+  // Check subdomain match (including *.localhost for dev)
+  try {
+    const url = new URL(origin);
+    if (url.hostname.endsWith('.portyo.me')) return true;
+    // Allow *.localhost subdomains in development (e.g. company.localhost:5173)
+    if (env.NODE_ENV !== 'production' && url.hostname.endsWith('.localhost')) return true;
+  } catch (_) {
+    // Invalid URL — not allowed
+    return false;
+  }
+  
+  // Check custom domains with cache
+  const now = Date.now();
+  if (now > customDomainCacheExpiry) {
+    try {
+      const { CustomDomainService } = await import('./shared/services/custom-domain.service');
+      const { CustomDomainStatus } = await import('./database/entity/custom-domain-entity');
+      const activeDomains = await CustomDomainService.listAllDomains(CustomDomainStatus.ACTIVE);
+      customDomainCache = new Set(
+        activeDomains.map((d: any) => `https://${d.domain}`)
+          .concat(activeDomains.map((d: any) => `https://www.${d.domain}`))
+      );
+      customDomainCacheExpiry = now + CUSTOM_DOMAIN_CACHE_TTL;
+    } catch (err) {
+      logger.error('Failed to refresh CORS custom domain cache', err as any);
+      // Keep stale cache on error
+    }
+  }
+  
+  return customDomainCache.has(origin);
+};
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
+    origin: async (origin, callback) => {
+      // Allow requests with no origin (mobile apps, server-to-server, curl)
       if (!origin) return callback(null, true);
       
-      // Check if origin is allowed or is a subdomain of portyo.me
-      if (allowedOrigins.includes(origin) || origin.endsWith('.portyo.me')) {
+      const allowed = await isAllowedOrigin(origin);
+      if (allowed) {
         return callback(null, origin);
       }
       
-      // For custom domains, allow them (they might be user's custom domains)
-      return callback(null, origin);
+      // Reject unknown origins
+      logger.warn(`CORS blocked origin: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -109,14 +173,15 @@ declare global {
 }
 
 // Body parsers with size limits to prevent DoS attacks
+// 10MB is generous for JSON API payloads; images use multipart/form-data with separate limits
 // Capture raw body for Stripe webhook verification
 app.use(express.json({ 
-  limit: '100mb',
+  limit: '10mb',
   verify: (req, res, buf) => {
     (req as any).rawBody = buf;
   }
 }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Cookie parser for refresh tokens
 app.use(cookieParser());
@@ -129,6 +194,7 @@ app.use(
     cookie: { 
       secure: env.NODE_ENV === "production",
       httpOnly: true,
+      sameSite: 'lax', // CSRF protection: cookies only sent on same-site requests + top-level navigations
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
     },
   })

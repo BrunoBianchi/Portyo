@@ -536,25 +536,25 @@ export class MailService {
     }
     static async sendPlanExpirationEmail(email: string, fullname: string, daysRemaining: number, isTrial: boolean, isExpired: boolean = false) {
         const title = isExpired
-            ? (isTrial ? "Seu período de teste acabou 😔" : "Sua assinatura expirou")
-            : (isTrial ? "Seu teste grátis está acabando! ⏳" : "Sua assinatura vence em breve");
+            ? (isTrial ? "Your trial period has ended" : "Your subscription has expired")
+            : (isTrial ? "Your free trial is ending soon" : "Your subscription is ending soon");
 
         const subject = isExpired
-            ? (isTrial ? "Seu teste Portyo acabou" : "Assinatura Portyo expirada")
-            : (isTrial ? `Faltam ${daysRemaining} dias para o fim do seu teste` : `Sua assinatura vence em ${daysRemaining} dias`);
+            ? (isTrial ? "Your Portyo trial has ended" : "Your Portyo subscription has expired")
+            : (isTrial ? `${daysRemaining} day(s) left in your trial` : `Your subscription renews in ${daysRemaining} day(s)`);
 
         const messageBody = isExpired
             ? (isTrial
-                ? `<p class="text">Seu período de testes chegou ao fim. Isso significa que sua página perdeu funcionalidades exclusivas de personalização e visibilidade.</p>
-                   <p class="text">Não deixe seu crescimento parar! Assine agora para recuperar tudo e continuar evoluindo.</p>`
-                : `<p class="text">Sua assinatura expirou hoje. Para evitar interrupções no seu perfil e manter suas estatísticas ativas, renove agora.</p>`)
+                ? `<p class="text">Your trial period has ended. Some premium customization and visibility features are now unavailable on your page.</p>
+                   <p class="text">Keep your growth moving. Upgrade now to restore full access and continue building momentum.</p>`
+                : `<p class="text">Your subscription expired today. Renew now to avoid interruptions and keep your profile and analytics active.</p>`)
             : (isTrial
-                ? `<p class="text">Você tem apenas mais <strong>${daysRemaining} dias</strong> de teste gratuito.</p>
-                   <p class="text">Após esse período, você perderá acesso a temas premium, estatísticas avançadas e outras ferramentas essenciais para seu crescimento.</p>
-                   <p class="text">Garanta seu plano agora e não perca o ritmo!</p>`
-                : `<p class="text">Sua assinatura será renovada em ${daysRemaining} dias. Verifique seus dados de pagamento para garantir a continuidade do serviço.</p>`);
+                ? `<p class="text">You have <strong>${daysRemaining} day(s)</strong> left in your free trial.</p>
+                   <p class="text">After that, premium themes, advanced analytics, and growth tools will be limited.</p>
+                   <p class="text">Upgrade now to keep everything running without interruption.</p>`
+                : `<p class="text">Your subscription renews in ${daysRemaining} day(s). Please confirm your payment details to ensure uninterrupted service.</p>`);
 
-        const ctaText = isExpired ? "Reativar agora" : (isTrial ? "Assinar Premium" : "Gerenciar Assinatura");
+        const ctaText = isExpired ? "Reactivate now" : (isTrial ? "Upgrade now" : "Manage subscription");
         const ctaUrl = `${APP_URL}/dashboard/settings/billing`;
 
         const html = `
@@ -565,32 +565,50 @@ export class MailService {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title}</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #111827; margin: 0; padding: 0; background-color: #ffffff; }
-        .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-        .header { border-bottom: 1px solid #e5e7eb; padding-bottom: 24px; margin-bottom: 32px; }
-        .logo { font-size: 24px; font-weight: bold; color: #000000; letter-spacing: -0.5px; }
-        .h1 { font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 24px; }
-        .text { font-size: 16px; color: #374151; margin: 0 0 16px; }
-        .button { display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; font-weight: 600; border-radius: 8px; margin: 24px 0; }
-        .button:hover { background-color: #1f2937; }
-        .footer { margin-top: 48px; border-top: 1px solid #f3f4f6; padding-top: 32px; text-align: center; color: #9ca3af; font-size: 12px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #0f172a; margin: 0; padding: 0; background: #f1f5f9; }
+        .wrapper { max-width: 640px; margin: 0 auto; padding: 36px 18px; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); overflow: hidden; }
+        .top { background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff; padding: 28px 28px 22px; }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin: 0; }
+        .label { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #cbd5e1; }
+        .content { padding: 28px; }
+        .h1 { font-size: 28px; line-height: 1.2; font-weight: 800; color: #0f172a; margin: 0 0 20px; }
+        .text { font-size: 16px; color: #334155; margin: 0 0 14px; }
+        .highlight { margin: 22px 0; padding: 14px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; color: #475569; }
+        .button { display: inline-block; padding: 14px 26px; background: #111827; color: #ffffff !important; text-decoration: none; font-weight: 700; border-radius: 10px; margin: 18px 0 8px; }
+        .button:hover { background: #1f2937; }
+        .signature { margin-top: 18px; font-size: 15px; color: #475569; }
+        .footer-wrap { padding: 0 28px 28px; }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <div class="header">
-            <span class="logo">Portyo</span>
+        <div class="card">
+            <div class="top">
+                <p class="logo">Portyo</p>
+                <span class="label">Billing update</span>
+            </div>
+
+            <div class="content">
+                <h1 class="h1">${title}</h1>
+
+                <p class="text">Hi ${fullname.split(' ')[0]},</p>
+
+                ${messageBody}
+
+                <div class="highlight">
+                    Keep your account active to maintain access to your tools, audience visibility, and performance insights.
+                </div>
+
+                <a href="${ctaUrl}" class="button">${ctaText}</a>
+
+                <p class="signature">Thanks,<br>Portyo Team</p>
+            </div>
+
+            <div class="footer-wrap">
+                ${FOOTER_HTML}
+            </div>
         </div>
-        
-        <h1 class="h1">${title}</h1>
-        
-        <p class="text">Olá ${fullname.split(' ')[0]},</p>
-        
-        ${messageBody}
-        
-        <a href="${ctaUrl}" class="button">${ctaText}</a>
-        
-        ${FOOTER_HTML}
     </div>
 </body>
 </html>
@@ -618,6 +636,41 @@ export class MailService {
             });
         } catch (error) {
             console.error("Error sending expiration email:", error);
+        }
+    }
+
+    /**
+     * Send a newsletter email. Uses Mailgun primary with SMTP fallback.
+     * The HTML is pre-built from newsletter templates.
+     */
+    static async sendNewsletter(email: string, subject: string, html: string) {
+        const from = formatFrom("Portyo Newsletter <newsletter@portyo.me>");
+
+        if (mg && env.MAILGUN_DOMAIN) {
+            try {
+                const msg = await mg.messages.create(env.MAILGUN_DOMAIN, {
+                    from,
+                    to: [email],
+                    subject,
+                    html,
+                    "o:tag": ["newsletter"],
+                });
+                return msg;
+            } catch (error) {
+                console.error("Error sending newsletter via Mailgun:", error);
+            }
+        }
+
+        try {
+            return await transporter.sendMail({
+                from,
+                to: email,
+                subject,
+                html,
+            });
+        } catch (error) {
+            console.error("Error sending newsletter via SMTP:", error);
+            throw error;
         }
     }
 }

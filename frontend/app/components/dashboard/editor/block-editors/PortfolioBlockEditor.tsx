@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { PortfolioGallerySelector } from "../integration-selectors";
-import { BlockStyleSettings } from "../block-style-settings";
 import type { BioBlock } from "~/contexts/bio.context";
 
 interface Props {
@@ -44,12 +43,6 @@ export function PortfolioBlockEditor({ block, onChange }: Props) {
         bioId={block.bioId}
         config={config}
         onChange={handleConfigChange}
-      />
-
-      {/* Style Settings */}
-      <BlockStyleSettings
-        block={block}
-        onUpdate={onChange}
       />
     </div>
   );

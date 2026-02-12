@@ -1,15 +1,18 @@
 import type { MetaFunction } from "react-router";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 import { Loader2, CheckCircle, Upload, AlertCircle, Eye, ArrowRight, Sparkles, Image as ImageIcon, GripVertical, Plus, Trash2, Palette, Type, Minus, Tag, Share2, DollarSign, TrendingUp, Settings2 } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({ params }) => {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Setup Your Ad | Portyo" },
-        { name: "description", content: "Customize your advertisement." },
+        { title: i18n.t("meta.paymentSuccess.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.paymentSuccess.description", { lng: lang }) },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         // Add Google Fonts
         { tagName: "link", rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -82,6 +85,7 @@ function SortableItem(props: any) {
 }
 
 export default function PaymentSuccess() {
+    const { t } = useTranslation("company");
     const [searchParams] = useSearchParams();
     const proposalId = searchParams.get("proposalId");
 
@@ -110,9 +114,9 @@ export default function PaymentSuccess() {
         animation: "none",
         items: [
             { id: '1', type: 'image', content: '' },
-            { id: '2', type: 'headline', content: 'Your Headline Here' },
-            { id: '3', type: 'text', content: 'Short description of your offer...' },
-            { id: '4', type: 'button', content: 'Learn More', props: { url: 'https://' } }
+            { id: '2', type: 'headline', content: t("paymentSuccess.defaults.headline") },
+            { id: '3', type: 'text', content: t("paymentSuccess.defaults.description") },
+            { id: '4', type: 'button', content: t("paymentSuccess.defaults.learnMore"), props: { url: 'https://' } }
         ]
     });
 
@@ -164,7 +168,7 @@ export default function PaymentSuccess() {
                 }
             })
             .catch(() => {
-                setError("Invalid proposal ID or not accepted yet.");
+                setError("INVALID_PROPOSAL");
             })
             .finally(() => setLoading(false));
     }, [proposalId]);
@@ -190,7 +194,7 @@ export default function PaymentSuccess() {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/public/marketing/proposals/${proposalId}`, {
                 headers: { Authorization: `Bearer ${authToken}` }
             });
-            if (!res.ok) throw new Error("Failed to load proposal");
+            if (!res.ok) throw new Error(t("paymentSuccess.errors.loadFailed"));
             const data = await res.json();
             setProposal(data);
 
@@ -233,10 +237,10 @@ export default function PaymentSuccess() {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/public/marketing/proposals/${proposalId}/send-code`, {
                 method: "POST"
             });
-            if (!res.ok) throw new Error("Failed to send code");
+            if (!res.ok) throw new Error(t("paymentSuccess.errors.codeFailed"));
             setEmailSent(true);
         } catch (err: any) {
-            setError(err.message || "Could not send verification code");
+            setError(err.message || t("paymentSuccess.errors.codeFailed"));
         } finally {
             setLoading(false);
         }
@@ -258,7 +262,7 @@ export default function PaymentSuccess() {
 
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.error || "Verification failed");
+                throw new Error(errData.error || t("paymentSuccess.errors.verificationFailed"));
             }
 
             const data = await res.json();
@@ -334,7 +338,7 @@ export default function PaymentSuccess() {
         const newBlock: Block = {
             id: Math.random().toString(36).substr(2, 9),
             type,
-            content: type === 'image' ? '' : type === 'button' ? 'Click Me' : type === 'headline' ? 'New Headline' : type === 'text' ? 'New Text' : type === 'badge' ? 'New' : type === 'price' ? '$19.99' : '',
+            content: type === 'image' ? '' : type === 'button' ? t("paymentSuccess.defaults.clickMe") : type === 'headline' ? t("paymentSuccess.defaults.newHeadline") : type === 'text' ? t("paymentSuccess.defaults.newText") : type === 'badge' ? t("paymentSuccess.defaults.newBadge") : type === 'price' ? t("paymentSuccess.defaults.defaultPrice") : '',
             props: type === 'button' ? { url: '#' } : type === 'social' ? { twitter: '', instagram: '' } : {}
         };
         setCreative(prev => ({
@@ -364,11 +368,11 @@ export default function PaymentSuccess() {
                 body: JSON.stringify(creative)
             });
 
-            if (!res.ok) throw new Error("Failed to save");
+            if (!res.ok) throw new Error(t("paymentSuccess.errors.saveFailed"));
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (err) {
-            setError("Failed to save changes");
+            setError(t("paymentSuccess.errors.saveFailed"));
         } finally {
             setSaving(false);
         }
@@ -379,20 +383,20 @@ export default function PaymentSuccess() {
             <div className="min-h-screen bg-muted flex items-center justify-center p-4">
                 <div className="bg-surface-card p-8 rounded-xl shadow-sm text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-xl font-semibold text-foreground">Invalid Link</h1>
-                    <p className="text-muted-foreground mt-2">No proposal ID found in the URL.</p>
+                    <h1 className="text-xl font-semibold text-foreground">{t("paymentSuccess.errors.invalidLink")}</h1>
+                    <p className="text-muted-foreground mt-2">{t("paymentSuccess.errors.noProposal")}</p>
                 </div>
             </div>
         );
     }
 
-    if (error === "Invalid proposal ID or not accepted yet.") {
+    if (error === "INVALID_PROPOSAL") {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
                 <div className="bg-surface-card p-8 rounded-xl shadow-sm text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-xl font-semibold text-foreground">Invalid Proposal</h1>
-                    <p className="text-muted-foreground mt-2">This proposal ID is invalid or not accepted yet.</p>
+                    <h1 className="text-xl font-semibold text-foreground">{t("paymentSuccess.errors.invalidProposal")}</h1>
+                    <p className="text-muted-foreground mt-2">{t("paymentSuccess.errors.proposalInvalid")}</p>
                 </div>
             </div>
         );
@@ -402,8 +406,8 @@ export default function PaymentSuccess() {
         <div className="min-h-screen  py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl font-bold text-foreground">Setup Your Advertisement</h1>
-                    <p className="mt-2 text-muted-foreground">Drag and drop items to build your banner.</p>
+                    <h1 className="text-3xl font-bold text-foreground">{t("paymentSuccess.header.title")}</h1>
+                    <p className="mt-2 text-muted-foreground">{t("paymentSuccess.header.subtitle")}</p>
                 </div>
 
                 {step === 'verification' && (
@@ -414,23 +418,23 @@ export default function PaymentSuccess() {
                                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <CheckCircle className="w-8 h-8 text-blue-600" />
                                 </div>
-                                <h2 className="text-xl font-semibold mb-2">Payment Successful!</h2>
+                                <h2 className="text-xl font-semibold mb-2">{t("paymentSuccess.verification.title")}</h2>
                                 <p className="text-muted-foreground mb-6">
-                                    To verify your identity and access the ad editor, we need to send a code to your email.
+                                    {t("paymentSuccess.verification.subtitle")}
                                 </p>
                                 <button
                                     onClick={handleSendCode}
                                     disabled={loading}
                                     className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-muted transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Access Code"}
+                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t("paymentSuccess.verification.sendCode")}
                                 </button>
                             </div>
                         ) : (
                             <div className="text-center">
-                                <h2 className="text-xl font-semibold mb-4">Enter Verification Code</h2>
+                                <h2 className="text-xl font-semibold mb-4">{t("paymentSuccess.verification.enterCode")}</h2>
                                 <p className="text-muted-foreground mb-8 text-sm">
-                                    We sent a 6-digit code to your email. Enter it below to continue.
+                                    {t("paymentSuccess.verification.codeSent")}
                                 </p>
 
                                 <div className="flex justify-center gap-2 mb-8">
@@ -464,14 +468,14 @@ export default function PaymentSuccess() {
                                     disabled={loading || otp.join("").length !== 6}
                                     className="w-full py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-muted transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
+                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t("paymentSuccess.verification.verifyCode")}
                                 </button>
 
                                 <button
                                     onClick={() => setEmailSent(false)}
                                     className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
                                 >
-                                    Resend Code
+                                    {t("paymentSuccess.verification.resendCode")}
                                 </button>
                             </div>
                         )}
@@ -502,7 +506,7 @@ export default function PaymentSuccess() {
                                         {type === 'social' && <Share2 className="w-5 h-5" />}
 
                                         <span className="absolute left-full ml-2 px-2 py-1 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity hidden lg:block">
-                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            {t(`paymentSuccess.blocks.${type}`)}
                                         </span>
                                     </button>
                                 ))}
@@ -512,7 +516,7 @@ export default function PaymentSuccess() {
                                 <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6">
                                     <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
                                         <Sparkles className="w-5 h-5 text-yellow-500" />
-                                        Configure Your Ad
+                                        {t("paymentSuccess.editor.title")}
                                     </h2>
 
                                     <DndContext
@@ -539,7 +543,7 @@ export default function PaymentSuccess() {
                                                                     {item.type === 'divider' && <Minus className="w-3 h-3" />}
                                                                     {item.type === 'badge' && <Tag className="w-3 h-3" />}
                                                                     {item.type === 'social' && <Share2 className="w-3 h-3" />}
-                                                                    {item.type}
+                                                                    {t(`paymentSuccess.blocks.${item.type}`)}
                                                                 </span>
                                                                 <div className="flex items-center gap-1">
                                                                     <button
@@ -557,7 +561,7 @@ export default function PaymentSuccess() {
                                                             {expandedBlocks[item.id] && (
                                                                 <div className="mb-4 p-3 bg-surface-card rounded-lg border border-border space-y-3 shadow-sm transition-all duration-200">
                                                                     <div className="flex items-center justify-between">
-                                                                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Alignment</label>
+                                                                        <label className="text-[10px] font-bold uppercase text-muted-foreground">{t("paymentSuccess.blocks.alignment")}</label>
                                                                         <div className="flex gap-1 bg-muted p-0.5 rounded-md border border-border">
                                                                             {['left', 'center', 'right'].map((align) => (
                                                                                 <button
@@ -565,7 +569,7 @@ export default function PaymentSuccess() {
                                                                                     onClick={() => updateBlockStyle(item.id, { alignment: align as any })}
                                                                                     className={`px-2 py-1 rounded text-[10px] capitalize transition-all ${(item.style?.alignment || creative.alignment) === align ? 'bg-neutral-900 text-white shadow-sm' : 'text-muted-foreground hover:text-muted-foreground'}`}
                                                                                 >
-                                                                                    {align}
+                                                                                    {t(`paymentSuccess.blocks.align${align.charAt(0).toUpperCase() + align.slice(1)}`)}
                                                                                 </button>
                                                                             ))}
                                                                         </div>
@@ -573,7 +577,7 @@ export default function PaymentSuccess() {
 
                                                                     {['headline', 'text', 'price', 'badge'].includes(item.type) && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <label className="text-[10px] font-bold uppercase text-muted-foreground">Text Color</label>
+                                                                            <label className="text-[10px] font-bold uppercase text-muted-foreground">{t("paymentSuccess.blocks.textColor")}</label>
                                                                             <input
                                                                                 type="color"
                                                                                 value={item.style?.color || creative.textColor}
@@ -586,7 +590,7 @@ export default function PaymentSuccess() {
                                                                     {item.type === 'button' && (
                                                                         <>
                                                                             <div className="flex items-center justify-between">
-                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Button Color</label>
+                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">{t("paymentSuccess.blocks.buttonColor")}</label>
                                                                                 <input
                                                                                     type="color"
                                                                                     value={item.props?.buttonColor || creative.buttonColor || '#000000'}
@@ -595,7 +599,7 @@ export default function PaymentSuccess() {
                                                                                 />
                                                                             </div>
                                                                             <div className="flex items-center justify-between">
-                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">Label Color</label>
+                                                                                <label className="text-[10px] font-bold uppercase text-muted-foreground">{t("paymentSuccess.blocks.labelColor")}</label>
                                                                                 <input
                                                                                     type="color"
                                                                                     value={item.props?.buttonTextColor || creative.buttonTextColor || '#ffffff'}
@@ -614,7 +618,7 @@ export default function PaymentSuccess() {
                                                                         type="url"
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
-                                                                        placeholder="Image URL (https://...)"
+                                                                        placeholder={t("paymentSuccess.blocks.imageUrlPlaceholder")}
                                                                         className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                     />
                                                                 )}
@@ -622,7 +626,7 @@ export default function PaymentSuccess() {
                                                                     <textarea
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
-                                                                        placeholder="Enter text..."
+                                                                        placeholder={t("paymentSuccess.blocks.enterText")}
                                                                         rows={item.type === 'headline' ? 1 : 2}
                                                                         className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card resize-none placeholder:text-muted-foreground"
                                                                     />
@@ -632,7 +636,7 @@ export default function PaymentSuccess() {
                                                                         type="text"
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
-                                                                        placeholder="Price (e.g. $19.99)"
+                                                                        placeholder={t("paymentSuccess.blocks.pricePlaceholder")}
                                                                         className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground font-mono"
                                                                     />
                                                                 )}
@@ -642,14 +646,14 @@ export default function PaymentSuccess() {
                                                                             type="text"
                                                                             value={item.content || ''}
                                                                             onChange={e => updateBlock(item.id, { content: e.target.value })}
-                                                                            placeholder="Label"
+                                                                            placeholder={t("paymentSuccess.blocks.labelPlaceholder")}
                                                                             className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                         <input
                                                                             type="url"
                                                                             value={item.props?.url || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'url', e.target.value)}
-                                                                            placeholder="URL"
+                                                                            placeholder={t("paymentSuccess.blocks.urlPlaceholder")}
                                                                             className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                     </div>
@@ -659,7 +663,7 @@ export default function PaymentSuccess() {
                                                                         type="text"
                                                                         value={item.content || ''}
                                                                         onChange={e => updateBlock(item.id, { content: e.target.value })}
-                                                                        placeholder="Badge Text (e.g. NEW)"
+                                                                        placeholder={t("paymentSuccess.blocks.badgePlaceholder")}
                                                                         className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                     />
                                                                 )}
@@ -669,14 +673,14 @@ export default function PaymentSuccess() {
                                                                             type="url"
                                                                             value={item.props?.twitter || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'twitter', e.target.value)}
-                                                                            placeholder="X (Twitter) URL"
+                                                                            placeholder={t("paymentSuccess.blocks.twitterPlaceholder")}
                                                                             className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                         <input
                                                                             type="url"
                                                                             value={item.props?.instagram || ''}
                                                                             onChange={e => updateBlockProp(item.id, 'instagram', e.target.value)}
-                                                                            placeholder="Instagram URL"
+                                                                            placeholder={t("paymentSuccess.blocks.instagramPlaceholder")}
                                                                             className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card placeholder:text-muted-foreground"
                                                                         />
                                                                     </div>
@@ -692,7 +696,7 @@ export default function PaymentSuccess() {
                                         <DragOverlay>
                                             {activeId ? (
                                                 <div className="bg-surface-card p-4 rounded-xl shadow-xl border border-blue-500 opacity-90 cursor-grabbing">
-                                                    Following item
+                                                    {t("paymentSuccess.editor.dragOverlay")}
                                                 </div>
                                             ) : null}
                                         </DragOverlay>
@@ -702,23 +706,23 @@ export default function PaymentSuccess() {
                                 {/* Card Design (Global Settings) */}
                                 <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6">
                                     <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                                        <Palette className="w-4 h-4" /> Card Design
+                                        <Palette className="w-4 h-4" /> {t("paymentSuccess.cardDesign.title")}
                                     </h3>
 
                                     {/* Style Presets */}
                                     <div className="mb-6 p-4 bg-muted rounded-xl border border-border overflow-x-auto">
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1">
-                                            <TrendingUp className="w-3 h-3" /> Quick Styles
+                                            <TrendingUp className="w-3 h-3" /> {t("paymentSuccess.cardDesign.quickStyles")}
                                         </label>
                                         <div className="flex gap-2 min-w-max">
                                             {[
-                                                { name: 'Dark Pro', bg: '#000000', text: '#ffffff', btn: '#ffffff', btnText: '#000000' },
-                                                { name: 'Minimal', bg: '#ffffff', text: '#000000', btn: '#000000', btnText: '#ffffff' },
-                                                { name: 'Radiant', bg: 'linear-gradient(135deg, #6366f1, #a855f7)', text: '#ffffff', btn: '#ffffff', btnText: '#000000' },
-                                                { name: 'Soft Gray', bg: '#f8fafc', text: '#1e293b', btn: '#1e293b', btnText: '#ffffff' }
+                                                { key: 'darkPro', bg: '#000000', text: '#ffffff', btn: '#ffffff', btnText: '#000000' },
+                                                { key: 'minimal', bg: '#ffffff', text: '#000000', btn: '#000000', btnText: '#ffffff' },
+                                                { key: 'radiant', bg: 'linear-gradient(135deg, #6366f1, #a855f7)', text: '#ffffff', btn: '#ffffff', btnText: '#000000' },
+                                                { key: 'softGray', bg: '#f8fafc', text: '#1e293b', btn: '#1e293b', btnText: '#ffffff' }
                                             ].map((preset) => (
                                                 <button
-                                                    key={preset.name}
+                                                    key={preset.key}
                                                     onClick={() => setCreative({
                                                         ...creative,
                                                         backgroundColor: preset.bg,
@@ -729,7 +733,7 @@ export default function PaymentSuccess() {
                                                     className="flex items-center gap-2 p-2 rounded-lg bg-surface-card border border-border hover:border-primary transition-all group shrink-0"
                                                 >
                                                     <div className="w-4 h-4 rounded-full border border-border" style={{ background: preset.bg }}></div>
-                                                    <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground">{preset.name}</span>
+                                                    <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground">{t(`paymentSuccess.cardDesign.${preset.key}`)}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -738,9 +742,9 @@ export default function PaymentSuccess() {
                                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {/* Color & Font */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Card Base</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("paymentSuccess.cardDesign.cardBase")}</h4>
                                         <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-2">Background Color</label>
+                                            <label className="block text-sm font-medium text-muted-foreground mb-2">{t("paymentSuccess.cardDesign.bgColor")}</label>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="color"
@@ -753,41 +757,41 @@ export default function PaymentSuccess() {
                                                         onClick={() => setCreative({ ...creative, backgroundColor: 'transparent' })}
                                                         className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === 'transparent' ? 'bg-neutral-900 text-white' : 'bg-surface-card border border-border text-muted-foreground'}`}
                                                     >
-                                                        Clear
+                                                        {t("paymentSuccess.cardDesign.clear")}
                                                     </button>
                                                     <button
                                                         onClick={() => setCreative({ ...creative, backgroundColor: '#ffffff' })}
                                                         className={`px-2 py-1 text-[10px] rounded ${creative.backgroundColor === '#ffffff' ? 'bg-neutral-900 text-white' : 'bg-surface-card border border-border text-muted-foreground'}`}
                                                     >
-                                                        White
+                                                        {t("paymentSuccess.cardDesign.white")}
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-muted-foreground mb-2">Font Style</label>
+                                            <label className="block text-sm font-medium text-muted-foreground mb-2">{t("paymentSuccess.cardDesign.fontStyle")}</label>
                                             <select
                                                 value={creative.fontFamily || 'Inter, sans-serif'}
                                                 onChange={e => setCreative({ ...creative, fontFamily: e.target.value })}
                                                 className="w-full p-2 text-sm border border-border rounded-lg bg-surface-card shadow-sm"
                                             >
-                                                <option value="Inter, sans-serif">Modern (Inter)</option>
-                                                <option value="'Playfair Display', serif">Elegant (Playfair)</option>
-                                                <option value="'Montserrat', sans-serif">Bold (Montserrat)</option>
-                                                <option value="'Outfit', sans-serif">Clean (Outfit)</option>
-                                                <option value="monospace">Technical (Monospace)</option>
+                                                <option value="Inter, sans-serif">{t("paymentSuccess.cardDesign.fontModern")}</option>
+                                                <option value="'Playfair Display', serif">{t("paymentSuccess.cardDesign.fontElegant")}</option>
+                                                <option value="'Montserrat', sans-serif">{t("paymentSuccess.cardDesign.fontBold")}</option>
+                                                <option value="'Outfit', sans-serif">{t("paymentSuccess.cardDesign.fontClean")}</option>
+                                                <option value="monospace">{t("paymentSuccess.cardDesign.fontTechnical")}</option>
                                             </select>
                                         </div>
                                     </div>
 
                                     {/* Borders & Shape */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Borders & Shape</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("paymentSuccess.cardDesign.bordersShape")}</h4>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Color</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.color")}</label>
                                                 <input
                                                     type="color"
                                                     value={creative.borderColor || '#e5e7eb'}
@@ -796,7 +800,7 @@ export default function PaymentSuccess() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Width: {creative.borderWidth || 0}px</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.width")}: {creative.borderWidth || 0}px</label>
                                                 <input
                                                     type="range"
                                                     min="0"
@@ -809,7 +813,7 @@ export default function PaymentSuccess() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">Radius: {creative.borderRadius || 24}px</label>
+                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.radius")}: {creative.borderRadius || 24}px</label>
                                             <input
                                                 type="range"
                                                 min="0"
@@ -823,11 +827,11 @@ export default function PaymentSuccess() {
 
                                     {/* Spacing & Anim */}
                                     <div className="space-y-4">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Layout & Interaction</h4>
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("paymentSuccess.cardDesign.layoutInteraction")}</h4>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Padding</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.padding")}</label>
                                                 <input
                                                     type="number"
                                                     value={creative.padding || 24}
@@ -836,7 +840,7 @@ export default function PaymentSuccess() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">Gap</label>
+                                                <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.gap")}</label>
                                                 <input
                                                     type="number"
                                                     value={creative.gap || 16}
@@ -847,7 +851,7 @@ export default function PaymentSuccess() {
                                         </div>
 
                                         <div>
-                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">Hover Animation</label>
+                                            <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t("paymentSuccess.cardDesign.hoverAnimation")}</label>
                                             <div className="flex gap-1">
                                                 {['none', 'pulse', 'bounce'].map((anim) => (
                                                     <button
@@ -855,7 +859,7 @@ export default function PaymentSuccess() {
                                                         onClick={() => setCreative({ ...creative, animation: anim as any })}
                                                         className={`flex-1 py-1 rounded text-[10px] capitalize transition-colors border ${creative.animation === anim ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-surface-card text-muted-foreground border-border hover:border-border'}`}
                                                     >
-                                                        {anim}
+                                                        {t(`paymentSuccess.cardDesign.anim${anim.charAt(0).toUpperCase() + anim.slice(1)}`)}
                                                     </button>
                                                 ))}
                                             </div>
@@ -864,14 +868,14 @@ export default function PaymentSuccess() {
 
                                     <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div className={`text-sm font-medium transition-opacity ${saveSuccess ? 'text-emerald-600 opacity-100' : 'text-muted-foreground opacity-0'}`} aria-live="polite">
-                                            ✓ Saved
+                                            {t("paymentSuccess.editor.savedIndicator")}
                                         </div>
                                         <button
                                             onClick={handleSave}
                                             disabled={saving}
                                             className={`w-full sm:w-auto px-5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${saveSuccess ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500' : 'bg-surface-card text-foreground border-border hover:border-border hover:bg-muted focus-visible:ring-neutral-800'} disabled:opacity-60`}
                                         >
-                                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saveSuccess ? "Saved" : "Save Changes"}
+                                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saveSuccess ? t("paymentSuccess.editor.saved") : t("paymentSuccess.editor.save")}
                                         </button>
                                     </div>
                                     </div>
@@ -884,7 +888,7 @@ export default function PaymentSuccess() {
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold flex items-center gap-2">
                                     <Eye className="w-5 h-5 text-muted-foreground" />
-                                    Live Preview
+                                    {t("paymentSuccess.editor.livePreview")}
                                 </h2>
                                     <div className={`text-xs font-semibold px-2 py-1 rounded-full border ${isCardOversize ? 'border-destructive/20 text-destructive bg-destructive/10' : 'border-emerald-200 text-emerald-700 bg-emerald-50'}`}>
                                         {displayCardSize.width}×{displayCardSize.height}px
@@ -939,7 +943,7 @@ export default function PaymentSuccess() {
 
                                                         {item.type === 'headline' && (
                                                             <h3 className="text-xl font-bold leading-tight" style={{ color: itemColor }}>
-                                                                {item.content || "Heading"}
+                                                                {item.content || t("paymentSuccess.defaults.headingFallback")}
                                                             </h3>
                                                         )}
 
@@ -957,7 +961,7 @@ export default function PaymentSuccess() {
 
                                                         {item.type === 'text' && (
                                                             <p className="text-sm opacity-90 leading-relaxed whitespace-pre-wrap" style={{ color: itemColor }}>
-                                                                {item.content || "Text block content..."}
+                                                                {item.content || t("paymentSuccess.defaults.textFallback")}
                                                             </p>
                                                         )}
 
@@ -969,7 +973,7 @@ export default function PaymentSuccess() {
                                                                     color: item.props?.buttonTextColor || creative.buttonTextColor || (creative.backgroundColor === 'transparent' ? '#ffffff' : creative.backgroundColor)
                                                                 }}
                                                             >
-                                                                {item.content || "Button"}
+                                                                {item.content || t("paymentSuccess.defaults.buttonFallback")}
                                                                 <ArrowRight className="w-4 h-4 ml-2" />
                                                             </span>
                                                         )}
@@ -986,7 +990,7 @@ export default function PaymentSuccess() {
                                                                     opacity: 0.8
                                                                 }}
                                                             >
-                                                                {item.content || "NEW"}
+                                                                {item.content || t("paymentSuccess.defaults.badgeFallback")}
                                                             </span>
                                                         )}
 
@@ -994,7 +998,7 @@ export default function PaymentSuccess() {
                                                             <div className={`flex gap-3 mt-2 ${itemAlign === 'left' ? 'justify-start' : itemAlign === 'right' ? 'justify-end' : 'justify-center'}`} style={{ color: itemColor }}>
                                                                 {item.props?.twitter && <Share2 className="w-5 h-5 opacity-60" />}
                                                                 {item.props?.instagram && <Tag className="w-5 h-5 opacity-60" />}
-                                                                {(!item.props?.twitter && !item.props?.instagram) && <span className="text-[10px] opacity-50 italic">Preview icons</span>}
+                                                                {(!item.props?.twitter && !item.props?.instagram) && <span className="text-[10px] opacity-50 italic">{t("paymentSuccess.defaults.previewIcons")}</span>}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1003,7 +1007,7 @@ export default function PaymentSuccess() {
                                         </div>
 
                                         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider opacity-30 border border-current px-1.5 py-0.5 rounded">
-                                            Ad
+                                            {t("paymentSuccess.defaults.adLabel")}
                                         </div>
                                     </div>
                                 </div>

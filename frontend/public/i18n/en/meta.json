@@ -1,7 +1,29 @@
 {
   "root": {
     "title": "Portyo - Link in Bio",
-    "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform."
+    "description": "Convert your followers into customers with one link. Generate powerful revenue-generating Bio's with our all-in-one platform.",
+    "keywords": "link in bio, creator tools, portfolio, sell products, newsletter, booking scheduler, bio link, linktree alternative",
+    "ogImageAlt": "Portyo - The all-in-one platform for creators to convert their audience into customers",
+    "twitterImageAlt": "Portyo - Convert your customers",
+    "twitterWrittenBy": "Written by",
+    "twitterAuthor": "Portyo Team",
+    "twitterReadTime": "Est. reading time",
+    "twitterReadTimeValue": "3 minutes",
+    "aiContext": "Portyo is a link-in-bio platform that helps creators monetize their audience through a centralized hub with ecommerce, bookings, and analytics",
+    "aiSummary": "All-in-one creator platform for link in bio, ecommerce, and audience monetization",
+    "aiEntities": "Portyo, Link in Bio, Creator Economy, Social Commerce, Digital Products",
+    "knowledgeGraph": "Portyo | Software | Link Management | Creator Tools",
+    "llmContext": "Portyo helps creators and businesses create a single link that houses all their content, products, and services. It's an alternative to Linktree with more monetization features.",
+    "questionAnswer": "What is Portyo?|Portyo is an all-in-one link-in-bio platform for creators to monetize their audience",
+    "featuredSnippet": "Portyo is the best link-in-bio tool for creators who want to sell products, book appointments, and grow their email list from one central hub.",
+    "orgDescription": "The all-in-one platform for creators to showcase work, sell products, and grow their audience.",
+    "skipToContent": "Skip to main content",
+    "loading": "Loading Portyo...",
+    "errorOops": "Oops!",
+    "errorUnexpected": "An unexpected error occurred.",
+    "error404": "404",
+    "errorGeneric": "Error",
+    "error404Detail": "The requested page could not be found."
   },
   "home": {
     "title": "Portyo - Link in Bio",
@@ -51,5 +73,29 @@
   "themes": {
     "title": "Themes | Portyo",
     "description": "Browse and apply beautiful themes to your bio"
+  },
+  "onboarding": {
+    "title": "Welcome to Portyo - Setup your profile"
+  },
+  "settings": {
+    "title": "Settings | Portyo",
+    "description": "Manage your account settings and preferences."
+  },
+  "claimBio": {
+    "title": "Choose your bio - Portyo"
+  },
+  "sponsored": {
+    "title": "Sponsored Links | Portyo",
+    "description": "Browse sponsored links and earn per click."
+  },
+  "booking": {
+    "title": "Manage Booking | Portyo"
+  },
+  "companyDashboard": {
+    "title": "Company Dashboard | Portyo"
+  },
+  "paymentSuccess": {
+    "title": "Setup Your Ad | Portyo",
+    "description": "Customize your advertisement."
   }
 }

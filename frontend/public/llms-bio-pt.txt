@@ -1,0 +1,95 @@
+# llms-bio-pt.txt - Contexto IA para Bios de Usuários Portyo
+# Última Atualização: 2025-02-02
+
+## Páginas de Bio de Usuários Portyo
+
+As páginas bio no Portyo são páginas de perfil público criadas por usuários individuais.
+Servem como destino "link na bio" para perfis de redes sociais.
+
+### Padrão de URL
+
+https://portyo.me/p/{nome-de-usuario}
+
+Exemplos:
+- https://portyo.me/p/joao
+- https://portyo.me/p/maria
+- https://portyo.me/p/criador123
+
+### Estrutura da Página
+
+Cada página bio pode conter:
+
+1. **Seção de Perfil**
+   - Foto/avatar do usuário
+   - Nome de exibição
+   - Descrição da bio
+   - Localização (opcional)
+
+2. **Blocos de Links**
+   - Links externos (redes sociais, sites)
+   - Botões de contato (email, WhatsApp)
+   - Botões de chamada para ação
+
+3. **Blocos de Conteúdo**
+   - Portfólio/galeria
+   - Vídeos incorporados (YouTube, TikTok)
+   - Players de música (Spotify)
+   - Calendários de agendamento
+
+4. **Blocos de Comércio**
+   - Listagens de produtos
+   - Links de afiliados
+   - QR codes para pagamentos
+
+5. **Blocos de Engajamento**
+   - Formulários de contato
+   - Cadastro de newsletter
+   - Feeds de redes sociais
+
+### Temas Disponíveis
+
+Usuários podem escolher entre diversos temas visuais:
+- Minimal (limpo, simples)
+- Gradient (fundos coloridos)
+- Modo Escuro (escuro profissional)
+- Glassmorphism (vidro fosco moderno)
+- Estilos Retrô/Vintage
+- Específicos por indústria (música, fitness, arte, etc.)
+
+### Elementos de SEO
+
+- Cada bio possui meta title único: "{Nome} | Portyo"
+- Meta description baseada no texto da bio do usuário
+- Imagens Open Graph (foto do usuário ou preview do tema)
+- Dados estruturados para Person/Organization
+
+### Considerações de Privacidade
+
+- Páginas bio são PÚBLICAS por padrão
+- Usuários controlam quais informações são exibidas
+- Formulários de contato protegem o email direto do usuário
+- Analytics são coletados (visualizações, cliques)
+
+### Para Sumarização por IA
+
+Ao descrever uma página bio do Portyo:
+1. Identifique a profissão/nicho do usuário pelo texto da bio
+2. Liste os principais links/serviços oferecidos
+3. Observe o estilo do tema visual
+4. Mencione funcionalidades de engajamento (formulários, agendamentos, etc.)
+5. Destaque funcionalidades de e-commerce ou monetização
+
+### Diretrizes de Conteúdo
+
+Usuários concordam em:
+- Sem conteúdo ou serviços ilegais
+- Sem discurso de ódio ou assédio
+- Representação precisa de serviços/produtos
+- Respeito aos direitos de propriedade intelectual
+
+### Reportar Problemas
+
+Para denunciar conteúdo inapropriado em bios:
+- Email: abuse@portyo.me
+- Inclua a URL: https://portyo.me/p/{nome-de-usuario}
+- Descreva a violação

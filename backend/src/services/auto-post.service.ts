@@ -414,13 +414,27 @@ export const processSchedule = async (schedule: AutoPostScheduleEntity): Promise
             aio: previousLog.aioSuggestions || [],
         } : null;
 
+        // Fetch recent post titles for topic diversity (last 20 posts)
+        const recentLogs = await logRepository.find({
+            where: { scheduleId: schedule.id, status: "published" as any },
+            order: { createdAt: "DESC" },
+            take: 20,
+            select: ["generatedTitle"],
+        });
+        const previousTitles = recentLogs
+            .map(log => log.generatedTitle)
+            .filter((title): title is string => !!title && title !== "Failed to generate");
+
         if (previousSuggestions) {
             logger.info(`[AutoPost] Found ${previousSuggestions.seo.length + previousSuggestions.geo.length + previousSuggestions.aeo.length + previousSuggestions.aio.length} suggestions from previous post`);
+        }
+        if (previousTitles.length > 0) {
+            logger.info(`[AutoPost] Found ${previousTitles.length} previous titles for topic diversity`);
         }
 
         // Generate post with previous suggestions for improvement
         logger.info(`[AutoPost] Generating post for schedule ${schedule.id}`);
-        const rawGeneratedPost = await generateAutoPost(bio, schedule, bioSummary, previousSuggestions);
+        const rawGeneratedPost = await generateAutoPost(bio, schedule, bioSummary, previousSuggestions, previousTitles);
         
         // Validate content and calculate accurate metrics (2-stage process)
         logger.info(`[AutoPost] Validating content and calculating metrics for schedule ${schedule.id}`);
@@ -895,7 +909,20 @@ export const generatePreviewPost = async (
         startDate: null,
     } as AutoPostScheduleEntity;
 
-    const generatedPost = await generateAutoPost(bio, mockSchedule, bioSummary, null);
+    // Fetch recent post titles for topic diversity in preview too
+    const recentLogs = existingSchedule?.id
+        ? await logRepository.find({
+            where: { scheduleId: existingSchedule.id },
+            order: { createdAt: "DESC" },
+            take: 20,
+            select: ["generatedTitle"],
+        })
+        : [];
+    const previousTitles = recentLogs
+        .map(log => log.generatedTitle)
+        .filter((title): title is string => !!title && title !== "Failed to generate");
+
+    const generatedPost = await generateAutoPost(bio, mockSchedule, bioSummary, null, previousTitles);
     
     // Validate content and calculate accurate metrics
     const validatedPost = await validateContentAndCalculateMetrics(generatedPost, bio, mockSchedule, bioSummary);

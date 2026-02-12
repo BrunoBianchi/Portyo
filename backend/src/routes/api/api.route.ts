@@ -126,4 +126,19 @@ router.use('/site-auto-post', authMiddleware, siteAutoPostRoute)
 import customDomainRoute from "./custom-domain/custom-domain.route"
 router.use('/custom-domains', authMiddleware, customDomainRoute)
 
+import companyRoute from "./company/company.route"
+router.use('/company', companyRoute)
+
+import sponsoredRoute from "./sponsored/sponsored.route"
+router.use('/sponsored', authMiddleware, sponsoredRoute)
+
+import publicSponsoredRoute from "./public/sponsored.public.route"
+router.use('/public/sponsored', publicSponsoredRoute)
+
+import publicNewsletterRoute from "./public/newsletter.public.route"
+router.use('/public/newsletter', publicNewsletterRoute)
+
+import socialPlannerRoute from "./social-planner/social-planner.route"
+router.use('/social-planner', socialPlannerRoute)
+
 export default router;

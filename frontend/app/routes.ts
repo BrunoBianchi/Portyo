@@ -2,6 +2,7 @@ import { type RouteConfig, type RouteConfigEntry } from "@react-router/dev/route
 
 const baseRoutes: RouteConfig = [
     { path: '/', file: "routes/home.tsx", id: "home" },
+    { path: '/home', file: "routes/home.tsx", id: "home-alias" }, // Added to fix 404 on /en/home
     { path: '/login', file: "routes/login.tsx" },
     { path: '/sign-up', file: "routes/sign-up.tsx" },
     { path: '/claim-bio', file: "routes/claim-bio.tsx" },
@@ -16,13 +17,6 @@ const baseRoutes: RouteConfig = [
     { path: '/terms-of-service', file: "routes/terms-of-service.tsx" },
     { path: '/pricing', file: "routes/pricing.tsx" },
     { path: '/themes', file: "routes/dashboard-themes.tsx" },
-    { path: '/robots.txt', file: "routes/robots.ts", id: "robots-txt" },
-    { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
-    { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },
-    { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
-    // Per-bio robots & sitemap
-    { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
-    { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
     {
         path: '/dashboard',
         file: "routes/dashboard.tsx",
@@ -42,18 +36,37 @@ const baseRoutes: RouteConfig = [
             { path: "domains", file: "routes/dashboard-domains.tsx" },
             { path: "custom-domains", file: "routes/dashboard-custom-domains.tsx" },
             { path: "products", file: "routes/dashboard-products.tsx" },
+            { path: "earnings", file: "routes/dashboard-earnings.tsx" },
             { path: "marketing", file: "routes/dashboard-marketing.tsx" },
             { path: "blog", file: "routes/dashboard-blog.tsx" },
             { path: "site-blog", file: "routes/dashboard.site-blog.tsx" },
             { path: "site-blog/auto-post", file: "routes/dashboard.site-blog.auto-post.tsx" },
             { path: "auto-post", file: "routes/dashboard-auto-post.tsx" },
+            { path: "sponsored", file: "routes/dashboard-sponsored.tsx" },
             { path: "qrcode", file: "routes/dashboard-qrcode.tsx" },
             { path: "scheduler", file: "routes/dashboard-scheduler.tsx" },
+            { path: "social-planner", file: "routes/dashboard-social-planner.tsx" },
             { path: "templates", file: "routes/dashboard-templates.tsx" },
             { path: "templates/:id", file: "routes/dashboard-templates.editor.tsx" },
             { path: "admin", file: "routes/dashboard.admin.tsx" },
             { path: "announcements", file: "routes/dashboard.announcements.tsx" },
             { path: "portfolio", file: "routes/dashboard-portfolio.tsx" },
+            // Company Dashboard Routes (merged for subdomain support)
+            { path: "create", file: "routes/company-dashboard-create-offer.tsx", id: "company-create-offer-merged" },
+            { path: "profile", file: "routes/company-dashboard-profile.tsx", id: "company-profile-merged" },
+        ]
+    },
+    // Company routes (under /:lang/company/...)
+    {
+        path: '/company',
+        file: "routes/company-layout.tsx",
+        children: [
+            { index: true, file: "routes/company-login.tsx", id: "company-index" },
+            { path: "login", file: "routes/company-login.tsx", id: "company-login" },
+            { path: "register", file: "routes/company-register.tsx", id: "company-register" },
+            { path: "dashboard", file: "routes/company-dashboard.tsx", id: "company-dashboard" },
+            { path: "dashboard/create", file: "routes/company-dashboard-create-offer.tsx", id: "company-create-offer" },
+            { path: "dashboard/profile", file: "routes/company-dashboard-profile.tsx", id: "company-profile" },
         ]
     },
     { path: "redirect-qrcode/:id", file: "routes/redirect-qrcode.$id.tsx" },
@@ -100,7 +113,7 @@ const nonLocalizedRoutes: RouteConfig = [
     { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
     { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
     { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
-    { path: '/claim-bio', file: "routes/claim-bio.tsx" }
+    { path: '/claim-bio', file: "routes/claim-bio.tsx", id: "claim-bio-direct" },
 ];
 
 export default [

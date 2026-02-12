@@ -2,23 +2,28 @@
   "nav": {
     "overview": "Overview",
     "editor": "Editor",
+    "design": "Design",
     "leads": "Leads",
     "products": "Products",
     "portfolio": "Portfolio",
     "blog": "Blog",
     "qrCode": "QR Code",
     "marketing": "Marketing",
+    "sponsored": "Sponsored Links",
+    "earnings": "Earnings",
     "scheduler": "Scheduler",
     "emailTemplates": "Email Templates",
     "integrations": "Integrations",
     "automation": "Automation",
+    "customDomains": "Custom Domains",
     "forms": "Forms",
     "seoSettings": "SEO Settings",
     "analytics": "Analytics",
     "adminPanel": "Admin Panel",
     "announcements": "Announcements",
     "siteBlog": "Site Blog",
-    "autoPost": "Auto Post"
+    "autoPost": "Auto Post",
+    "socialPlanner": "Social Planner"
   },
   "customDomains": {
     "title": "Custom Domains",
@@ -36,9 +41,9 @@
     "instructions": {
       "title": "How to configure your domain",
       "step1": "Add your domain in the field above",
-      "step2": "Configure a DNS A record pointing your domain to our server IP",
-      "step3": "Wait for DNS propagation (can take up to 24h)",
-      "step4": "SSL will be automatically generated when DNS is detected"
+      "step2": "In your DNS provider, create a CNAME or A record pointing to cname.portyo.me",
+      "step3": "Wait for DNS propagation (can take up to 24-48h)",
+      "step4": "Click 'Verify' once your DNS is configured — SSL will be generated automatically"
     },
     "status": {
       "active": "Active",
@@ -111,9 +116,21 @@
     "livePage": "Live Page",
     "userFallback": "User",
     "logout": "Log out",
+    "settings": "Settings",
     "createError": "Failed to create page. Username might be taken.",
     "setup": "Setup",
-    "finishSetup": "Finish Setup"
+    "finishSetup": "Finish Setup",
+    "checklist": "Onboarding",
+    "steps": {
+      "addLink": "Add a link",
+      "explore": "Explore modules",
+      "settings": "Configure settings",
+      "bio": "Visit bio",
+      "actionAddLink": "Add Link",
+      "actionExplore": "Explore Dashboard",
+      "actionSettings": "Go to Settings",
+      "actionVisitBio": "Visit your Bio"
+    }
   },
   "notifications": {
     "bell": "Notifications",
@@ -316,6 +333,7 @@
       },
       "metricsModal": {
         "title": "Post Metrics",
+        "analysisTitle": "Metrics Analysis",
         "seoScore": "SEO Score",
         "geoScore": "GEO Score",
         "aeoScore": "AEO Score",
@@ -1013,11 +1031,11 @@
     },
     "dns": {
       "title": "DNS Configuration Required",
-      "body": "To make your domain work, you need to add a DNS record to your domain provider (like GoDaddy, Namecheap, or Cloudflare).",
+      "body": "To verify your domain, create a CNAME or A record in your DNS provider (like GoDaddy, Namecheap, or Cloudflare) pointing to cname.portyo.me",
       "type": "Type",
       "nameHost": "Name / Host",
       "valueTarget": "Value / Target",
-      "note": "Note: DNS changes can take up to 48 hours to propagate globally, though it usually happens within a few minutes."
+      "note": "Tip: CNAME is recommended for subdomains (e.g. www). For root domains (@), use an A record or CNAME flattening if your provider supports it. DNS changes can take up to 48 hours."
     },
     "status": {
       "title": "Domain Linked",
@@ -1060,9 +1078,13 @@
     }
   },
   "automationList": {
+    "sectionTitle": "Automations",
     "title": "Automations",
     "subtitle": "Create workflows that run on autopilot.",
     "create": "Create automation ({{current}}/{{limit}})",
+    "createWithCount": "+ Create ({{current}}/{{limit}})",
+    "deleteTitle": "Delete automation?",
+    "deleteDescription": "This action cannot be undone. All data associated with this automation will be permanently deleted.",
     "emailUsage": {
       "title": "Email usage",
       "subtitle": "Track your monthly email sending limits.",
@@ -1512,6 +1534,7 @@
       "design": "Design",
       "settings": "Settings"
     },
+    "askAI": "Ask AI",
     "addLink": "Add Link",
     "defaults": {
       "headingTitle": "Introduce yourself",
@@ -2386,6 +2409,264 @@
     },
     "editorBadges": {
       "beta": "BETA"
+    },
+    "ai": {
+      "placeholder": "Describe what you want...",
+      "errorGenerate": "Failed to generate. Try again.",
+      "successGenerate": "Content generated!",
+      "suggestions": {
+        "minimalist": "Make it minimalist",
+        "instagram": "Add instagram feed",
+        "portfolio": "Create portfolio section",
+        "contact": "Add contact form",
+        "dark": "Dark theme mode"
+      }
+    }
+  },
+  "earningsPage": {
+    "title": "Earnings",
+    "subtitle": "Your total earnings overview (Products + Sponsored + Marketing).",
+    "range": {
+      "custom": "Custom",
+      "to": "to"
+    },
+    "chart": {
+      "title": "Detailed sales history",
+      "subtitle": "Products + Sponsored per day in the selected period.",
+      "empty": "No data for the selected period.",
+      "legend": {
+        "products": "Products",
+        "sponsored": "Sponsored",
+        "line": "Line = daily total"
+      }
+    },
+    "cards": {
+      "products": "Products",
+      "sponsored": "Sponsored",
+      "marketing": "Marketing",
+      "summary": "Summary"
+    },
+    "details": {
+      "products": "Products",
+      "sponsored": "Sponsored",
+      "total": "Total"
+    },
+    "summaryText": "The period filter changes chart history and Products/Sponsored totals. Marketing remains a lifetime accumulated value from campaigns."
+  },
+  "sponsored": {
+    "title": "Sponsored Links",
+    "subtitle": "Share partner company links and earn per click.",
+    "tabs": {
+      "marketplace": "Marketplace",
+      "myLinks": "My Links"
+    },
+    "earnings": {
+      "totalBalance": "Total Balance",
+      "thisMonth": "This Month",
+      "totalClicks": "Total Clicks",
+      "activeLinks": "Active Links"
+    },
+    "categories": {
+      "all": "All",
+      "food": "Food",
+      "tech": "Technology",
+      "fashion": "Fashion",
+      "health": "Health",
+      "finance": "Finance",
+      "education": "Education",
+      "entertainment": "Entertainment",
+      "travel": "Travel",
+      "sports": "Sports",
+      "other": "Others"
+    },
+    "marketplace": {
+      "searchPlaceholder": "Search offers...",
+      "emptyTitle": "No offers available at the moment",
+      "emptySubtitle": "Come back later for new opportunities",
+      "earnPerClick": "Earn per click",
+      "company": "Company",
+      "added": "Added",
+      "limitReached": "Limit reached",
+      "add": "Add",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {{page}} of {{total}}"
+    },
+    "myLinks": {
+      "emptyTitle": "No sponsored links adopted",
+      "emptySubtitle": "Go to the Marketplace and add offers to start earning!",
+      "exploreMarketplace": "Explore Marketplace",
+      "clicks": "clicks",
+      "cpc": "CPC",
+      "viewLink": "View link",
+      "remove": "Remove",
+      "trackingLink": "Tracking link"
+    },
+    "messages": {
+      "adopted": "Sponsored link added to your bio!",
+      "removed": "Link removed successfully!",
+      "confirmRemove": "Are you sure you want to remove this sponsored link?",
+      "errorLoad": "Error loading offers",
+      "errorAdopt": "Error adopting offer",
+      "errorRemove": "Error removing link"
+    }
+  },
+  "design": {
+    "pageTitle": "Design",
+    "enhance": "Enhance",
+    "preview": "Preview",
+    "sections": {
+      "header": "Header",
+      "theme": "Theme",
+      "wallpaper": "Wallpaper",
+      "text": "Text",
+      "buttons": "Buttons",
+      "colors": "Colors",
+      "footer": "Footer"
+    },
+    "header": {
+      "title": "Header",
+      "edit": "Edit",
+      "profileImageLayout": "Profile image layout",
+      "classic": "Classic",
+      "hero": "Hero",
+      "heroTransition": "Hero transition",
+      "heroTransitionDesc": "Smooth gradient from hero image to content",
+      "navigationTabs": "Navigation tabs",
+      "navigationTabsDesc": "Customize the tab bar that appears when you have Blog, Shop, or CV blocks",
+      "tabBackground": "Tab background",
+      "tabText": "Tab text",
+      "titleLabel": "Title",
+      "titleStyle": "Title style",
+      "titleStyleText": "Text",
+      "titleStyleLogo": "Logo",
+      "size": "Size",
+      "small": "Small",
+      "large": "Large",
+      "titleFont": "Title font",
+      "titleFontColor": "Title font color",
+      "verification": "Verification",
+      "verificationDesc": "Show that you're the real deal, and help visitors feel more confident engaging with your content.",
+      "verified": "Verified",
+      "pending": "Under review",
+      "getVerified": "Get verified"
+    },
+    "theme": {
+      "title": "Theme",
+      "customizable": "Customizable",
+      "curated": "Curated"
+    },
+    "wallpaper": {
+      "title": "Wallpaper",
+      "wallpaperStyle": "Wallpaper style",
+      "backgroundColor": "Background color",
+      "secondaryColor": "Secondary color",
+      "imageUrl": "Image URL",
+      "videoUrl": "Video URL",
+      "settings": "{{type}} Settings",
+      "primaryColor": "Primary color",
+      "direction": "Direction",
+      "dirLeftToRight": "Left to Right",
+      "dirRightToLeft": "Right to Left",
+      "dirTopToBottom": "Top to Bottom",
+      "dirBottomToTop": "Bottom to Top",
+      "dirDiagSE": "Diagonal ↘",
+      "dirDiagSW": "Diagonal ↙",
+      "dirDiagNE": "Diagonal ↗",
+      "dirDiagNW": "Diagonal ↖",
+      "blurIntensity": "Blur intensity",
+      "none": "None",
+      "max": "Max",
+      "patternType": "Pattern type",
+      "patternColor": "Pattern color",
+      "imageFit": "Image fit",
+      "coverFill": "Cover (fill)",
+      "containFit": "Contain (fit)",
+      "repeatTile": "Repeat (tile)",
+      "overlayOpacity": "Overlay opacity",
+      "loopVideo": "Loop video",
+      "muteAudio": "Mute audio",
+      "apply": "Apply"
+    },
+    "wallpaperStyles": {
+      "fill": "Fill",
+      "gradient": "Gradient",
+      "blur": "Blur",
+      "pattern": "Pattern",
+      "image": "Image",
+      "video": "Video"
+    },
+    "text": {
+      "title": "Text",
+      "pageTextFont": "Page text font",
+      "pageTextColor": "Page text color",
+      "titleFont": "Title font",
+      "titleFontColor": "Title font color"
+    },
+    "buttons": {
+      "title": "Buttons",
+      "buttonStyle": "Button style",
+      "cornerRoundness": "Corner roundness",
+      "buttonShadow": "Button shadow",
+      "buttonColor": "Button color",
+      "buttonTextColor": "Button text color",
+      "solid": "Solid",
+      "glass": "Glass",
+      "outline": "Outline",
+      "square": "Square",
+      "round": "Round",
+      "rounder": "Rounder",
+      "full": "Full",
+      "shadowNone": "None",
+      "shadowSoft": "Soft",
+      "shadowStrong": "Strong",
+      "shadowHard": "Hard"
+    },
+    "colors": {
+      "title": "Colors",
+      "background": "Background",
+      "cardBackground": "Card background",
+      "titleText": "Title text",
+      "buttonColor": "Button color",
+      "buttonText": "Button text"
+    },
+    "footer": {
+      "title": "Footer",
+      "hidePortyoFooter": "Hide Portyo footer",
+      "enableSubscribeButton": "Enable subscribe button",
+      "enableParallax": "Enable parallax effect",
+      "intensity": "Intensity",
+      "depth": "Depth",
+      "axis": "Axis",
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "both": "Both",
+      "floatingElements": "Floating elements",
+      "type": "Type",
+      "color": "Color",
+      "density": "Density",
+      "size": "Size",
+      "speed": "Speed",
+      "opacity": "Opacity",
+      "blur": "Blur"
+    },
+    "floatingTypes": {
+      "circles": "Circles",
+      "hearts": "Hearts",
+      "fire": "Fire",
+      "stars": "Stars",
+      "sparkles": "Sparkles",
+      "music": "Music",
+      "leaves": "Leaves",
+      "snow": "Snow",
+      "bubbles": "Bubbles",
+      "confetti": "Confetti",
+      "diamonds": "Diamonds",
+      "petals": "Petals"
+    },
+    "previewCard": {
+      "yourLinkHere": "Your link here",
+      "joinOn": "Join @{{username}} on Portyo"
     }
   }
 }

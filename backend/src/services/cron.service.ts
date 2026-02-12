@@ -7,7 +7,9 @@ import { MailService } from "../shared/services/mail.service";
 import { IsNull, Between, LessThan, MoreThan } from "typeorm";
 import { processAutoPostQueue, runAutoPostJob } from "./auto-post.service";
 import { processSiteAutoPostQueue, runSiteAutoPostJob } from "./site-auto-post.service";
+import { runSocialPlannerJob } from "./social-planner.service";
 import { CustomDomainService } from "../shared/services/custom-domain.service";
+import { NewsletterService } from "./newsletter.service";
 import { logger } from "../shared/utils/logger";
 
 export class CronService {
@@ -38,6 +40,11 @@ export class CronService {
             runSiteAutoPostJob();
         });
 
+        // Verify and publish due social planner posts every hour
+        schedule.scheduleJob("0 */1 * * *", () => {
+            runSocialPlannerJob();
+        });
+
         // Process queued site auto-posts every minute
         schedule.scheduleJob("* * * * *", () => {
             processSiteAutoPostQueue();
@@ -61,6 +68,11 @@ export class CronService {
         // Renew SSL certificates daily at 3 AM
         schedule.scheduleJob("0 3 * * *", () => {
             this.renewSSLCertificates();
+        });
+
+        // Send newsletters every 2 days at 11 AM
+        schedule.scheduleJob("0 11 */2 * *", () => {
+            this.sendNewsletters();
         });
         
         console.log("✅ Cron Jobs scheduled.");
@@ -181,6 +193,19 @@ export class CronService {
             await CustomDomainService.processDnsVerificationQueue();
         } catch (error) {
             logger.error("❌ Error processing custom domains DNS queue:", error);
+        }
+    }
+
+    /**
+     * Send newsletters to eligible users every 2 days
+     */
+    static async sendNewsletters() {
+        logger.info("📧 Running Newsletter Send Job...");
+        try {
+            await NewsletterService.sendNewsletters();
+            logger.info("✅ Newsletter send job completed");
+        } catch (error) {
+            logger.error("❌ Error in sendNewsletters:", error);
         }
     }
 

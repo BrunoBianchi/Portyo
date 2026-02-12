@@ -12,33 +12,84 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-12-15.clover",
 });
 
-// Helper function to get date ranges
-function getDateRanges() {
+type SalesRangeInput = {
+    days?: number;
+    startDate?: string;
+    endDate?: string;
+};
+
+function normalizeRange(input: SalesRangeInput) {
     const now = new Date();
-    
-    // Current month
-    const firstDayCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const currentMonthStart = Math.floor(firstDayCurrentMonth.getTime() / 1000);
-    const currentMonthEnd = Math.floor(now.getTime() / 1000);
-    
-    // Last month
-    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-    const lastMonthStart = Math.floor(firstDayLastMonth.getTime() / 1000);
-    const lastMonthEnd = Math.floor(lastDayLastMonth.getTime() / 1000);
-    
-    // Last 30 days
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const thirtyDaysStart = Math.floor(thirtyDaysAgo.getTime() / 1000);
-    
+
+    const parsedDays = Number(input.days);
+    const safeDays = Number.isFinite(parsedDays) && parsedDays > 0
+        ? Math.min(Math.floor(parsedDays), 365)
+        : 30;
+
+    let startDate: Date;
+    let endDate: Date;
+
+    if (input.startDate && input.endDate) {
+        const start = new Date(input.startDate);
+        const end = new Date(input.endDate);
+        const validStart = !Number.isNaN(start.getTime());
+        const validEnd = !Number.isNaN(end.getTime());
+
+        if (validStart && validEnd && start <= end) {
+            startDate = new Date(start);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(end);
+            endDate.setHours(23, 59, 59, 999);
+        } else {
+            endDate = now;
+            startDate = new Date(now.getTime() - (safeDays - 1) * 24 * 60 * 60 * 1000);
+            startDate.setHours(0, 0, 0, 0);
+        }
+    } else {
+        endDate = now;
+        startDate = new Date(now.getTime() - (safeDays - 1) * 24 * 60 * 60 * 1000);
+        startDate.setHours(0, 0, 0, 0);
+    }
+
+    const rangeMs = endDate.getTime() - startDate.getTime();
+    const previousEnd = new Date(startDate.getTime() - 1);
+    const previousStart = new Date(previousEnd.getTime() - rangeMs);
+
     return {
-        currentMonthStart,
-        currentMonthEnd,
-        lastMonthStart,
-        lastMonthEnd,
-        thirtyDaysStart,
-        now
+        now,
+        currentStart: Math.floor(startDate.getTime() / 1000),
+        currentEnd: Math.floor(endDate.getTime() / 1000),
+        previousStart: Math.floor(previousStart.getTime() / 1000),
+        previousEnd: Math.floor(previousEnd.getTime() / 1000),
+        startDate,
+        endDate,
     };
+}
+
+async function listChargesForRange(accountId: string, gte: number, lte: number) {
+    const charges: Stripe.Charge[] = [];
+    let startingAfter: string | undefined;
+
+    while (charges.length < 1000) {
+        const page = await stripe.charges.list(
+            {
+                created: { gte, lte },
+                limit: 100,
+                starting_after: startingAfter,
+            },
+            { stripeAccount: accountId }
+        );
+
+        charges.push(...page.data);
+
+        if (!page.has_more || page.data.length === 0) {
+            break;
+        }
+
+        startingAfter = page.data[page.data.length - 1].id;
+    }
+
+    return charges;
 }
 
 router.get(
@@ -46,7 +97,7 @@ router.get(
     requireAuth,
     async (req: Request, res: Response) => {
         try {
-            const { bioId } = req.query;
+            const { bioId, days, startDate, endDate } = req.query;
 
             if (!bioId || typeof bioId !== "string") {
                 throw new ApiError(APIErrors.badRequestError, "Bio ID is required", 400);
@@ -87,38 +138,31 @@ router.get(
             }
 
             try {
-                const dates = getDateRanges();
-
-                // Fetch all charges for last 30 days for detailed analysis
-                const allCharges = await stripe.charges.list({
-                    created: { gte: dates.thirtyDaysStart },
-                    limit: 100
-                }, {
-                    stripeAccount: stripeIntegration.account_id
+                const dates = normalizeRange({
+                    days: typeof days === "string" ? Number(days) : undefined,
+                    startDate: typeof startDate === "string" ? startDate : undefined,
+                    endDate: typeof endDate === "string" ? endDate : undefined,
                 });
 
-                // Fetch last month charges for comparison
-                const lastMonthCharges = await stripe.charges.list({
-                    created: {
-                        gte: dates.lastMonthStart,
-                        lte: dates.lastMonthEnd
-                    },
-                    limit: 100
-                }, {
-                    stripeAccount: stripeIntegration.account_id
-                });
-
-                // Filter paid charges for current month
-                const currentMonthPaid = allCharges.data.filter(c => 
-                    c.paid && c.created >= dates.currentMonthStart
+                const allCharges = await listChargesForRange(
+                    stripeIntegration.account_id,
+                    dates.previousStart,
+                    dates.currentEnd
                 );
-                const lastMonthPaid = lastMonthCharges.data.filter(c => c.paid);
+
+                const paidCharges = allCharges.filter(c => c.paid);
+                const currentPeriodPaid = paidCharges.filter(
+                    c => c.created >= dates.currentStart && c.created <= dates.currentEnd
+                );
+                const previousPeriodPaid = paidCharges.filter(
+                    c => c.created >= dates.previousStart && c.created <= dates.previousEnd
+                );
 
                 // Basic metrics
-                const currentSales = currentMonthPaid.length;
-                const currentRevenue = currentMonthPaid.reduce((sum, c) => sum + c.amount, 0) / 100;
-                const lastMonthSales = lastMonthPaid.length;
-                const lastMonthRevenue = lastMonthPaid.reduce((sum, c) => sum + c.amount, 0) / 100;
+                const currentSales = currentPeriodPaid.length;
+                const currentRevenue = currentPeriodPaid.reduce((sum, c) => sum + c.amount, 0) / 100;
+                const lastMonthSales = previousPeriodPaid.length;
+                const lastMonthRevenue = previousPeriodPaid.reduce((sum, c) => sum + c.amount, 0) / 100;
 
                 // Calculate changes
                 const salesChange = lastMonthSales > 0
@@ -134,18 +178,19 @@ router.get(
                     : 0;
 
                 // Currency
-                const currency = allCharges.data[0]?.currency?.toUpperCase() || "USD";
+                const currency = allCharges[0]?.currency?.toUpperCase() || "USD";
 
                 // Daily revenue for last 30 days (for chart)
                 const dailyRevenueMap: { [key: string]: number } = {};
-                for (let i = 29; i >= 0; i--) {
-                    const date = new Date(dates.now);
-                    date.setDate(date.getDate() - i);
+                const dayCount = Math.max(1, Math.ceil((dates.endDate.getTime() - dates.startDate.getTime() + 1) / (24 * 60 * 60 * 1000)));
+                for (let i = 0; i < dayCount; i++) {
+                    const date = new Date(dates.startDate);
+                    date.setDate(date.getDate() + i);
                     const dateKey = date.toISOString().split('T')[0];
                     dailyRevenueMap[dateKey] = 0;
                 }
                 
-                allCharges.data.filter(c => c.paid).forEach(charge => {
+                currentPeriodPaid.forEach(charge => {
                     const date = new Date(charge.created * 1000);
                     const dateKey = date.toISOString().split('T')[0];
                     if (dailyRevenueMap.hasOwnProperty(dateKey)) {
@@ -160,7 +205,7 @@ router.get(
 
                 // Top products by revenue
                 const productRevenueMap: { [key: string]: { name: string; amount: number; count: number } } = {};
-                allCharges.data.filter(c => c.paid).forEach(charge => {
+                currentPeriodPaid.forEach(charge => {
                     const productName = charge.description || "Product";
                     if (!productRevenueMap[productName]) {
                         productRevenueMap[productName] = { name: productName, amount: 0, count: 0 };
@@ -179,8 +224,8 @@ router.get(
                     }));
 
                 // Recent transactions (last 10)
-                const recentTransactions = allCharges.data
-                    .filter(c => c.paid)
+                const recentTransactions = currentPeriodPaid
+                    .sort((a, b) => b.created - a.created)
                     .slice(0, 10)
                     .map(charge => ({
                         id: charge.id,
@@ -207,7 +252,11 @@ router.get(
                     averageOrderValue,
                     topProducts,
                     dailyRevenue,
-                    recentTransactions
+                    recentTransactions,
+                    range: {
+                        startDate: dates.startDate.toISOString(),
+                        endDate: dates.endDate.toISOString(),
+                    }
                 });
 
             } catch (stripeError: any) {

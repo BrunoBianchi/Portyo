@@ -691,6 +691,20 @@ h6 {
   animation: wave 3s ease-in-out infinite;
 }
 
+/* Marquee animation for infinite horizontal scroll */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
 /* Stagger delays for sequential animations */
 .stagger-1 {
   animation-delay: 0.1s;

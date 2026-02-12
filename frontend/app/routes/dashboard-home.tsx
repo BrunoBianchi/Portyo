@@ -8,6 +8,8 @@ import { AnalyticsService, type SalesData, type AnalyticsData } from "~/services
 import WorldMap from "~/components/dashboard/world-map";
 import { useAuth } from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
+import { isCompanySubdomain } from "~/lib/company-utils";
+import { CompanyOffersList } from "~/components/company/company-offers-list";
 
 interface Activity {
     id: string;
@@ -18,6 +20,16 @@ interface Activity {
 }
 
 export default function DashboardHome() {
+    const isCompany = isCompanySubdomain();
+
+    if (isCompany) {
+        return <CompanyOffersList />;
+    }
+
+    return <UserDashboardHome />;
+}
+
+function UserDashboardHome() {
     const { bio } = useContext(BioContext);
     const { isPro } = useAuth();
     const { t } = useTranslation("dashboard");
@@ -97,7 +109,7 @@ export default function DashboardHome() {
                             <Sparkles className="w-3 h-3" />
                             {t("dashboard.overview.overview")}
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>
                             {t("dashboard.overview.title")}
                         </h1>
                         <p className="text-lg font-medium text-[#1A1A1A]/60 max-w-xl">{t("dashboard.overview.subtitle")}</p>
@@ -141,11 +153,11 @@ export default function DashboardHome() {
                         {loadingAnalytics ? (
                             <div className="h-14 w-24 bg-gray-100 rounded animate-pulse mb-2" />
                         ) : (
-                            <p className="text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                            <p className="text-3xl sm:text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                                 {analytics?.views.total || bio?.views || 0}
                             </p>
                         )}
-                        {!loadingAnalytics && analytics && analytics.views.total > 0 && renderTrend(analytics.views.change)}
+                        {!loadingAnalytics && analytics && analytics.views && analytics.views.total > 0 && renderTrend(analytics.views.change)}
                     </div>
 
                     <div className="bg-white border-2 border-black p-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
@@ -158,11 +170,11 @@ export default function DashboardHome() {
                         {loadingAnalytics ? (
                             <div className="h-14 w-24 bg-gray-100 rounded animate-pulse mb-2" />
                         ) : (
-                            <p className="text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                            <p className="text-3xl sm:text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                                 {analytics?.clicks.total || bio?.clicks || 0}
                             </p>
                         )}
-                        {!loadingAnalytics && analytics && analytics.clicks.total > 0 && renderTrend(analytics.clicks.change)}
+                        {!loadingAnalytics && analytics && analytics.clicks && analytics.clicks.total > 0 && renderTrend(analytics.clicks.change)}
                     </div>
 
                     <div className="bg-white border-2 border-black p-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
@@ -175,18 +187,18 @@ export default function DashboardHome() {
                         {loadingAnalytics ? (
                             <div className="h-14 w-24 bg-gray-100 rounded animate-pulse mb-2" />
                         ) : (
-                            <p className="text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                            <p className="text-3xl sm:text-5xl font-black text-[#1A1A1A] mb-4 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
                                 {analytics?.views.total > 0 ? `${analytics?.ctr.average || 0}%` : '-'}
                             </p>
                         )}
-                        {!loadingAnalytics && analytics && analytics.views.total > 0 && renderTrend(analytics.ctr.change)}
+                        {!loadingAnalytics && analytics && analytics.views && analytics.views.total > 0 && renderTrend(analytics.ctr.change)}
                     </div>
                 </div>
 
                 {/* Sales & Revenue Analytics Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Main Sales Card */}
-                    <div className="bg-white border-2 border-black p-8 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" data-tour="dashboard-overview-sales">
+                    <div className="bg-white border-2 border-black p-5 sm:p-8 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" data-tour="dashboard-overview-sales">
                         <div className="flex items-start justify-between mb-8">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 bg-[#E94E77] border-2 border-black rounded-xl flex items-center justify-center text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rotate-3">
@@ -206,7 +218,7 @@ export default function DashboardHome() {
                             </div>
                         ) : sales && sales.connected ? (
                             <div className="space-y-8">
-                                <div className="grid grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                     <div>
                                         <p className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/50 mb-2">{t("dashboard.overview.totalSales")}</p>
                                         <p className="text-4xl font-black text-[#1A1A1A] mb-2">{sales.sales.current}</p>
@@ -269,8 +281,8 @@ export default function DashboardHome() {
                                                         >
                                                             <div
                                                                 className={`w-full rounded-t-sm transition-all duration-300 ${hasValue
-                                                                        ? 'bg-black hover:bg-[#D2E823] cursor-pointer'
-                                                                        : 'bg-gray-200'
+                                                                    ? 'bg-black hover:bg-[#D2E823] cursor-pointer'
+                                                                    : 'bg-gray-200'
                                                                     }`}
                                                                 style={{
                                                                     height: `${Math.max(height, hasValue ? 8 : 4)}%`,
@@ -319,7 +331,7 @@ export default function DashboardHome() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-white border-2 border-black p-8 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-fit" data-tour="dashboard-overview-activity">
+                    <div className="lg:col-span-2 bg-white border-2 border-black p-5 sm:p-8 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-fit" data-tour="dashboard-overview-activity">
                         <div className="flex items-center justify-between mb-8">
                             <h2 className="text-2xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.overview.recentActivity")}</h2>
                             <div className="flex items-center gap-3">
@@ -397,7 +409,7 @@ export default function DashboardHome() {
                         )}
                     </div>
 
-                    <div className="bg-[#D2E823] border-4 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col justify-between">
+                    <div className="bg-[#D2E823] border-4 border-black p-5 sm:p-8 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col justify-between">
                         {/* Decorative background elements */}
                         <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white opacity-20 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -406,7 +418,7 @@ export default function DashboardHome() {
                                 <Sparkles className="w-3 h-3 text-[#D2E823]" />
                                 {t("dashboard.overview.proFeature")}
                             </div>
-                            <h2 className="text-4xl font-black mb-4 text-black leading-[0.9]" style={{ fontFamily: 'var(--font-display)' }}>
+                            <h2 className="text-2xl font-black mb-4 text-black leading-[0.9]" style={{ fontFamily: 'var(--font-display)' }}>
                                 {t("dashboard.overview.upgradeTitle").toUpperCase()}
                             </h2>
                             <p className="text-black/80 font-bold text-lg mb-8 leading-relaxed max-w-[90%]">

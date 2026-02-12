@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { ProductCollectionSelector } from "../integration-selectors";
-import { BlockStyleSettings } from "../block-style-settings";
 import BioContext, { type BioBlock } from "~/contexts/bio.context";
 
 interface Props {
@@ -46,12 +45,6 @@ export function ProductBlockEditor({ block, onChange }: Props) {
         bioId={effectiveBioId}
         config={config}
         onChange={handleConfigChange}
-      />
-
-      {/* Style Settings */}
-      <BlockStyleSettings
-        block={block}
-        onUpdate={onChange}
       />
     </div>
   );

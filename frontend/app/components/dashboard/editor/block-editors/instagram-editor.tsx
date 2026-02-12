@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { BioBlock } from "~/contexts/bio.context";
-import { BlockStyleSettings } from "../block-style-settings";
+import { InstagramPreview } from "../integration-selectors/instagram-preview";
 
 interface Props {
   block: BioBlock;
@@ -9,6 +9,7 @@ interface Props {
 
 export function InstagramBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
+  const username = block.instagramUsername || "";
 
   return (
     <div className="space-y-6">
@@ -20,14 +21,16 @@ export function InstagramBlockEditor({ block, onChange }: Props) {
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30 font-bold">@</span>
           <input
             type="text"
-            value={block.instagramUsername || ""}
+            value={username}
             onChange={(e) => onChange({ instagramUsername: e.target.value })}
             className="w-full p-4 pl-8 bg-white border-2 border-black rounded-xl font-medium text-sm focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[-2px] focus:translate-y-[-2px] transition-all outline-none placeholder:text-black/20"
             placeholder={t("editor.editDrawer.fields.instagramPlaceholder")}
           />
         </div>
       </div>
-      <BlockStyleSettings block={block} onUpdate={onChange} />
+
+      {/* Live Preview */}
+      <InstagramPreview username={username} />
     </div>
   );
 }

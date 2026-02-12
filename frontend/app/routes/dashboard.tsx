@@ -1,18 +1,16 @@
-import AuthorizationGuard from "~/contexts/guard.context";
+import { DashboardProviders } from "~/components/dashboard/dashboard-providers";
 import { Sidebar } from "~/components/dashboard/sidebar";
 import type { Route } from "../+types/root";
 import { useEffect, useState, useMemo } from "react";
-import { BioProvider } from "~/contexts/bio.context";
-import { BlogProvider } from "~/contexts/blog.context";
-import { SiteBlogProvider } from "~/contexts/site-blog.context";
-import { AutoPostProvider } from "~/contexts/auto-post.context";
-import { SiteAutoPostProvider } from "~/contexts/site-auto-post.context";
 import { Outlet, useLocation } from "react-router";
 import { MenuIcon } from "~/components/shared/icons";
 import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
 import { NotificationBell } from "~/components/dashboard/notification-bell";
+import { isCompanySubdomain } from "~/lib/company-utils";
+import { CompanyDashboardLayout } from "~/components/company/company-dashboard-layout";
+import { CompanyAuthProvider } from "~/contexts/company-auth.context";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -22,6 +20,22 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function Dashboard() {
+    const isCompany = isCompanySubdomain();
+
+    if (isCompany) {
+        return (
+            <CompanyAuthProvider>
+                <CompanyDashboardLayout>
+                    <Outlet />
+                </CompanyDashboardLayout>
+            </CompanyAuthProvider>
+        );
+    }
+
+    return <UserDashboard />;
+}
+
+function UserDashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
     const { t } = useTranslation();
@@ -122,6 +136,11 @@ export default function Dashboard() {
                 description: t("dashboard.tours.overview.steps.navForms"),
                 side: "right",
                 align: "start",
+                onNextClick: () => {
+                    // Lógica opcional
+                    const navProducts = document.querySelector("[data-tour=\"dashboard-nav-products\"]");
+                    if (navProducts) navProducts.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             },
         },
         {
@@ -154,43 +173,33 @@ export default function Dashboard() {
     ], [t]);
 
     return (
-        <AuthorizationGuard>
-            <BioProvider>
-                <BlogProvider>
-                    <SiteBlogProvider>
-                        <SiteAutoPostProvider>
-                            <AutoPostProvider>
-                                <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
-                                    <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <DashboardProviders>
+            <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
+                <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-                                    <main className="flex-1 md:ml-64 transition-all duration-300 min-w-0">
-                                        {/* Mobile Header */}
-                                        <div className="md:hidden bg-surface/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
-                                                    P
-                                                </div>
-                                                <span className="font-bold text-xl tracking-tight text-text-main">Portyo</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <NotificationBell />
-                                                <button
-                                                    className="p-2.5 bg-surface-alt rounded-xl text-text-main hover:bg-primary/20 transition-colors"
-                                                    onClick={() => setIsSidebarOpen(true)}
-                                                >
-                                                    <MenuIcon />
-                                                </button>
-                                            </div>
-                                        </div>
+                <main className="flex-1 md:ml-64 transition-all duration-300 min-w-0">
+                    {/* Mobile Header */}
+                    <div className="md:hidden bg-surface/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
+                                P
+                            </div>
+                            <span className="font-bold text-xl tracking-tight text-text-main">Portyo</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <NotificationBell />
+                            <button
+                                className="p-2.5 bg-surface-alt rounded-xl text-text-main hover:bg-primary/20 transition-colors"
+                                onClick={() => setIsSidebarOpen(true)}
+                            >
+                                <MenuIcon />
+                            </button>
+                        </div>
+                    </div>
 
-                                        <Outlet />
-                                    </main>
-                                </div>
-                            </AutoPostProvider>
-                        </SiteAutoPostProvider>
-                    </SiteBlogProvider>
-                </BlogProvider>
-            </BioProvider>
-        </AuthorizationGuard>
+                    <Outlet />
+                </main>
+            </div>
+        </DashboardProviders>
     )
 }

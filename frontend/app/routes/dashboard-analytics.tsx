@@ -16,13 +16,15 @@ import { api } from "~/services/api";
 import { Link } from "react-router";
 import { InfoTooltip } from "~/components/shared/info-tooltip";
 import { useTranslation } from "react-i18next";
+import i18n from "~/i18n";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
 
-export function meta({ }: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
     return [
-        { title: "Analytics Settings | Portyo" },
-        { name: "description", content: "Manage your page analytics settings" },
+        { title: i18n.t("meta.settings.title", { lng: lang }) },
+        { name: "description", content: i18n.t("meta.settings.description", { lng: lang }) },
     ];
 }
 
@@ -218,7 +220,7 @@ export default function DashboardAnalytics() {
             <div className="p-4 md:p-8 max-w-6xl mx-auto pb-20">
                 <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6" data-tour="analytics-header">
                     <div>
-                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.title")}</h1>
+                        <h1 className="text-2xl md:text-4xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.analytics.title")}</h1>
                         <p className="text-gray-600 text-lg font-medium">{t("dashboard.analytics.subtitle")}</p>
                     </div>
                     <button
@@ -245,27 +247,27 @@ export default function DashboardAnalytics() {
                         </div>
 
                         {analyticsData && (
-                            <div className="mb-8 p-6 bg-[#E0EAFF] rounded-[24px] border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" data-tour="analytics-overview">
+                            <div className="mb-8 p-4 md:p-6 bg-[#E0EAFF] rounded-[24px] border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" data-tour="analytics-overview">
                                 <h3 className="text-xl font-black text-[#0047FF] mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-6 h-6" strokeWidth={3} />
                                     {t("dashboard.analytics.overview.title")}
                                 </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <div className="bg-white p-5 rounded-[20px] shadow-sm border-2 border-black">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                                    <div className="bg-white p-3 md:p-5 rounded-[20px] shadow-sm border-2 border-black">
                                         <p className="text-xs font-black uppercase text-gray-400 mb-2 tracking-wider">{t("dashboard.analytics.overview.activeUsers")}</p>
-                                        <p className="text-3xl font-black text-[#1A1A1A]">
+                                        <p className="text-xl md:text-3xl font-black text-[#1A1A1A]">
                                             {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[0].value), 0)}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-5 rounded-[20px] shadow-sm border-2 border-black">
+                                    <div className="bg-white p-3 md:p-5 rounded-[20px] shadow-sm border-2 border-black">
                                         <p className="text-xs font-black uppercase text-gray-400 mb-2 tracking-wider">{t("dashboard.analytics.overview.pageViews")}</p>
-                                        <p className="text-3xl font-black text-[#1A1A1A]">
+                                        <p className="text-xl md:text-3xl font-black text-[#1A1A1A]">
                                             {(analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[1].value), 0)}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-5 rounded-[20px] shadow-sm border-2 border-black">
+                                    <div className="bg-white p-3 md:p-5 rounded-[20px] shadow-sm border-2 border-black">
                                         <p className="text-xs font-black uppercase text-gray-400 mb-2 tracking-wider">{t("dashboard.analytics.overview.totalTime")}</p>
-                                        <p className="text-3xl font-black text-[#1A1A1A]">
+                                        <p className="text-xl md:text-3xl font-black text-[#1A1A1A]">
                                             {(() => {
                                                 const seconds = (analyticsData.overview?.rows || []).reduce((acc: number, row: any) => acc + parseInt(row.metricValues[2].value), 0);
                                                 const h = Math.floor(seconds / 3600);
@@ -274,7 +276,7 @@ export default function DashboardAnalytics() {
                                             })()}
                                         </p>
                                     </div>
-                                    <div className="bg-white p-5 rounded-[20px] shadow-sm border-2 border-black">
+                                    <div className="bg-white p-3 md:p-5 rounded-[20px] shadow-sm border-2 border-black">
                                         <p className="text-xs font-black uppercase text-gray-400 mb-2 tracking-wider">{t("dashboard.analytics.overview.interactions")}</p>
                                         <div className="flex flex-col gap-1.5">
                                             <span className="text-sm font-black text-[#1A1A1A] flex justify-between">

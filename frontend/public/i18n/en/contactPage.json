@@ -1,0 +1,40 @@
+{
+  "title": "Get in touch",
+  "subtitle": "Have a question or feedback? We'd love to hear from you.",
+  "form": {
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "messagePlaceholder": "How can we help?",
+    "send": "Send Message",
+    "sent": "Message Sent",
+    "sentMessage": "Thanks for reaching out. We'll get back to you soon.",
+    "sendAnother": "Send another message"
+  },
+  "info": {
+    "emailTitle": "Email",
+    "responseTime": "Typical response time: 24 hours.",
+    "socials": "Socials"
+  },
+  "faq": {
+    "title": "Common Questions",
+    "items": [
+      {
+        "question": "How do I get started?",
+        "answer": "Simply sign up for a free account, claim your username, and start customizing your bio page."
+      },
+      {
+        "question": "Can I use a custom domain?",
+        "answer": "Yes! Custom domains are available on our Standard and Pro plans."
+      },
+      {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards including Visa, Mastercard, and American Express."
+      },
+      {
+        "question": "How do I cancel my subscription?",
+        "answer": "You can cancel your subscription at any time from your dashboard settings."
+      }
+    ]
+  }
+}

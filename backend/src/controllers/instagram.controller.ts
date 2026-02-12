@@ -112,9 +112,6 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       }
 
       const tokenData = await instagramService.exchangeCodeForToken(code);
-      
-      // Get User Profile
-      // const profile = await instagramService.getUserProfile(tokenData.accessToken);
 
       const bioRepository = AppDataSource.getRepository(BioEntity);
       const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
@@ -124,12 +121,11 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
          throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
       }
 
-      let integration = await integrationRepository.findOne({ 
-        where: { 
+      let integration = await integrationRepository.findOne({
+        where: {
           bio: { id: bio.id },
           provider: "instagram",
-          account_id: tokenData.userId.toString()
-        } 
+        },
       });
 
       if (!integration) {
@@ -138,9 +134,10 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         integration.provider = "instagram";
       }
 
-      integration.account_id = tokenData.userId.toString();
-      integration.name = "Instagram"; 
+      integration.account_id = tokenData.instagramBusinessAccountId;
+      integration.name = tokenData.instagramUsername || tokenData.pageName || "Instagram";
       integration.accessToken = tokenData.accessToken;
+      integration.refreshToken = tokenData.userToken;
       
       await integrationRepository.save(integration);
 

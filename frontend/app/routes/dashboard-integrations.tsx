@@ -181,7 +181,11 @@ export default function DashboardIntegrations() {
         setIntegrations(prevIntegrations => prevIntegrations.map(integration => {
           if (integration.status === "coming_soon") return integration;
 
-          const isConnected = connectedIntegrations.some((i: any) => i.name === integration.id);
+          const isConnected = connectedIntegrations.some((i: any) => {
+            const provider = typeof i?.provider === "string" ? i.provider.toLowerCase() : "";
+            const name = typeof i?.name === "string" ? i.name.toLowerCase().replace(/\s+/g, "-") : "";
+            return provider === integration.id || name === integration.id;
+          });
 
           if (isConnected) {
             return { ...integration, status: "connected" };

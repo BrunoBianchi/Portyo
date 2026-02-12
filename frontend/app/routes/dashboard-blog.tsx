@@ -163,8 +163,8 @@ export default function DashboardBlog() {
                         <FileText className="w-3 h-3 text-[#C6F035]" />
                         {t("dashboard.blog.badge")}
                     </div>
-                    <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.blog.title")}</h1>
-                    <p className="text-xl text-gray-500 font-medium">{t("dashboard.blog.subtitle")}</p>
+                    <h1 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.blog.title")}</h1>
+                    <p className="text-base md:text-xl text-gray-500 font-medium">{t("dashboard.blog.subtitle")}</p>
                 </div>
                 <button
                     data-tour="blog-new"

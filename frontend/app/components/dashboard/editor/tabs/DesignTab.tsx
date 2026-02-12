@@ -344,7 +344,6 @@ const RangeField = memo(function RangeField({
     </div>
   );
 });
-
 export const DesignTab = memo(function DesignTab({
   bio,
   uploadingImage,
@@ -521,6 +520,7 @@ export const DesignTab = memo(function DesignTab({
           value={draft?.usernameColor || "#111827"}
           onChange={(value) => updateField("usernameColor", value)}
         />
+
       </SectionCard>
 
       <SectionCard title="Recursos" icon={<Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />}>
