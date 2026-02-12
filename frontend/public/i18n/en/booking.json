@@ -1,0 +1,61 @@
+{
+  "noToken": "No booking token provided.",
+  "loadError": "Failed to load booking.",
+  "confirmError": "Failed to confirm booking.",
+  "cancelError": "Failed to cancel booking.",
+  "selectDateTime": "Please select a new date and time.",
+  "rescheduleError": "Failed to reschedule booking.",
+  "notFound": "Booking Not Found",
+  "notFoundMessage": "This booking doesn't exist or the link has expired.",
+  "poweredBy": "Powered by Portyo",
+  "days": {
+    "su": "Su",
+    "mo": "Mo",
+    "tu": "Tu",
+    "we": "We",
+    "th": "Th",
+    "fr": "Fr",
+    "sa": "Sa"
+  },
+  "status": {
+    "cancelled": "Booking Cancelled",
+    "cancelledDesc": "This appointment has been cancelled.",
+    "pending": "Confirm Your Booking",
+    "pendingDesc": "Please confirm your appointment below.",
+    "confirmed": "Booking Confirmed",
+    "confirmedDesc": "Your appointment is scheduled."
+  },
+  "details": {
+    "date": "Date",
+    "time": "Time",
+    "duration": "Duration",
+    "bookedWith": "Booked with",
+    "yourDetails": "Your Details",
+    "notes": "Notes"
+  },
+  "actions": {
+    "confirm": "Confirm Booking",
+    "confirming": "Confirming...",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel"
+  },
+  "confirmedMessage": "Your booking is confirmed!",
+  "confirmedSubMessage": "We look forward to seeing you.",
+  "cancelledMessage": "This booking has been cancelled.",
+  "rescheduleModal": {
+    "title": "Reschedule Booking",
+    "subtitle": "Select a new date and time for your appointment.",
+    "availableTimes": "Available times for {{date}}",
+    "noSlots": "No available slots for this date.",
+    "rescheduling": "Rescheduling...",
+    "confirmNewTime": "Confirm New Time"
+  },
+  "cancelModal": {
+    "title": "Cancel Booking",
+    "message": "Are you sure you want to cancel this appointment?",
+    "reasonPlaceholder": "Reason for cancellation (optional)",
+    "keep": "Keep Booking",
+    "cancelling": "Cancelling...",
+    "cancel": "Cancel Booking"
+  }
+}

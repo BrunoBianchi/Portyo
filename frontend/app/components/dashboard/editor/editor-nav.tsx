@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, Palette, Settings, Sparkles } from "lucide-react";
+import { LayoutGrid, Settings, Sparkles } from "lucide-react";
 
 interface EditorNavProps {
-    activeTab: "links" | "design" | "settings";
-    onChangeTab: (tab: "links" | "design" | "settings") => void;
+    activeTab: "links" | "settings";
+    onChangeTab: (tab: "links" | "settings") => void;
 }
 
 export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
@@ -19,12 +19,6 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             label: t("editor.tabs.links"),
             shortLabel: t("editor.tabs.linksShort", "Links"),
             icon: LayoutGrid
-        },
-        {
-            id: "design" as const,
-            label: t("editor.tabs.design"),
-            shortLabel: t("editor.tabs.designShort", "Design"),
-            icon: Palette
         },
         {
             id: "settings" as const,

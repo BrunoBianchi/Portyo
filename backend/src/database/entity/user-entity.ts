@@ -60,6 +60,12 @@ export class UserEntity extends BaseEntity {
     @Column({ type: "timestamp", nullable: true })
     onboardingNudgeSentAt?: Date;
 
+    @Column({ type: "boolean", default: false })
+    emailOptOut: boolean = false;
+
+    @Column({ type: "timestamp", nullable: true })
+    lastNewsletterSentAt?: Date;
+
     @OneToMany(() => BioEntity, (bio) => bio.user)
     bios!: BioEntity[];
 

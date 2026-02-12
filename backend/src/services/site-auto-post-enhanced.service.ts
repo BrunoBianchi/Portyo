@@ -341,7 +341,9 @@ const selectTheme = (
     contentSummary: SiteContentSummary
 ): SelectedTheme | null => {
     const currentPillar = schedule.currentPillar;
-    const usedHashes = schedule.getContentHistory().map(h => h.hash);
+    const contentHistory = schedule.getContentHistory();
+    const usedHashes = contentHistory.map(h => h.hash);
+    const usedThemeIds = new Set(contentHistory.map(h => h.themeId));
     const excludedThemes = schedule.excludedThemes || [];
     const favoriteThemes = schedule.favoriteThemes || [];
 
@@ -351,28 +353,22 @@ const selectTheme = (
     // Exclude manually excluded themes
     availableThemes = availableThemes.filter(t => !excludedThemes.includes(t.id));
 
+    // Strict anti-repetition: do not reuse themeId already generated
+    availableThemes = availableThemes.filter(t => !usedThemeIds.has(t.id));
+
     // Prioritize favorite themes that haven't been used
     const favoriteAvailable = availableThemes.filter(t => 
         favoriteThemes.includes(t.id) && 
-        !usedHashes.some(h => t.angles.some(a => generateContentHash(currentPillar, t.id, a) === h))
+        !usedThemeIds.has(t.id)
     );
 
     if (favoriteAvailable.length > 0) {
         availableThemes = favoriteAvailable;
     }
 
-    // Filter out themes where all angles have been used
-    availableThemes = availableThemes.filter(t => {
-        const allAnglesUsed = t.angles.every(angle => {
-            const hash = generateContentHash(currentPillar, t.id, angle);
-            return usedHashes.includes(hash);
-        });
-        return !allAnglesUsed;
-    });
-
     if (availableThemes.length === 0) {
         // If no themes available, move to next pillar
-        logger.warn(`[AutoPost] No themes available for pillar ${currentPillar}, will rotate`);
+        logger.warn(`[AutoPost] No unused themes available for pillar ${currentPillar}, will rotate`);
         return null;
     }
 

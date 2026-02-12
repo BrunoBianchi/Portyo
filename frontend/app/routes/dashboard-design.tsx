@@ -1,12 +1,14 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Camera, Upload, User, Paintbrush, Image as ImageIcon, Type, Columns2, Palette, Sparkles, ChevronRight, Check, Play, Grid3X3, Footprints, Pencil, X } from "lucide-react";
+import { Camera, Upload, User, Paintbrush, Image as ImageIcon, Type, Columns2, Palette, Sparkles, ChevronRight, Check, Play, Grid3X3, Footprints, Pencil, X, Smartphone, Eye } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import { useContext } from "react";
 import type { Bio } from "../types/bio";
 import { blocksToHtml } from "~/services/html-generator";
+import { VerificationRequestModal } from "~/components/dashboard/verification-request-modal";
+import { AnimatePresence, motion } from "framer-motion";
 
 const fontOptions = [
   "Inter",
@@ -139,17 +141,27 @@ const ToggleSwitch = memo(function ToggleSwitch({
   label,
   checked,
   onChange,
+  disabled,
+  badge,
 }: {
   label: string;
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
+  badge?: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-gray-700">{label}</span>
+    <div className={`flex items-center justify-between ${disabled ? "opacity-50" : ""}`}>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        {badge && (
+          <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-[#c8e600] text-black">{badge}</span>
+        )}
+      </div>
       <button
-        onClick={() => onChange(!checked)}
-        className={`relative w-12 h-7 rounded-full transition-colors ${checked ? "bg-gray-900" : "bg-gray-200"
+        onClick={() => !disabled && onChange(!checked)}
+        disabled={disabled}
+        className={`relative w-12 h-7 rounded-full transition-colors ${disabled ? "cursor-not-allowed" : ""} ${checked ? "bg-gray-900" : "bg-gray-200"
           }`}
       >
         <div
@@ -225,9 +237,39 @@ const RangeField = memo(function RangeField({
 
 // Preview card component
 const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
+  const { t } = useTranslation("dashboard");
   const bgColor = bio?.bgColor || "#ECEEF1";
   const buttonStyle = bio?.buttonStyle || "solid";
   const buttonRadius = bio?.buttonRadius || "rounder";
+  const buttonColor = bio?.buttonColor || "#FFFFFF";
+  const buttonTextColor = bio?.buttonTextColor || "#000000";
+  const buttonShadow = bio?.buttonShadow || "none";
+
+  const getShadowClass = () => {
+    switch (buttonShadow) {
+      case 'soft': return 'shadow-sm';
+      case 'strong': return 'shadow-md';
+      case 'hard': return 'shadow-lg';
+      default: return '';
+    }
+  };
+
+  const getButtonStyle = (): React.CSSProperties => {
+    const base: React.CSSProperties = {};
+    if (buttonStyle === 'solid') {
+      base.backgroundColor = buttonColor;
+      base.color = buttonTextColor;
+    } else if (buttonStyle === 'outline') {
+      base.backgroundColor = 'transparent';
+      base.color = buttonColor;
+      base.border = `2px solid ${buttonColor}`;
+    } else if (buttonStyle === 'glass') {
+      base.backgroundColor = `${buttonColor}33`;
+      base.color = buttonTextColor;
+      base.backdropFilter = 'blur(10px)';
+    }
+    return base;
+  };
 
   return (
     <div className="sticky top-8">
@@ -251,12 +293,7 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`w-full py-3 px-4 text-center text-sm font-medium ${buttonStyle === "solid"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : buttonStyle === "outline"
-                        ? "bg-transparent border-2 border-white text-white"
-                        : "bg-white/20 backdrop-blur text-white"
-                      } ${buttonRadius === "square"
+                    className={`w-full py-3 px-4 text-center text-sm font-medium ${getShadowClass()} ${buttonRadius === "square"
                         ? "rounded-none"
                         : buttonRadius === "round"
                           ? "rounded-lg"
@@ -264,8 +301,9 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
                             ? "rounded-2xl"
                             : "rounded-full"
                       }`}
+                    style={getButtonStyle()}
                   >
-                    Seu link aqui
+                    {t("design.previewCard.yourLinkHere")}
                   </div>
                 ))}
               </div>
@@ -273,7 +311,7 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
           </div>
         </div>
         <div className="mt-4 text-center text-xs text-gray-400">
-          Junte-se a @{bio?.sufix || "username"} no Portyo
+          {t("design.previewCard.joinOn", { username: bio?.sufix || "username" })}
         </div>
       </div>
     </div>
@@ -382,11 +420,14 @@ const ThemeCard = memo(function ThemeCard({
 
 export default function DashboardDesign() {
   const { bio: contextBio, updateBio } = useContext(BioContext);
-  const { user } = useContext(AuthContext);
+  const { user, canAccessFeature } = useContext(AuthContext);
+  const canUseFooter = canAccessFeature('standard');
   const { t } = useTranslation("dashboard");
   const [activeSection, setActiveSection] = useState("header");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [wallpaperPopup, setWallpaperPopup] = useState<string | null>(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [draftBio, setDraftBio] = useState<Bio | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   const pendingPayloadRef = useRef<Partial<Bio>>({});
@@ -495,15 +536,15 @@ export default function DashboardDesign() {
 
   const sections = useMemo(
     () => [
-      { key: "header", label: "Header", icon: Camera },
-      { key: "theme", label: "Theme", icon: Paintbrush },
-      { key: "wallpaper", label: "Wallpaper", icon: ImageIcon },
-      { key: "text", label: "Text", icon: Type },
-      { key: "buttons", label: "Buttons", icon: Columns2 },
-      { key: "colors", label: "Colors", icon: Palette },
-      { key: "footer", label: "Footer", icon: Footprints },
+      { key: "header", label: t("design.sections.header"), icon: Camera },
+      { key: "theme", label: t("design.sections.theme"), icon: Paintbrush },
+      { key: "wallpaper", label: t("design.sections.wallpaper"), icon: ImageIcon },
+      { key: "text", label: t("design.sections.text"), icon: Type },
+      { key: "buttons", label: t("design.sections.buttons"), icon: Columns2 },
+      { key: "colors", label: t("design.sections.colors"), icon: Palette },
+      { key: "footer", label: t("design.sections.footer"), icon: Footprints },
     ],
-    []
+    [t]
   );
 
   // Theme presets with beautiful visual styles
@@ -556,17 +597,17 @@ export default function DashboardDesign() {
   // Button style options with visual previews
   const buttonStyleOptions = [
     {
-      value: "solid", label: "Solid", preview: (
+      value: "solid", label: t("design.buttons.solid"), preview: (
         <div className="w-16 h-8 bg-gray-800 rounded-lg" />
       )
     },
     {
-      value: "glass", label: "Glass", preview: (
+      value: "glass", label: t("design.buttons.glass"), preview: (
         <div className="w-16 h-8 bg-gray-300/50 backdrop-blur border border-gray-400 rounded-lg" />
       )
     },
     {
-      value: "outline", label: "Outline", preview: (
+      value: "outline", label: t("design.buttons.outline"), preview: (
         <div className="w-16 h-8 bg-transparent border-2 border-gray-800 rounded-lg" />
       )
     },
@@ -575,28 +616,28 @@ export default function DashboardDesign() {
   // Corner roundness options
   const cornerOptions = [
     {
-      value: "square", label: "Square", preview: (
+      value: "square", label: t("design.buttons.square"), preview: (
         <div className="w-12 h-12 border-2 border-gray-300 rounded-none flex items-end justify-start p-1">
           <div className="w-4 h-4 border-l-2 border-b-2 border-gray-400" />
         </div>
       )
     },
     {
-      value: "round", label: "Round", preview: (
+      value: "round", label: t("design.buttons.round"), preview: (
         <div className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-end justify-start p-1">
           <div className="w-4 h-4 border-l-2 border-b-2 border-gray-400 rounded-bl" />
         </div>
       )
     },
     {
-      value: "rounder", label: "Rounder", preview: (
+      value: "rounder", label: t("design.buttons.rounder"), preview: (
         <div className="w-12 h-12 border-2 border-gray-800 bg-gray-50 rounded-2xl flex items-end justify-start p-1">
           <div className="w-4 h-4 border-l-2 border-b-2 border-gray-400 rounded-bl-lg" />
         </div>
       )
     },
     {
-      value: "full", label: "Full", preview: (
+      value: "full", label: t("design.buttons.full"), preview: (
         <div className="w-12 h-12 border-2 border-gray-300 rounded-full flex items-center justify-center">
           <div className="w-6 h-3 border-2 border-gray-400 rounded-full" />
         </div>
@@ -606,66 +647,66 @@ export default function DashboardDesign() {
 
   // Button shadow options
   const shadowOptions = [
-    { value: "none", label: "None" },
-    { value: "soft", label: "Soft" },
-    { value: "strong", label: "Strong" },
-    { value: "hard", label: "Hard" },
+    { value: "none", label: t("design.buttons.shadowNone") },
+    { value: "soft", label: t("design.buttons.shadowSoft") },
+    { value: "strong", label: t("design.buttons.shadowStrong") },
+    { value: "hard", label: t("design.buttons.shadowHard") },
   ];
 
   const parallaxAxisOptions = [
-    { value: "y", label: "Vertical" },
-    { value: "x", label: "Horizontal" },
-    { value: "xy", label: "Ambos" },
+    { value: "y", label: t("design.footer.vertical") },
+    { value: "x", label: t("design.footer.horizontal") },
+    { value: "xy", label: t("design.footer.both") },
   ];
 
   const floatingElementsOptions = [
-    { value: "circles", label: "Circles" },
-    { value: "hearts", label: "Hearts" },
-    { value: "fire", label: "Fire" },
-    { value: "stars", label: "Stars" },
-    { value: "sparkles", label: "Sparkles" },
-    { value: "music", label: "Music" },
-    { value: "leaves", label: "Leaves" },
-    { value: "snow", label: "Snow" },
-    { value: "bubbles", label: "Bubbles" },
-    { value: "confetti", label: "Confetti" },
-    { value: "diamonds", label: "Diamonds" },
-    { value: "petals", label: "Petals" },
+    { value: "circles", label: t("design.floatingTypes.circles") },
+    { value: "hearts", label: t("design.floatingTypes.hearts") },
+    { value: "fire", label: t("design.floatingTypes.fire") },
+    { value: "stars", label: t("design.floatingTypes.stars") },
+    { value: "sparkles", label: t("design.floatingTypes.sparkles") },
+    { value: "music", label: t("design.floatingTypes.music") },
+    { value: "leaves", label: t("design.floatingTypes.leaves") },
+    { value: "snow", label: t("design.floatingTypes.snow") },
+    { value: "bubbles", label: t("design.floatingTypes.bubbles") },
+    { value: "confetti", label: t("design.floatingTypes.confetti") },
+    { value: "diamonds", label: t("design.floatingTypes.diamonds") },
+    { value: "petals", label: t("design.floatingTypes.petals") },
   ];
 
   // Wallpaper style options
   const wallpaperStyleOptions = [
     {
-      value: "color", label: "Fill", preview: (
+      value: "color", label: t("design.wallpaperStyles.fill"), preview: (
         <div className="w-12 h-12 bg-gray-200 rounded-lg border-2 border-gray-300" />
       )
     },
     {
-      value: "gradient", label: "Gradient", preview: (
+      value: "gradient", label: t("design.wallpaperStyles.gradient"), preview: (
         <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-400 rounded-lg" />
       )
     },
     {
-      value: "blur", label: "Blur", preview: (
+      value: "blur", label: t("design.wallpaperStyles.blur"), preview: (
         <div className="w-12 h-12 bg-gray-200 rounded-lg blur-sm" />
       )
     },
     {
-      value: "pattern", label: "Pattern", preview: (
+      value: "pattern", label: t("design.wallpaperStyles.pattern"), preview: (
         <div className="w-12 h-12 bg-gray-200 rounded-lg grid grid-cols-3 gap-0.5 p-1">
           {[...Array(9)].map((_, i) => <div key={i} className="bg-gray-400 rounded-sm" />)}
         </div>
       )
     },
     {
-      value: "image", label: "Image", preview: (
+      value: "image", label: t("design.wallpaperStyles.image"), preview: (
         <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
           <ImageIcon className="w-5 h-5 text-gray-400" />
         </div>
       )
     },
     {
-      value: "video", label: "Video", preview: (
+      value: "video", label: t("design.wallpaperStyles.video"), preview: (
         <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
           <Play className="w-5 h-5 text-gray-400" />
         </div>
@@ -675,20 +716,20 @@ export default function DashboardDesign() {
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-black text-gray-900">Design</h1>
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-bold hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-black text-gray-900">{t("design.pageTitle")}</h1>
+          <button className="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-bold hover:bg-gray-50 transition-colors touch-manipulation">
             <Sparkles className="w-4 h-4" />
-            Enhance
+            <span className="hidden sm:inline">{t("design.enhance")}</span>
           </button>
         </div>
 
-        <div className="grid lg:grid-cols-[200px_1fr_320px] gap-8 h-[calc(100vh-140px)]">
-          {/* Sidebar */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 h-fit sticky top-8">
-            <div className="space-y-1">
+        <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr_320px] gap-4 lg:gap-8 min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)]">
+          {/* Sidebar - horizontal scroll on mobile, vertical on desktop */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-2 lg:p-4 lg:h-fit lg:sticky lg:top-8 shrink-0">
+            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
               {sections.map((section) => {
                 const Icon = section.icon;
                 const active = activeSection === section.key;
@@ -696,12 +737,12 @@ export default function DashboardDesign() {
                   <button
                     key={section.key}
                     onClick={() => setActiveSection(section.key)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active
-                      ? "bg-[#c8e600]/15 text-gray-900 border-l-2 border-[#c8e600] -ml-0.5"
+                    className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-xs lg:text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${active
+                      ? "bg-[#c8e600]/15 text-gray-900 lg:border-l-2 lg:border-[#c8e600] lg:-ml-0.5"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                       }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                     {section.label}
                   </button>
                 );
@@ -714,7 +755,7 @@ export default function DashboardDesign() {
             {/* Header Section */}
             {activeSection === "header" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Header</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.header.title")}</h2>
 
                 {/* Profile Image with Edit Button */}
                 <div className="flex items-center gap-3 mb-6">
@@ -734,14 +775,14 @@ export default function DashboardDesign() {
                   </div>
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-all">
                     <Pencil className="w-4 h-4" />
-                    Edit
+                    {t("design.header.edit")}
                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                   </label>
                 </div>
 
                 {/* Profile Image Layout */}
                 <div className="mb-6">
-                  <span className="text-sm font-semibold text-gray-900 block mb-3">Profile image layout</span>
+                  <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.header.profileImageLayout")}</span>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => updateField("profileImageLayout", "classic")}
@@ -753,7 +794,7 @@ export default function DashboardDesign() {
                       <div className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center mb-2">
                         <User className="w-4 h-4 text-gray-400" />
                       </div>
-                      <span className="text-sm font-semibold text-gray-700">Classic</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.classic")}</span>
                     </button>
                     <button
                       onClick={() => updateField("profileImageLayout", "hero")}
@@ -767,7 +808,7 @@ export default function DashboardDesign() {
                           <User className="w-3 h-3 text-gray-400" />
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-gray-700">Hero</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.hero")}</span>
                       <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center">
                         <Sparkles className="w-3 h-3 text-gray-500" />
                       </div>
@@ -775,9 +816,51 @@ export default function DashboardDesign() {
                   </div>
                 </div>
 
+                {/* Hero Transition Toggle — only visible when hero layout is selected */}
+                {bio?.profileImageLayout === "hero" && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50">
+                      <div>
+                        <span className="text-sm font-semibold text-gray-900 block">{t("design.header.heroTransition")}</span>
+                        <span className="text-xs text-gray-500">{t("design.header.heroTransitionDesc")}</span>
+                      </div>
+                      <button
+                        onClick={() => updateField("heroTransition", bio?.heroTransition === false ? true : false)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${
+                          bio?.heroTransition !== false ? "bg-gray-900" : "bg-gray-300"
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                            bio?.heroTransition !== false ? "translate-x-5" : ""
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Nav Tab Colors */}
+                <div className="mb-6">
+                    <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.header.navigationTabs")}</span>
+                    <span className="text-xs text-gray-500 block mb-3">{t("design.header.navigationTabsDesc")}</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <ColorPicker
+                        label={t("design.header.tabBackground")}
+                        value={bio?.navTabColor || "#000000"}
+                        onChange={(value) => updateField("navTabColor", value)}
+                      />
+                      <ColorPicker
+                        label={t("design.header.tabText")}
+                        value={bio?.navTabTextColor || "#ffffff"}
+                        onChange={(value) => updateField("navTabTextColor", value)}
+                      />
+                    </div>
+                </div>
+
                 {/* Title Input */}
                 <div className="mb-6">
-                  <span className="text-sm font-semibold text-gray-900 block mb-3">Title</span>
+                  <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.header.titleLabel")}</span>
                   <input
                     type="text"
                     value={`@${bio?.sufix || "username"}`}
@@ -788,7 +871,7 @@ export default function DashboardDesign() {
 
                 {/* Title Style */}
                 <div className="mb-6">
-                  <span className="text-sm font-semibold text-gray-900 block mb-3">Title style</span>
+                  <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.header.titleStyle")}</span>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => updateField("titleStyle", "text")}
@@ -798,7 +881,7 @@ export default function DashboardDesign() {
                         }`}
                     >
                       <div className="text-2xl font-bold text-gray-700 mb-2">Aa</div>
-                      <span className="text-sm font-semibold text-gray-700">Text</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.titleStyleText")}</span>
                     </button>
                     <button
                       onClick={() => updateField("titleStyle", "logo")}
@@ -808,7 +891,7 @@ export default function DashboardDesign() {
                         }`}
                     >
                       <ImageIcon className="w-6 h-6 text-gray-400 mb-2" />
-                      <span className="text-sm font-semibold text-gray-700">Logo</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.titleStyleLogo")}</span>
                       <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center">
                         <Sparkles className="w-3 h-3 text-gray-500" />
                       </div>
@@ -818,7 +901,7 @@ export default function DashboardDesign() {
 
                 {/* Size */}
                 <div className="mb-6">
-                  <span className="text-sm font-semibold text-gray-900 block mb-3">Size</span>
+                  <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.header.size")}</span>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => updateField("profileImageSize", "small")}
@@ -827,7 +910,7 @@ export default function DashboardDesign() {
                         : "border-gray-200 hover:border-gray-300"
                         }`}
                     >
-                      <span className="text-sm font-semibold text-gray-700">Small</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.small")}</span>
                     </button>
                     <button
                       onClick={() => updateField("profileImageSize", "large")}
@@ -836,7 +919,7 @@ export default function DashboardDesign() {
                         : "border-gray-200 hover:border-gray-300"
                         }`}
                     >
-                      <span className="text-sm font-semibold text-gray-700">Large</span>
+                      <span className="text-sm font-semibold text-gray-700">{t("design.header.large")}</span>
                       <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center">
                         <Sparkles className="w-3 h-3 text-gray-500" />
                       </div>
@@ -847,7 +930,7 @@ export default function DashboardDesign() {
                 {/* Title Font */}
                 <div className="mb-6">
                   <SelectField
-                    label="Title font"
+                    label={t("design.header.titleFont")}
                     value={bio?.font || "Inter"}
                     options={[
                       { value: "Inter", label: "Inter" },
@@ -865,7 +948,7 @@ export default function DashboardDesign() {
                 {/* Title Font Color */}
                 <div className="mb-6">
                   <ColorPicker
-                    label="Title font color"
+                    label={t("design.header.titleFontColor")}
                     value={bio?.usernameColor || "#000000"}
                     onChange={(value) => updateField("usernameColor", value)}
                   />
@@ -873,15 +956,37 @@ export default function DashboardDesign() {
 
                 {/* Verification Section */}
                 <div className="pt-6 border-t border-gray-100">
-                  <h3 className="text-base font-bold text-gray-900 mb-2">Verification</h3>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{t("design.header.verification")}</h3>
                   <p className="text-sm text-gray-500 mb-4">
-                    Show that you're the real deal, and help visitors feel more confident engaging with your content.
+                    {t("design.header.verificationDesc")}
                   </p>
-                  <button className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 font-bold hover:bg-gray-100 transition-colors">
-                    <div className="w-5 h-5 rounded-full bg-[#c8e600] flex items-center justify-center">
-                      <Check className="w-3 h-3 text-black" />
-                    </div>
-                    Get verified
+                  <button
+                    onClick={() => setShowVerificationModal(true)}
+                    className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 font-bold hover:bg-gray-100 transition-colors"
+                  >
+                    {bio?.verified ? (
+                      <>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/>
+                          <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        {t("design.header.verified")}
+                      </>
+                    ) : bio?.verificationStatus === "pending" ? (
+                      <>
+                        <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        {t("design.header.pending")}
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-5 h-5 rounded-full bg-[#c8e600] flex items-center justify-center">
+                          <Check className="w-3 h-3 text-black" />
+                        </div>
+                        {t("design.header.getVerified")}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -890,14 +995,14 @@ export default function DashboardDesign() {
             {/* Theme Section */}
             {activeSection === "theme" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Theme</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-2">{t("design.theme.title")}</h2>
 
                 <div className="flex gap-4 mb-6">
                   <button className="px-4 py-2 text-sm font-bold text-gray-900 border-b-2 border-gray-900">
-                    Customizable
+                    {t("design.theme.customizable")}
                   </button>
                   <button className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600">
-                    Curated
+                    {t("design.theme.curated")}
                   </button>
                 </div>
 
@@ -935,11 +1040,11 @@ export default function DashboardDesign() {
             {/* Wallpaper Section */}
             {activeSection === "wallpaper" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Wallpaper</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.wallpaper.title")}</h2>
 
                 {/* Wallpaper Style Grid */}
                 <div className="mb-6">
-                  <span className="text-sm font-semibold text-gray-900 block mb-3">Wallpaper style</span>
+                  <span className="text-sm font-semibold text-gray-900 block mb-3">{t("design.wallpaper.wallpaperStyle")}</span>
                   <div className="grid grid-cols-4 gap-3">
                     {wallpaperStyleOptions.map((option) => (
                       <button
@@ -971,7 +1076,7 @@ export default function DashboardDesign() {
                 {/* Background Color Picker - Always visible */}
                 <div className="mt-6">
                   <ColorPicker
-                    label="Background color"
+                    label={t("design.wallpaper.backgroundColor")}
                     value={bio?.bgColor || "#ECEEF1"}
                     onChange={(value) => updateField("bgColor", value)}
                   />
@@ -981,7 +1086,7 @@ export default function DashboardDesign() {
                 {bio?.bgType === "gradient" && (
                   <div className="mt-4">
                     <ColorPicker
-                      label="Secondary color"
+                      label={t("design.wallpaper.secondaryColor")}
                       value={bio?.bgSecondaryColor || "#000000"}
                       onChange={(value) => updateField("bgSecondaryColor", value)}
                     />
@@ -992,7 +1097,7 @@ export default function DashboardDesign() {
                 {bio?.bgType === "image" && (
                   <div className="mt-4">
                     <TextField
-                      label="Image URL"
+                      label={t("design.wallpaper.imageUrl")}
                       value={bio?.bgImage || ""}
                       onChange={(value) => updateField("bgImage", value || undefined)}
                       placeholder="https://..."
@@ -1004,7 +1109,7 @@ export default function DashboardDesign() {
                 {bio?.bgType === "video" && (
                   <div className="mt-4">
                     <TextField
-                      label="Video URL"
+                      label={t("design.wallpaper.videoUrl")}
                       value={bio?.bgVideo || ""}
                       onChange={(value) => updateField("bgVideo", value || undefined)}
                       placeholder="https://..."
@@ -1019,7 +1124,7 @@ export default function DashboardDesign() {
                       {/* Header */}
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-gray-900 capitalize">
-                          {wallpaperPopup} Settings
+                          {t("design.wallpaper.settings", { type: wallpaperPopup })}
                         </h3>
                         <button
                           onClick={() => setWallpaperPopup(null)}
@@ -1033,28 +1138,28 @@ export default function DashboardDesign() {
                       {wallpaperPopup === "gradient" && (
                         <div className="space-y-4">
                           <ColorPicker
-                            label="Primary color"
+                            label={t("design.wallpaper.primaryColor")}
                             value={bio?.bgColor || "#FFFFFF"}
                             onChange={(value) => updateField("bgColor", value)}
                           />
                           <ColorPicker
-                            label="Secondary color"
+                            label={t("design.wallpaper.secondaryColor")}
                             value={bio?.bgSecondaryColor || "#000000"}
                             onChange={(value) => updateField("bgSecondaryColor", value)}
                           />
                           <SelectField
-                            label="Direction"
+                            label={t("design.wallpaper.direction")}
                             value={bio?.gradientDirection || "to-br"}
                             onChange={(value) => updateField("gradientDirection", value)}
                             options={[
-                              { value: "to-r", label: "Left to Right" },
-                              { value: "to-l", label: "Right to Left" },
-                              { value: "to-b", label: "Top to Bottom" },
-                              { value: "to-t", label: "Bottom to Top" },
-                              { value: "to-br", label: "Diagonal ↘" },
-                              { value: "to-bl", label: "Diagonal ↙" },
-                              { value: "to-tr", label: "Diagonal ↗" },
-                              { value: "to-tl", label: "Diagonal ↖" },
+                              { value: "to-r", label: t("design.wallpaper.dirLeftToRight") },
+                              { value: "to-l", label: t("design.wallpaper.dirRightToLeft") },
+                              { value: "to-b", label: t("design.wallpaper.dirTopToBottom") },
+                              { value: "to-t", label: t("design.wallpaper.dirBottomToTop") },
+                              { value: "to-br", label: t("design.wallpaper.dirDiagSE") },
+                              { value: "to-bl", label: t("design.wallpaper.dirDiagSW") },
+                              { value: "to-tr", label: t("design.wallpaper.dirDiagNE") },
+                              { value: "to-tl", label: t("design.wallpaper.dirDiagNW") },
                             ]}
                           />
                         </div>
@@ -1064,12 +1169,12 @@ export default function DashboardDesign() {
                       {wallpaperPopup === "blur" && (
                         <div className="space-y-4">
                           <ColorPicker
-                            label="Background color"
+                            label={t("design.wallpaper.backgroundColor")}
                             value={bio?.bgColor || "#FFFFFF"}
                             onChange={(value) => updateField("bgColor", value)}
                           />
                           <div>
-                            <label className="text-sm font-semibold text-gray-700 block mb-2">Blur intensity</label>
+                            <label className="text-sm font-semibold text-gray-700 block mb-2">{t("design.wallpaper.blurIntensity")}</label>
                             <input
                               type="range"
                               min="0"
@@ -1079,8 +1184,8 @@ export default function DashboardDesign() {
                               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             />
                             <div className="flex justify-between text-xs text-gray-500 mt-1">
-                              <span>None</span>
-                              <span>Max</span>
+                              <span>{t("design.wallpaper.none")}</span>
+                              <span>{t("design.wallpaper.max")}</span>
                             </div>
                           </div>
                         </div>
@@ -1090,12 +1195,12 @@ export default function DashboardDesign() {
                       {wallpaperPopup === "pattern" && (
                         <div className="space-y-4">
                           <ColorPicker
-                            label="Background color"
+                            label={t("design.wallpaper.backgroundColor")}
                             value={bio?.bgColor || "#FFFFFF"}
                             onChange={(value) => updateField("bgColor", value)}
                           />
                           <div>
-                            <label className="text-sm font-semibold text-gray-700 block mb-3">Pattern type</label>
+                            <label className="text-sm font-semibold text-gray-700 block mb-3">{t("design.wallpaper.patternType")}</label>
                             <div className="grid grid-cols-3 gap-2">
                               {["dots", "grid", "stripes", "waves", "circles", "triangles"].map((pattern) => (
                                 <button
@@ -1112,7 +1217,7 @@ export default function DashboardDesign() {
                             </div>
                           </div>
                           <ColorPicker
-                            label="Pattern color"
+                            label={t("design.wallpaper.patternColor")}
                             value={bio?.patternColor || "#000000"}
                             onChange={(value) => updateField("patternColor", value)}
                           />
@@ -1123,23 +1228,23 @@ export default function DashboardDesign() {
                       {wallpaperPopup === "image" && (
                         <div className="space-y-4">
                           <TextField
-                            label="Image URL"
+                            label={t("design.wallpaper.imageUrl")}
                             value={bio?.bgImage || ""}
                             onChange={(value) => updateField("bgImage", value || undefined)}
                             placeholder="https://..."
                           />
                           <SelectField
-                            label="Image fit"
+                            label={t("design.wallpaper.imageFit")}
                             value={bio?.bgImageFit || "cover"}
                             onChange={(value) => updateField("bgImageFit", value as Bio["bgImageFit"])}
                             options={[
-                              { value: "cover", label: "Cover (fill)" },
-                              { value: "contain", label: "Contain (fit)" },
-                              { value: "repeat", label: "Repeat (tile)" },
+                              { value: "cover", label: t("design.wallpaper.coverFill") },
+                              { value: "contain", label: t("design.wallpaper.containFit") },
+                              { value: "repeat", label: t("design.wallpaper.repeatTile") },
                             ]}
                           />
                           <div>
-                            <label className="text-sm font-semibold text-gray-700 block mb-2">Overlay opacity</label>
+                            <label className="text-sm font-semibold text-gray-700 block mb-2">{t("design.wallpaper.overlayOpacity")}</label>
                             <input
                               type="range"
                               min="0"
@@ -1160,23 +1265,23 @@ export default function DashboardDesign() {
                       {wallpaperPopup === "video" && (
                         <div className="space-y-4">
                           <TextField
-                            label="Video URL"
+                            label={t("design.wallpaper.videoUrl")}
                             value={bio?.bgVideo || ""}
                             onChange={(value) => updateField("bgVideo", value || undefined)}
                             placeholder="https://..."
                           />
                           <ToggleSwitch
-                            label="Loop video"
+                            label={t("design.wallpaper.loopVideo")}
                             checked={bio?.bgVideoLoop !== false}
                             onChange={(value) => updateField("bgVideoLoop", value)}
                           />
                           <ToggleSwitch
-                            label="Mute audio"
+                            label={t("design.wallpaper.muteAudio")}
                             checked={bio?.bgVideoMuted !== false}
                             onChange={(value) => updateField("bgVideoMuted", value)}
                           />
                           <div>
-                            <label className="text-sm font-semibold text-gray-700 block mb-2">Overlay opacity</label>
+                            <label className="text-sm font-semibold text-gray-700 block mb-2">{t("design.wallpaper.overlayOpacity")}</label>
                             <input
                               type="range"
                               min="0"
@@ -1194,7 +1299,7 @@ export default function DashboardDesign() {
                         onClick={() => setWallpaperPopup(null)}
                         className="w-full mt-6 py-3 bg-gray-900 text-white font-bold rounded-full hover:bg-gray-800 transition-colors"
                       >
-                        Apply
+                        {t("design.wallpaper.apply")}
                       </button>
                     </div>
                   </div>
@@ -1205,31 +1310,31 @@ export default function DashboardDesign() {
             {/* Text Section */}
             {activeSection === "text" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Text</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.text.title")}</h2>
 
                 <div className="space-y-6">
                   <SelectField
-                    label="Page text font"
+                    label={t("design.text.pageTextFont")}
                     value={bio?.font || "Inter"}
                     onChange={(value) => updateField("font", value)}
                     options={fontOptions}
                   />
 
                   <ColorPicker
-                    label="Page text color"
+                    label={t("design.text.pageTextColor")}
                     value={bio?.usernameColor || "#000000"}
                     onChange={(value) => updateField("usernameColor", value)}
                   />
 
                   <SelectField
-                    label="Title font"
+                    label={t("design.text.titleFont")}
                     value={bio?.font || "Inter"}
                     onChange={(value) => updateField("font", value)}
                     options={fontOptions}
                   />
 
                   <ColorPicker
-                    label="Title font color"
+                    label={t("design.text.titleFontColor")}
                     value={bio?.usernameColor || "#000000"}
                     onChange={(value) => updateField("usernameColor", value)}
                   />
@@ -1240,11 +1345,11 @@ export default function DashboardDesign() {
             {/* Buttons Section */}
             {activeSection === "buttons" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Buttons</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.buttons.title")}</h2>
 
                 <div className="space-y-8">
                   <VisualOptionPicker
-                    label="Button style"
+                    label={t("design.buttons.buttonStyle")}
                     options={buttonStyleOptions}
                     value={bio?.buttonStyle || "solid"}
                     onChange={(value) => updateField("buttonStyle", value as Bio["buttonStyle"])}
@@ -1252,7 +1357,7 @@ export default function DashboardDesign() {
                   />
 
                   <VisualOptionPicker
-                    label="Corner roundness"
+                    label={t("design.buttons.cornerRoundness")}
                     options={cornerOptions}
                     value={bio?.buttonRadius || "rounder"}
                     onChange={(value) => updateField("buttonRadius", value)}
@@ -1260,7 +1365,7 @@ export default function DashboardDesign() {
                   />
 
                   <VisualOptionPicker
-                    label="Button shadow"
+                    label={t("design.buttons.buttonShadow")}
                     options={shadowOptions}
                     value={bio?.buttonShadow || "none"}
                     onChange={(value) => updateField("buttonShadow", value)}
@@ -1268,13 +1373,13 @@ export default function DashboardDesign() {
                   />
 
                   <ColorPicker
-                    label="Button color"
+                    label={t("design.buttons.buttonColor")}
                     value={bio?.buttonColor || "#FFFFFF"}
                     onChange={(value) => updateField("buttonColor", value)}
                   />
 
                   <ColorPicker
-                    label="Button text color"
+                    label={t("design.buttons.buttonTextColor")}
                     value={bio?.buttonTextColor || "#000000"}
                     onChange={(value) => updateField("buttonTextColor", value)}
                   />
@@ -1285,35 +1390,35 @@ export default function DashboardDesign() {
             {/* Colors Section */}
             {activeSection === "colors" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Colors</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.colors.title")}</h2>
 
                 <div className="space-y-6">
                   <ColorPicker
-                    label="Background"
+                    label={t("design.colors.background")}
                     value={bio?.bgColor || "#ECEEF1"}
                     onChange={(value) => updateField("bgColor", value)}
                   />
 
                   <ColorPicker
-                    label="Card background"
+                    label={t("design.colors.cardBackground")}
                     value={bio?.cardBackgroundColor || "#ffffff"}
                     onChange={(value) => updateField("cardBackgroundColor", value)}
                   />
 
                   <ColorPicker
-                    label="Title text"
+                    label={t("design.colors.titleText")}
                     value={bio?.usernameColor || "#000000"}
                     onChange={(value) => updateField("usernameColor", value)}
                   />
 
                   <ColorPicker
-                    label="Button color"
+                    label={t("design.colors.buttonColor")}
                     value={bio?.buttonColor || "#ffffff"}
                     onChange={(value) => updateField("buttonColor", value)}
                   />
 
                   <ColorPicker
-                    label="Button text"
+                    label={t("design.colors.buttonText")}
                     value={bio?.buttonTextColor || "#000000"}
                     onChange={(value) => updateField("buttonTextColor", value)}
                   />
@@ -1324,45 +1429,51 @@ export default function DashboardDesign() {
             {/* Footer Section */}
             {activeSection === "footer" && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Footer</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.footer.title")}</h2>
 
                 <div className="space-y-6">
                   <ToggleSwitch
-                    label="Hide Portyo footer"
+                    label={t("design.footer.hidePortyoFooter")}
                     checked={bio?.removeBranding ?? false}
                     onChange={(value) => updateField("removeBranding", value)}
+                    disabled={!canUseFooter}
+                    badge={!canUseFooter ? "Standard" : undefined}
                   />
 
                   <ToggleSwitch
-                    label="Enable subscribe button"
+                    label={t("design.footer.enableSubscribeButton")}
                     checked={bio?.enableSubscribeButton ?? false}
                     onChange={(value) => updateField("enableSubscribeButton", value)}
+                    disabled={!canUseFooter}
+                    badge={!canUseFooter ? "Standard" : undefined}
                   />
 
                   <ToggleSwitch
-                    label="Enable parallax effect"
+                    label={t("design.footer.enableParallax")}
                     checked={bio?.enableParallax ?? false}
                     onChange={(value) => updateField("enableParallax", value)}
+                    disabled={!canUseFooter}
+                    badge={!canUseFooter ? "Standard" : undefined}
                   />
 
                   {bio?.enableParallax && (
                     <div className="ml-2 space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                       <RangeField
-                        label="Intensidade"
+                        label={t("design.footer.intensity")}
                         value={bio?.parallaxIntensity ?? 50}
                         onChange={(value) => updateRangeField("parallaxIntensity", value)}
                         min={0}
                         max={100}
                       />
                       <RangeField
-                        label="Profundidade"
+                        label={t("design.footer.depth")}
                         value={bio?.parallaxDepth ?? 50}
                         onChange={(value) => updateRangeField("parallaxDepth", value)}
                         min={0}
                         max={100}
                       />
                       <SelectField
-                        label="Eixo"
+                        label={t("design.footer.axis")}
                         value={bio?.parallaxAxis || "y"}
                         onChange={(value) => updateField("parallaxAxis", value as Bio["parallaxAxis"])}
                         options={parallaxAxisOptions}
@@ -1371,33 +1482,35 @@ export default function DashboardDesign() {
                   )}
 
                   <ToggleSwitch
-                    label="Floating elements"
+                    label={t("design.footer.floatingElements")}
                     checked={bio?.floatingElements ?? false}
                     onChange={(value) => updateField("floatingElements", value)}
+                    disabled={!canUseFooter}
+                    badge={!canUseFooter ? "Standard" : undefined}
                   />
 
                   {bio?.floatingElements && (
                     <div className="ml-2 space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                       <SelectField
-                        label="Tipo"
+                        label={t("design.footer.type")}
                         value={bio?.floatingElementsType || "circles"}
                         onChange={(value) => updateField("floatingElementsType", value)}
                         options={floatingElementsOptions}
                       />
                       <ColorPicker
-                        label="Cor"
+                        label={t("design.footer.color")}
                         value={bio?.floatingElementsColor || "#ffffff"}
                         onChange={(value) => updateField("floatingElementsColor", value)}
                       />
                       <RangeField
-                        label="Densidade"
+                        label={t("design.footer.density")}
                         value={bio?.floatingElementsDensity ?? 12}
                         onChange={(value) => updateRangeField("floatingElementsDensity", value)}
                         min={4}
                         max={40}
                       />
                       <RangeField
-                        label="Tamanho"
+                        label={t("design.footer.size")}
                         value={bio?.floatingElementsSize ?? 24}
                         onChange={(value) => updateRangeField("floatingElementsSize", value)}
                         min={8}
@@ -1405,7 +1518,7 @@ export default function DashboardDesign() {
                         suffix="px"
                       />
                       <RangeField
-                        label="Velocidade"
+                        label={t("design.footer.speed")}
                         value={bio?.floatingElementsSpeed ?? 12}
                         onChange={(value) => updateRangeField("floatingElementsSpeed", value)}
                         min={4}
@@ -1413,7 +1526,7 @@ export default function DashboardDesign() {
                         suffix="s"
                       />
                       <RangeField
-                        label="Opacidade"
+                        label={t("design.footer.opacity")}
                         value={bio?.floatingElementsOpacity ?? 0.35}
                         onChange={(value) => updateRangeField("floatingElementsOpacity", value)}
                         min={0.05}
@@ -1421,7 +1534,7 @@ export default function DashboardDesign() {
                         step={0.05}
                       />
                       <RangeField
-                        label="Blur"
+                        label={t("design.footer.blur")}
                         value={bio?.floatingElementsBlur ?? 0}
                         onChange={(value) => updateRangeField("floatingElementsBlur", value)}
                         min={0}
@@ -1440,7 +1553,54 @@ export default function DashboardDesign() {
             <PreviewCard bio={bio} />
           </div>
         </div>
+
+        {/* Mobile Preview FAB */}
+        <button
+          onClick={() => setShowMobilePreview(true)}
+          className="fixed bottom-6 right-6 z-40 lg:hidden w-14 h-14 bg-black text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-800 transition-colors touch-manipulation"
+          aria-label="Preview"
+        >
+          <Smartphone className="w-5 h-5" />
+        </button>
+
+        {/* Mobile Preview Overlay */}
+        <AnimatePresence>
+          {showMobilePreview && (
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-0 z-50 bg-[#F7F6F2] flex flex-col lg:hidden"
+            >
+              <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+                <span className="font-black text-lg tracking-tight">{t("design.preview")}</span>
+                <button
+                  onClick={() => setShowMobilePreview(false)}
+                  className="p-2.5 hover:bg-black/5 rounded-full transition-all touch-manipulation"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
+                <PreviewCard bio={bio} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {showVerificationModal && bio && (
+        <VerificationRequestModal
+          bioId={bio.id}
+          verified={bio.verified ?? false}
+          verificationStatus={bio.verificationStatus ?? "none"}
+          onClose={() => setShowVerificationModal(false)}
+          onSuccess={() => {
+            setDraftBio((prev) => prev ? { ...prev, verificationStatus: "pending" } : prev);
+          }}
+        />
+      )}
     </div >
   );
 }

@@ -75,6 +75,8 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
       },
     },
+    // Allow company.localhost subdomain for local development
+    allowedHosts: ["localhost", "company.localhost"],
     // Configurações de performance do dev server
     preTransformRequests: true,
   },
@@ -115,17 +117,31 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
               return 'utils';
             }
-            // Charts e analytics
+            // Charts e analytics (only loaded on analytics page)
             if (id.includes('recharts') || id.includes('react-simple-maps')) {
               return 'charts';
+            }
+            // DOMPurify (large, only needed for bio rendering)
+            if (id.includes('dompurify') || id.includes('isomorphic-dompurify')) {
+              return 'sanitize';
+            }
+            // Markdown rendering (only blog/auto-post)
+            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype')) {
+              return 'markdown';
             }
             // Resto das libs
             return 'vendor';
           }
           
-          // Separar páginas grandes do dashboard
-          if (id.includes('/routes/dashboard-')) {
-            return 'dashboard';
+          // Split each dashboard page into its own chunk for better code splitting
+          // This ensures users only load the JS for the page they're visiting
+          const dashboardMatch = id.match(/\/routes\/dashboard[-.]([a-zA-Z0-9_$.-]+)\.tsx$/);
+          if (dashboardMatch) {
+            const pageName = dashboardMatch[1]
+              .replace(/\./g, '-')  // normalize dots to dashes
+              .replace(/\$.*/, '')  // remove dynamic params
+              .replace(/-$/, '');   // remove trailing dash
+            return `dashboard-${pageName || 'index'}`;
           }
         },
         // Nomenclatura de chunks para melhor caching

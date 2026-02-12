@@ -1,7 +1,9 @@
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { AuthBackground } from "~/components/shared/auth-background";
 import AuthContext from "~/contexts/auth.context";
+import i18n from "~/i18n";
 import { api } from "~/services/api";
 
 type ClaimBioState = {
@@ -16,12 +18,14 @@ const normalizeSufix = (value: string) =>
         .replace(/\./g, "-")
         .replace(/[^a-z0-9-_]/g, "");
 
-export function meta() {
-    return [{ title: "Escolha sua bio - Portyo" }];
+export function meta({ params }: { params: { lang?: string } }) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    return [{ title: i18n.t("auth.claimBio.metaTitle", { lng: lang }) }];
 }
 
 export default function ClaimBio() {
     const { user, loading, refreshUser, logout } = useContext(AuthContext);
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -77,7 +81,7 @@ export default function ClaimBio() {
             }
         } catch (err: any) {
             console.error("Failed to create bio", err);
-            setBioError(err.response?.data?.message || "Falha ao criar sua bio. Tente novamente.");
+            setBioError(err.response?.data?.message || t("auth.claimBio.createError"));
         } finally {
             setBioLoading(false);
         }
@@ -90,8 +94,8 @@ export default function ClaimBio() {
             <AuthBackground />
             <main className="flex-1 flex items-center justify-center p-4 z-10 w-full">
                 <div className="bg-surface w-full max-w-[620px] rounded-[2.5rem] shadow-2xl border border-white/60 p-10 sm:p-12 text-center">
-                    <h1 className="text-3xl font-bold text-[#1F1F1F]">Escolha seu usuário</h1>
-                    <p className="mt-2 text-base text-[#7A7A7A]">Garanta seu espaço único no Portyo</p>
+                    <h1 className="text-3xl font-bold text-[#1F1F1F]">{t("auth.claimBio.title")}</h1>
+                    <p className="mt-2 text-base text-[#7A7A7A]">{t("auth.claimBio.subtitle")}</p>
 
                     <div className="mt-8 rounded-[1.5rem] border border-[#E8E1D9] bg-white/80 px-6 py-5 text-lg font-semibold text-[#1F1F1F] shadow-sm">
                         <div className="flex items-center justify-center gap-1 flex-wrap">
@@ -107,7 +111,7 @@ export default function ClaimBio() {
                     </div>
 
                     <p className="mt-4 text-sm text-[#8C8C8C]">
-                        Este será o URL do seu perfil público. Você não poderá alterá-lo depois!
+                        {t("auth.claimBio.urlHint")}
                     </p>
 
                     {bioError && (
@@ -125,7 +129,7 @@ export default function ClaimBio() {
                             }}
                             className="w-full sm:w-40 rounded-full border border-[#E8E1D9] bg-white px-6 py-3 text-base font-semibold text-[#1F1F1F] shadow-sm hover:bg-[#F3EFE9]"
                         >
-                            Voltar
+                            {t("auth.claimBio.back")}
                         </button>
                         <button
                             type="button"
@@ -133,7 +137,7 @@ export default function ClaimBio() {
                             disabled={!bioSufix.trim() || bioLoading}
                             className="w-full sm:w-48 rounded-full bg-[#CBEA1A] px-6 py-3 text-base font-semibold text-[#1F1F1F] shadow-lg hover:bg-[#BADD18] disabled:opacity-60"
                         >
-                            {bioLoading ? "Criando..." : "Criar conta"}
+                            {bioLoading ? t("auth.claimBio.creating") : t("auth.claimBio.createAccount")}
                         </button>
                     </div>
                 </div>

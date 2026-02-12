@@ -384,6 +384,13 @@ export const AutoPostProvider = ({ children }: { children: ReactNode }) => {
         if (!bio) throw new Error("No bio selected");
         setGeneratingPreview(true);
         try {
+            const normalizedTargetCountry = config.targetCountry && config.targetCountry !== "none"
+                ? config.targetCountry
+                : null;
+            const normalizedLanguage = config.language && config.language !== "none"
+                ? config.language
+                : null;
+
             const response = await api.post("/auto-post/preview", {
                 bioId: bio.id,
                 topics: config.topics,
@@ -392,8 +399,8 @@ export const AutoPostProvider = ({ children }: { children: ReactNode }) => {
                 postLength: config.postLength,
                 targetAudience: config.targetAudience,
                 preferredTime: config.preferredTime,
-                targetCountry: config.targetCountry,
-                language: config.language,
+                targetCountry: normalizedTargetCountry,
+                language: normalizedLanguage,
             });
             return response.data;
         } finally {
@@ -405,11 +412,18 @@ export const AutoPostProvider = ({ children }: { children: ReactNode }) => {
         if (!bio) throw new Error("No bio selected");
         setGeneratingMetadata(true);
         try {
+            const normalizedTargetCountry = targetCountry && targetCountry !== "none"
+                ? targetCountry
+                : null;
+            const normalizedLanguage = language && language !== "none"
+                ? language
+                : null;
+
             const response = await api.post("/auto-post/generate-metadata", {
                 bioId: bio.id,
                 topics,
-                targetCountry,
-                language,
+                targetCountry: normalizedTargetCountry,
+                language: normalizedLanguage,
             });
             return response.data.metadata;
         } finally {

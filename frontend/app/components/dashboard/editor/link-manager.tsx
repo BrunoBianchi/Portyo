@@ -41,7 +41,7 @@ import {
     Gem
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from "@dnd-kit/core";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -88,7 +88,12 @@ export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }:
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 8 },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 200, tolerance: 8 },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
@@ -376,7 +381,7 @@ function BlockCard({ block, onEdit, onDelete, dragListeners }: { block: BioBlock
                 {/* Drag Handle */}
                 <div
                     {...dragListeners}
-                    className="p-1.5 hover:bg-gray-100 rounded cursor-move transition-colors shrink-0 text-gray-300 hover:text-black"
+                    className="p-2.5 hover:bg-gray-100 rounded-lg cursor-move transition-colors shrink-0 text-gray-300 hover:text-black touch-manipulation"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <GripVertical className="w-5 h-5" />
@@ -404,7 +409,7 @@ function BlockCard({ block, onEdit, onDelete, dragListeners }: { block: BioBlock
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();

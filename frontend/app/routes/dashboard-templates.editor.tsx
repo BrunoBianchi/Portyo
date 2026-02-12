@@ -1,17 +1,19 @@
-import { useState, useEffect, useContext, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useContext, useCallback, useMemo } from "react";
 import { sanitizeHtml } from "~/utils/security";
 import type { Route } from "../+types/root";
 import { useParams, useNavigate } from "react-router";
 import {
     ArrowLeft, Save, Eye, Smartphone, Monitor, Trash2, GripVertical,
     Type, Image as ImageIcon, MousePointer, Minus, Share2, Mail,
-    ChevronDown, ChevronRight, Heading1, Columns, AlignLeft, AlignCenter, AlignRight, X, Loader2
+    ChevronDown, ChevronRight, Heading1, Columns, AlignLeft, AlignCenter, AlignRight, X, Loader2, Plus
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     DndContext,
     closestCenter,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
@@ -38,7 +40,7 @@ export function meta({ }: Route.MetaArgs) {
 
 
 // Draggable Sortable Item Component
-function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any) {
+function SortableItemBase({ block, isSelected, onClick, onDelete, fontFamily }: any) {
     const { t } = useTranslation();
     const {
         attributes,
@@ -226,6 +228,14 @@ function SortableItem({ block, isSelected, onClick, onDelete, fontFamily }: any)
     );
 }
 
+const SortableItem = memo(
+    SortableItemBase,
+    (prevProps, nextProps) =>
+        prevProps.block === nextProps.block &&
+        prevProps.isSelected === nextProps.isSelected &&
+        prevProps.fontFamily === nextProps.fontFamily
+);
+
 export default function DashboardTemplateEditor() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -248,6 +258,7 @@ export default function DashboardTemplateEditor() {
     const [saving, setSaving] = useState(false);
     const [previewMode, setPreviewMode] = useState(false);
     const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+    const [showMobileToolbox, setShowMobileToolbox] = useState(false);
 
     // Load Template
     useEffect(() => {
@@ -300,7 +311,15 @@ export default function DashboardTemplateEditor() {
     ]), [t]);
 
     useEffect(() => {
-        setExpandedCategories(blockPalette.map(group => group.category));
+        const categories = blockPalette.map(group => group.category);
+        setExpandedCategories((prev) => {
+            if (prev.length !== categories.length) {
+                return categories;
+            }
+
+            const isSameOrder = prev.every((category, index) => category === categories[index]);
+            return isSameOrder ? prev : categories;
+        });
     }, [blockPalette]);
 
     const handleDragEnd = useCallback((event: any) => {
@@ -335,8 +354,13 @@ export default function DashboardTemplateEditor() {
 
     const deleteBlock = useCallback((id: string) => {
         setBlocks(prev => prev.filter(b => b.id !== id));
-        if (selectedBlockId === id) setSelectedBlockId(null);
-    }, [selectedBlockId]);
+        setSelectedBlockId(prev => (prev === id ? null : prev));
+    }, []);
+
+    const handleBlockSelect = useCallback((e: any, blockId: string) => {
+        e.stopPropagation();
+        setSelectedBlockId(blockId);
+    }, []);
 
     const handleSave = async () => {
         if (!bio?.id || !id) return;
@@ -357,6 +381,7 @@ export default function DashboardTemplateEditor() {
     };
 
     const selectedBlock = useMemo(() => blocks.find(b => b.id === selectedBlockId), [blocks, selectedBlockId]);
+    const previewHtml = useMemo(() => generateEmailHtml(blocks, globalStyles), [blocks, globalStyles]);
 
     const toggleCategory = useCallback((cat: string) => {
         setExpandedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -622,7 +647,6 @@ export default function DashboardTemplateEditor() {
 
     // Preview Mode
     if (previewMode) {
-        const html = generateEmailHtml(blocks, globalStyles);
         return (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col">
                 <div className="bg-white border-b-4 border-black px-6 py-4 flex items-center justify-between shrink-0">
@@ -639,7 +663,7 @@ export default function DashboardTemplateEditor() {
                     <div className={`transition-all duration-300 ${previewDevice === 'mobile' ? 'w-[375px]' : 'w-full max-w-[700px]'}`}>
                         <div className="bg-white rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                             <iframe
-                                srcDoc={html}
+                                srcDoc={previewHtml}
                                 className="w-full bg-white"
                                 style={{ height: '800px' }}
                                 title={t("dashboard.templatesEditor.previewTitle")}
@@ -656,39 +680,46 @@ export default function DashboardTemplateEditor() {
         <AuthorizationGuard minPlan="pro">
             <div className="h-screen flex flex-col bg-[#F3F3F1] overflow-hidden font-sans">
                 {/* Top Bar */}
-                <header className="h-20 bg-white border-b-4 border-black flex items-center justify-between px-6 shrink-0 z-30 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/dashboard/templates')} className="p-2.5 hover:bg-black hover:text-white border-2 border-black rounded-xl text-black transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                            <ArrowLeft className="w-5 h-5 stroke-[3px]" />
+                <header className="h-14 md:h-20 bg-white border-b-4 border-black flex items-center justify-between px-3 md:px-6 shrink-0 z-30 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center gap-2 md:gap-4 min-w-0">
+                        <button onClick={() => navigate('/dashboard/templates')} className="p-2 md:p-2.5 hover:bg-black hover:text-white border-2 border-black rounded-xl text-black transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0 touch-manipulation">
+                            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 stroke-[3px]" />
                         </button>
-                        <div className="h-8 w-px bg-gray-200 mx-2" />
+                        <div className="h-8 w-px bg-gray-200 mx-1 md:mx-2 hidden sm:block" />
                         <input
                             type="text"
                             value={templateName}
                             onChange={(e) => setTemplateName(e.target.value)}
-                            className="font-black text-[#1A1A1A] text-xl focus:outline-none bg-transparent placeholder-gray-300 w-80 hover:bg-gray-50 rounded-lg px-2 py-1 transition-all border border-transparent focus:border-black focus:border-dashed"
+                            className="font-black text-[#1A1A1A] text-sm md:text-xl focus:outline-none bg-transparent placeholder-gray-300 w-32 sm:w-48 md:w-80 hover:bg-gray-50 rounded-lg px-2 py-1 transition-all border border-transparent focus:border-black focus:border-dashed min-w-0"
                             placeholder={t("dashboard.templatesEditor.defaultName")}
                         />
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setPreviewMode(true)} className="flex items-center gap-2 px-5 py-2.5 text-black border-2 border-black hover:bg-gray-100 rounded-xl font-bold text-sm transition-all">
-                            <Eye className="w-5 h-5 stroke-[2.5px]" />
-                            <span>{t("dashboard.templatesEditor.preview")}</span>
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        {/* Mobile toolbox trigger */}
+                        <button
+                            onClick={() => setShowMobileToolbox(true)}
+                            className="md:hidden p-2.5 bg-[#C6F035] text-black border-2 border-black rounded-xl touch-manipulation shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                        >
+                            <Plus className="w-4 h-4 stroke-[3px]" />
+                        </button>
+                        <button onClick={() => setPreviewMode(true)} className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 text-black border-2 border-black hover:bg-gray-100 rounded-xl font-bold text-sm transition-all touch-manipulation">
+                            <Eye className="w-4 h-4 md:w-5 md:h-5 stroke-[2.5px]" />
+                            <span className="hidden md:inline">{t("dashboard.templatesEditor.preview")}</span>
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-[#C6F035] text-black border-2 border-black rounded-xl font-black text-sm hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 bg-[#C6F035] text-black border-2 border-black rounded-xl font-black text-sm hover:translate-x-[2px] hover:translate-y-[2px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-70 disabled:cursor-not-allowed touch-manipulation"
                         >
-                            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 stroke-[3px]" />}
-                            {t("dashboard.templatesEditor.save")}
+                            {saving ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Save className="w-4 h-4 md:w-5 md:h-5 stroke-[3px]" />}
+                            <span className="hidden sm:inline">{t("dashboard.templatesEditor.save")}</span>
                         </button>
                     </div>
                 </header>
 
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Left Sidebar - Blocks */}
-                    <aside className="w-80 bg-white border-r-4 border-black flex flex-col shrink-0 z-20">
+                    {/* Left Sidebar - Blocks (Desktop only) */}
+                    <aside className="hidden md:flex w-80 bg-white border-r-4 border-black flex-col shrink-0 z-20">
                         <div className="p-5 border-b-4 border-black bg-gray-50">
                             <h3 className="text-sm font-black text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
                                 <GripVertical className="w-4 h-4" />
@@ -742,7 +773,7 @@ export default function DashboardTemplateEditor() {
                     </aside>
 
                     {/* Canvas */}
-                    <main className="flex-1 bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px] p-8 overflow-y-auto flex justify-center" onClick={() => setSelectedBlockId(null)}>
+                    <main className="flex-1 bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px] p-4 md:p-8 overflow-y-auto flex justify-center" onClick={() => setSelectedBlockId(null)}>
                         <div
                             className="transition-all duration-300 min-h-[800px] relative shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)]"
                             style={{
@@ -786,7 +817,7 @@ export default function DashboardTemplateEditor() {
                                                         key={block.id}
                                                         block={block}
                                                         isSelected={selectedBlockId === block.id}
-                                                        onClick={(e: any, id: string) => { e.stopPropagation(); setSelectedBlockId(id); }}
+                                                        onClick={handleBlockSelect}
                                                         onDelete={deleteBlock}
                                                         fontFamily={globalStyles.fontFamily}
                                                     />
@@ -800,7 +831,7 @@ export default function DashboardTemplateEditor() {
                     </main>
 
                     {/* Right Sidebar - Properties */}
-                    <aside className={`w-80 bg-white border-l-4 border-black flex flex-col shrink-0 shadow-[-4px_0px_20px_0px_rgba(0,0,0,0.05)] transition-all duration-300 z-20 ${selectedBlock ? 'translate-x-0' : 'translate-x-full hidden'}`}>
+                    <aside className={`fixed inset-0 z-50 md:relative md:inset-auto md:z-20 w-full md:w-80 bg-white md:border-l-4 border-black flex flex-col md:shrink-0 shadow-[-4px_0px_20px_0px_rgba(0,0,0,0.05)] transition-all duration-300 ${selectedBlock ? 'translate-x-0' : 'translate-x-full hidden'}`}>
                         <div className="p-5 border-b-4 border-black bg-gray-50 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="font-black text-[#1A1A1A] capitalize flex items-center gap-2 text-sm">
@@ -819,7 +850,7 @@ export default function DashboardTemplateEditor() {
 
                     {/* Settings Panel (when no block selected) */}
                     {!selectedBlock && (
-                        <aside className="w-80 bg-white border-l-4 border-black flex flex-col shrink-0 z-20">
+                        <aside className="hidden md:flex w-80 bg-white border-l-4 border-black flex-col shrink-0 z-20">
                             <div className="p-5 border-b-4 border-black bg-gray-50">
                                 <h3 className="font-black text-sm text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
                                     <Type className="w-4 h-4" />
@@ -883,6 +914,69 @@ export default function DashboardTemplateEditor() {
                     )}
 
                 </div>
+
+                {/* Mobile Toolbox Overlay */}
+                <AnimatePresence>
+                    {showMobileToolbox && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 md:hidden"
+                        >
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileToolbox(false)} />
+                            <motion.div
+                                initial={{ x: "-100%" }}
+                                animate={{ x: 0 }}
+                                exit={{ x: "-100%" }}
+                                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                                className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-white border-r-4 border-black flex flex-col"
+                            >
+                                <div className="p-5 border-b-4 border-black bg-gray-50 flex items-center justify-between">
+                                    <h3 className="text-sm font-black text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
+                                        <GripVertical className="w-4 h-4" />
+                                        {t("dashboard.templatesEditor.addBlocks")}
+                                    </h3>
+                                    <button onClick={() => setShowMobileToolbox(false)} className="p-2 hover:bg-gray-200 rounded-lg transition-colors touch-manipulation">
+                                        <X className="w-5 h-5 stroke-[3px]" />
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                                    {blockPalette.map((group) => (
+                                        <div key={group.category}>
+                                            <button
+                                                onClick={() => toggleCategory(group.category)}
+                                                className="w-full flex items-center justify-between text-xs font-black text-gray-500 uppercase tracking-wider mb-3 hover:text-black transition-colors touch-manipulation"
+                                            >
+                                                {group.category}
+                                                {expandedCategories.includes(group.category) ? <ChevronDown className="w-4 h-4 stroke-[3px]" /> : <ChevronRight className="w-4 h-4 stroke-[3px]" />}
+                                            </button>
+                                            {expandedCategories.includes(group.category) && (
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {group.items.map((item) => {
+                                                        const Icon = item.icon;
+                                                        return (
+                                                            <button
+                                                                key={item.type}
+                                                                onClick={() => { addBlock(item.type as EmailBlock['type']); setShowMobileToolbox(false); }}
+                                                                className="group flex flex-col items-center gap-3 p-4 bg-white hover:bg-[#F3F3F1] rounded-[16px] border-2 border-black transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] touch-manipulation"
+                                                            >
+                                                                <div className="w-10 h-10 rounded-xl bg-[#d2e823] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                                                    <Icon className="w-5 h-5 stroke-[2.5px]" />
+                                                                </div>
+                                                                <span className="text-xs font-bold text-[#1A1A1A]">{item.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </AuthorizationGuard>
     );

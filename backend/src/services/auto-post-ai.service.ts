@@ -467,7 +467,8 @@ export const generateAutoPost = async (
         geo: string[];
         aeo: string[];
         aio: string[];
-    } | null
+    } | null,
+    previousTitles?: string[]
 ): Promise<GeneratedPost> => {
     const topics = schedule.topics || bioSummary.contentPillars.join(", ") || bioSummary.industry;
     const keywords = schedule.keywords?.join(", ") || bioSummary.expertise.join(", ");
@@ -477,6 +478,22 @@ export const generateAutoPost = async (
     // Language is now fixed based on country selection
     const language = getLanguageInstruction(schedule);
     const usp = bioSummary.uniqueSellingPoints.join("; ");
+
+    // Build topic diversity section to prevent repetition
+    const topicDiversitySection = previousTitles && previousTitles.length > 0 ? `
+=== TOPIC DIVERSITY - CRITICAL ===
+You MUST create a post about a COMPLETELY DIFFERENT subtopic/angle than the ones listed below.
+DO NOT repeat or rephrase any of these previous titles. Choose a fresh, unique angle within the given topics.
+
+Previously published posts (AVOID these topics/angles):
+${previousTitles.map((title, i) => `${i + 1}. "${title}"`).join("\n")}
+
+RULES:
+- Pick a different subtopic, trend, or perspective from the topic list
+- If topics include multiple subjects (e.g., "React, career tips, web dev"), rotate between them
+- Even within the same broad topic, find a unique angle (e.g., beginner vs advanced, tutorial vs opinion, tools vs concepts)
+- Never rewrite or closely paraphrase a previous title
+` : "";
 
     // Build suggestions section if previous suggestions exist
     const suggestionsSection = previousSuggestions ? `
@@ -582,6 +599,8 @@ Language: ${language === "auto-detect" ? "Match the bio's language naturally" : 
 ${scheduleFormatted}
 
 ${targetCountrySection}
+
+${topicDiversitySection}
 
 ${suggestionsSection}
 
@@ -831,7 +850,7 @@ Return ONLY valid JSON. No markdown, no code blocks.`;
                 },
             ],
             model: env.GROQ_MODEL,
-            temperature: 0.65,
+            temperature: 0.75,
             max_tokens: 8192,
             response_format: { type: "json_object" },
         });

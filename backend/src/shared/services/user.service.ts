@@ -62,10 +62,6 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         }
     }
     
-    // Add 7-day Standard Trial (email signup)
-    await BillingService.ensureStandardTrial(savedUser.id, 7);
-    const activePlan = await BillingService.getActivePlan(savedUser.id);
-
     // Create welcome notification
     try {
         await notificationService.createWelcomeNotification(savedUser.id);
@@ -80,7 +76,7 @@ export const createNewUser = async (user: Partial<UserType>): Promise<Object | E
         verified: savedUser.verified,
         provider: savedUser.provider,
         createdAt: savedUser.createdAt,
-        plan: activePlan,
+        plan: savedUser.plan || "free",
         onboardingCompleted: savedUser.onboardingCompleted
     }
     return {

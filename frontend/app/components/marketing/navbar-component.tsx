@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import AuthContext from "~/contexts/auth.context";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "~/constants/languages";
-import { Menu, X, ChevronDown, Globe } from "lucide-react";
+import { Menu, X, ChevronDown, Globe, Target } from "lucide-react";
+import { isCompanySubdomain } from "~/lib/company-utils";
 
 function IconGlobe(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -79,7 +80,11 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
   );
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  isCompanyMode?: boolean;
+}
+
+export default function Navbar({ isCompanyMode = false }: NavbarProps) {
   const { user, logout } = useContext(AuthContext);
   const { i18n, t } = useTranslation();
   const { pathname, search } = useLocation();
@@ -87,6 +92,9 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  
+  // Detect company mode from prop or URL
+  const isCompany = isCompanyMode || isCompanySubdomain();
 
   const buildLocalizedPath = (lang: string) => {
     if (/^\/(en|pt)(\/|$)/.test(pathname)) {
@@ -100,6 +108,12 @@ export default function Navbar() {
     if (/^\/(en|pt)(\/|$)/.test(to)) return to;
     const currentLang = i18n.resolvedLanguage || i18n.language || "en";
     return to === "/" ? `/${currentLang}` : `/${currentLang}${to}`;
+  };
+
+  // Company mode paths — always use /company/ prefix for correct route resolution
+  const getCompanyPath = (subpath: string) => {
+    const currentLang = i18n.resolvedLanguage || i18n.language || "en";
+    return `/${currentLang}/company/${subpath}`;
   };
 
   useEffect(() => {
@@ -138,37 +152,77 @@ export default function Navbar() {
             {/* Logo */}
             <Link
               to={withLang('/')}
-              className={`text-2xl md:text-3xl font-extrabold tracking-tighter leading-none flex items-center h-full transition-colors ${isScrolled ? "text-white" : "text-[#1A1A1A]"
+              className={`flex items-center gap-2 transition-colors ${isScrolled ? "text-white" : "text-[#1A1A1A]"
                 }`}
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Portyo
+              {isCompany ? (
+                // Company Logo - same as standard with "| Companies" suffix
+                <div className="flex items-center gap-0">
+                  <span className="text-2xl md:text-3xl font-extrabold tracking-tighter leading-none">
+                    Portyo
+                  </span>
+                  <span className={`ml-2 text-sm font-medium tracking-normal ${isScrolled ? "text-gray-400" : "text-gray-400"}`}>
+                    |&nbsp; Companies
+                  </span>
+                </div>
+              ) : (
+                // Standard Logo
+                <span className="text-2xl md:text-3xl font-extrabold tracking-tighter leading-none">
+                  Portyo
+                </span>
+              )}
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              {[
-                { label: t("nav.features", "Features"), href: "/#features" },
-                { label: t("nav.pricing", "Pricing"), href: "/pricing" },
-                { label: t("nav.themes", "Themes"), href: "/themes" },
-                { label: t("nav.blog", "Blog"), href: "/blog" },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  to={withLang(item.href)}
-                  className={`text-sm font-bold uppercase tracking-wider transition-colors ${isScrolled
-                      ? "text-gray-300 hover:text-white"
-                      : "text-gray-700 hover:text-black"
-                    }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {!isCompany ? (
+                // Standard Nav Items
+                <>
+                  {[
+                    { label: t("nav.features", "Features"), href: "/#features" },
+                    { label: t("nav.pricing", "Pricing"), href: "/pricing" },
+                    { label: t("nav.themes", "Themes"), href: "/themes" },
+                    { label: t("nav.blog", "Blog"), href: "/blog" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={withLang(item.href)}
+                      className={`text-sm font-bold uppercase tracking-wider transition-colors ${isScrolled
+                          ? "text-gray-300 hover:text-white"
+                          : "text-gray-700 hover:text-black"
+                        }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                // Company Nav Items
+                <>
+                  {[
+                    { label: t("company.landing.nav.features", "Features"), href: "/#features" },
+                    { label: t("company.landing.nav.howItWorks", "How it Works"), href: "/#how-it-works" },
+                    { label: t("company.landing.nav.pricing", "Pricing"), href: "/#pricing" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={withLang(item.href)}
+                      className={`text-sm font-bold uppercase tracking-wider transition-colors ${isScrolled
+                          ? "text-gray-300 hover:text-[#D2E823]"
+                          : "text-gray-700 hover:text-[#D2E823]"
+                        }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </>
+              )}
             </nav>
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Language Select - Simplified for Bold Theme */}
+              {/* Language Select */}
               <LanguageSelect
                 value={i18n.resolvedLanguage || i18n.language}
                 onChange={(value) => {
@@ -177,11 +231,35 @@ export default function Navbar() {
                 }}
                 buttonClassName={`text-sm font-bold flex items-center gap-2 transition-colors ${isScrolled
                     ? "text-white hover:text-[#D2E823]"
-                    : "text-[#1A1A1A] hover:text-[#0047FF]"
+                    : isCompany ? "text-[#1A1A1A] hover:text-[#D2E823]" : "text-[#1A1A1A] hover:text-[#0047FF]"
                   }`}
               />
 
-              {isHydrated && user ? (
+              {isCompany ? (
+                // Company Mode Actions - Same style as standard
+                <div className="flex items-center gap-4">
+                  <Link
+                    to={getCompanyPath("login")}
+                    className={`text-sm font-bold uppercase tracking-wide px-4 py-2 rounded-full transition-all ${isScrolled
+                        ? "text-white hover:bg-white/10"
+                        : "text-[#1A1A1A] hover:bg-black/5"
+                      }`}
+                  >
+                    {t("nav.signIn", "Sign In")}
+                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      to={getCompanyPath("register")}
+                      className={`px-8 py-3 text-sm font-black uppercase tracking-wider rounded-full transition-colors shadow-none border-2 ${isScrolled
+                          ? "bg-[#D2E823] text-[#1A1A1A] border-[#D2E823] hover:bg-white hover:border-white"
+                          : "bg-[#1A1A1A] text-white border-[#1A1A1A] hover:bg-transparent hover:text-[#1A1A1A]"
+                        }`}
+                    >
+                      {t("nav.register", "Register")}
+                    </Link>
+                  </motion.div>
+                </div>
+              ) : isHydrated && user ? (
                 <div className="flex items-center gap-4">
                   <Link
                     to="/dashboard"
@@ -271,12 +349,16 @@ export default function Navbar() {
             >
               <div className="p-6 pt-20">
                 <nav className="space-y-2">
-                  {[
+                  {(isCompany ? [
+                    { label: t("company.landing.nav.features", "Features"), href: "/#features" },
+                    { label: t("company.landing.nav.howItWorks", "How it Works"), href: "/#how-it-works" },
+                    { label: t("company.landing.nav.pricing", "Pricing"), href: "/#pricing" },
+                  ] : [
                     { label: t("nav.features", "Features"), href: "/#features" },
                     { label: t("nav.pricing", "Pricing"), href: "/pricing" },
                     { label: t("nav.themes", "Themes"), href: "/themes" },
                     { label: t("nav.blog", "Blog"), href: "/blog" },
-                  ].map((item) => (
+                  ]).map((item) => (
                     <Link
                       key={item.label}
                       to={withLang(item.href)}
@@ -312,8 +394,26 @@ export default function Navbar() {
                 </div>
 
                 {/* Auth Buttons */}
-                <div className="mt-6 pt-6 border-t border-border space-y-3">
-                  {user ? (
+                <div className="space-y-3 mt-6 pt-6 border-t border-border">
+                  {isCompany ? (
+                    // Company Mode Mobile Actions
+                    <>
+                      <Link
+                        to={getCompanyPath("login")}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                      >
+                        {t("nav.signIn", "Sign In")}
+                      </Link>
+                      <Link
+                        to={getCompanyPath("register")}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full px-4 py-3 text-center font-bold text-background bg-primary rounded-xl hover:bg-primary-hover transition-colors"
+                      >
+                        {t("nav.register", "Register")}
+                      </Link>
+                    </>
+                  ) : user ? (
                     <>
                       <Link
                         to="/dashboard"

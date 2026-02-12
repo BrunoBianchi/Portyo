@@ -20,7 +20,8 @@ import { useHtmlGenerator } from "~/hooks/use-html-generator";
 // Componentes
 import { EditorNav } from "~/components/dashboard/editor/editor-nav";
 import { BlockEditorDrawer } from "~/components/dashboard/editor/block-editor-drawer";
-import { LinksTab, DesignTab, SettingsTab } from "~/components/dashboard/editor/tabs";
+import { LinksTab, SettingsTab } from "~/components/dashboard/editor/tabs";
+import { PortyoAI } from "~/components/dashboard/portyo-ai";
 import type { BioBlock } from "~/contexts/bio.context";
 
 export const meta: MetaFunction = () => {
@@ -40,29 +41,22 @@ const EditorHeader = memo(function EditorHeader({
   bioSuffix,
   showMobilePreview,
   onToggleMobilePreview,
+  onAIClick,
 }: {
-  activeTab: "links" | "design" | "settings";
-  onTabChange: (tab: "links" | "design" | "settings") => void;
+  activeTab: "links" | "settings";
+  onTabChange: (tab: "links" | "settings") => void;
   history: BioBlock[][];
   onUndo: () => void;
   onShare: () => void;
   bioSuffix?: string;
   showMobilePreview: boolean;
   onToggleMobilePreview: () => void;
+  onAIClick: () => void;
 }) {
   const { t } = useTranslation("dashboard");
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const tabLabels = {
     links: t("editor.tabs.links"),
-    design: t("editor.tabs.design"),
     settings: t("editor.tabs.settings"),
   };
 
@@ -98,7 +92,7 @@ const EditorHeader = memo(function EditorHeader({
 
         {/* Right: Actions - Fixed width */}
         <div className="flex items-center gap-1 lg:gap-2 shrink-0 w-[140px] lg:w-[180px] justify-end">
-          <AIButton />
+          <AIButton onClick={onAIClick} />
 
           <div className="h-6 w-px bg-gray-200 mx-1" />
 
@@ -124,14 +118,14 @@ const EditorHeader = memo(function EditorHeader({
         {/* Left: Back button */}
         <Link
           to="/dashboard"
-          className="p-2 -ml-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+          className="p-2.5 -ml-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0 touch-manipulation"
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </Link>
 
         {/* Center: Title + Nav em uma linha */}
         <div className="flex-1 flex flex-col items-center px-2 min-w-0">
-          <span className="text-[10px] font-medium text-gray-500">
+          <span className="text-xs font-medium text-gray-500">
             {t("top.editor")}
           </span>
           <EditorNav activeTab={activeTab} onChangeTab={onTabChange} />
@@ -141,14 +135,14 @@ const EditorHeader = memo(function EditorHeader({
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={onShare}
-            className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
           >
             <Share2 className="w-4 h-4" />
           </button>
 
           <button
             onClick={onToggleMobilePreview}
-            className="p-2 bg-black text-white rounded-full shadow-lg"
+            className="p-2.5 bg-black text-white rounded-full shadow-lg touch-manipulation"
             title={t("editor.togglePreview")}
           >
             <Eye className="w-4 h-4" />
@@ -159,11 +153,11 @@ const EditorHeader = memo(function EditorHeader({
   );
 });
 
-const AIButton = memo(function AIButton() {
+const AIButton = memo(function AIButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation("dashboard");
 
   return (
-    <button className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-black text-xs sm:text-sm font-bold rounded-full transition-all shadow-sm group shrink-0">
+    <button type="button" onClick={onClick} className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-black text-xs sm:text-sm font-bold rounded-full transition-all shadow-sm group shrink-0">
       <div className="relative">
         <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8129D9]" />
         <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-[#FFC107] text-[8px] sm:text-[9px] font-black px-0.5 sm:px-1 rounded text-black shadow-sm transform scale-75 origin-bottom-left">
@@ -273,11 +267,11 @@ const MobilePreviewOverlay = memo(function MobilePreviewOverlay({
         >
           <div className="p-4 border-b-2 border-black flex items-center justify-between bg-white px-6">
             <span className="font-black text-lg tracking-tight">{t("editor.editorPage.preview.mobileHeader")}</span>
-            <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full border border-transparent hover:border-black/10 transition-all">
+            <button onClick={onClose} className="p-2.5 hover:bg-black/5 rounded-full border border-transparent hover:border-black/10 transition-all touch-manipulation">
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="flex-1 p-8 flex items-center justify-center overflow-hidden bg-[#f5f5f5]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+          <div className="flex-1 p-4 sm:p-8 flex items-center justify-center overflow-hidden bg-[#f5f5f5]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #e5e5e5 1px, transparent 0)', backgroundSize: '24px 24px' }}>
             <div className="relative w-full max-w-[380px] aspect-[9/19.5] bg-[#1A1A1A] rounded-[52px] border-[10px] border-[#1A1A1A] shadow-2xl overflow-hidden">
               {isGenerating ? (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -305,8 +299,9 @@ export default function DashboardEditor() {
   const { user } = useContext(AuthContext);
   const { t } = useTranslation("dashboard");
 
-  const [activeTab, setActiveTab] = useState<"links" | "design" | "settings">("links");
+  const [activeTab, setActiveTab] = useState<"links" | "settings">("links");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showAI, setShowAI] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const lastSavedBlocksRef = useRef<string>("");
@@ -538,6 +533,31 @@ export default function DashboardEditor() {
     setSeoState(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  // AI Handlers
+  const handleAIToggle = useCallback(() => {
+    setShowAI(prev => !prev);
+  }, []);
+
+  const handleAIBlocksGenerated = useCallback((newBlocks: BioBlock[], replace: boolean) => {
+    if (replace) {
+      setBlocks(newBlocks);
+    } else {
+      setBlocks([...blocks, ...newBlocks]);
+    }
+    toast.success(t("editor.ai.successGenerate", "Content generated!"));
+  }, [setBlocks, blocks, t]);
+
+  const handleAISettingsChange = useCallback((settings: Record<string, any>) => {
+    if (!bio) return;
+    handleDesignUpdate(settings);
+  }, [bio, handleDesignUpdate]);
+
+  const handleAIGlobalStylesChange = useCallback((styles: Partial<BioBlock>) => {
+    if (!blocks.length) return;
+    const updated = blocks.map(block => ({ ...block, ...styles }));
+    setBlocks(updated);
+  }, [blocks, setBlocks]);
+
   return (
     <AuthorizationGuard>
       <div className="h-screen flex flex-col bg-[#F3F3F1] overflow-hidden font-sans">
@@ -550,6 +570,7 @@ export default function DashboardEditor() {
           bioSuffix={bio?.sufix}
           showMobilePreview={showMobilePreview}
           onToggleMobilePreview={() => setShowMobilePreview(!showMobilePreview)}
+          onAIClick={handleAIToggle}
         />
 
         <div className="flex-1 flex overflow-hidden relative">
@@ -565,14 +586,6 @@ export default function DashboardEditor() {
                     onUpdateBlocks={handleUpdateBlocks}
                     onEditBlock={setEditingBlock}
                     onAddBlock={handleAddBlock}
-                  />
-                )}
-
-                {activeTab === 'design' && (
-                  <DesignTab
-                    bio={bio}
-                    uploadingImage={uploadingImage}
-                    onImageUpload={handleImageUpload}
                     onUpdateBio={handleDesignUpdate}
                   />
                 )}
@@ -624,6 +637,26 @@ export default function DashboardEditor() {
           onSave={handleSaveBlock}
         />
       </div>
+
+      {/* AI Panel - Rendered outside overflow-hidden container */}
+      {showAI && bio && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/20 z-[45]"
+            onClick={() => setShowAI(false)}
+          />
+          <div className="fixed top-20 right-4 md:right-8 z-50 w-[calc(100%-2rem)] max-w-md">
+            <PortyoAI
+              bioId={bio.id}
+              isOpen={showAI}
+              onClose={() => setShowAI(false)}
+              onBlocksGenerated={handleAIBlocksGenerated}
+              onSettingsChange={handleAISettingsChange}
+              onGlobalStylesChange={handleAIGlobalStylesChange}
+            />
+          </div>
+        </>
+      )}
     </AuthorizationGuard>
   );
 }

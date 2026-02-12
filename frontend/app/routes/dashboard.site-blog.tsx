@@ -84,10 +84,10 @@ export default function DashboardSiteBlog() {
                         <FileText className="w-3 h-3 text-[#C6F035]" />
                         Admin
                     </div>
-                    <h1 className="text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>Site Blog</h1>
-                    <p className="text-xl text-gray-500 font-medium">Manage your site's blog posts.</p>
+                    <h1 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>Site Blog</h1>
+                    <p className="text-base md:text-xl text-gray-500 font-medium">Manage your site's blog posts.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
                     <Link
                         to="/dashboard/site-blog/auto-post"
                         className="px-6 py-3 rounded-xl bg-white text-black font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all flex items-center gap-2 uppercase text-sm tracking-wide"

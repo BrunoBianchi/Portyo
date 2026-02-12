@@ -15,6 +15,11 @@ import { sanitizeHtml } from "~/utils/security";
 import { useBioScripts } from "~/hooks/use-bio-scripts";
 import { useBioTracking } from "~/hooks/use-bio-tracking";
 
+// React-based block rendering system (replaces dangerouslySetInnerHTML for bios with blocks)
+import { BlockRenderer } from "~/blocks/components";
+import { SOCIAL_PLATFORMS } from "~/blocks/components/SocialsBlock";
+import { computeBgStyle, BioBackgroundLayers } from "./BioBackground";
+
 const BioContent = React.memo(React.forwardRef<HTMLDivElement, { html: string; bio: any }>(({ html, bio }, ref) => {
     return <div ref={ref} dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} suppressHydrationWarning={true} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%' }} />;
 }));
@@ -47,7 +52,7 @@ const decodeHtmlFromBase64 = (html?: string | null, htmlBase64?: string | null) 
     return "";
 };
 
-const VERIFIED_BADGE_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Verificado" style="display:inline-block; vertical-align:middle; margin-left:2px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const VERIFIED_BADGE_SVG = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-verified-badge="true" title="Verificado" style="display:inline-block; vertical-align:middle; margin-left:4px;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const ensureVerifiedStatusInHtml = (html: string, verified: boolean): string => {
     if (!html) return html;
@@ -85,6 +90,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     const [subscribeMessage, setSubscribeMessage] = useState<string>('');
     const [nsfwOpen, setNsfwOpen] = useState(false);
     const [nsfwUrl, setNsfwUrl] = useState<string>('');
+    const [activeNavTab, setActiveNavTab] = useState<string>('links');
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
@@ -174,37 +180,19 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     // Try to extract profile image from HTML content if not provided in bio object
     const headerImageSrc = bio?.profileImage || (htmlContent && htmlContent.match(/src="((?:https?:\/\/[^\"]+)?\/(?:api\/images|users-photos)\/[^\"]+)"/i)?.[1]);
 
+    // Use React block renderer when blocks array is available; fall back to HTML for legacy bios
+    const useBlocks = Array.isArray(bio?.blocks) && bio.blocks.length > 0;
+
     // If we're on a blog post page, render the BlogPostView instead
     if (blogPostSlug) {
         if (isPreview) {
             return <BlogPostView slug={blogPostSlug} bio={bio} subdomain={subdomain} />;
         }
-        console.log(bio.profileImage)
+        // Render blog post view without nested <html> — the root layout already provides the document shell
         return (
-
-            <html lang="en">
-                <head>
-                    <meta charSet="utf-8" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <meta name="robots" content="index, follow" />
-                    <title>{bio?.seoTitle || subdomain} | Blog</title>
-                    <meta name="description" content={bio?.seoDescription || ''} />
-                    <meta property="og:type" content="article" />
-                    <meta property="og:site_name" content={bio?.seoTitle || subdomain} />
-                    {bio?.ogImage && <meta property="og:image" content={bio.ogImage} />}
-                    <Meta />
-                    <Links />
-                    <link
-                        rel="stylesheet"
-                        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-                    />
-                </head>
-                <body style={{ margin: 0, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    <BlogPostView slug={blogPostSlug} bio={bio} subdomain={subdomain} />
-                    <ScrollRestoration />
-                    <Scripts />
-                </body>
-            </html>
+            <div style={{ margin: 0, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif', minHeight: '100vh' }}>
+                <BlogPostView slug={blogPostSlug} bio={bio} subdomain={subdomain} />
+            </div>
         );
     }
 
@@ -276,6 +264,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
     // Safety: wire click handlers even if inline onclick is stripped by sanitization.
     useEffect(() => {
+        if (useBlocks) return; // Not needed for React blocks
         const root = containerRef.current;
         if (!root) return;
 
@@ -368,6 +357,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     // Path-based tab sync is handled inside initTabs/onpopstate; avoid extra listeners to prevent repeated calls.
 
     useEffect(() => {
+        // Block-based bios don't need DOM scanning — each block is a self-contained React component
+        if (useBlocks) return;
         // if (isPreview) return; // Allow scripts to run in preview for hydration
         if (!containerRef.current) return;
 
@@ -696,38 +687,38 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                             if (cardStyle === "featured") {
                                 return `
-                                  <article style="flex:0 0 260px; scroll-snap-align:start; display:flex; flex-direction:column; gap:10px; background:${bgColor}; border:1px solid #e5e7eb; border-radius:18px; padding:16px; min-width:260px;">
-                                    <div style="width:100%; height:140px; border-radius:12px; overflow:hidden; background:#e5e7eb;">
+                                  <article style="flex:0 0 300px; scroll-snap-align:start; display:flex; flex-direction:column; gap:10px; background:${bgColor}; border:1px solid rgba(0,0,0,0.06); border-radius:20px; padding:16px; min-width:300px; transition:transform 0.25s ease, box-shadow 0.25s ease; cursor:pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                    <div style="width:100%; height:160px; border-radius:14px; overflow:hidden; background:#e5e7eb;">
                                       <img src="${image}" alt="${esc(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
                                     </div>
                                     <div style="display:flex; gap:6px;">
-                                      <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${category}</span>
-                                      <span style="background:${tagBg}; color:${tagText}; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600;">${readTime}</span>
+                                      <span style="background:${tagBg}; color:${tagText}; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:600;">${category}</span>
+                                      <span style="background:${tagBg}; color:${tagText}; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:600;">${readTime}</span>
                                     </div>
-                                    <h3 style="font-size:16px; font-weight:800; line-height:1.3; color:${titleColor}; margin:0;">${esc(post.title)}</h3>
-                                    <div style="display:flex; align-items:center; gap:6px; margin-top:auto;">
-                                      <div style="width:20px; height:20px; background:#d1d5db; border-radius:50%;"></div>
-                                      <span style="font-size:12px; color:${textColor};">${author}</span>
+                                    <h3 style="font-size:17px; font-weight:800; line-height:1.3; color:${titleColor}; margin:0; letter-spacing:-0.01em;">${esc(post.title)}</h3>
+                                    <div style="display:flex; align-items:center; gap:8px; margin-top:auto;">
+                                      <div style="width:22px; height:22px; background:#d1d5db; border-radius:50%;"></div>
+                                      <span style="font-size:13px; color:${textColor};">${author}</span>
                                     </div>
                                   </article>
                                 `;
                             } else if (cardStyle === "modern") {
-                                const widthStyle = layout === 'carousel' ? 'flex:0 0 280px; min-width:280px; border-right:1px solid #f3f4f6; padding-right:24px; margin-right:8px;' : 'width:100%; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:16px;';
+                                const widthStyle = layout === 'carousel' ? 'flex:0 0 320px; min-width:320px; border-right:1px solid #f3f4f6; padding-right:24px; margin-right:8px;' : 'width:100%; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:16px;';
                                 return `
-                                  <article style="${widthStyle} scroll-snap-align:start; display:flex; flex-direction:column; gap:8px;">
-                                    <div style="font-size:12px; font-weight:700; color:${dateColor}; margin-bottom:4px;">${date}</div>
-                                    <h3 style="font-size:18px; font-weight:700; line-height:1.2; color:${titleColor}; margin:0;">${esc(post.title)}</h3>
-                                    <div style="font-size:12px; font-weight:500; opacity:0.8; color:${textColor}; margin-bottom:8px;">${category} • ${readTime}</div>
-                                    <p style="font-size:12px; line-height:1.6; color:${textColor}; opacity:0.8; margin:0 0 12px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${esc(description)}</p>
+                                  <article style="${widthStyle} scroll-snap-align:start; display:flex; flex-direction:column; gap:8px; transition:transform 0.25s ease; cursor:pointer;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <div style="font-size:13px; font-weight:700; color:${dateColor}; margin-bottom:4px;">${date}</div>
+                                    <h3 style="font-size:19px; font-weight:700; line-height:1.25; color:${titleColor}; margin:0; letter-spacing:-0.01em;">${esc(post.title)}</h3>
+                                    <div style="font-size:13px; font-weight:500; opacity:0.8; color:${textColor}; margin-bottom:8px;">${category} • ${readTime}</div>
+                                    <p style="font-size:13px; line-height:1.6; color:${textColor}; opacity:0.8; margin:0 0 12px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${esc(description)}</p>
                                   </article>
                                 `;
                             } else {
                                 return `
-                                  <article style="flex:0 0 160px; scroll-snap-align:start; background:${bgColor}; border:1px solid #e5e7eb; border-radius:16px; padding:14px; min-width:160px;">
-                                    <h3 style="font-size:14px; font-weight:700; color:${titleColor}; margin:0 0 6px 0;">${esc(post.title)}</h3>
+                                  <article style="flex:0 0 200px; scroll-snap-align:start; background:${bgColor}; border:1px solid rgba(0,0,0,0.06); border-radius:18px; padding:16px; min-width:200px; transition:transform 0.25s ease, box-shadow 0.25s ease; cursor:pointer;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                    <h3 style="font-size:15px; font-weight:700; color:${titleColor}; margin:0 0 8px 0; letter-spacing:-0.01em;">${esc(post.title)}</h3>
                                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                                      <span style="font-size:11px; color:${textColor};">${readTime}</span>
-                                      <span style="font-size:11px; font-weight:500; color:${dateColor};">Read more &rarr;</span>
+                                      <span style="font-size:12px; color:${textColor};">${readTime}</span>
+                                      <span style="font-size:12px; font-weight:600; color:${dateColor};">Read more &rarr;</span>
                                     </div>
                                   </article>
                                 `;
@@ -783,7 +774,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                 const reactRoot = createRoot(block);
                 reactRoot.render(
-                    <React.Suspense fallback={<div className="h-24 w-full bg-muted flex items-center justify-center rounded-lg"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <React.Suspense fallback={<div style={{ height: '96px', width: '100%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px' }}><div style={{ width: '20px', height: '20px', border: '2px solid #111827', borderTopColor: 'transparent', borderRadius: '9999px', animation: 'spin 0.8s linear infinite' }}></div></div>}>
                         <BookingWidget
                             bioId={bioIdStr}
                             title={title}
@@ -1092,7 +1083,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                     <div style="flex:1; min-width:200px; padding-right:16px; display:flex; flex-direction:column;">
                                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                                             <div style="width:24px; height:24px; border-radius:50%; background:#f3f4f6; overflow:hidden;">
-                                                <img alt="${bio.user.fullname} profile image" src="http://localhost:3000/api/images/${bio.userId}/medium.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User'" />
+                                                <img alt="${bio.user.fullname} profile image" src="${authorImage}" style="width:100%; height:100%; object-fit:cover;" />
                                             </div>
                                             <span style="font-size:12px; font-weight:600; color:#374151;">${escapeHtml(authorName)}</span>
                                         </div>
@@ -1106,18 +1097,18 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                 <div style="display:flex; align-items:center; gap:12px; color:#4b5563; font-size:13px; font-weight:600;">
                                                 <div style="display:flex; align-items:center; gap:4px;">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                                    <span>${((index * 73 + 127) % 400) + 100}</span>
+                                                    <span>${post.views || ''}</span>
                                                 </div>
                                                 <div style="display:flex; align-items:center; gap:4px;">
                                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                                                    <span>${((index * 31 + 47) % 180) + 20}</span>
+                                                    <span>${post.likes || ''}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <!-- Image -->
-                                    <div style="width:120px; height:120px; flex-shrink:0;">
-                                        <div style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#f3f4f6;">
+                                    <div style="width:130px; height:130px; flex-shrink:0;">
+                                        <div style="width:100%; height:100%; border-radius:16px; overflow:hidden; background:#f3f4f6;">
                                             <img src="${image}" alt="${escapeHtml(post.title)}" style="width:100%; height:100%; object-fit:cover;" />
                                         </div>
                                     </div>
@@ -1130,17 +1121,17 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
 
                         // Stacked Layout Controls
                         const controls = `
-                            <div style="display:flex; justify-content:center; gap:16px; margin-top:24px; padding-top:220px;">
-                                <button onclick="window.changeBlogStack(-1)" style="width:44px; height:44px; border-radius:50%; background:white; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <div style="display:flex; justify-content:center; gap:16px; margin-top:28px; padding-top:230px;">
+                                <button onclick="window.changeBlogStack(-1)" style="width:48px; height:48px; border-radius:50%; background:white; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.06); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                 </button>
-                                <button onclick="window.changeBlogStack(1)" style="width:44px; height:44px; border-radius:50%; background:#111827; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                <button onclick="window.changeBlogStack(1)" style="width:48px; height:48px; border-radius:50%; background:#111827; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,0.2); transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
                             </div>
                         `;
 
-                        return '<div style="position:relative; height:auto; min-height:260px;">' + cardsHtml + controls + '</div>';
+                        return '<div style="position:relative; height:auto; min-height:280px;">' + cardsHtml + controls + '</div>';
                     };
 
                     container.innerHTML = renderCards();
@@ -1163,18 +1154,18 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 } else if (offset === 1) {
                                     card.style.zIndex = 9;
                                     card.style.opacity = 1;
-                                    card.style.transform = 'translateY(16px) scale(0.97)';
+                                    card.style.transform = 'translateY(14px) scale(0.97)';
                                     card.style.pointerEvents = 'none';
                                 } else if (offset === 2) {
                                     card.style.zIndex = 8;
-                                    card.style.opacity = 0.8;
-                                    card.style.transform = 'translateY(32px) scale(0.94)';
+                                    card.style.opacity = 0.75;
+                                    card.style.transform = 'translateY(28px) scale(0.94)';
                                     card.style.pointerEvents = 'none';
                                 } else {
                                     card.style.zIndex = 1;
                                     card.style.opacity = 0;
                                     card.style.pointerEvents = 'none';
-                                    card.style.transform = 'translateY(48px) scale(0.9)';
+                                    card.style.transform = 'translateY(42px) scale(0.9)';
                                 }
                             });
                         };
@@ -1473,13 +1464,58 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         ? { className: "portyo-bio-preview-root w-full h-full overflow-y-auto relative" }
         : { style: { margin: 0, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' } };
 
+    // Compute full bg style object from bgType  
+    const bgStyleObj = useBlocks ? computeBgStyle(bio) : {};
+    const bgCssString = useBlocks
+        ? Object.entries(bgStyleObj)
+            .map(([k, v]) => {
+                // Convert camelCase to kebab-case
+                const prop = k.replace(/([A-Z])/g, '-$1').toLowerCase()
+                    .replace(/^webkit-/, '-webkit-');
+                return `${prop}: ${v}`;
+            })
+            .join('; ')
+        : `background-color: ${bio?.bgColor || bio?.cardBackgroundColor || '#f3f4f6'}`;
+
     const navStyles = `
                         ${isPreview ? '.portyo-bio-preview-root' : 'html, body'} {
                             margin: 0;
                             padding: 0;
                             min-height: 100vh;
                             width: 100%;
-                            background-color: ${bio?.bgColor || bio?.cardBackgroundColor || '#f3f4f6'};
+                            ${bgCssString};
+                        }
+
+                        /* Responsive breakpoints for blocks renderer */
+                        @media (max-width: 480px) {
+                            [data-block-type="button_grid"] > div {
+                                grid-template-columns: 1fr !important;
+                            }
+                        }
+
+                        /* Hide scrollbar for carousels */
+                        [data-block-type="blog"] div::-webkit-scrollbar {
+                            display: none;
+                        }
+
+                        /* Entrance animation keyframes */
+                        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                        @keyframes slideLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+                        @keyframes slideRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+                        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+                        @keyframes zoomOut { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
+                        @keyframes flip { from { opacity: 0; transform: perspective(600px) rotateX(15deg); } to { opacity: 1; transform: perspective(600px) rotateX(0); } }
+                        @keyframes bounceIn { 
+                            0% { opacity: 0; transform: scale(0.3); } 
+                            50% { opacity: 1; transform: scale(1.05); } 
+                            70% { transform: scale(0.95); } 
+                            100% { transform: scale(1); }
+                        }
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
                         }
 
     `;
@@ -1567,7 +1603,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                     "description": bio.seoDescription,
                                     "image": bio.ogImage,
                                     "url": `https://${bio.sufix}.portyo.me`,
-                                    "sameAs": bio.socialLinks ? Object.values(bio.socialLinks).filter(Boolean) : []
+                                    "sameAs": bio.socials ? Object.values(bio.socials).filter(Boolean) : []
                                 }
                             }),
                         }}
@@ -1592,9 +1628,9 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         </>
                     )}
 
-                    {/* Google Search Console Verification */}
-                    {bio.googleAnalyticsId && (
-                        <meta name="google-site-verification" content={bio.googleAnalyticsId} />
+                    {/* Google Search Console Verification — separate field from GA ID */}
+                    {bio.googleSearchConsoleId && (
+                        <meta name="google-site-verification" content={bio.googleSearchConsoleId} />
                     )}
 
                     {/* Facebook Pixel */}
@@ -1643,7 +1679,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                             "description": bio.seoDescription,
                                             "image": bio.ogImage,
                                             "url": `https://${bio.sufix}.portyo.me`,
-                                            "sameAs": bio.socialLinks ? Object.values(bio.socialLinks).filter(Boolean) : []
+                                            "sameAs": bio.socials ? Object.values(bio.socials).filter(Boolean) : []
                                         }
                                     }),
                                 }}
@@ -1850,37 +1886,805 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                         />
                     </React.Suspense>
                 )}
-                <BioContent ref={containerRef} bio={bio} html={(htmlContent || "")
-                    // Only replace profile images (format: /api/images/{userId}/medium|thumbnail|original.png)
-                    // Do NOT replace block, blog, product, favicon, og, portfolio or bio-logo images
-                    .replace(/src=\"((?:https?:\/\/[^\"]+)?\/api\/images\/([a-f0-9-]+)\/(thumbnail|medium|original)\.png(\?[^\"]*)?)\"(?=[^>]*>)/gi, (_m: string, fullUrl: string, userId: string, _size: string) => {
-                        // Only replace if it's actually the profile image of this bio's user
-                        if (bio?.profileImage && bio?.userId === userId) {
-                            return `src=\"${bio.profileImage}\"`;
-                        }
-                        return _m;
-                    })
-                    // Migrate legacy /users-photos entries
-                    .replace(/src="(\/users-photos\/[a-f0-9-]{36}\.(?:png|jpe?g|webp))(\?[^\"]*)?\"/gi, (_m: string, _legacyPath: string, legacyQuery?: string) => {
-                        if (bio?.profileImage) {
-                            return `src=\"${bio.profileImage}\"`;
-                        }
-                        if (!bio?.userId) return `src="${_legacyPath}${legacyQuery || ''}"`;
-                        const v = Date.now();
-                        const url = `http://localhost:300/api/images/${bio.userId}/medium.png?v=${v}`;
-                        const finalUrl = origin ? url : `/api/images/${bio.userId}/medium.png?v=${v}`;
-                        return `src="${url}"`;
-                    })
-                    .replace(/(<img\s+)(src="\/(?:users-photos|api\/images)\/[^\"]+\")/i, '$1fetchpriority="high" $2')
-                    .replace(/(<img\s+)(?!.*fetchpriority)(?!.*loading)([^>]+>)/gi, '$1loading="lazy" decoding="async" $2')
-                    .replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
-                <div style="display:flex;justify-content:center;padding:24px 0 32px 0;width:100%;position:relative;z-index:10">
-                    <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12px; color: #4b5563; font-weight: 500; padding: 6px 14px; border-radius: 999px; background-color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;">
-                        <span>Powered by</span>
-                        <span style="font-weight:800; color:#111827;">Portyo</span>
-                    </a>
-                </div>
-                </div>`)} />
+                {/* Blocks-based rendering (React components) or legacy HTML rendering */}
+                {useBlocks ? (
+                    <div
+                        ref={containerRef}
+                        style={{
+                            minHeight: '100vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            width: '100%',
+                            padding: '16px',
+                            boxSizing: 'border-box',
+                            position: 'relative',
+                        }}
+                    >
+                        {/* Background overlay layers (video, blur, aurora, bubbles, etc.) */}
+                        <BioBackgroundLayers bio={bio} />
+
+                        {/* Profile Header */}
+                        {(() => {
+                            const imgLayout = bio.profileImageLayout || 'classic';
+                            const showImg = bio.displayProfileImage !== false;
+                            const imgSrc = bio.profileImage || headerImageSrc;
+                            const imgSize = bio.profileImageSize === 'large' ? 110 : 90;
+                            const handle = bio.sufix || subdomain || '';
+                            const maxW = bio.maxWidth || 566;
+
+                            if (imgLayout === 'hero') {
+                                // Compute card bg so the hero gradient can blend into it
+                                const heroBgColor = bio.cardBackgroundColor || '#ffffff';
+                                const hR = parseInt(heroBgColor.replace('#', '').substr(0, 2), 16) || 255;
+                                const hG = parseInt(heroBgColor.replace('#', '').substr(2, 2), 16) || 255;
+                                const hB = parseInt(heroBgColor.replace('#', '').substr(4, 2), 16) || 255;
+                                const heroCardBg = (bio.cardStyle && bio.cardStyle !== 'none') ? `rgb(${hR}, ${hG}, ${hB})` : 'transparent';
+                                const heroCardRadius = bio.cardBorderRadius || 24;
+
+                                return (
+                                    <div style={{
+                                        width: '100%',
+                                        maxWidth: `${maxW}px`,
+                                        margin: '0 auto 0 auto',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        position: 'relative',
+                                        zIndex: 10,
+                                        borderRadius: `36px 36px ${heroCardRadius}px ${heroCardRadius}px`,
+                                        overflow: 'hidden',
+                                        boxShadow: '0 32px 64px -28px rgba(0,0,0,0.6)',
+                                    }}>
+                                        {/* Hero image */}
+                                        <div style={{
+                                            width: '100%',
+                                            height: imgSize === 110 ? 480 : 420,
+                                            background: '#0f172a',
+                                            position: 'relative',
+                                        }}>
+                                            {showImg && imgSrc && (
+                                                <img
+                                                    src={imgSrc}
+                                                    alt={displayName}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    loading="lazy"
+                                                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                            )}
+                                            {/* Dark gradient for text readability */}
+                                            <div style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                pointerEvents: 'none',
+                                                background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 40%, transparent 70%)',
+                                            }} />
+                                            {/* All content overlaying the hero image */}
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'flex-end',
+                                                alignItems: 'center',
+                                                textAlign: 'center',
+                                                padding: '0 24px 28px',
+                                                gap: '8px',
+                                                zIndex: 5,
+                                            }}>
+                                                {/* Name + Verified */}
+                                                <div style={{
+                                                    fontSize: '34px',
+                                                    fontWeight: 900,
+                                                    color: '#ffffff',
+                                                    textShadow: '0 4px 16px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    letterSpacing: '-0.02em',
+                                                    lineHeight: 1.2,
+                                                }}>
+                                                    {displayName}
+                                                    {bio.verified && (
+                                                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                                    )}
+                                                </div>
+                                                {/* Handle */}
+                                                <div style={{
+                                                    fontSize: '16px',
+                                                    fontWeight: 600,
+                                                    color: 'rgba(255,255,255,0.75)',
+                                                    textShadow: '0 2px 10px rgba(0,0,0,0.4)',
+                                                    letterSpacing: '0.02em',
+                                                }}>
+                                                    @{handle}
+                                                </div>
+                                                {/* Hero socials — inside the image */}
+                                                {bio.socials && Object.values(bio.socials).some(Boolean) && (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        flexWrap: 'wrap',
+                                                        gap: '10px',
+                                                        marginTop: '6px',
+                                                    }}>
+                                                        {Object.entries(bio.socials).map(([platform, url]) => {
+                                                            if (!url) return null;
+                                                            const href = platform === 'email' ? `mailto:${String(url)}` : String(url);
+                                                            const platformData = SOCIAL_PLATFORMS[platform];
+                                                            const brandColor = platformData?.color || '#999';
+                                                            return (
+                                                                <a
+                                                                    key={platform}
+                                                                    href={href}
+                                                                    target={platform === 'email' ? undefined : '_blank'}
+                                                                    rel="noopener noreferrer"
+                                                                    title={platformData?.label || platform}
+                                                                    style={{
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        width: '42px', height: '42px',
+                                                                        borderRadius: '50%',
+                                                                        background: '#ffffff',
+                                                                        boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                                                                        textDecoration: 'none',
+                                                                        transition: 'all 0.25s ease',
+                                                                    }}
+                                                                    onMouseEnter={(e) => {
+                                                                        const el = e.currentTarget as HTMLAnchorElement;
+                                                                        el.style.transform = 'translateY(-3px) scale(1.1)';
+                                                                        el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+                                                                    }}
+                                                                    onMouseLeave={(e) => {
+                                                                        const el = e.currentTarget as HTMLAnchorElement;
+                                                                        el.style.transform = 'translateY(0) scale(1)';
+                                                                        el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)';
+                                                                    }}
+                                                                >
+                                                                    {platformData?.icon ? (
+                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill={brandColor}>
+                                                                            <path d={platformData.icon} />
+                                                                        </svg>
+                                                                    ) : (
+                                                                        <span style={{ fontSize: '14px', fontWeight: 700, color: brandColor }}>
+                                                                            {platform.charAt(0).toUpperCase()}
+                                                                        </span>
+                                                                    )}
+                                                                </a>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {/* Description — inside the image */}
+                                                {bio.description && (
+                                                    <p style={{
+                                                        fontSize: '15px',
+                                                        fontWeight: 500,
+                                                        color: 'rgba(255,255,255,0.85)',
+                                                        textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                                        margin: '4px 0 0',
+                                                        lineHeight: 1.6,
+                                                        maxWidth: '380px',
+                                                        letterSpacing: '0.01em',
+                                                    }}>
+                                                        {bio.description}
+                                                    </p>
+                                                )}
+                                                {/* Subscribe button — inside the image */}
+                                                {bio.enableSubscribeButton && (() => {
+                                                    const subscribeAccent = bio.accent || '#3b82f6';
+                                                    return (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setSubscribeStatus('idle'); setSubscribeMessage(''); setSubscribeOpen(true); }}
+                                                        style={{
+                                                            marginTop: '4px',
+                                                            padding: '11px 30px',
+                                                            borderRadius: '99px',
+                                                            border: 'none',
+                                                            background: subscribeAccent,
+                                                            color: '#ffffff',
+                                                            fontSize: '14px',
+                                                            fontWeight: 700,
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.25s ease',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px',
+                                                            boxShadow: `0 4px 14px ${subscribeAccent}44`,
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            const el = e.currentTarget;
+                                                            el.style.transform = 'translateY(-2px)';
+                                                            el.style.boxShadow = `0 6px 20px ${subscribeAccent}55`;
+                                                            el.style.filter = 'brightness(1.1)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            const el = e.currentTarget;
+                                                            el.style.transform = 'translateY(0)';
+                                                            el.style.boxShadow = `0 4px 14px ${subscribeAccent}44`;
+                                                            el.style.filter = 'brightness(1)';
+                                                        }}
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                            <polyline points="22,6 12,13 2,6" />
+                                                        </svg>
+                                                        Subscribe
+                                                    </button>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                        {/* Card content area — with overlapping transition */}
+                                        {(() => {
+                                            const cardStyleType = bio.cardStyle || 'none';
+                                            const cardBgColor = bio.cardBackgroundColor || '#ffffff';
+                                            const cardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
+                                            const cardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
+                                            const cr = parseInt(cardBgColor.replace('#', '').substr(0, 2), 16) || 255;
+                                            const cg = parseInt(cardBgColor.replace('#', '').substr(2, 2), 16) || 255;
+                                            const cb = parseInt(cardBgColor.replace('#', '').substr(4, 2), 16) || 255;
+                                            const alpha = cardOpacity / 100;
+
+                                            const showTransition = bio.heroTransition !== false;
+                                            const padX = bio.cardPadding ? Math.round(bio.cardPadding * 0.75) : 28;
+
+                                            // Target color for transition
+                                            const pageBg = bio.bgColor || '#f3f4f6';
+                                            const targetColor = (cardStyleType !== 'none')
+                                                ? `rgba(${cr}, ${cg}, ${cb}, ${alpha})`
+                                                : pageBg;
+
+                                            const heroCardStyle: React.CSSProperties = cardStyleType !== 'none' ? {
+                                                backgroundColor: `rgba(${cr}, ${cg}, ${cb}, ${alpha})`,
+                                                padding: `${bio.cardPadding || 36}px ${padX}px`,
+                                                paddingTop: showTransition ? '16px' : undefined,
+                                                ...(cardStyleType === 'frosted' ? {
+                                                    backdropFilter: `blur(${cardBlur}px)`,
+                                                    WebkitBackdropFilter: `blur(${cardBlur}px)`,
+                                                } : {}),
+                                            } : {
+                                                padding: '28px 16px',
+                                                paddingTop: showTransition ? '16px' : '28px',
+                                                backgroundColor: pageBg,
+                                            };
+
+                                            return (
+                                                <div style={{ position: 'relative' }}>
+                                                    {/* Overlapping transition — pulls up into hero */}
+                                                    {showTransition && (
+                                                        <div style={{
+                                                            height: '36px',
+                                                            marginTop: '-36px',
+                                                            position: 'relative',
+                                                            zIndex: 3,
+                                                            background: `linear-gradient(to bottom, transparent 0%, ${targetColor} 100%)`,
+                                                            pointerEvents: 'none',
+                                                        }} />
+                                                    )}
+                                                    <div style={heroCardStyle}>
+                                                        {/* Mini Navbar Tabs */}
+                                                        {(() => {
+                                                            const blogBlocks = bio.blocks.filter((b: any) => b.type === 'blog');
+                                                            const productBlocks = bio.blocks.filter((b: any) => b.type === 'product');
+                                                            const cvBlocks = bio.blocks.filter((b: any) => b.type === 'experience');
+                                                            const hasBlog = blogBlocks.length > 0;
+                                                            const hasProducts = productBlocks.length > 0;
+                                                            const hasCV = cvBlocks.length > 0;
+                                                            const tabBlockTypes = ['blog', 'product', 'experience'];
+                                                            const linkBlocks = bio.blocks.filter((b: any) => !tabBlockTypes.includes(b.type));
+                                                            const needsTabs = hasBlog || hasProducts || hasCV;
+
+                                                            if (!needsTabs) {
+                                                                // No special blocks — render all blocks normally
+                                                                return bio.blocks.map((block: any) => (
+                                                                    <BlockRenderer
+                                                                        key={block.id}
+                                                                        block={block}
+                                                                        bioId={bio.id}
+                                                                        accentColor={bio.accent || bio.bgColor}
+                                                                        globalButtonStyle={{
+                                                                            buttonStyle: bio.buttonStyle,
+                                                                            buttonRadius: bio.buttonRadius,
+                                                                            buttonShadow: bio.buttonShadow,
+                                                                            buttonColor: bio.buttonColor,
+                                                                            buttonTextColor: bio.buttonTextColor,
+                                                                        }}
+                                                                    />
+                                                                ));
+                                                            }
+
+                                                            const tabColor = bio.navTabColor || '#000000';
+                                                            const tabTextColor = bio.navTabTextColor || '#ffffff';
+                                                            const tabs: { id: string; label: string; blocks: any[] }[] = [
+                                                                { id: 'links', label: 'Links', blocks: linkBlocks },
+                                                            ];
+                                                            if (hasBlog) tabs.push({ id: 'blog', label: 'Blog', blocks: blogBlocks });
+                                                            if (hasProducts) tabs.push({ id: 'shop', label: 'Shop', blocks: productBlocks });
+                                                            if (hasCV) tabs.push({ id: 'cv', label: 'CV', blocks: cvBlocks });
+
+                                                            const currentTab = tabs.find(t => t.id === activeNavTab) || tabs[0];
+
+                                                            return (
+                                                                <>
+                                                                    <div style={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center',
+                                                                        gap: '6px',
+                                                                        marginBottom: '24px',
+                                                                        padding: '4px',
+                                                                        borderRadius: '14px',
+                                                                        background: 'rgba(0,0,0,0.06)',
+                                                                    }}>
+                                                                        {tabs.map(tab => {
+                                                                            const isActive = currentTab.id === tab.id;
+                                                                            return (
+                                                                                <button
+                                                                                    key={tab.id}
+                                                                                    onClick={() => setActiveNavTab(tab.id)}
+                                                                                    style={{
+                                                                                        flex: 1,
+                                                                                        padding: '10px 16px',
+                                                                                        borderRadius: '10px',
+                                                                                        border: 'none',
+                                                                                        cursor: 'pointer',
+                                                                                        fontSize: '14px',
+                                                                                        fontWeight: 600,
+                                                                                        transition: 'all 0.2s ease',
+                                                                                        background: isActive ? tabColor : 'transparent',
+                                                                                        color: isActive ? tabTextColor : '#6b7280',
+                                                                                        boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                                                                                    }}
+                                                                                >
+                                                                                    {tab.label}
+                                                                                </button>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                    {currentTab.blocks.map((block: any) => (
+                                                                        <BlockRenderer
+                                                                            key={block.id}
+                                                                            block={block}
+                                                                            bioId={bio.id}
+                                                                            accentColor={bio.accent || bio.bgColor}
+                                                                            globalButtonStyle={{
+                                                                                buttonStyle: bio.buttonStyle,
+                                                                                buttonRadius: bio.buttonRadius,
+                                                                                buttonShadow: bio.buttonShadow,
+                                                                                buttonColor: bio.buttonColor,
+                                                                                buttonTextColor: bio.buttonTextColor,
+                                                                            }}
+                                                                        />
+                                                                    ))}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                );
+                            }
+
+                            // Classic header
+                            return (
+                                <div style={{
+                                    width: '100%',
+                                    maxWidth: `${maxW}px`,
+                                    margin: '0 auto 24px auto',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    position: 'relative',
+                                    zIndex: 10,
+                                    paddingTop: '48px',
+                                }}>
+                                    {/* Profile Image */}
+                                    {showImg && imgSrc && (
+                                        <div style={{
+                                            width: imgSize === 110 ? 130 : 110,
+                                            height: imgSize === 110 ? 130 : 110,
+                                            borderRadius: bio.imageStyle === 'square' ? '18px' : bio.imageStyle === 'rounded-square' ? '28px' : '50%',
+                                            overflow: 'hidden',
+                                            marginBottom: '18px',
+                                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                                        }}>
+                                            <img
+                                                src={imgSrc}
+                                                alt={displayName}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                loading="eager"
+                                            />
+                                        </div>
+                                    )}
+                                    {!showImg || !imgSrc ? (
+                                        <div style={{
+                                            width: imgSize === 110 ? 130 : 110,
+                                            height: imgSize === 110 ? 130 : 110,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '42px',
+                                            fontWeight: 700,
+                                            color: '#fff',
+                                            marginBottom: '18px',
+                                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                                        }}>
+                                            {avatarFallback}
+                                        </div>
+                                    ) : null}
+
+                                    {/* Name or Logo */}
+                                    {bio.titleStyle === 'logo' && bio.titleLogo ? (
+                                        <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                            <img
+                                                src={bio.titleLogo}
+                                                alt={displayName}
+                                                style={{ maxHeight: '56px', maxWidth: '240px', objectFit: 'contain' }}
+                                                loading="eager"
+                                            />
+                                            {bio.verified && (
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '6px' }}><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                            )}
+                                        </div>
+                                    ) : (
+                                    <div style={{
+                                        fontSize: '34px',
+                                        fontWeight: 800,
+                                        color: usernameColor,
+                                        marginBottom: '6px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        letterSpacing: '-0.02em',
+                                        lineHeight: 1.2,
+                                    }}>
+                                        {displayName}
+                                        {bio.verified && (
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/><path d="m9 12 2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                        )}
+                                    </div>
+                                    )}
+                                    {/* Handle */}
+                                    <div style={{
+                                        fontSize: '16px',
+                                        fontWeight: 600,
+                                        color: usernameColor,
+                                        opacity: 0.7,
+                                        marginBottom: '16px',
+                                        letterSpacing: '0.01em',
+                                    }}>
+                                        @{handle}
+                                    </div>
+                                    {/* Description */}
+                                    {bio.description && (
+                                        <p style={{
+                                            fontSize: '17px',
+                                            fontWeight: 500,
+                                            color: usernameColor,
+                                            opacity: 0.85,
+                                            margin: '0 0 24px 0',
+                                            lineHeight: 1.7,
+                                            textAlign: 'center',
+                                            maxWidth: '520px',
+                                            letterSpacing: '0.01em',
+                                        }}>
+                                            {bio.description}
+                                        </p>
+                                    )}
+                                    {/* Socials */}
+                                    {bio.socials && Object.values(bio.socials).some(Boolean) && (
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            flexWrap: 'wrap',
+                                            gap: '14px',
+                                            marginBottom: '14px',
+                                        }}>
+                                            {Object.entries(bio.socials).map(([platform, url]) => {
+                                                if (!url) return null;
+                                                const href = platform === 'email' ? `mailto:${String(url)}` : String(url);
+                                                const platformData = SOCIAL_PLATFORMS[platform];
+                                                const brandColor = platformData?.color || '#666';
+                                                return (
+                                                    <a
+                                                        key={platform}
+                                                        href={href}
+                                                        target={platform === 'email' ? undefined : '_blank'}
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            textDecoration: 'none',
+                                                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                                                        }}
+                                                        title={platformData?.label || platform}
+                                                        onMouseEnter={(e) => {
+                                                            const el = e.currentTarget as HTMLAnchorElement;
+                                                            el.style.transform = 'translateY(-3px) scale(1.2)';
+                                                            el.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.2)) brightness(1.15)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            const el = e.currentTarget as HTMLAnchorElement;
+                                                            el.style.transform = 'translateY(0) scale(1)';
+                                                            el.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))';
+                                                        }}
+                                                    >
+                                                        {platformData?.icon ? (
+                                                            <svg width="26" height="26" viewBox="0 0 24 24" fill={brandColor}>
+                                                                <path d={platformData.icon} />
+                                                            </svg>
+                                                        ) : (
+                                                            <span style={{ fontSize: '16px', fontWeight: 700, color: brandColor }}>
+                                                                {platform.charAt(0).toUpperCase()}
+                                                            </span>
+                                                        )}
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    {/* Subscribe button */}
+                                    {bio.enableSubscribeButton && (() => {
+                                        const subscribeAccent = bio.accent || '#3b82f6';
+                                        return (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setSubscribeStatus('idle'); setSubscribeMessage(''); setSubscribeOpen(true); }}
+                                            style={{
+                                                marginBottom: '14px',
+                                                padding: '13px 36px',
+                                                borderRadius: '99px',
+                                                border: 'none',
+                                                background: subscribeAccent,
+                                                color: '#ffffff',
+                                                fontSize: '15px',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.25s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                boxShadow: `0 4px 14px ${subscribeAccent}44`,
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                const el = e.currentTarget;
+                                                el.style.transform = 'translateY(-2px)';
+                                                el.style.boxShadow = `0 6px 20px ${subscribeAccent}55`;
+                                                el.style.filter = 'brightness(1.1)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const el = e.currentTarget;
+                                                el.style.transform = 'translateY(0)';
+                                                el.style.boxShadow = `0 4px 14px ${subscribeAccent}44`;
+                                                el.style.filter = 'brightness(1)';
+                                            }}
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                <polyline points="22,6 12,13 2,6" />
+                                            </svg>
+                                            Subscribe
+                                        </button>
+                                        );
+                                    })()}
+                                </div>
+                            );
+                        })()}
+
+                        {/* Card container for blocks (skip for hero — blocks rendered inside hero) */}
+                        {(() => {
+                            const isHeroLayout = (bio.profileImageLayout || 'classic') === 'hero';
+                            if (isHeroLayout) return null;
+
+                            const cardStyleType = bio.cardStyle || 'none';
+                            const cardBgColor = bio.cardBackgroundColor || '#ffffff';
+                            const cardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
+                            const cardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
+                            const maxW = bio.maxWidth || 566;
+                            const r = parseInt(cardBgColor.replace('#', '').substr(0, 2), 16) || 255;
+                            const g = parseInt(cardBgColor.replace('#', '').substr(2, 2), 16) || 255;
+                            const b = parseInt(cardBgColor.replace('#', '').substr(4, 2), 16) || 255;
+                            const alpha = cardOpacity / 100;
+
+                            const cardStyle: React.CSSProperties = cardStyleType !== 'none' ? {
+                                backgroundColor: `rgba(${r}, ${g}, ${b}, ${alpha})`,
+                                borderRadius: `${bio.cardBorderRadius || 24}px`,
+                                padding: `${bio.cardPadding || 36}px ${bio.cardPadding ? Math.round(bio.cardPadding * 0.75) : 28}px`,
+                                boxShadow: bio.cardShadow || '0 8px 32px rgba(0,0,0,0.12)',
+                                transition: 'box-shadow 0.3s ease',
+                                ...(cardStyleType === 'frosted' ? {
+                                    backdropFilter: `blur(${cardBlur}px)`,
+                                    WebkitBackdropFilter: `blur(${cardBlur}px)`,
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                } : {}),
+                                ...(bio.cardBorderWidth ? {
+                                    borderWidth: `${bio.cardBorderWidth}px`,
+                                    borderStyle: 'solid',
+                                    borderColor: bio.cardBorderColor || 'rgba(0,0,0,0.08)',
+                                } : {}),
+                            } : {};
+
+                            return (
+                                <div style={{
+                                    width: '100%',
+                                    maxWidth: `${maxW}px`,
+                                    margin: '0 auto',
+                                    ...cardStyle,
+                                }}>
+                                    {/* Mini Navbar Tabs — classic layout */}
+                                    {(() => {
+                                        const blogBlocks = bio.blocks.filter((b: any) => b.type === 'blog');
+                                        const productBlocks = bio.blocks.filter((b: any) => b.type === 'product');
+                                        const cvBlocks = bio.blocks.filter((b: any) => b.type === 'experience');
+                                        const hasBlog = blogBlocks.length > 0;
+                                        const hasProducts = productBlocks.length > 0;
+                                        const hasCV = cvBlocks.length > 0;
+                                        const tabBlockTypes = ['blog', 'product', 'experience'];
+                                        const linkBlocks = bio.blocks.filter((b: any) => !tabBlockTypes.includes(b.type));
+                                        const needsTabs = hasBlog || hasProducts || hasCV;
+
+                                        if (!needsTabs) {
+                                            return bio.blocks.map((block: any) => (
+                                                <BlockRenderer
+                                                    key={block.id}
+                                                    block={block}
+                                                    bioId={bio.id}
+                                                    accentColor={bio.accent || bio.bgColor}
+                                                    globalButtonStyle={{
+                                                        buttonStyle: bio.buttonStyle,
+                                                        buttonRadius: bio.buttonRadius,
+                                                        buttonShadow: bio.buttonShadow,
+                                                        buttonColor: bio.buttonColor,
+                                                        buttonTextColor: bio.buttonTextColor,
+                                                    }}
+                                                />
+                                            ));
+                                        }
+
+                                        const tabColor = bio.navTabColor || '#000000';
+                                        const tabTextColor = bio.navTabTextColor || '#ffffff';
+                                        const tabs: { id: string; label: string; blocks: any[] }[] = [
+                                            { id: 'links', label: 'Links', blocks: linkBlocks },
+                                        ];
+                                        if (hasBlog) tabs.push({ id: 'blog', label: 'Blog', blocks: blogBlocks });
+                                        if (hasProducts) tabs.push({ id: 'shop', label: 'Shop', blocks: productBlocks });
+                                        if (hasCV) tabs.push({ id: 'cv', label: 'CV', blocks: cvBlocks });
+
+                                        const currentTab = tabs.find(t => t.id === activeNavTab) || tabs[0];
+
+                                        return (
+                                            <>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    gap: '6px',
+                                                    marginBottom: '24px',
+                                                    padding: '4px',
+                                                    borderRadius: '14px',
+                                                    background: 'rgba(0,0,0,0.06)',
+                                                }}>
+                                                    {tabs.map(tab => {
+                                                        const isActive = currentTab.id === tab.id;
+                                                        return (
+                                                            <button
+                                                                key={tab.id}
+                                                                onClick={() => setActiveNavTab(tab.id)}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    padding: '10px 16px',
+                                                                    borderRadius: '10px',
+                                                                    border: 'none',
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 600,
+                                                                    transition: 'all 0.2s ease',
+                                                                    background: isActive ? tabColor : 'transparent',
+                                                                    color: isActive ? tabTextColor : '#6b7280',
+                                                                    boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                                                                }}
+                                                            >
+                                                                {tab.label}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                                {currentTab.blocks.map((block: any) => (
+                                                    <BlockRenderer
+                                                        key={block.id}
+                                                        block={block}
+                                                        bioId={bio.id}
+                                                        accentColor={bio.accent || bio.bgColor}
+                                                        globalButtonStyle={{
+                                                            buttonStyle: bio.buttonStyle,
+                                                            buttonRadius: bio.buttonRadius,
+                                                            buttonShadow: bio.buttonShadow,
+                                                            buttonColor: bio.buttonColor,
+                                                            buttonTextColor: bio.buttonTextColor,
+                                                        }}
+                                                    />
+                                                ))}
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                            );
+                        })()}
+
+                        {/* Branding footer */}
+                        {!bio.removeBranding && (
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                padding: '24px 0 32px 0',
+                                width: '100%',
+                            }}>
+                                <a
+                                    href="https://portyo.me"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        textDecoration: 'none',
+                                        fontSize: '12px',
+                                        color: usernameColor,
+                                        opacity: 0.5,
+                                        fontWeight: 500,
+                                        padding: '6px 14px',
+                                        borderRadius: '999px',
+                                        backgroundColor: `${usernameColor}0A`,
+                                        border: `1px solid ${usernameColor}12`,
+                                        transition: 'opacity 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => { (e.currentTarget).style.opacity = '0.7'; }}
+                                    onMouseLeave={(e) => { (e.currentTarget).style.opacity = '0.5'; }}
+                                >
+                                    <span>Powered by</span>
+                                    <span style={{ fontWeight: 800 }}>Portyo</span>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <BioContent ref={containerRef} bio={bio} html={(htmlContent || "")
+                        // Only replace profile images (format: /api/images/{userId}/medium|thumbnail|original.png)
+                        // Do NOT replace block, blog, product, favicon, og, portfolio or bio-logo images
+                        .replace(/src=\"((?:https?:\/\/[^\"]+)?\/api\/images\/([a-f0-9-]+)\/(thumbnail|medium|original)\.png(\?[^\"]*)?)\"(?=[^>]*>)/gi, (_m: string, fullUrl: string, userId: string, _size: string) => {
+                            // Only replace if it's actually the profile image of this bio's user
+                            if (bio?.profileImage && bio?.userId === userId) {
+                                return `src=\"${bio.profileImage}\"`;
+                            }
+                            return _m;
+                        })
+                        // Migrate legacy /users-photos entries
+                        .replace(/src="(\/users-photos\/[a-f0-9-]{36}\.(?:png|jpe?g|webp))(\?[^\"]*)?\"/gi, (_m: string, _legacyPath: string, legacyQuery?: string) => {
+                            if (bio?.profileImage) {
+                                return `src=\"${bio.profileImage}\"`;
+                            }
+                            if (!bio?.userId) return `src="${_legacyPath}${legacyQuery || ''}"`;
+                            const v = Date.now();
+                            const url = `${origin}/api/images/${bio.userId}/medium.png?v=${v}`;
+                            return `src="${url}"`;
+                        })
+                        .replace(/(<img\s+)(src="\/(?:users-photos|api\/images)\/[^\"]+\")/i, '$1fetchpriority="high" $2')
+                        .replace(/(<img\s+)(?!.*fetchpriority)(?!.*loading)([^>]+>)/gi, '$1loading="lazy" decoding="async" $2')
+                        .replace(/<\/div>\s*$/, bio.removeBranding ? '</div>' : `
+                    <div style="display:flex;justify-content:center;padding:24px 0 32px 0;width:100%;position:relative;z-index:10">
+                        <a href="https://portyo.me" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12px; color: #4b5563; font-weight: 500; padding: 6px 14px; border-radius: 999px; background-color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;">
+                            <span>Powered by</span>
+                            <span style="font-weight:800; color:#111827;">Portyo</span>
+                        </a>
+                    </div>
+                    </div>`)} />
+                )}
 
                 {nsfwOpen && (
                     <div style={{

@@ -101,46 +101,46 @@ export const CountrySelector = ({ selectedCountry, onSelectCountry, disabled = f
     }, {} as Record<string, Country[]>);
 
     return (
-        <div className="relative">
+        <div className="w-full">
             {/* Trigger Button */}
             <button
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
-                className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 p-4 sm:p-5 rounded-[18px] border-2 border-black transition-all duration-200 bg-white ${
                     selectedCountry 
-                        ? "border-primary/50 bg-primary/5" 
-                        : "border-border hover:border-primary/30"
+                        ? "ring-2 ring-[#C6F035]/30" 
+                        : "hover:bg-gray-50"
                 } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    selectedCountry ? "bg-primary/20" : "bg-muted"
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center border border-black/10 ${
+                    selectedCountry ? "bg-[#C6F035]/25" : "bg-gray-100"
                 }`}>
                     {selectedCountryData ? (
                         <span className="text-2xl">{selectedCountryData.flag}</span>
                     ) : (
-                        <Globe className="w-5 h-5 text-text-muted" />
+                        <Globe className="w-5 h-5 text-gray-500" />
                     )}
                 </div>
                 <div className="flex-1 text-left">
-                    <p className="text-sm text-text-muted">Target Country</p>
-                    <p className="font-medium text-text-main">
+                    <p className="text-sm text-gray-500">Target Country</p>
+                    <p className="font-semibold text-[#1A1A1A] text-base sm:text-lg leading-tight">
                         {selectedCountryData ? selectedCountryData.name : "Global / No specific target"}
                     </p>
                 </div>
-                <MapPin className={`w-5 h-5 ${selectedCountry ? "text-primary" : "text-text-muted"}`} />
+                <MapPin className={`w-5 h-5 ${selectedCountry ? "text-[#1A1A1A]" : "text-gray-500"}`} />
             </button>
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-surface-card rounded-xl border border-border shadow-xl max-h-96 overflow-hidden">
+                <div className="mt-3 w-full bg-white rounded-[18px] border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                     {/* Search */}
-                    <div className="p-3 border-b border-border">
+                    <div className="p-3 sm:p-4 border-b-2 border-gray-100 bg-white">
                         <input
                             type="text"
                             placeholder="Search country or region..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-3 py-2 bg-muted rounded-lg text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-white/30"
+                            className="w-full px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm text-[#1A1A1A] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C6F035]/30 focus:border-[#C6F035]"
                         />
                     </div>
                     
@@ -150,22 +150,22 @@ export const CountrySelector = ({ selectedCountry, onSelectCountry, disabled = f
                             onSelectCountry(null);
                             setIsOpen(false);
                         }}
-                        className={`w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors ${
-                            !selectedCountry ? "bg-primary/10" : ""
+                        className={`w-full flex items-center gap-3 p-3 sm:p-3.5 hover:bg-gray-50 transition-colors border-b border-gray-100 ${
+                            !selectedCountry ? "bg-[#C6F035]/15" : ""
                         }`}
                     >
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                            <Globe className="w-4 h-4 text-text-muted" />
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <Globe className="w-4 h-4 text-gray-500" />
                         </div>
-                        <span className="flex-1 text-left text-text-main">Global / No specific target</span>
-                        {!selectedCountry && <Check className="w-4 h-4 text-primary" />}
+                        <span className="flex-1 text-left text-[#1A1A1A] font-medium">Global / No specific target</span>
+                        {!selectedCountry && <Check className="w-4 h-4 text-[#84A800]" />}
                     </button>
                     
                     {/* Countries by Region */}
-                    <div className="overflow-y-auto max-h-64">
+                    <div className="overflow-y-auto max-h-[42vh] sm:max-h-80 bg-white">
                         {Object.entries(groupedByRegion).map(([region, countries]) => (
                             <div key={region}>
-                                <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                <div className="px-3 sm:px-4 py-2 bg-gray-50 text-xs font-black text-gray-500 uppercase tracking-wider border-y border-gray-100">
                                     {region}
                                 </div>
                                 {countries.map((country) => (
@@ -175,14 +175,14 @@ export const CountrySelector = ({ selectedCountry, onSelectCountry, disabled = f
                                             onSelectCountry(country.code);
                                             setIsOpen(false);
                                         }}
-                                        className={`w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors ${
-                                            selectedCountry === country.code ? "bg-primary/10" : ""
+                                        className={`w-full flex items-center gap-3 p-3 sm:p-3.5 hover:bg-gray-50 transition-colors ${
+                                            selectedCountry === country.code ? "bg-[#C6F035]/15" : ""
                                         }`}
                                     >
                                         <span className="text-2xl">{country.flag}</span>
-                                        <span className="flex-1 text-left text-text-main">{country.name}</span>
+                                        <span className="flex-1 text-left text-[#1A1A1A] font-medium">{country.name}</span>
                                         {selectedCountry === country.code && (
-                                            <Check className="w-4 h-4 text-primary" />
+                                            <Check className="w-4 h-4 text-[#84A800]" />
                                         )}
                                     </button>
                                 ))}

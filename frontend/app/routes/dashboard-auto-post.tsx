@@ -30,8 +30,11 @@ import {
     X,
     Mic,
     RotateCcw,
-    Cpu
+    Cpu,
+    Globe,
+    PenTool
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAutoPost, type PostFrequency } from "~/contexts/auto-post.context";
 import { useBio } from "~/contexts/bio.context";
 import { useTranslation } from "react-i18next";
@@ -46,7 +49,6 @@ import { CountrySelector, getLanguageByCountry, COUNTRIES } from "~/components/d
 export const meta: MetaFunction = () => {
     return [
         { title: "Auto Post | Portyo" },
-        { name: "description", content: "Configure automatic blog posts with AI" },
     ];
 };
 
@@ -161,6 +163,21 @@ export default function DashboardAutoPost() {
         language: null as string | null,
     });
 
+    const parsedKeywords = formData.keywords
+        .split(",")
+        .map(k => k.trim())
+        .filter(k => k);
+
+    const isFormComplete =
+        !!formData.frequency &&
+        !!formData.topics.trim() &&
+        parsedKeywords.length > 0 &&
+        !!formData.tone &&
+        !!formData.postLength &&
+        !!formData.preferredTime &&
+        !!formData.targetCountry &&
+        !!formData.language;
+
     // Debounce timer for topics input
     const [topicsDebounceTimer, setTopicsDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
@@ -184,11 +201,15 @@ export default function DashboardAutoPost() {
     }, [schedule]);
 
     const handleSave = async () => {
+        if (!isFormComplete) {
+            return;
+        }
+
         try {
             const data = {
                 frequency: formData.frequency,
                 topics: formData.topics,
-                keywords: formData.keywords.split(",").map(k => k.trim()).filter(k => k),
+                keywords: parsedKeywords,
                 targetAudience: formData.targetAudience,
                 tone: formData.tone,
                 postLength: formData.postLength,
@@ -228,11 +249,15 @@ export default function DashboardAutoPost() {
     };
 
     const handleGeneratePreview = async () => {
+        if (!isFormComplete) {
+            return;
+        }
+
         try {
             const result = await generatePreview({
                 frequency: formData.frequency,
                 topics: formData.topics,
-                keywords: formData.keywords.split(",").map(k => k.trim()).filter(k => k),
+                keywords: parsedKeywords,
                 tone: formData.tone,
                 postLength: formData.postLength,
                 targetAudience: formData.targetAudience,
@@ -300,39 +325,53 @@ export default function DashboardAutoPost() {
     if (!bio) {
         return (
             <div className="p-8 max-w-7xl mx-auto">
-                <div className="bg-white border-4 border-black rounded-[24px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-12 text-center">
-                    <Bot className="w-16 h-16 text-black mx-auto mb-6" />
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-white to-gray-50 border-4 border-black rounded-[24px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-12 text-center"
+                >
+                    <div className="w-20 h-20 mx-auto mb-6 bg-[#d2e823] border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <Bot className="w-10 h-10 text-black" />
+                    </div>
                     <h2 className="text-2xl font-black text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
                         {t("dashboard.autoPost.emptyBioTitle")}
                     </h2>
                     <p className="text-gray-500 font-medium">{t("dashboard.autoPost.emptyBioSubtitle")}</p>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-10">
             {/* Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <motion.header
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+            >
                 <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d2e823] border border-black text-black text-xs font-black uppercase tracking-wider mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        <Sparkles className="w-3 h-3" />
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#d2e823] to-[#C6F035] border-2 border-black text-black text-xs font-black uppercase tracking-wider mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        <Sparkles className="w-3.5 h-3.5" />
                         {t("dashboard.autoPost.header.proFeature")}
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    <h1 className="text-3xl md:text-4xl font-black text-[#1A1A1A] tracking-tight mb-1.5" style={{ fontFamily: 'var(--font-display)' }}>
                         {t("dashboard.autoPost.header.title")}
                     </h1>
-                    <p className="text-lg text-gray-500 font-medium max-w-2xl">{t("dashboard.autoPost.header.subtitle")}</p>
+                    <p className="text-base text-gray-500 font-medium max-w-xl">{t("dashboard.autoPost.header.subtitle")}</p>
                 </div>
 
                 {schedule && (
-                    <div className="flex items-center gap-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-3"
+                    >
                         <button
                             onClick={handleToggle}
-                            className={`px-6 py-3 rounded-[14px] font-black text-sm border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 ${schedule.isActive
-                                    ? 'bg-[#E94E77] text-white hover:bg-[#d43d64]'
-                                    : 'bg-[#C6F035] text-black hover:bg-[#d6ed42]'
+                            className={`px-5 py-2.5 rounded-[12px] font-black text-sm border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 ${schedule.isActive
+                                    ? 'bg-[#E94E77] text-white'
+                                    : 'bg-[#C6F035] text-black'
                                 }`}
                         >
                             {schedule.isActive ? (
@@ -343,209 +382,229 @@ export default function DashboardAutoPost() {
                         </button>
                         <button
                             onClick={() => setIsEditing(!isEditing)}
-                            className="px-6 py-3 bg-white text-black border-2 border-black rounded-[14px] font-black text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2"
+                            className="px-5 py-2.5 bg-white text-black border-2 border-black rounded-[12px] font-black text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2"
                         >
                             <Edit3 className="w-4 h-4 stroke-[2.5px]" />
                             {isEditing ? t("dashboard.autoPost.header.cancelEdit") : t("dashboard.autoPost.header.edit")}
                         </button>
-                    </div>
+                    </motion.div>
                 )}
-            </header>
+            </motion.header>
 
             {/* Enhanced Stats Cards */}
             {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                     {/* Posts This Month */}
-                    <div className="bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                        <div className="flex items-center gap-4 mb-3">
-                            <div className="w-12 h-12 rounded-[14px] bg-[#0047FF] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                <FileText className="w-6 h-6 text-white" />
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 }}
+                        className="bg-white p-5 rounded-[20px] border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-[12px] bg-[#0047FF] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <FileText className="w-5 h-5 text-white" />
                             </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-500">{t("dashboard.autoPost.stats.postsThisMonth")}</p>
-                                <p className="text-2xl font-black text-[#1A1A1A]">{stats.postsThisMonth}</p>
-                            </div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-tight">{t("dashboard.autoPost.stats.postsThisMonth")}</p>
                         </div>
-                        <div className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg w-fit border border-gray-200">
+                        <p className="text-3xl font-black text-[#1A1A1A] mb-2">{stats.postsThisMonth}</p>
+                        <div className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg w-fit border border-gray-200">
                             {t("dashboard.autoPost.stats.remainingOf", {
                                 remaining: stats.remainingPosts,
                                 limit: PLAN_LIMITS.pro.autoPostPerMonth,
                             })}
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Next Post */}
-                    <div className="bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                        <div className="flex items-center gap-4 mb-3">
-                            <div className="w-12 h-12 rounded-[14px] bg-[#C6F035] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                <Calendar className="w-6 h-6 text-black" />
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-white p-5 rounded-[20px] border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-[12px] bg-[#C6F035] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <Calendar className="w-5 h-5 text-black" />
                             </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-500">{t("dashboard.autoPost.stats.nextPost")}</p>
-                                <p className="text-xl font-black text-[#1A1A1A]">
-                                    {stats.nextPostDate
-                                        ? (() => {
-                                            const nextDate = new Date(stats.nextPostDate);
-                                            const today = new Date();
-                                            const isToday = nextDate.toDateString() === today.toDateString();
-                                            return isToday ? t("dashboard.autoPost.stats.today") : format(nextDate, "MMM d", { locale });
-                                        })()
-                                        : t("dashboard.autoPost.stats.notScheduled")
-                                    }
-                                </p>
-                            </div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-tight">{t("dashboard.autoPost.stats.nextPost")}</p>
                         </div>
-                        <div className="text-xs font-bold text-gray-400">
+                        <p className="text-xl font-black text-[#1A1A1A] mb-2">
+                            {stats.nextPostDate
+                                ? (() => {
+                                    const nextDate = new Date(stats.nextPostDate);
+                                    const today = new Date();
+                                    const isToday = nextDate.toDateString() === today.toDateString();
+                                    return isToday ? t("dashboard.autoPost.stats.today") : format(nextDate, "MMM d", { locale });
+                                })()
+                                : t("dashboard.autoPost.stats.notScheduled")
+                            }
+                        </p>
+                        <div className="text-[11px] font-bold text-gray-400">
                             {stats.nextPostDate
                                 ? format(new Date(stats.nextPostDate), "h:mm a", { locale })
                                 : (schedule?.preferredTime || "--")
                             }
                             {stats.nextPostDate && new Date(stats.nextPostDate) < new Date() && (
-                                <span className="text-[#E94E77] ml-2">({t("dashboard.autoPost.stats.overdue")})</span>
+                                <span className="text-[#E94E77] ml-1.5 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">({t("dashboard.autoPost.stats.overdue")})</span>
                             )}
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Last Post */}
-                    <div className="bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                        <div className="flex items-center gap-4 mb-3">
-                            <div className="w-12 h-12 rounded-[14px] bg-[#E94E77] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                <RotateCcw className="w-6 h-6 text-white" />
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="bg-white p-5 rounded-[20px] border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-[12px] bg-[#E94E77] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <RotateCcw className="w-5 h-5 text-white" />
                             </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-500">{t("dashboard.autoPost.stats.lastPost")}</p>
-                                <p className="text-xl font-black text-[#1A1A1A]">
-                                    {stats.lastPostDate
-                                        ? (() => {
-                                            const lastDate = new Date(stats.lastPostDate);
-                                            const today = new Date();
-                                            const isToday = lastDate.toDateString() === today.toDateString();
-                                            return isToday ? t("dashboard.autoPost.stats.today") : format(lastDate, "MMM d", { locale });
-                                        })()
-                                        : t("dashboard.autoPost.stats.never")
-                                    }
-                                </p>
-                            </div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-tight">{t("dashboard.autoPost.stats.lastPost")}</p>
                         </div>
-                        <div className="text-xs font-bold text-gray-400">
+                        <p className="text-xl font-black text-[#1A1A1A] mb-2">
+                            {stats.lastPostDate
+                                ? (() => {
+                                    const lastDate = new Date(stats.lastPostDate);
+                                    const today = new Date();
+                                    const isToday = lastDate.toDateString() === today.toDateString();
+                                    return isToday ? t("dashboard.autoPost.stats.today") : format(lastDate, "MMM d", { locale });
+                                })()
+                                : t("dashboard.autoPost.stats.never")
+                            }
+                        </p>
+                        <div className="text-[11px] font-bold text-gray-400">
                             {stats.lastPostDate
                                 ? format(new Date(stats.lastPostDate), "h:mm a", { locale })
                                 : t("dashboard.autoPost.stats.noPostsYet")
                             }
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Status */}
-                    <div className="bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                        <div className="flex items-center gap-4 mb-3">
-                            <div className={`w-12 h-12 rounded-[14px] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${schedule?.isActive ? 'bg-[#d2e823]' : 'bg-gray-200'
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white p-5 rounded-[20px] border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className={`w-10 h-10 rounded-[12px] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${schedule?.isActive ? 'bg-[#d2e823]' : 'bg-gray-200'
                                 }`}>
-                                <Zap className={`w-6 h-6 ${schedule?.isActive ? 'text-black' : 'text-gray-500'}`} />
+                                <Zap className={`w-5 h-5 ${schedule?.isActive ? 'text-black' : 'text-gray-500'}`} />
                             </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-500">{t("dashboard.autoPost.stats.status")}</p>
-                                <p className="text-xl font-black text-[#1A1A1A]">
-                                    {schedule?.isActive ? t("dashboard.autoPost.stats.active") : t("dashboard.autoPost.stats.paused")}
-                                </p>
-                            </div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-tight">{t("dashboard.autoPost.stats.status")}</p>
                         </div>
-                        <div className="text-xs font-bold text-gray-400 capitalize bg-gray-100 px-3 py-1.5 rounded-lg w-fit border border-gray-200">
+                        <p className="text-xl font-black text-[#1A1A1A] mb-2">
+                            {schedule?.isActive ? t("dashboard.autoPost.stats.active") : t("dashboard.autoPost.stats.paused")}
+                        </p>
+                        <div className="text-[11px] font-bold text-gray-400 capitalize bg-gray-100 px-2.5 py-1 rounded-lg w-fit border border-gray-200">
                             {schedule?.frequency || t("dashboard.autoPost.stats.notConfigured")}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
 
             {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Configuration Panel */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                        <div className="p-8 border-b-4 border-black bg-gray-50">
-                            <h2 className="text-2xl font-black text-[#1A1A1A] flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
-                                <div className="p-2 bg-[#d2e823] border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="lg:col-span-2 space-y-6"
+                >
+                    <div className="bg-white rounded-[20px] border-3 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                        <div className="p-6 md:p-7 border-b-3 border-black bg-gradient-to-r from-gray-50 to-white">
+                            <h2 className="text-xl font-black text-[#1A1A1A] flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
+                                <div className="p-2 bg-gradient-to-br from-[#d2e823] to-[#C6F035] border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                                     <Target className="w-5 h-5 text-black" />
                                 </div>
                                 {t("dashboard.autoPost.config.title")}
                             </h2>
-                            <p className="text-base font-medium text-gray-500 mt-2">
+                            <p className="text-sm font-medium text-gray-500 mt-1.5">
                                 {t("dashboard.autoPost.config.subtitle")}
                             </p>
                         </div>
 
-                        <div className="p-8 space-y-8">
+                        <div className="p-6 md:p-7 space-y-7">
                             {/* Frequency, Time & Start Date */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider">
                                         {t("dashboard.autoPost.config.postFrequency")}
+                                        <span className="text-[#E94E77] ml-1">*</span>
                                     </label>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2">
                                         {frequencies.map((freq) => (
                                             <button
                                                 key={freq.value}
                                                 disabled={!isEditing && !!schedule}
                                                 onClick={() => setFormData({ ...formData, frequency: freq.value })}
-                                                className={`w-full p-4 rounded-[14px] border-2 text-left transition-all ${formData.frequency === freq.value
-                                                        ? 'border-black bg-[#C6F035] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                                                className={`w-full p-3 rounded-[12px] border-2 text-left transition-all ${formData.frequency === freq.value
+                                                        ? 'border-black bg-[#C6F035] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
                                                         : 'border-gray-200 bg-white hover:border-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     } ${(!isEditing && !!schedule) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
-                                                <div className="font-black text-[#1A1A1A]">{freq.label}</div>
-                                                <div className="text-xs font-medium text-gray-600 mt-1">{freq.description}</div>
+                                                <div className="font-black text-sm text-[#1A1A1A]">{freq.label}</div>
+                                                <div className="text-[11px] font-medium text-gray-500 mt-0.5">{freq.description}</div>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider">
                                         {t("dashboard.autoPost.config.postingTime")}
+                                        <span className="text-[#E94E77] ml-1">*</span>
                                     </label>
-                                    <div className="relative mb-6">
-                                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                    <div className="relative mb-5">
+                                        <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                         <input
                                             type="time"
                                             value={formData.preferredTime}
                                             disabled={!isEditing && !!schedule}
                                             onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-4 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-400 font-bold"
+                                            className="w-full pl-10 pr-4 py-3 rounded-[12px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-400 font-bold text-sm"
                                         />
                                     </div>
 
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider">
                                         {t("dashboard.autoPost.config.startDateOptional")}
                                     </label>
                                     <div className="relative">
-                                        <CalendarClock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                        <CalendarClock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                         <input
                                             type="date"
                                             value={formData.startDate}
                                             min={new Date().toISOString().split("T")[0]}
                                             disabled={!isEditing && !!schedule}
                                             onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-4 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-400 font-bold"
+                                            className="w-full pl-10 pr-4 py-3 rounded-[12px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-400 font-bold text-sm"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider">
                                         {t("dashboard.autoPost.config.postLength")}
+                                        <span className="text-[#E94E77] ml-1">*</span>
                                     </label>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2">
                                         {postLengths.map((length) => (
                                             <button
                                                 key={length.value}
                                                 disabled={!isEditing && !!schedule}
                                                 onClick={() => setFormData({ ...formData, postLength: length.value })}
-                                                className={`w-full p-4 rounded-[14px] border-2 text-left transition-all ${formData.postLength === length.value
-                                                        ? 'border-black bg-[#C6F035] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                                                className={`w-full p-3 rounded-[12px] border-2 text-left transition-all ${formData.postLength === length.value
+                                                        ? 'border-black bg-[#C6F035] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
                                                         : 'border-gray-200 bg-white hover:border-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                                     } ${(!isEditing && !!schedule) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
-                                                <div className="font-black text-[#1A1A1A]">{length.label}</div>
-                                                <div className="text-xs font-medium text-gray-600 mt-1">{length.description}</div>
+                                                <div className="font-black text-sm text-[#1A1A1A]">{length.label}</div>
+                                                <div className="text-[11px] font-medium text-gray-500 mt-0.5">{length.description}</div>
                                             </button>
                                         ))}
                                     </div>
@@ -554,10 +613,14 @@ export default function DashboardAutoPost() {
 
                             {/* Topics */}
                             <div className="relative">
-                                <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider flex items-center justify-between">
-                                    <span>{t("dashboard.autoPost.config.topicsLabel")}</span>
+                                <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <PenTool className="w-3.5 h-3.5 text-gray-400" />
+                                        {t("dashboard.autoPost.config.topicsLabel")}
+                                        <span className="text-[#E94E77]">*</span>
+                                    </span>
                                     {generatingMetadata && (
-                                        <span className="ml-2 text-xs text-[#0047FF] font-bold inline-flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
+                                        <span className="text-[11px] text-[#0047FF] font-bold inline-flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
                                             <Loader2 className="w-3 h-3 animate-spin" />
                                             {t("dashboard.autoPost.config.aiAnalyzing")}
                                         </span>
@@ -568,15 +631,22 @@ export default function DashboardAutoPost() {
                                     disabled={!isEditing && !!schedule}
                                     onChange={(e) => handleTopicsChange(e.target.value)}
                                     placeholder={t("dashboard.autoPost.config.topicsPlaceholder")}
-                                    className="w-full px-5 py-4 rounded-[16px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all resize-none h-32 disabled:bg-gray-100 disabled:text-gray-500 font-medium placeholder:text-gray-400"
+                                    className="w-full px-4 py-3.5 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all resize-none h-28 disabled:bg-gray-100 disabled:text-gray-500 font-medium text-sm placeholder:text-gray-400"
                                 />
 
                                 {/* Metadata Suggestions Modal */}
+                                <AnimatePresence>
                                 {showMetadataSuggestions && metadataSuggestions && (
-                                    <div className="absolute z-10 mt-2 w-full bg-white border-4 border-black rounded-[20px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 animate-in fade-in slide-in-from-top-4 duration-200">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h4 className="text-base font-black text-[#1A1A1A] flex items-center gap-2">
-                                                <Sparkles className="w-5 h-5 text-[#C6F035] fill-black" />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute z-10 mt-2 w-full bg-white border-3 border-black rounded-[16px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5"
+                                    >
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="text-sm font-black text-[#1A1A1A] flex items-center gap-2">
+                                                <Sparkles className="w-4 h-4 text-[#C6F035] fill-black" />
                                                 {t("dashboard.autoPost.config.aiSuggestionsTitle")}
                                             </h4>
                                             <button
@@ -588,11 +658,11 @@ export default function DashboardAutoPost() {
                                         </div>
 
                                         {metadataSuggestions.keywords?.length > 0 && (
-                                            <div className="mb-4">
-                                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("dashboard.autoPost.config.suggestedKeywords")}</p>
-                                                <div className="flex flex-wrap gap-2">
+                                            <div className="mb-3">
+                                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{t("dashboard.autoPost.config.suggestedKeywords")}</p>
+                                                <div className="flex flex-wrap gap-1.5">
                                                     {metadataSuggestions.keywords.slice(0, 8).map((kw: string, i: number) => (
-                                                        <span key={i} className="px-3 py-1 bg-[#d2e823]/20 border border-[#d2e823] text-black text-xs font-bold rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                                                        <span key={i} className="px-2.5 py-0.5 bg-[#d2e823]/20 border border-[#d2e823] text-black text-[11px] font-bold rounded-lg">
                                                             {kw}
                                                         </span>
                                                     ))}
@@ -601,38 +671,43 @@ export default function DashboardAutoPost() {
                                         )}
 
                                         {metadataSuggestions.targetAudience && (
-                                            <div className="mb-6">
-                                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t("dashboard.autoPost.config.targetAudience")}</p>
-                                                <p className="text-sm font-medium text-[#1A1A1A] bg-gray-50 p-3 rounded-xl border border-gray-200">{metadataSuggestions.targetAudience}</p>
+                                            <div className="mb-4">
+                                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{t("dashboard.autoPost.config.targetAudience")}</p>
+                                                <p className="text-xs font-medium text-[#1A1A1A] bg-gray-50 p-2.5 rounded-xl border border-gray-200">{metadataSuggestions.targetAudience}</p>
                                             </div>
                                         )}
 
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-2">
                                             <button
                                                 onClick={() => applyMetadata(metadataSuggestions)}
-                                                className="flex-1 px-4 py-3 bg-[#1A1A1A] text-white border-2 border-black rounded-[12px] font-black text-sm hover:translate-x-[1px] hover:translate-y-[1px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] transition-all flex items-center justify-center gap-2"
+                                                className="flex-1 px-3 py-2.5 bg-[#1A1A1A] text-white border-2 border-black rounded-[10px] font-black text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.2)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center justify-center gap-1.5"
                                             >
-                                                <Check className="w-4 h-4 stroke-[3px]" />
+                                                <Check className="w-3.5 h-3.5 stroke-[3px]" />
                                                 {t("dashboard.autoPost.config.applySuggestions")}
                                             </button>
                                             <button
                                                 onClick={() => setShowMetadataSuggestions(false)}
-                                                className="px-6 py-3 bg-white text-black border-2 border-black rounded-[12px] font-bold text-sm hover:bg-gray-50 flex items-center justify-center"
+                                                className="px-4 py-2.5 bg-white text-black border-2 border-black rounded-[10px] font-bold text-xs hover:bg-gray-50 flex items-center justify-center"
                                             >
                                                 {t("dashboard.autoPost.config.ignore")}
                                             </button>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
+                                </AnimatePresence>
                             </div>
 
                             {/* Keywords */}
                             <div>
-                                <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider flex items-center justify-between">
-                                    <span>{t("dashboard.autoPost.config.seoKeywords")}</span>
+                                <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <Hash className="w-3.5 h-3.5 text-gray-400" />
+                                        {t("dashboard.autoPost.config.seoKeywords")}
+                                        <span className="text-[#E94E77]">*</span>
+                                    </span>
                                     {metadataSuggestions?.keywords && formData.keywords === metadataSuggestions.keywords.join(", ") && (
-                                        <span className="text-xs text-black font-bold flex items-center gap-1 bg-[#d2e823] px-2 py-0.5 rounded border border-black">
-                                            <Sparkles className="w-3 h-3" />
+                                        <span className="text-[10px] text-black font-bold flex items-center gap-1 bg-[#d2e823] px-1.5 py-0.5 rounded border border-black">
+                                            <Sparkles className="w-2.5 h-2.5" />
                                             {t("dashboard.autoPost.config.aiGenerated")}
                                         </span>
                                     )}
@@ -643,23 +718,24 @@ export default function DashboardAutoPost() {
                                     disabled={!isEditing && !!schedule}
                                     onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
                                     placeholder={t("dashboard.autoPost.config.keywordsPlaceholder")}
-                                    className="w-full px-5 py-4 rounded-[16px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium placeholder:text-gray-400"
+                                    className="w-full px-4 py-3.5 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium text-sm placeholder:text-gray-400"
                                 />
                             </div>
 
                             {/* Two Column Layout */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Tone */}
                                 <div>
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider">
                                         {t("dashboard.autoPost.config.writingTone")}
+                                        <span className="text-[#E94E77] ml-1">*</span>
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={formData.tone}
                                             disabled={!isEditing && !!schedule}
                                             onChange={(e) => setFormData({ ...formData, tone: e.target.value })}
-                                            className="w-full px-5 py-4 rounded-[16px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-bold appearance-none cursor-pointer"
+                                            className="w-full px-4 py-3.5 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-bold text-sm appearance-none cursor-pointer"
                                         >
                                             {tones.map((tone) => (
                                                 <option key={tone.value} value={tone.value}>
@@ -667,17 +743,17 @@ export default function DashboardAutoPost() {
                                                 </option>
                                             ))}
                                         </select>
-                                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none stroke-[3px]" />
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none stroke-[3px]" />
                                     </div>
                                 </div>
 
                                 {/* Target Audience */}
                                 <div>
-                                    <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider flex items-center justify-between">
+                                    <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider flex items-center justify-between">
                                         <span>{t("dashboard.autoPost.config.targetAudienceLabel")}</span>
                                         {metadataSuggestions?.targetAudience && formData.targetAudience === metadataSuggestions.targetAudience && (
-                                            <span className="text-xs text-black font-bold flex items-center gap-1 bg-[#d2e823] px-2 py-0.5 rounded border border-black">
-                                                <Sparkles className="w-3 h-3" />
+                                            <span className="text-[10px] text-black font-bold flex items-center gap-1 bg-[#d2e823] px-1.5 py-0.5 rounded border border-black">
+                                                <Sparkles className="w-2.5 h-2.5" />
                                                 {t("dashboard.autoPost.config.aiGenerated")}
                                             </span>
                                         )}
@@ -688,15 +764,17 @@ export default function DashboardAutoPost() {
                                         disabled={!isEditing && !!schedule}
                                         onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
                                         placeholder={t("dashboard.autoPost.config.targetAudiencePlaceholder")}
-                                        className="w-full px-5 py-4 rounded-[16px] border-2 border-black bg-white focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium placeholder:text-gray-400"
+                                        className="w-full px-4 py-3.5 rounded-[14px] border-2 border-black bg-white focus:outline-none focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium text-sm placeholder:text-gray-400"
                                     />
                                 </div>
                             </div>
 
                             {/* Target Country & Language */}
                             <div>
-                                <label className="block text-sm font-bold text-[#1A1A1A] mb-3 uppercase tracking-wider">
+                                <label className="block text-xs font-bold text-[#1A1A1A] mb-2.5 uppercase tracking-wider flex items-center gap-2">
+                                    <Globe className="w-3.5 h-3.5 text-gray-400" />
                                     {t("dashboard.autoPost.config.geoTargetLabel")}
+                                    <span className="text-[#E94E77]">*</span>
                                 </label>
                                 <CountrySelector
                                     selectedCountry={formData.targetCountry}
@@ -729,56 +807,56 @@ export default function DashboardAutoPost() {
 
                             {/* Action Buttons */}
                             {isEditing || !schedule ? (
-                                <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-gray-100">
+                                <div className="flex flex-col sm:flex-row gap-3 pt-5 border-t-2 border-gray-100">
                                     <button
                                         onClick={handleSave}
-                                        disabled={loading}
-                                        className="btn-primary flex-1 py-4 text-base"
+                                        disabled={loading || !isFormComplete}
+                                        className="flex-1 min-h-[54px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-[12px] border-2 border-black bg-[#C6F035] text-black font-black text-sm hover:bg-[#B7E100] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                                     >
                                         {loading ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> {t("dashboard.autoPost.actions.saving")}</>
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.autoPost.actions.saving")}</>
                                         ) : (
-                                            <><Check className="w-5 h-5 stroke-[3px]" /> {schedule ? t("dashboard.autoPost.actions.saveUpdate") : t("dashboard.autoPost.actions.saveCreate")}</>
+                                            <><Check className="w-4 h-4 stroke-[3px]" /> {schedule ? t("dashboard.autoPost.actions.saveUpdate") : t("dashboard.autoPost.actions.saveCreate")}</>
                                         )}
                                     </button>
                                     <button
                                         onClick={handleGeneratePreview}
-                                        disabled={generatingPreview}
-                                        className="btn-secondary py-4 text-base"
+                                        disabled={generatingPreview || !isFormComplete}
+                                        className="sm:min-w-[220px] min-h-[54px] inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white text-[#1A1A1A] border-2 border-black rounded-[12px] font-black text-sm hover:bg-gray-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                                     >
                                         {generatingPreview ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> {t("dashboard.autoPost.actions.generating")}</>
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.autoPost.actions.generating")}</>
                                         ) : (
-                                            <><Eye className="w-5 h-5 stroke-[3px]" /> {t("dashboard.autoPost.actions.previewWithMetrics")}</>
+                                            <><Eye className="w-4 h-4 stroke-[3px]" /> {t("dashboard.autoPost.actions.previewWithMetrics")}</>
                                         )}
                                     </button>
                                     {schedule && (
                                         <button
                                             onClick={() => setIsEditing(false)}
-                                            className="px-6 py-4 bg-white text-black border-2 border-black rounded-[14px] font-black hover:bg-gray-50 transition-all text-base"
+                                            className="sm:min-w-[140px] min-h-[54px] inline-flex items-center justify-center px-5 py-3.5 bg-white text-black border-2 border-black rounded-[12px] font-black text-sm hover:bg-gray-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                                         >
                                             {t("dashboard.autoPost.actions.cancel")}
                                         </button>
                                     )}
                                 </div>
                             ) : (
-                                <div className="flex gap-4 pt-6 border-t-2 border-gray-100">
+                                <div className="flex flex-col sm:flex-row gap-3 pt-5 border-t-2 border-gray-100">
                                     <button
                                         onClick={handleGeneratePreview}
-                                        disabled={generatingPreview}
-                                        className="flex-1 btn-secondary py-4 text-base"
+                                        disabled={generatingPreview || !isFormComplete}
+                                        className="flex-1 min-h-[54px] inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white text-[#1A1A1A] border-2 border-black rounded-[12px] font-black text-sm hover:bg-gray-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                                     >
                                         {generatingPreview ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> {t("dashboard.autoPost.actions.generating")}</>
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.autoPost.actions.generating")}</>
                                         ) : (
-                                            <><Eye className="w-5 h-5 stroke-[3px]" /> {t("dashboard.autoPost.actions.previewNextPost")}</>
+                                            <><Eye className="w-4 h-4 stroke-[3px]" /> {t("dashboard.autoPost.actions.previewNextPost")}</>
                                         )}
                                     </button>
                                     <button
                                         onClick={handleDelete}
-                                        className="px-6 py-4 bg-red-600 text-white border-2 border-black rounded-[14px] font-black hover:bg-red-500 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base flex items-center gap-2"
+                                        className="sm:min-w-[170px] min-h-[54px] px-5 py-3.5 bg-red-600 text-white border-2 border-black rounded-[12px] font-black text-sm hover:bg-red-500 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all inline-flex items-center justify-center gap-2"
                                     >
-                                        <Trash2 className="w-5 h-5 stroke-[2.5px]" /> {t("dashboard.autoPost.actions.delete")}
+                                        <Trash2 className="w-4 h-4 stroke-[2.5px]" /> {t("dashboard.autoPost.actions.delete")}
                                     </button>
                                 </div>
                             )}
@@ -787,54 +865,70 @@ export default function DashboardAutoPost() {
 
                     {/* Bio Summary */}
                     {schedule?.bioSummary && (
-                        <div className="bg-white rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-black text-[#1A1A1A] flex items-center gap-2 text-lg" style={{ fontFamily: 'var(--font-display)' }}>
-                                    <Bot className="w-6 h-6 text-black" />
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25 }}
+                            className="bg-white rounded-[20px] border-3 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6"
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-black text-[#1A1A1A] flex items-center gap-2 text-base" style={{ fontFamily: 'var(--font-display)' }}>
+                                    <Bot className="w-5 h-5 text-black" />
                                     {t("dashboard.autoPost.bioSummary.title")}
                                 </h3>
                                 <button
                                     onClick={handleGenerateSummary}
                                     disabled={generatingSummary}
-                                    className="text-sm font-bold text-gray-500 hover:text-black flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all"
+                                    className="text-xs font-bold text-gray-500 hover:text-black flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition-all"
                                 >
-                                    <RefreshCw className={`w-4 h-4 ${generatingSummary ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`w-3.5 h-3.5 ${generatingSummary ? 'animate-spin' : ''}`} />
                                     {t("dashboard.autoPost.bioSummary.refresh")}
                                 </button>
                             </div>
-                            <p className="text-sm font-medium text-gray-600 bg-gray-50 p-6 rounded-[16px] border-2 border-gray-100 leading-relaxed">
+                            <p className="text-sm font-medium text-gray-600 bg-gray-50 p-5 rounded-[14px] border-2 border-gray-100 leading-relaxed">
                                 {schedule.bioSummary}
                             </p>
-                        </div>
+                        </motion.div>
                     )}
-                </div>
+                </motion.div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-5"
+                >
                     {/* Recent Posts with Metrics */}
-                    <div className="bg-white rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                        <div className="p-6 border-b-4 border-black bg-gray-50 flex items-center justify-between">
-                            <h3 className="font-black text-[#1A1A1A] flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
-                                <BarChart3 className="w-5 h-5 text-black" />
+                    <div className="bg-white rounded-[20px] border-3 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                        <div className="p-5 border-b-3 border-black bg-gradient-to-r from-gray-50 to-white flex items-center justify-between">
+                            <h3 className="font-black text-[#1A1A1A] flex items-center gap-2 text-sm" style={{ fontFamily: 'var(--font-display)' }}>
+                                <BarChart3 className="w-4 h-4 text-black" />
                                 {t("dashboard.autoPost.sidebar.recentAutoPosts")}
                             </h3>
                         </div>
                         <div className="divide-y-2 divide-gray-100">
                             {stats?.recentLogs && stats.recentLogs.length > 0 ? (
-                                stats.recentLogs.map((log) => (
-                                    <div key={log.id} className="p-5 hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-start gap-4">
-                                            <div className={`w-3 h-3 rounded-full mt-2 border border-black ${log.status === 'published' ? 'bg-[#C6F035]' :
+                                stats.recentLogs.map((log, index) => (
+                                    <motion.div
+                                        key={log.id}
+                                        initial={{ opacity: 0, x: -5 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.05 * index }}
+                                        className="p-4 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className={`w-2.5 h-2.5 rounded-full mt-1.5 border border-black shrink-0 ${log.status === 'published' ? 'bg-[#C6F035]' :
                                                     log.status === 'failed' ? 'bg-[#E94E77]' : 'bg-yellow-400'
                                                 }`} />
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-[#1A1A1A] text-sm truncate mb-1">
+                                                <p className="font-bold text-[#1A1A1A] text-xs truncate mb-0.5">
                                                     {log.generatedTitle}
                                                 </p>
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                                                     {format(new Date(log.createdAt), "MMM d, yyyy", { locale })}
                                                 </p>
-                                                <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
                                                     {log.seoScore && (
                                                         <ScoreBadge score={log.seoScore} label="SEO" />
                                                     )}
@@ -843,17 +937,18 @@ export default function DashboardAutoPost() {
                                                     )}
                                                     <button
                                                         onClick={() => handleViewMetrics(log)}
-                                                        className="text-xs font-black text-black underline hover:no-underline ml-auto"
+                                                        className="text-[11px] font-black text-black underline hover:no-underline ml-auto"
                                                     >
                                                         {t("dashboard.autoPost.sidebar.viewDetails")}
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))
                             ) : (
-                                <div className="p-8 text-center text-gray-500 font-medium text-sm">
+                                <div className="p-8 text-center text-gray-400 font-medium text-sm">
+                                    <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                                     {t("dashboard.autoPost.sidebar.noAutoPosts")}
                                 </div>
                             )}
@@ -861,189 +956,225 @@ export default function DashboardAutoPost() {
                     </div>
 
                     {/* Info Card */}
-                    <div className="bg-[#1A1A1A] rounded-[24px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] p-6 text-white">
-                        <div className="flex items-start gap-4">
-                            <div className="p-2 bg-[#d2e823] rounded-lg text-black shrink-0">
-                                <Lightbulb className="w-5 h-5 fill-black" />
+                    <div className="bg-[#1A1A1A] rounded-[20px] border-3 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] p-5 text-white">
+                        <div className="flex items-start gap-3">
+                            <div className="p-1.5 bg-gradient-to-br from-[#d2e823] to-[#C6F035] rounded-lg text-black shrink-0">
+                                <Lightbulb className="w-4 h-4 fill-black" />
                             </div>
                             <div>
-                                <h4 className="font-black text-white text-base mb-3" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.autoPost.info.title")}</h4>
-                                <ul className="text-sm text-gray-300 space-y-3 font-medium">
-                                    <li className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-4 h-4 text-[#C6F035] mt-1 shrink-0" />
+                                <h4 className="font-black text-white text-sm mb-2.5" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.autoPost.info.title")}</h4>
+                                <ul className="text-xs text-gray-300 space-y-2 font-medium">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C6F035] mt-0.5 shrink-0" />
                                         {t("dashboard.autoPost.info.bullet1")}
                                     </li>
-                                    <li className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-4 h-4 text-[#C6F035] mt-1 shrink-0" />
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C6F035] mt-0.5 shrink-0" />
                                         {t("dashboard.autoPost.info.bullet2")}
                                     </li>
-                                    <li className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-4 h-4 text-[#C6F035] mt-1 shrink-0" />
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C6F035] mt-0.5 shrink-0" />
                                         {t("dashboard.autoPost.info.bullet3")}
                                     </li>
-                                    <li className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-4 h-4 text-[#C6F035] mt-1 shrink-0" />
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C6F035] mt-0.5 shrink-0" />
                                         {t("dashboard.autoPost.info.bullet4")}
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Preview Modal with Metrics */}
+            <AnimatePresence>
             {showPreview && previewData && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-6xl max-h-[95vh] md:max-h-[90vh] overflow-hidden border-4 border-black flex flex-col">
-                        <div className="p-5 md:p-8 border-b-4 border-black flex items-center justify-between gap-4 bg-gray-50 shrink-0">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-2 sm:p-4 lg:p-6"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white w-full max-w-[1320px] h-[96vh] sm:h-[94vh] lg:h-[90vh] overflow-hidden border-3 border-black rounded-[18px] sm:rounded-[24px] lg:rounded-[28px] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] flex flex-col"
+                    >
+                        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b-3 border-black flex items-start sm:items-center justify-between gap-3 sm:gap-4 bg-gradient-to-r from-white to-gray-50 shrink-0">
                             <div className="min-w-0">
-                                <h3 className="text-xl md:text-2xl font-black text-[#1A1A1A] truncate flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
-                                    <Eye className="w-6 h-6 text-black" />
+                                <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-[#1A1A1A] flex items-center gap-2 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-black shrink-0" />
                                     {t("dashboard.autoPost.preview.title")}
                                 </h3>
-                                <p className="text-sm font-bold text-gray-500 hidden sm:block mt-1">
+                                <p className="text-xs sm:text-sm font-semibold text-gray-500 mt-1">
                                     {t("dashboard.autoPost.preview.subtitle")}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setShowPreview(false)}
-                                className="p-3 bg-white border-2 border-black rounded-[12px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+                                className="p-2 sm:p-2.5 bg-white border-2 border-black rounded-[10px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all shrink-0"
                             >
-                                <X className="w-6 h-6 stroke-[3px]" />
+                                <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3px]" />
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-hidden">
-                            <div className="h-full flex flex-col xl:flex-row">
+                        <div className="flex-1 overflow-hidden bg-[#F7F7F6]">
+                            <div className="h-full flex flex-col lg:flex-row">
                                 {/* Left: Content Preview */}
-                                <div className="flex-1 overflow-y-auto p-8 xl:border-r-4 border-black bg-white">
-                                    <div className="mb-8 p-6 bg-gray-50 rounded-[24px] border-2 border-gray-100">
-                                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                                <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-7 lg:border-r-3 border-black bg-white min-h-0">
+                                    <div className="mb-5 sm:mb-7 p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-gray-50 to-white rounded-[18px] sm:rounded-[22px] border-2 border-gray-200 shadow-[0_2px_0_0_rgba(0,0,0,0.06)]">
+                                        <div className="flex flex-wrap items-center gap-2 mb-3">
                                             <ScoreBadge score={previewData.seoMetrics.seoScore} label="SEO" />
                                             <ScoreBadge score={previewData.geoMetrics.geoScore} label="GEO" />
                                             {previewData.aeoMetrics && (
                                                 <ScoreBadge score={previewData.aeoMetrics.aeoScore} label="AEO" />
                                             )}
                                         </div>
-                                        <h2 className="text-2xl md:text-3xl font-black text-[#1A1A1A] mb-3 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                                        <h2 className="text-xl sm:text-2xl lg:text-[30px] font-black text-[#1A1A1A] mb-2.5 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
                                             {previewData.title}
                                         </h2>
-                                        <p className="text-base font-medium text-gray-600 leading-relaxed">
+                                        <p className="text-sm sm:text-base font-medium text-gray-600 leading-relaxed">
                                             {previewData.metaDescription}
                                         </p>
                                     </div>
-                                    <div className="prose prose-lg max-w-none prose-headings:font-black prose-headings:font-display prose-p:font-medium prose-p:text-gray-600">
+                                    <div className="prose prose-base max-w-none prose-headings:font-black prose-headings:font-display prose-p:font-medium prose-p:text-gray-600 prose-headings:text-[#1A1A1A] prose-p:leading-7">
                                         <MarkdownRenderer content={previewData.content} />
                                     </div>
                                 </div>
 
                                 {/* Right: Metrics Dashboard */}
-                                <div className="xl:w-[450px] bg-gray-50 overflow-y-auto p-8 border-t-4 xl:border-t-0 border-black shrink-0">
-                                    <h3 className="text-lg font-black text-[#1A1A1A] mb-6 uppercase tracking-wider flex items-center gap-2">
-                                        <Target className="w-5 h-5" />
-                                        Metrics Analysis
+                                <div className="w-full lg:w-[400px] xl:w-[460px] h-[40vh] sm:h-[42vh] lg:h-auto bg-gray-50 overflow-y-auto px-4 sm:px-5 lg:px-6 py-4 sm:py-5 lg:py-6 border-t-3 lg:border-t-0 border-black shrink-0 min-h-0">
+                                    <h3 className="text-xs sm:text-sm font-black text-[#1A1A1A] mb-4 sm:mb-5 uppercase tracking-wider flex items-center gap-2 sticky top-0 bg-gray-50 py-1 z-10">
+                                        <Target className="w-4 h-4" />
+                                        {t("dashboard.autoPost.metricsModal.analysisTitle")}
                                     </h3>
                                     <SEOGEODashboard metrics={previewData} variant="full" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 md:p-8 border-t-4 border-black bg-white flex flex-col sm:flex-row justify-end gap-4 shrink-0">
-                            <button
-                                onClick={() => setShowPreview(false)}
-                                className="btn-secondary w-full sm:w-auto py-4 text-base"
-                            >
-                                {t("dashboard.autoPost.preview.close")}
-                            </button>
-                            {!schedule && (
+                        <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-t-3 border-black bg-gradient-to-r from-white to-gray-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+                            <p className="text-[11px] sm:text-xs font-bold text-gray-500 hidden lg:block">
+                                {t("dashboard.autoPost.preview.subtitle")}
+                            </p>
+
+                            <div className="flex w-full sm:w-auto flex-col-reverse sm:flex-row gap-2 sm:gap-3">
                                 <button
-                                    onClick={handleSave}
-                                    className="btn-primary w-full sm:w-auto py-4 text-base"
+                                    onClick={() => setShowPreview(false)}
+                                    className="w-full sm:w-auto sm:min-w-[140px] min-h-[48px] inline-flex items-center justify-center px-4 py-2.5 bg-white text-[#1A1A1A] border-2 border-black rounded-[12px] font-black text-sm hover:bg-gray-50 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                                 >
-                                    <Check className="w-5 h-5 stroke-[3px]" />
-                                    {t("dashboard.autoPost.preview.createSchedule")}
+                                    {t("dashboard.autoPost.preview.close")}
                                 </button>
-                            )}
+
+                                {!schedule && (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={loading || !isFormComplete}
+                                        className="w-full sm:w-auto sm:min-w-[230px] min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#C6F035] text-black border-2 border-black rounded-[12px] font-black text-sm hover:bg-[#B7E100] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                                    >
+                                        {loading ? (
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> {t("dashboard.autoPost.actions.saving")}</>
+                                        ) : (
+                                            <><Check className="w-4 h-4 stroke-[3px]" /> {t("dashboard.autoPost.preview.createSchedule")}</>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             {/* Metrics Detail Modal for Historical Posts */}
+            <AnimatePresence>
             {showMetricsModal && selectedLog && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border-4 border-black flex flex-col">
-                        <div className="p-6 md:p-8 border-b-4 border-black bg-gray-50 flex items-center justify-between shrink-0">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white rounded-[28px] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border-3 border-black flex flex-col"
+                    >
+                        <div className="p-5 md:p-6 border-b-3 border-black bg-gradient-to-r from-gray-50 to-white flex items-center justify-between shrink-0">
                             <div>
-                                <h3 className="text-2xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.autoPost.metricsModal.title")}</h3>
-                                <p className="text-sm font-bold text-gray-500 mt-1">{selectedLog.generatedTitle}</p>
+                                <h3 className="text-xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.autoPost.metricsModal.title")}</h3>
+                                <p className="text-xs font-bold text-gray-500 mt-0.5 truncate max-w-md">{selectedLog.generatedTitle}</p>
                             </div>
                             <button
                                 onClick={() => setShowMetricsModal(false)}
-                                className="p-3 bg-white border-2 border-black rounded-[12px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+                                className="p-2.5 bg-white border-2 border-black rounded-[10px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
                             >
-                                <X className="w-6 h-6 stroke-[3px]" />
+                                <X className="w-5 h-5 stroke-[3px]" />
                             </button>
                         </div>
 
-                        <div className="p-8 overflow-y-auto">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                                <div className="bg-[#1A1A1A] p-5 rounded-[20px] text-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-                                    <p className={`text-4xl font-black text-[#C6F035]`}>
+                        <div className="p-6 overflow-y-auto">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                                <div className="bg-[#1A1A1A] p-4 rounded-[16px] text-center border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+                                    <p className="text-3xl font-black text-[#C6F035]">
                                         {selectedLog.seoScore || "--"}
                                     </p>
-                                    <p className="text-xs font-bold text-gray-400 mt-2 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.seoScore")}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.seoScore")}</p>
                                 </div>
-                                <div className="bg-[#1A1A1A] p-5 rounded-[20px] text-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-                                    <p className={`text-4xl font-black text-[#0047FF]`}>
+                                <div className="bg-[#1A1A1A] p-4 rounded-[16px] text-center border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
+                                    <p className="text-3xl font-black text-[#0047FF]">
                                         {selectedLog.geoScore || "--"}
                                     </p>
-                                    <p className="text-xs font-bold text-gray-400 mt-2 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.geoScore")}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.geoScore")}</p>
                                 </div>
-                                <div className="bg-white p-5 rounded-[20px] text-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                    <p className={`text-4xl font-black text-black`}>
+                                <div className="bg-white p-4 rounded-[16px] text-center border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                                    <p className="text-3xl font-black text-black">
                                         {selectedLog.readabilityScore || "--"}
                                     </p>
-                                    <p className="text-xs font-bold text-gray-500 mt-2 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.readability")}</p>
+                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.readability")}</p>
                                 </div>
-                                <div className="bg-white p-5 rounded-[20px] text-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                    <p className="text-4xl font-black text-black">
+                                <div className="bg-white p-4 rounded-[16px] text-center border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                                    <p className="text-3xl font-black text-black">
                                         {selectedLog.contentAnalysis?.wordCount || "--"}
                                     </p>
-                                    <p className="text-xs font-bold text-gray-500 mt-2 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.words")}</p>
+                                    <p className="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-wider">{t("dashboard.autoPost.metricsModal.words")}</p>
                                 </div>
                             </div>
 
                             {/* Detailed Metrics */}
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 {selectedLog.keywordAnalysis && (
-                                    <div className="bg-white p-6 rounded-[20px] border-2 border-black">
-                                        <h4 className="font-black text-[#1A1A1A] mb-4 flex items-center gap-2 uppercase tracking-wider text-sm">
-                                            <Hash className="w-4 h-4" />
+                                    <div className="bg-white p-5 rounded-[16px] border-2 border-black">
+                                        <h4 className="font-black text-[#1A1A1A] mb-3 flex items-center gap-2 uppercase tracking-wider text-xs">
+                                            <Hash className="w-3.5 h-3.5" />
                                             {t("dashboard.autoPost.metricsModal.keywords")}
                                         </h4>
-                                        <p className="text-sm font-bold text-[#1A1A1A] mb-3">
-                                            {t("dashboard.autoPost.metricsModal.primary")}: <span className="bg-[#C6F035] px-2 py-0.5 rounded border border-black">{selectedLog.keywordAnalysis.primaryKeyword}</span>
+                                        <p className="text-xs font-bold text-[#1A1A1A] mb-2.5">
+                                            {t("dashboard.autoPost.metricsModal.primary")}: <span className="bg-[#C6F035] px-1.5 py-0.5 rounded border border-black">{selectedLog.keywordAnalysis.primaryKeyword}</span>
                                         </p>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-1.5">
                                             {selectedLog.keywordAnalysis.secondaryKeywords?.map((kw: string, i: number) => (
-                                                <span key={i} className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-lg text-xs font-bold text-gray-600">{kw}</span>
+                                                <span key={i} className="px-2.5 py-0.5 bg-gray-100 border border-gray-200 rounded-lg text-[11px] font-bold text-gray-600">{kw}</span>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
                                 {selectedLog.improvementSuggestions?.length > 0 && (
-                                    <div className="bg-[#fff9db] p-6 rounded-[20px] border-2 border-black">
-                                        <h4 className="font-black text-[#1A1A1A] mb-4 flex items-center gap-2 uppercase tracking-wider text-sm">
-                                            <Lightbulb className="w-4 h-4 text-black fill-[#C6F035]" />
+                                    <div className="bg-[#fff9db] p-5 rounded-[16px] border-2 border-black">
+                                        <h4 className="font-black text-[#1A1A1A] mb-3 flex items-center gap-2 uppercase tracking-wider text-xs">
+                                            <Lightbulb className="w-3.5 h-3.5 text-black fill-[#C6F035]" />
                                             {t("dashboard.autoPost.metricsModal.seoSuggestions")}
                                         </h4>
-                                        <ul className="space-y-3">
+                                        <ul className="space-y-2">
                                             {selectedLog.improvementSuggestions.map((s: string, i: number) => (
-                                                <li key={i} className="text-sm font-medium text-[#1A1A1A] flex items-start gap-3">
-                                                    <AlertCircle className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                                                <li key={i} className="text-xs font-medium text-[#1A1A1A] flex items-start gap-2">
+                                                    <AlertCircle className="w-3.5 h-3.5 text-black shrink-0 mt-0.5" />
                                                     {s}
                                                 </li>
                                             ))}
@@ -1052,15 +1183,15 @@ export default function DashboardAutoPost() {
                                 )}
 
                                 {selectedLog.geoSuggestions?.length > 0 && (
-                                    <div className="bg-[#f0f4ff] p-6 rounded-[20px] border-2 border-black">
-                                        <h4 className="font-black text-[#1A1A1A] mb-4 flex items-center gap-2 uppercase tracking-wider text-sm">
-                                            <Brain className="w-4 h-4 text-[#0047FF]" />
+                                    <div className="bg-[#f0f4ff] p-5 rounded-[16px] border-2 border-black">
+                                        <h4 className="font-black text-[#1A1A1A] mb-3 flex items-center gap-2 uppercase tracking-wider text-xs">
+                                            <Brain className="w-3.5 h-3.5 text-[#0047FF]" />
                                             {t("dashboard.autoPost.metricsModal.geoSuggestions")}
                                         </h4>
-                                        <ul className="space-y-3">
+                                        <ul className="space-y-2">
                                             {selectedLog.geoSuggestions.map((s: string, i: number) => (
-                                                <li key={i} className="text-sm font-medium text-[#1A1A1A] flex items-start gap-3">
-                                                    <Sparkles className="w-4 h-4 text-[#0047FF] shrink-0 mt-0.5" />
+                                                <li key={i} className="text-xs font-medium text-[#1A1A1A] flex items-start gap-2">
+                                                    <Sparkles className="w-3.5 h-3.5 text-[#0047FF] shrink-0 mt-0.5" />
                                                     {s}
                                                 </li>
                                             ))}
@@ -1070,17 +1201,18 @@ export default function DashboardAutoPost() {
                             </div>
                         </div>
 
-                        <div className="p-6 border-t-4 border-black bg-white flex justify-end shrink-0">
+                        <div className="p-5 border-t-3 border-black bg-white flex justify-end shrink-0">
                             <button
                                 onClick={() => setShowMetricsModal(false)}
-                                className="px-8 py-3 bg-[#1A1A1A] text-white border-2 border-black rounded-[12px] font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] transition-all"
+                                className="px-6 py-2.5 bg-[#1A1A1A] text-white border-2 border-black rounded-[10px] font-black text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.3)] transition-all"
                             >
                                 {t("dashboard.autoPost.metricsModal.close")}
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             )}
+            </AnimatePresence>
         </div>
     );
 }

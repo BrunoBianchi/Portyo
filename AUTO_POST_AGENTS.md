@@ -4,6 +4,8 @@
 
 O sistema de Auto Post do Portyo utiliza BAML (Basic Augmented Markup Language) e TOON (Tools for Orchestration and Optimization of Narratives) para gerar conteúdo de blog variado, nunca repetitivo, focado em temas de **Link in Bio** e engajamento.
 
+Além disso, o sistema opera com um framework de qualidade unificado para **SEO, GEO, AEO e AIO**, com métricas ponderadas e rastreáveis, para que os scores e percentuais tenham significado operacional (não apenas estimativo).
+
 ## Arquitetura de Conteúdo
 
 ### Content Pillars (Pilares de Conteúdo)
@@ -23,7 +25,53 @@ PILLAR_ROTATION = [
 
 ### Temas Dinâmicos (Nunca Repetidos)
 
-Cada pilar contém 50+ subtemas únicos. O sistema usa um **Content Hash Tracker** para garantir que o mesmo tema não seja usado em um período de 90 dias.
+Cada pilar contém 50+ subtemas únicos. O sistema usa um **Theme Lock + Content Hash Tracker** para garantir que:
+
+1. O mesmo `themeId` não seja reutilizado dentro da janela ativa anti-repetição.
+2. O mesmo `tema + ângulo` nunca seja reutilizado.
+3. Conteúdo semanticamente muito próximo seja rejeitado (via fingerprint semântico).
+
+Regra operacional: a repetição de tema é bloqueada por `themeId`; variação de ângulo não libera o mesmo tema.
+
+## Framework de Scoring (SEO/GEO/AEO/AIO)
+
+### Princípios
+
+- Escala única: todos os sub-scores e scores finais em `0-100`.
+- Cálculo determinístico: score final = soma ponderada dos sub-scores.
+- Arredondamento padrão: `Math.round()` no score final.
+- Clamp obrigatório: qualquer métrica fora do intervalo é ajustada para `[0,100]`.
+
+### Fórmulas Oficiais
+
+```text
+SEO = 0.20*title + 0.15*meta + 0.15*structure + 0.12*keyword + 0.12*readability + 0.10*internal_links + 0.08*image + 0.08*url
+
+GEO = 0.22*entity + 0.20*answerability + 0.18*structured_data + 0.15*authority + 0.15*context + 0.10*snippet
+
+AEO = 0.24*answer_relevance + 0.20*direct_answer + 0.16*question_headers + 0.15*voice_search + 0.15*clarity + 0.10*conciseness
+
+AIO = 0.30*consistency + 0.20*factuality + 0.20*citation_readiness + 0.15*entity_grounding + 0.15*prompt_alignment
+
+OVERALL_QUALITY = 0.30*SEO + 0.25*GEO + 0.25*AEO + 0.20*AIO
+```
+
+### Regras de Interpretação dos Scores
+
+- `90-100`: excelente, pronto para publicação.
+- `80-89`: bom, pode publicar com pequenas melhorias.
+- `70-79`: aceitável, recomenda-se otimização antes de publicar.
+- `<70`: reprovado, precisa regenerar.
+
+### Gates de Publicação
+
+- `SEO >= 75`
+- `GEO >= 72`
+- `AEO >= 72`
+- `AIO >= 75`
+- `OVERALL_QUALITY >= 78`
+
+Se qualquer gate falhar, o post entra em retry automático com ajustes guiados por `improvement_suggestions`.
 
 #### Educational (Educativo)
 - Como criar um link in bio que converte
@@ -106,16 +154,18 @@ class GeneratedContent {
   word_count int
   reading_time int @description("Minutes to read"
   
-  // SEO/GEO/AEO Scores
+  // SEO/GEO/AEO/AIO Scores
   seo_score float @description("0-100")
   geo_score float @description("0-100")
   aeo_score float @description("0-100")
+  aio_score float @description("0-100")
   engagement_score float @description("Predicted engagement 0-100"
   
   // Detailed Metrics
   seo_metrics SEOMetrics
   geo_metrics GEOMetrics
   aeo_metrics AEOMetrics
+  aio_metrics AIOMetrics
   engagement_metrics EngagementMetrics
   
   // Improvement tracking
@@ -147,6 +197,14 @@ class AEOMetrics {
   question_optimization float
   voice_search_score float
   clarity_score float
+}
+
+class AIOMetrics {
+  consistency_score float
+  factual_accuracy_score float
+  citation_readiness_score float
+  entity_grounding_score float
+  prompt_alignment_score float
 }
 
 class EngagementMetrics {
@@ -195,7 +253,7 @@ STAGE 4: Optimization (TOON Optimizer)
 ├── Input: Raw Content
 ├── Process:
 │   ├── Calculate all scores
-│   ├── Verify SEO requirements
+│   ├── Verify SEO/GEO/AEO/AIO requirements
 │   ├── Check engagement factors
 │   ├── Ensure no repetition vs history
 │   └── Generate improvement suggestions
@@ -204,7 +262,7 @@ STAGE 4: Optimization (TOON Optimizer)
 STAGE 5: Validation (TOON Validator)
 ├── Input: GeneratedContent
 ├── Process:
-│   ├── Verify content hash uniqueness
+│   ├── Verify themeId lock + content hash uniqueness
 │   ├── Check plagiarism signals
 │   ├── Validate metric thresholds
 │   └── Confirm engagement optimization
@@ -245,7 +303,7 @@ function GenerateBlogPost(
     5. Urgência: Crie senso de oportunidade sem ser agressivo
     6. Escaneabilidade: Use bullets, negrito, listas
     
-    === SEO/GEO/AEO REQUIREMENTS ===
+    === SEO/GEO/AEO/AIO REQUIREMENTS ===
     1. Título: 50-60 chars, com palavra-chave principal
     2. Meta Description: 150-160 chars, com CTA
     3. Estrutura: H1 > H2 > H3 hierárquico
@@ -253,6 +311,13 @@ function GenerateBlogPost(
     5. GEO: Entidades claras, otimização para IA
     6. AEO: Respostas diretas em 40-60 palavras
     7. Voice Search: Perguntas em linguagem natural
+    8. AIO: Consistência factual, grounding de entidades e prontidão para citação
+
+    === REGRAS DE SCORING OBRIGATÓRIAS ===
+    1. Retorne sub-métricas de SEO/GEO/AEO/AIO em escala 0-100
+    2. Calcule scores finais usando as fórmulas oficiais deste documento
+    3. Não invente score alto sem evidência no conteúdo
+    4. Se score < gate mínimo, inclua sugestões objetivas para correção
     
     === FORMATO DE RESPOSTA (JSON) ===
     {
@@ -274,18 +339,23 @@ function GenerateBlogPost(
 
 ## Sistema Anti-Repetição
 
-### Content Hash Tracker
+### Theme Lock + Content Hash Tracker
 
 ```typescript
 // Redis key pattern
 const CONTENT_HASH_KEY = "site:autopost:content_hashes:{user_id}";
 
-// Hash generation
+// Hash generation (tema + ângulo)
 const generateContentHash = (pillar: string, theme: string, angle: string): string => {
     return crypto.createHash('sha256')
         .update(`${pillar}:${theme}:${angle}`)
         .digest('hex')
         .substring(0, 16);
+};
+
+// Theme-level lock (bloqueia repetição do mesmo tema)
+const isThemeIdLocked = (themeId: string, history: Array<{themeId: string; date: string}>): boolean => {
+  return history.some(item => item.themeId === themeId);
 };
 
 // Uniqueness check
@@ -303,7 +373,20 @@ const storeContentHash = async (hash: string, userId: string): Promise<void> => 
     // Expire after 90 days
     await redisClient.expire(CONTENT_HASH_KEY.replace('{user_id}', userId), 90 * 24 * 60 * 60);
 };
+
+// Semantic guard (bloqueio de tema semanticamente equivalente)
+const isSemanticallyDuplicated = (candidateFingerprint: string, recentFingerprints: string[]): boolean => {
+  return recentFingerprints.includes(candidateFingerprint);
+};
 ```
+
+### Política Rígida de Não-Repetição
+
+1. Nunca reutilizar `themeId` já presente no `contentHistory` ativo.
+2. Nunca reutilizar `content_hash` já existente.
+3. Se todos os temas de um pilar forem esgotados, rotacionar para o próximo pilar.
+4. Se todos os pilares forem esgotados, **não publicar**; sinalizar erro operacional para expansão da biblioteca (sem fallback repetindo tema).
+5. `excludedThemes` sempre tem precedência máxima.
 
 ## Temas por Pilar (Biblioteca Completa)
 
@@ -531,6 +614,10 @@ const contentHash = generateContentHash(
     contentConfig.angle
 );
 
+if (isThemeIdLocked(contentConfig.themeId, await getRecentThemes(schedule.userId))) {
+  return retryWithNewTheme();
+}
+
 if (!await isThemeUnique(contentHash, schedule.userId)) {
     // Retry com novo ângulo ou tema
     return retryWithVariation();
@@ -544,7 +631,21 @@ const generatedContent = await baml.GenerateBlogPost({
 });
 
 // 5. Validar e armazenar
-if (generatedContent.engagement_score >= 75) {
+const overallQuality = Math.round(
+  generatedContent.seo_score * 0.30 +
+  generatedContent.geo_score * 0.25 +
+  generatedContent.aeo_score * 0.25 +
+  generatedContent.aio_score * 0.20
+);
+
+if (
+  generatedContent.seo_score >= 75 &&
+  generatedContent.geo_score >= 72 &&
+  generatedContent.aeo_score >= 72 &&
+  generatedContent.aio_score >= 75 &&
+  overallQuality >= 78 &&
+  generatedContent.engagement_score >= 75
+) {
     await storeContentHash(contentHash, schedule.userId);
     return generatedContent;
 } else {

@@ -38,12 +38,20 @@ function getPreferredLang(request: Request): SupportedLang {
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const pathname = url.pathname;
+  const hostname = url.hostname;
+  const isCompany = hostname.startsWith("company.");
 
   if (/^\/(en|pt)(\/|$)/.test(pathname)) {
     return null;
   }
 
   const preferred = getPreferredLang(request);
+
+  // On company subdomain, redirect root to company login
+  if (isCompany && (pathname === "/" || pathname === "")) {
+    throw redirect(`/${preferred}/company/login${url.search}${url.hash}`);
+  }
+
   const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
   throw redirect(`${nextPath}${url.search}${url.hash}`);
 }
@@ -57,7 +65,15 @@ export default function RedirectLang() {
     if (/^\/(en|pt)(\/|$)/.test(pathname)) return;
 
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    const isCompany = hostname.startsWith("company.");
     const preferred = hostname === "localhost" || hostname.endsWith(".localhost") ? "en" : "en";
+
+    // On company subdomain, redirect root to company login
+    if (isCompany && (pathname === "/" || pathname === "")) {
+      navigate(`/${preferred}/company/login${location.search}${location.hash}`, { replace: true });
+      return;
+    }
+
     const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
     navigate(`${nextPath}${location.search}${location.hash}`, { replace: true });
   }, [location.hash, location.pathname, location.search, navigate]);

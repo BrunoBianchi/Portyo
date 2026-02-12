@@ -234,7 +234,7 @@ export default function DashboardScheduler() {
         const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
         return (
-            <div className="bg-white rounded-[24px] border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 select-none">
+            <div className="bg-white rounded-[24px] border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-6 select-none">
                 <div className="flex items-center justify-between mb-6">
                     <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronLeft className="w-5 h-5 text-black" /></button>
                     <span className="font-black text-[#1A1A1A] text-lg" style={{ fontFamily: 'var(--font-display)' }}>{format(currentMonth, "MMMM yyyy")}</span>
@@ -243,11 +243,11 @@ export default function DashboardScheduler() {
 
                 <div className="grid grid-cols-7 mb-4">
                     {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(d => (
-                        <div key={d} className="text-center text-xs font-black text-gray-400 uppercase tracking-wider">{t(`dashboard.scheduler.weekdaysShort.${d}`)}</div>
+                        <div key={d} className="text-center text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-wider">{t(`dashboard.scheduler.weekdaysShort.${d}`)}</div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-2">
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
                     {calendarDays.map(day => {
                         const dateStr = format(day, 'yyyy-MM-dd');
                         const isBlocked = settings?.blockedDates?.includes(dateStr);
@@ -259,7 +259,7 @@ export default function DashboardScheduler() {
                                 key={day.toString()}
                                 onClick={() => !isPast && toggleBlockedDate(day)}
                                 className={`
-                                    aspect-square rounded-xl flex items-center justify-center text-sm font-bold transition-all cursor-pointer relative border-2
+                                    aspect-square rounded-lg sm:rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold transition-all cursor-pointer relative border-2 touch-manipulation
                                     ${!isCurrentMonth ? 'opacity-20 border-transparent' : ''}
                                     ${isPast ? 'opacity-30 cursor-not-allowed bg-gray-50 border-transparent text-gray-400' : ''}
                                     ${isBlocked
@@ -290,12 +290,12 @@ export default function DashboardScheduler() {
 
     return (
         <AuthorizationGuard minPlan="standard">
-            <div className="p-8 max-w-6xl mx-auto font-sans">
+            <div className="p-4 sm:p-8 max-w-6xl mx-auto font-sans">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8" data-tour="scheduler-header">
                     <div>
-                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.scheduler.title")}</h1>
+                        <h1 className="text-2xl sm:text-4xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.scheduler.title")}</h1>
                         <p className="text-gray-600 mt-2 font-medium">{t("dashboard.scheduler.subtitle")}</p>
                     </div>
                     <div className="flex items-center gap-3" data-tour="scheduler-status">

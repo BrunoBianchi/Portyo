@@ -65,6 +65,9 @@ export interface Bio {
   patternColor?: string;
   imageStyle?: string;
   profileImageLayout?: "classic" | "hero";
+  heroTransition?: boolean;
+  navTabColor?: string;
+  navTabTextColor?: string;
   profileImageSize?: "small" | "large";
   titleStyle?: "text" | "logo";
   displayProfileImage?: boolean;
@@ -80,6 +83,16 @@ export interface Bio {
     website?: string;
     github?: string;
     facebook?: string;
+    threads?: string;
+    twitch?: string;
+    discord?: string;
+    pinterest?: string;
+    snapchat?: string;
+    whatsapp?: string;
+    telegram?: string;
+    spotify?: string;
+    behance?: string;
+    dribbble?: string;
   };
   enableSubscribeButton?: boolean;
   seoTitle?: string;

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, BadgeCheck } from "lucide-react";
 import type { BioBlock } from "~/contexts/bio.context";
 import { BlockEditor } from "./block-editors";
-import { BlockStyleSettings } from "./block-style-settings";
+import { BlockDesignEditor } from "./block-editors/design";
 
 interface BlockEditorDrawerProps {
   block: BioBlock | null;
@@ -95,7 +95,7 @@ export const BlockEditorDrawer = React.memo(function BlockEditorDrawer({
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                className="p-2.5 hover:bg-black/10 rounded-full transition-colors touch-manipulation"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -132,7 +132,7 @@ export const BlockEditorDrawer = React.memo(function BlockEditorDrawer({
                   <BlockEditor block={editedBlock} onChange={handleBlockChange} />
                 </div>
               ) : (
-                <BlockStyleSettings
+                <BlockDesignEditor
                   block={editedBlock}
                   onUpdate={handleBlockChange}
                 />

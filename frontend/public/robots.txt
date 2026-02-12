@@ -38,6 +38,8 @@ Allow: /security-policy
 # Static files for crawlers
 Allow: /llms.txt
 Allow: /llms-bio.txt
+Allow: /llms-pt.txt
+Allow: /llms-bio-pt.txt
 Allow: /humans.txt
 Allow: /.well-known/security.txt
 
@@ -114,6 +116,7 @@ Crawl-delay: 2
 # ==================== SITEMAP ====================
 
 Sitemap: https://portyo.me/sitemap.xml
+Sitemap: https://portyo.me/sitemap-index.xml
 
 # ==================== HOST ====================
 

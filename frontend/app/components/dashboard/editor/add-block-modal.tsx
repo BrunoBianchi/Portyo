@@ -37,7 +37,8 @@ import {
     Users,
     CalendarDays,
     FileText,
-    MoreHorizontal
+    MoreHorizontal,
+    DollarSign
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -126,6 +127,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
                 { type: "featured", label: "Destaque", description: "Item em destaque", icon: Star, color: "#F59E0B" },
                 { type: "affiliate", label: "Afiliado", description: "Link de cupom/afiliado", icon: Tag, color: "#22C55E" },
+                { type: "sponsored_links", label: "Links Patrocinados", description: "Ganhe com links de empresas", icon: DollarSign, color: "#10B981" },
             ]
         },
         {
@@ -212,6 +214,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "tour", label: "Turnê", description: "Datas de turnê", icon: MapPin, color: "#F59E0B" },
                 { type: "qrcode", label: "QR Code", description: "QR personalizado", icon: QrCode, color: "#F59E0B" },
                 { type: "whatsapp", label: "WhatsApp", description: "Botão WhatsApp", icon: MessageCircle, color: "#25D366" },
+                { type: "sponsored_links", label: "Links Patrocinados", description: "Ganhe com links de empresas", icon: DollarSign, color: "#10B981" },
             ]
         }
     ], [t]);

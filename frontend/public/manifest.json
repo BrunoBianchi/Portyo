@@ -1,6 +1,8 @@
 {
   "short_name": "Portyo",
   "name": "Portyo - Link in Bio",
+  "description": "Convert your followers into customers with one link. All-in-one platform for creators.",
+  "lang": "en",
   "icons": [
     {
       "src": "/favicon.ico",

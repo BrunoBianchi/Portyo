@@ -41,7 +41,8 @@ import {
     CheckCircle2,
     Circle,
     ExternalLinkIcon,
-    Palette
+    Palette,
+    DollarSign
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -49,6 +50,7 @@ import { useTranslation } from "react-i18next";
 import { UpgradePopup } from "~/components/shared/upgrade-popup";
 import { motion, AnimatePresence } from "framer-motion";
 import { NotificationBell } from "./notification-bell";
+import { api } from "~/services/api";
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -71,6 +73,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     const [isUpgradePopupOpen, setIsUpgradePopupOpen] = useState(false);
     const [forcedPlan, setForcedPlan] = useState<'standard' | 'pro' | undefined>(undefined);
+    const [earningsTotal, setEarningsTotal] = useState(0);
+    const [earningsCurrency, setEarningsCurrency] = useState("USD");
 
     // Collapsible sections state
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -116,6 +120,77 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const userPlan = (user?.plan || 'free') as PlanType;
     const bioLimit = PLAN_LIMITS[userPlan]?.bios || 1;
     const canCreateBio = bios.length < bioLimit;
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const fetchEarningsTotal = async () => {
+            if (!user?.id || !bio?.id) {
+                setEarningsTotal(0);
+                setEarningsCurrency("USD");
+                return;
+            }
+
+            const [sponsoredResult, salesResult, marketingResult] = await Promise.allSettled([
+                api.get("/sponsored/earnings"),
+                api.get(`/analytics/sales?bioId=${bio.id}`),
+                api.get("/marketing/slots")
+            ]);
+
+            const sponsoredTotal = sponsoredResult.status === "fulfilled"
+                ? Number(sponsoredResult.value.data?.totalEarnings || 0)
+                : 0;
+
+            const productsTotal = salesResult.status === "fulfilled"
+                ? Number(salesResult.value.data?.revenue?.current || 0)
+                : 0;
+
+            const currency = salesResult.status === "fulfilled"
+                ? String(salesResult.value.data?.revenue?.currency || "USD").toUpperCase()
+                : "USD";
+
+            const marketingTotal = marketingResult.status === "fulfilled" && Array.isArray(marketingResult.value.data)
+                ? marketingResult.value.data.reduce((sum: number, slot: any) => sum + Number(slot?.totalRevenue || 0), 0)
+                : 0;
+
+            if (!isCancelled) {
+                setEarningsCurrency(currency);
+                setEarningsTotal(sponsoredTotal + productsTotal + marketingTotal);
+            }
+        };
+
+        fetchEarningsTotal().catch(() => {
+            if (!isCancelled) {
+                setEarningsTotal(0);
+                setEarningsCurrency("USD");
+            }
+        });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [user?.id, bio?.id]);
+
+    const formatEarningsBadge = (amount: number, currency: string) => {
+        const locale = currentLang === "pt" ? "pt-BR" : "en-US";
+        try {
+            return new Intl.NumberFormat(locale, {
+                style: "currency",
+                currency,
+                notation: "compact",
+                maximumFractionDigits: 1,
+            }).format(amount);
+        } catch {
+            return new Intl.NumberFormat(locale, {
+                style: "currency",
+                currency: "USD",
+                notation: "compact",
+                maximumFractionDigits: 1,
+            }).format(amount);
+        }
+    };
+
+    const earnBadgeValue = formatEarningsBadge(earningsTotal, earningsCurrency);
 
     // --- Onboarding Logic ---
     const [onboardingState, setOnboardingState] = useState({
@@ -198,7 +273,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     // Helper for next step
     const getNextStep = () => {
         if (!onboardingState.hasLink) return {
-            label: t("dashboard.sidebar.steps.actionAddLink", { defaultValue: "Add Link" }),
+            label: t("dashboard.sidebar.steps.actionAddLink"),
             action: () => {
                 // Open editor if in editor, or navigate there
                 if (location.pathname.includes("/dashboard/editor")) {
@@ -210,17 +285,17 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             icon: Plus
         };
         if (!onboardingState.visitedPages) return {
-            label: t("dashboard.sidebar.steps.actionExplore", { defaultValue: "Explore Dashboard" }),
+            label: t("dashboard.sidebar.steps.actionExplore"),
             action: () => navigate("/dashboard/analytics"), // Example destination
             icon: LayoutDashboard // Changed from Compass (not imported) to LayoutDashboard
         };
         if (!onboardingState.visitedSettings) return {
-            label: t("dashboard.sidebar.steps.actionSettings", { defaultValue: "Go to Settings" }),
+            label: t("dashboard.sidebar.steps.actionSettings"),
             action: () => navigate("/dashboard/settings"),
             icon: Settings
         };
         if (!onboardingState.visitedBio) return {
-            label: t("dashboard.sidebar.steps.actionVisitBio", { defaultValue: "Visit your Bio" }),
+            label: t("dashboard.sidebar.steps.actionVisitBio"),
             action: handleVisitBio,
             icon: ExternalLinkIcon // Need to import this or use Globe
         };
@@ -270,43 +345,46 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const navGroups = [
         {
             key: "myPortyo",
-            label: t("dashboard.sidebar.groupMyPortyo", { defaultValue: "MY PORTYO" }),
+            label: t("dashboard.sidebar.groupMyPortyo"),
             items: [
-                { name: t("dashboard.nav.overview", { defaultValue: "Overview" }), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
-                { name: t("dashboard.nav.editor", { defaultValue: "Editor" }), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
-                { name: t("dashboard.nav.design", { defaultValue: "Design" }), path: "/dashboard/design", icon: Palette },
-                { name: t("dashboard.nav.portfolio", { defaultValue: "Portfolio" }), path: "/dashboard/portfolio", icon: Briefcase },
-                { name: t("dashboard.nav.blog", { defaultValue: "Blog" }), path: "/dashboard/blog", icon: FileText },
-                { name: t("dashboard.nav.products", { defaultValue: "Products" }), path: "/dashboard/products", icon: Store, tourId: "dashboard-nav-products" },
+                { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
+                { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
+                { name: t("dashboard.nav.design"), path: "/dashboard/design", icon: Palette },
+                { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
+                { name: t("dashboard.nav.blog"), path: "/dashboard/blog", icon: FileText },
             ]
         },
         {
             key: "earn",
-            label: t("dashboard.sidebar.groupEarn", { defaultValue: "EARN" }),
+            label: t("dashboard.sidebar.groupEarn"),
             items: [
-                { name: t("dashboard.nav.marketing", { defaultValue: "Marketing" }), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
-                { name: t("dashboard.nav.scheduler", { defaultValue: "Scheduler" }), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.earnings"), path: "/dashboard/earnings", icon: DollarSign },
+                { name: t("dashboard.nav.marketing"), path: "/dashboard/marketing", icon: TrendingUp, isPro: true },
+                { name: t("dashboard.nav.sponsored"), path: "/dashboard/sponsored", icon: DollarSign },
+                { name: t("dashboard.nav.products"), path: "/dashboard/products", icon: Store },
             ]
         },
         {
             key: "audience",
-            label: t("dashboard.sidebar.groupAudience", { defaultValue: "AUDIENCE" }),
+            label: t("dashboard.sidebar.groupAudience"),
             items: [
-                { name: t("dashboard.nav.analytics", { defaultValue: "Analytics" }), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
-                { name: t("dashboard.nav.leads", { defaultValue: "Leads" }), path: "/dashboard/leads", icon: Users, isPro: true },
-                { name: t("dashboard.nav.forms", { defaultValue: "Forms" }), path: "/dashboard/forms", icon: MessageSquare, tourId: "dashboard-nav-forms" },
+                { name: t("dashboard.nav.analytics"), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
+                { name: t("dashboard.nav.leads"), path: "/dashboard/leads", icon: Users, isPro: true },
+                { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: MessageSquare, tourId: "dashboard-nav-forms" },
             ]
         },
         {
             key: "tools",
-            label: t("dashboard.sidebar.groupTools", { defaultValue: "TOOLS" }),
+            label: t("dashboard.sidebar.groupTools"),
             items: [
-                { name: t("dashboard.nav.autoPost", { defaultValue: "Auto Post" }), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
-                { name: t("dashboard.nav.emailTemplates", { defaultValue: "Email Templates" }), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
-                { name: t("dashboard.nav.automation", { defaultValue: "Automation" }), path: "/dashboard/automation", icon: Zap, isPro: true },
-                { name: t("dashboard.nav.integrations", { defaultValue: "Integrations" }), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
-                { name: t("dashboard.nav.qrCode", { defaultValue: "QR Codes" }), path: "/dashboard/qrcode", icon: QrCode },
-                { name: t("dashboard.nav.customDomains", { defaultValue: "Custom Domains" }), path: "/dashboard/custom-domains", icon: Globe2, isPro: true },
+                { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.socialPlanner", { defaultValue: "Social planner" }), path: "/dashboard/social-planner", icon: Calendar, isPro: true },
+                { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
+                { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
+                { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
+                { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
+                { name: t("dashboard.nav.customDomains"), path: "/dashboard/custom-domains", icon: Globe2, isPro: true },
             ]
         }
     ];
@@ -318,9 +396,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             label: "ADMIN",
             // @ts-ignore
             items: [
-                { name: t("dashboard.nav.adminPanel", { defaultValue: "Admin Panel" }), path: "/dashboard/admin", icon: Shield },
-                { name: t("dashboard.nav.announcements", { defaultValue: "Announcements" }), path: "/dashboard/announcements", icon: Megaphone },
-                { name: t("dashboard.nav.siteBlog", { defaultValue: "Site Blog" }), path: "/dashboard/site-blog", icon: Globe },
+                { name: t("dashboard.nav.adminPanel"), path: "/dashboard/admin", icon: Shield },
+                { name: t("dashboard.nav.announcements"), path: "/dashboard/announcements", icon: Megaphone },
+                { name: t("dashboard.nav.siteBlog"), path: "/dashboard/site-blog", icon: Globe },
             ]
         });
     }
@@ -419,24 +497,24 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 `}
             >
                 {/* Header: Profile & Notifications */}
-                <div className="p-5 flex items-center justify-between">
-                    <div className="relative" ref={dropdownRef}>
+                <div className="p-5 flex items-center justify-between gap-2">
+                    <div className="relative min-w-0 flex-1" ref={dropdownRef}>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center gap-3 hover:bg-black/5 p-2 rounded-2xl transition-all group"
+                            className="flex items-center gap-2 hover:bg-black/5 p-2 rounded-2xl transition-all group w-full"
                         >
-                            <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-500 overflow-hidden shadow-sm group-hover:border-gray-300 transition-colors">
+                            <div className="w-9 h-9 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-500 overflow-hidden shadow-sm group-hover:border-gray-300 transition-colors shrink-0">
                                 {user?.fullname?.[0]?.toUpperCase() || <Globe className="w-5 h-5" />}
                             </div>
-                            <div className="flex flex-col items-start min-w-0">
-                                <span className="text-sm font-bold truncate w-24 text-left text-[#1a1a1a]">
+                            <div className="flex flex-col items-start min-w-0 flex-1">
+                                <span className="text-xs font-bold truncate w-full text-left text-[#1a1a1a]">
                                     {user?.fullname || user?.email?.split('@')[0]}
                                 </span>
-                                <span className="text-sm text-gray-500 truncate w-full text-left font-medium">
+                                <span className="text-[11px] text-gray-500 truncate w-full text-left font-medium">
                                     {bio?.sufix ? `@${bio.sufix}` : t("dashboard.sidebar.selectPage")}
                                 </span>
                             </div>
-                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 shrink-0 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Dropdown Menu */}
@@ -484,7 +562,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                         className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-left transition-colors text-gray-500 hover:text-black"
                                     >
                                         <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Settings className="w-3 h-3" /></div>
-                                        <span className="font-medium text-sm">{t("dashboard.sidebar.settings", { defaultValue: "Settings" })}</span>
+                                        <span className="font-medium text-sm">{t("dashboard.sidebar.settings")}</span>
                                     </Link>
                                     <button
                                         onClick={() => { setIsDropdownOpen(false); logout(); }}
@@ -498,7 +576,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         </AnimatePresence>
                     </div>
 
-                    <NotificationBell />
+                    <div className="hidden md:block">
+                        <NotificationBell />
+                    </div>
                 </div>
 
                 {/* Navigation */}
@@ -510,7 +590,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                     onClick={() => toggleGroup(group.key)}
                                     className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-900 transition-colors py-2 px-3 group"
                                 >
-                                    <span>{group.label}</span>
+                                    <span className="flex items-center gap-2 min-w-0">
+                                        <span>{group.label}</span>
+                                        {group.key === "earn" && (
+                                            <span className="px-2 py-0.5 rounded-full bg-[#C6F035] text-black text-[10px] font-black normal-case tracking-normal whitespace-nowrap">
+                                                {earnBadgeValue}
+                                            </span>
+                                        )}
+                                    </span>
                                     <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${openGroups[group.key] ? '' : '-rotate-90'}`} />
                                 </button>
 
@@ -583,19 +670,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     <div className="p-4 bg-[#F3F3F1] border-t border-[#E5E5E5] animate-in slide-in-from-bottom duration-500">
                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-4">
                             <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup", { defaultValue: "SETUP" })}</span>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup")}</span>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-black leading-tight">{t("dashboard.sidebar.checklist", { defaultValue: "Onboarding" })}</span>
+                                    <span className="text-sm font-bold text-black leading-tight">{t("dashboard.sidebar.checklist")}</span>
                                     <span className="text-xs font-bold text-[#C6F035] bg-black px-2 py-0.5 rounded-full">{Math.round(progress)}%</span>
                                 </div>
                             </div>
 
                             {/* Checklist Items */}
                             <div className="space-y-2">
-                                <ChecklistItem label={t("dashboard.sidebar.steps.addLink", { defaultValue: "Add a link" })} isDone={onboardingState.hasLink} />
-                                <ChecklistItem label={t("dashboard.sidebar.steps.explore", { defaultValue: "Explore modules" })} isDone={onboardingState.visitedPages} />
-                                <ChecklistItem label={t("dashboard.sidebar.steps.settings", { defaultValue: "Configure settings" })} isDone={onboardingState.visitedSettings} />
-                                <ChecklistItem label={t("dashboard.sidebar.steps.bio", { defaultValue: "Visit bio" })} isDone={onboardingState.visitedBio} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.addLink")} isDone={onboardingState.hasLink} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.explore")} isDone={onboardingState.visitedPages} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.settings")} isDone={onboardingState.visitedSettings} />
+                                <ChecklistItem label={t("dashboard.sidebar.steps.bio")} isDone={onboardingState.visitedBio} />
                             </div>
 
                             {nextStep && (

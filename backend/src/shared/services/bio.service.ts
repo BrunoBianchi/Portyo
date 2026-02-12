@@ -22,6 +22,9 @@ export interface BackgroundSettings {
     usernameColor?: string;
     imageStyle?: string;
     profileImageLayout?: string;
+    heroTransition?: boolean;
+    navTabColor?: string;
+    navTabTextColor?: string;
     profileImageSize?: string;
     titleStyle?: string;
     description?: string;
@@ -237,7 +240,7 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
     if (bgSettings) {
         applySettings(bio, bgSettings, [
             'bgType', 'bgColor', 'bgSecondaryColor', 'bgImage', 'bgVideo',
-            'usernameColor', 'imageStyle', 'profileImageLayout', 'profileImageSize', 'titleStyle',
+            'usernameColor', 'imageStyle', 'profileImageLayout', 'heroTransition', 'navTabColor', 'navTabTextColor', 'profileImageSize', 'titleStyle',
             'description', 'socials', 'displayProfileImage'
         ]);
     }
@@ -313,7 +316,7 @@ export const getBiosFromUser = async(userId:string, relations?: string[]):Promis
 }
 
 export const createNewBio = async (sufix: string, userEmail: string): Promise<Partial<Bio> | ApiError> => {
-    if (await findBioBySufix(sufix)) throw new ApiError(APIErrors.conflictError, "Username already in use!", 409)
+    if (await findBioBySufix(sufix)) throw new ApiError(APIErrors.conflictError, "This handle is already in use!", 409)
     const user = await findUserByEmail(userEmail)
     if (!user) throw new ApiError(APIErrors.notFoundError, "User not found !", 404)
     

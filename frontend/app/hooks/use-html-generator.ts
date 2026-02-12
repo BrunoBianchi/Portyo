@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { blocksToHtml } from "~/services/html-generator";
+import type { HtmlGeneratorExtraData } from "~/services/html-generator";
 import type { BioBlock } from "~/contexts/bio.context";
 import type { Bio } from "~/types/bio";
 import type { User } from "~/types/user";
+import { fetchBioSponsoredLinks } from "~/services/sponsored-api";
 
 interface UseHtmlGeneratorOptions {
   blocks: BioBlock[];
@@ -41,7 +43,19 @@ export function useHtmlGenerator(options: UseHtmlGeneratorOptions): UseHtmlGener
     setError(null);
     
     try {
-      const generated = await blocksToHtml(blocks, user, bio);
+      // Pre-fetch sponsored links data if there's a sponsored_links block
+      let extraData: HtmlGeneratorExtraData = {};
+      const hasSponsoredBlock = blocks.some(b => b.type === "sponsored_links");
+      if (hasSponsoredBlock && bio.id) {
+        try {
+          const sponsoredLinks = await fetchBioSponsoredLinks(bio.id);
+          extraData.sponsoredLinks = sponsoredLinks;
+        } catch {
+          // Silently fail — will render fallback placeholder
+        }
+      }
+
+      const generated = await blocksToHtml(blocks, user, bio, "", extraData);
       setHtml(generated);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to generate HTML"));

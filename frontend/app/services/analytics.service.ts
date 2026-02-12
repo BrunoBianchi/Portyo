@@ -59,6 +59,16 @@ export interface SalesData {
     topProducts: TopProduct[];
     dailyRevenue: DailyRevenue[];
     recentTransactions: Transaction[];
+    range?: {
+        startDate: string;
+        endDate: string;
+    };
+}
+
+export interface SalesRangeFilters {
+    days?: number;
+    startDate?: string;
+    endDate?: string;
 }
 
 export const AnalyticsService = {
@@ -73,8 +83,14 @@ export const AnalyticsService = {
     /**
      * Get detailed sales data for a bio
      */
-    async getSales(bioId: string): Promise<SalesData> {
-        const response = await api.get<SalesData>(`/analytics/sales?bioId=${bioId}`);
+    async getSales(bioId: string, filters?: SalesRangeFilters): Promise<SalesData> {
+        const params = new URLSearchParams({ bioId });
+
+        if (filters?.days) params.set("days", String(filters.days));
+        if (filters?.startDate) params.set("startDate", filters.startDate);
+        if (filters?.endDate) params.set("endDate", filters.endDate);
+
+        const response = await api.get<SalesData>(`/analytics/sales?${params.toString()}`);
         return response.data;
     },
 };

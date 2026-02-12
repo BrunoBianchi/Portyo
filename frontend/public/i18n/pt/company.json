@@ -1,0 +1,333 @@
+{
+  "brand": "Portyo Sponsors",
+  "login": {
+    "title": "Login Empresa | Portyo Sponsors",
+    "subtitle": "Gerencie seus links patrocinados",
+    "heading": "Login da Empresa",
+    "email": "Email",
+    "emailPlaceholder": "empresa@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Entrar",
+    "noAccount": "Não tem conta?",
+    "register": "Registre-se",
+    "invalidCredentials": "Email ou senha inválidos"
+  },
+  "register": {
+    "title": "Registrar Empresa | Portyo Sponsors",
+    "description": "Registre sua empresa para criar campanhas de links patrocinados no Portyo.",
+    "subtitle": "Crie campanhas de links patrocinados",
+    "heading": "Registrar Empresa",
+    "companyName": "Nome da Empresa",
+    "companyNamePlaceholder": "Minha Empresa",
+    "email": "Email",
+    "emailPlaceholder": "contato@empresa.com",
+    "website": "Website (opcional)",
+    "websitePlaceholder": "https://minhaempresa.com",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Criar Conta",
+    "hasAccount": "Já tem conta?",
+    "login": "Faça login",
+    "passwordMinLength": "A senha deve ter pelo menos 6 caracteres",
+    "passwordMismatch": "As senhas não coincidem",
+    "registerError": "Erro ao registrar empresa"
+  },
+  "dashboard": {
+    "title": "Ofertas | Dashboard Empresa - Portyo Sponsors",
+    "myOffers": "Minhas Ofertas",
+    "manageOffers": "Gerencie suas campanhas de links patrocinados",
+    "newOffer": "Nova Oferta",
+    "totalOffers": "Total Ofertas",
+    "active": "Ativas",
+    "totalClicks": "Total Clicks",
+    "totalInvested": "Total Investido",
+    "noOffers": "Nenhuma oferta criada",
+    "noOffersSubtitle": "Crie sua primeira campanha de link patrocinado",
+    "createOffer": "Criar Oferta",
+    "statusActive": "Ativa",
+    "statusPaused": "Pausada",
+    "statusExhausted": "Orçamento esgotado",
+    "pause": "Pausar",
+    "activate": "Ativar",
+    "cpc": "CPC",
+    "clicks": "clicks",
+    "budget": "Orçamento"
+  },
+  "profile": {
+    "title": "Perfil da Empresa",
+    "subtitle": "Atualize as informações da sua empresa",
+    "success": "Perfil atualizado com sucesso!",
+    "error": "Erro ao atualizar perfil",
+    "email": "Email",
+    "companyName": "Nome da Empresa",
+    "website": "Website",
+    "websitePlaceholder": "https://minhaempresa.com",
+    "logoUrl": "URL do Logo",
+    "logoPlaceholder": "https://minhaempresa.com/logo.png",
+    "industry": "Indústria",
+    "industryPlaceholder": "Ex: Tecnologia, Alimentação, Moda...",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva sua empresa...",
+    "save": "Salvar"
+  },
+  "createOffer": {
+    "back": "Voltar às ofertas",
+    "title": "Criar Nova Oferta",
+    "subtitle": "Configure seu link patrocinado para aparecer nas bios dos criadores",
+    "basicInfo": "Informações Básicas",
+    "offerTitle": "Título da Oferta *",
+    "offerTitlePlaceholder": "Ex: Ganhe 10% de desconto na TechStore",
+    "description": "Descrição *",
+    "descriptionPlaceholder": "Breve descrição da sua oferta...",
+    "destinationUrl": "URL de Destino *",
+    "destinationUrlPlaceholder": "https://meusite.com/promo",
+    "imageUrl": "URL da Imagem (opcional)",
+    "imageUrlPlaceholder": "https://meusite.com/logo.png",
+    "category": "Categoria",
+    "categories": {
+      "food": "Alimentação",
+      "tech": "Tecnologia",
+      "fashion": "Moda",
+      "health": "Saúde",
+      "finance": "Finanças",
+      "education": "Educação",
+      "entertainment": "Entretenimento",
+      "travel": "Viagem",
+      "sports": "Esportes",
+      "other": "Outros"
+    },
+    "pricingBudget": "Preço e Orçamento",
+    "cpcLabel": "Custo por Click (CPC) *",
+    "cpcHint": "Mínimo: $0.01 (starter), $0.03 (growing), $0.05 (established)",
+    "dailyBudget": "Orçamento Diário",
+    "totalBudget": "Orçamento Total",
+    "noLimit": "Sem limite",
+    "targeting": "Segmentação",
+    "minBioTier": "Nível mínimo da bio",
+    "bioTiers": {
+      "any": "Qualquer bio",
+      "anyDesc": "Sem restrição de visualizações",
+      "starter": "Starter (0-1K views)",
+      "starterDesc": "Bios com até 1.000 views/mês",
+      "growing": "Growing (1K-10K views)",
+      "growingDesc": "Bios com 1.001 a 10.000 views/mês",
+      "established": "Established (10K+ views)",
+      "establishedDesc": "Bios com mais de 10.000 views/mês"
+    },
+    "targetCountries": "Países alvo (opcional)",
+    "targetCountriesPlaceholder": "BR, US, PT (separado por vírgula)",
+    "startDate": "Data de início",
+    "expirationDate": "Data de expiração",
+    "appearance": "Aparência",
+    "layout": "Layout",
+    "layouts": {
+      "card": "Card",
+      "cardDesc": "Layout padrão estilo card",
+      "banner": "Banner",
+      "bannerDesc": "Banner horizontal",
+      "compact": "Compact",
+      "compactDesc": "Layout compacto inline"
+    },
+    "bgColor": "Cor de fundo",
+    "textColor": "Cor do texto",
+    "preview": "Preview",
+    "submit": "Criar Oferta",
+    "required": "Título, descrição e URL são obrigatórios",
+    "cpcMin": "O CPC deve ser pelo menos $0.01",
+    "createError": "Erro ao criar oferta"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados."
+  },
+  "nav": {
+    "offers": "Ofertas",
+    "createOffer": "Criar Oferta",
+    "profile": "Perfil",
+    "logout": "Sair"
+  },
+  "landing": {
+    "nav": {
+      "features": "Recursos",
+      "howItWorks": "Como Funciona",
+      "pricing": "Preços"
+    },
+    "hero": {
+      "badge": "Para Marcas & Agências",
+      "title1": "ALCANCE CRIADORES",
+      "title2": "DIRETAMENTE.",
+      "subtitle": "Pare de desperdiçar orçamento com anúncios vagos. Patrocine links específicos em bios do Portyo e tenha visibilidade garantida onde importa.",
+      "cta": "Iniciar Campanha",
+      "login": "Entrar"
+    },
+    "marquee": {
+      "highConversion": "Alta Conversão",
+      "realAudiences": "Audiências Reais"
+    },
+    "howItWorks": {
+      "badge": "Processo Simples",
+      "title": "Como Funciona",
+      "subtitle": "Coloque sua marca na frente do público certo em três passos simples.",
+      "step1": {
+        "title": "Escolha um Criador",
+        "description": "Navegue por criadores por nicho, tamanho de audiência e engajamento. Encontre a combinação perfeita para sua marca."
+      },
+      "step2": {
+        "title": "Patrocine um Link",
+        "description": "Coloque seu link patrocinado diretamente na bio do criador. Defina seu orçamento, CPC e opções de segmentação."
+      },
+      "step3": {
+        "title": "Acompanhe Resultados",
+        "description": "Monitore cliques, conversões e ROI em tempo real. Otimize campanhas com insights acionáveis."
+      }
+    },
+    "features": {
+      "badge": "Por que Portyo Sponsors",
+      "title": "Feito para Resultados",
+      "subtitle": "Tudo que você precisa para rodar campanhas de patrocínio de alta performance em bios de criadores.",
+      "visibility": {
+        "title": "Visibilidade Garantida",
+        "description": "Seu link fica diretamente na bio do criador — visto por cada visitante, toda vez."
+      },
+      "analytics": {
+        "title": "Analytics em Tempo Real",
+        "description": "Acompanhe cliques, visualizações e conversões. Saiba exatamente o que está funcionando."
+      },
+      "placement": {
+        "title": "Posicionamento Direto",
+        "description": "Sem algoritmos, sem ruído do feed. Seu link patrocinado vai onde sua audiência já está."
+      },
+      "safety": {
+        "title": "Segurança de Marca",
+        "description": "Escolha exatamente quais criadores representam sua marca. Controle total sobre posicionamento e segmentação."
+      }
+    },
+    "socialProof": {
+      "title": "Confiado por marcas visionárias"
+    },
+    "pricing": {
+      "badge": "Preços Transparentes",
+      "title": "Pague Apenas por Resultados",
+      "subtitle": "Sem assinaturas, sem mínimos. Defina seu próprio CPC e orçamento diário. Você só paga quando alguém realmente clica no seu link.",
+      "minCpc": "CPC Mín.",
+      "creators": "Criadores",
+      "control": "Controle",
+      "cardTitle": "Como o CPC Funciona",
+      "step1": "Defina seu custo por clique (a partir de $0.01)",
+      "step2": "Escolha níveis de criadores e segmentação",
+      "step3": "Monitore performance e ajuste em tempo real",
+      "cta": "Começar"
+    },
+    "cta": {
+      "title": "Pronto para Alcançar sua Audiência?",
+      "subtitle": "Junte-se às marcas que já estão crescendo com Portyo Sponsors. Comece sua primeira campanha em minutos.",
+      "button": "Iniciar Campanha",
+      "login": "Entrar"
+    }
+  },
+  "paymentSuccess": {
+    "errors": {
+      "invalidLink": "Link Inválido",
+      "noProposal": "Nenhum ID de proposta encontrado na URL.",
+      "invalidProposal": "Proposta Inválida",
+      "proposalInvalid": "Este ID de proposta é inválido ou ainda não foi aceito.",
+      "saveFailed": "Falha ao salvar alterações",
+      "codeFailed": "Não foi possível enviar o código de verificação",
+      "verificationFailed": "Verificação falhou",
+      "loadFailed": "Falha ao carregar proposta"
+    },
+    "header": {
+      "title": "Configure Seu Anúncio",
+      "subtitle": "Arraste e solte itens para montar seu banner."
+    },
+    "verification": {
+      "title": "Pagamento Realizado!",
+      "subtitle": "Para verificar sua identidade e acessar o editor de anúncios, precisamos enviar um código para seu email.",
+      "sendCode": "Enviar Código de Acesso",
+      "enterCode": "Digite o Código de Verificação",
+      "codeSent": "Enviamos um código de 6 dígitos para seu email. Digite-o abaixo para continuar.",
+      "verifyCode": "Verificar Código",
+      "resendCode": "Reenviar Código"
+    },
+    "editor": {
+      "title": "Configure Seu Anúncio",
+      "livePreview": "Pré-visualização",
+      "save": "Salvar Alterações",
+      "saved": "Salvo",
+      "savedIndicator": "✓ Salvo",
+      "dragOverlay": "Seguindo item"
+    },
+    "blocks": {
+      "headline": "Título",
+      "text": "Texto",
+      "price": "Preço",
+      "image": "Imagem",
+      "button": "Botão",
+      "spacer": "Espaçador",
+      "divider": "Divisor",
+      "badge": "Selo",
+      "social": "Social",
+      "alignment": "Alinhamento",
+      "alignLeft": "Esquerda",
+      "alignCenter": "Centro",
+      "alignRight": "Direita",
+      "textColor": "Cor do Texto",
+      "buttonColor": "Cor do Botão",
+      "labelColor": "Cor do Rótulo",
+      "imageUrlPlaceholder": "URL da Imagem (https://...)",
+      "enterText": "Digite o texto...",
+      "pricePlaceholder": "Preço (ex: R$19,99)",
+      "labelPlaceholder": "Rótulo",
+      "urlPlaceholder": "URL",
+      "badgePlaceholder": "Texto do Selo (ex: NOVO)",
+      "twitterPlaceholder": "URL do X (Twitter)",
+      "instagramPlaceholder": "URL do Instagram"
+    },
+    "defaults": {
+      "headline": "Seu Título Aqui",
+      "description": "Breve descrição da sua oferta...",
+      "learnMore": "Saiba Mais",
+      "clickMe": "Clique Aqui",
+      "newHeadline": "Novo Título",
+      "newText": "Novo Texto",
+      "newBadge": "Novo",
+      "defaultPrice": "R$19,99",
+      "headingFallback": "Título",
+      "textFallback": "Conteúdo do bloco de texto...",
+      "buttonFallback": "Botão",
+      "badgeFallback": "NOVO",
+      "previewIcons": "Ícones de preview",
+      "adLabel": "Ad"
+    },
+    "cardDesign": {
+      "title": "Design do Card",
+      "quickStyles": "Estilos Rápidos",
+      "darkPro": "Dark Pro",
+      "minimal": "Minimalista",
+      "radiant": "Radiante",
+      "softGray": "Cinza Suave",
+      "cardBase": "Base do Card",
+      "bgColor": "Cor de Fundo",
+      "clear": "Limpar",
+      "white": "Branco",
+      "fontStyle": "Estilo da Fonte",
+      "fontModern": "Moderno (Inter)",
+      "fontElegant": "Elegante (Playfair)",
+      "fontBold": "Negrito (Montserrat)",
+      "fontClean": "Limpo (Outfit)",
+      "fontTechnical": "Técnico (Monospace)",
+      "bordersShape": "Bordas e Forma",
+      "color": "Cor",
+      "width": "Largura",
+      "radius": "Raio",
+      "layoutInteraction": "Layout e Interação",
+      "padding": "Preenchimento",
+      "gap": "Espaçamento",
+      "hoverAnimation": "Animação de Hover",
+      "animNone": "Nenhuma",
+      "animPulse": "Pulsar",
+      "animBounce": "Pular"
+    }
+  }
+}

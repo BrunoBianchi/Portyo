@@ -2,23 +2,28 @@
   "nav": {
     "overview": "Visão geral",
     "editor": "Editor",
+    "design": "Design",
     "leads": "Leads",
     "products": "Produtos",
     "portfolio": "Portfólio",
     "blog": "Blog",
     "qrCode": "Código QR",
     "marketing": "Marketing",
+    "sponsored": "Links Patrocinados",
+    "earnings": "Ganhos",
     "scheduler": "Agenda",
     "emailTemplates": "Modelos de e-mail",
     "integrations": "Integrações",
     "automation": "Automação",
+    "customDomains": "Domínios Personalizados",
     "forms": "Formulários",
     "seoSettings": "Configurações de SEO",
     "analytics": "Análises",
-    "adminPanel": "Painel Admin",
+    "adminPanel": "Painel Administrativo",
     "announcements": "Anúncios",
     "siteBlog": "Blog do site",
-    "autoPost": "Auto Post"
+    "autoPost": "Postagem automática",
+    "socialPlanner": "Planejador social"
   },
   "customDomains": {
     "title": "Domínios Personalizados",
@@ -36,9 +41,9 @@
     "instructions": {
       "title": "Como configurar seu domínio",
       "step1": "Adicione seu domínio no campo acima",
-      "step2": "Configure um registro DNS A apontando seu domínio para o IP do servidor",
-      "step3": "Aguarde a propagação do DNS (pode levar até 24h)",
-      "step4": "O SSL será gerado automaticamente quando o DNS for detectado"
+      "step2": "No seu provedor de DNS, crie um registro CNAME ou A apontando para cname.portyo.me",
+      "step3": "Aguarde a propagação do DNS (pode levar até 24-48h)",
+      "step4": "Clique em 'Verificar' após configurar o DNS — o SSL será gerado automaticamente"
     },
     "status": {
       "active": "Ativo",
@@ -1153,7 +1158,20 @@
     },
     "dividerHelper": "Um divisor visual para separar seções de conteúdo.",
     "advancedBlockHelper": "Este é um bloco avançado de {{type}}. Configure-o no editor detalhado.",
-    "advancedBlockHint": "Mais opções disponíveis na visualização completa do editor."
+    "advancedBlockHint": "Mais opções disponíveis na visualização completa do editor.",
+    "askAI": "Perguntar à IA",
+    "ai": {
+      "placeholder": "Descreva o que você quer...",
+      "errorGenerate": "Falha ao gerar. Tente novamente.",
+      "successGenerate": "Conteúdo gerado!",
+      "suggestions": {
+        "minimalist": "Deixar minimalista",
+        "instagram": "Adicionar feed do Instagram",
+        "portfolio": "Criar seção de portfólio",
+        "contact": "Adicionar formulário de contato",
+        "dark": "Modo tema escuro"
+      }
+    }
   },
   "blockStyle": {
     "sections": {
@@ -1688,7 +1706,7 @@
   "sidebar": {
     "groups": {
       "myPortyo": "Meu Portyo",
-      "earn": "Monetizar",
+      "earn": "Ganhos",
       "audience": "Audiência",
       "tools": "Ferramentas"
     },
@@ -1717,9 +1735,21 @@
     "livePage": "Página ao vivo",
     "userFallback": "Usuário",
     "logout": "Sair",
+    "settings": "Configurações",
     "createError": "Falha ao criar página. O nome de usuário pode já estar em uso.",
     "setup": "Configuração",
-    "finishSetup": "Finalizar Configuração"
+    "finishSetup": "Finalizar Configuração",
+    "checklist": "Onboarding",
+    "steps": {
+      "addLink": "Adicionar um link",
+      "explore": "Explorar módulos",
+      "settings": "Configurar ajustes",
+      "bio": "Visitar bio",
+      "actionAddLink": "Adicionar Link",
+      "actionExplore": "Explorar Dashboard",
+      "actionSettings": "Ir para Configurações",
+      "actionVisitBio": "Visitar sua Bio"
+    }
   },
   "notifications": {
     "bell": "Notificações",
@@ -2263,11 +2293,11 @@
     },
     "dns": {
       "title": "Configuração DNS necessária",
-      "body": "Para o domínio funcionar, adicione um registro DNS no seu provedor (como GoDaddy, Namecheap ou Cloudflare).",
+      "body": "Para verificar seu domínio, crie um registro CNAME ou A no seu provedor de DNS (como GoDaddy, Namecheap ou Cloudflare) apontando para cname.portyo.me",
       "type": "Tipo",
       "nameHost": "Nome / Host",
       "valueTarget": "Valor / Target",
-      "note": "Nota: alterações de DNS podem levar até 48 horas para propagar globalmente, mas geralmente acontecem em poucos minutos."
+      "note": "Dica: CNAME é recomendado para subdomínios (ex: www). Para domínios raiz (@), use um registro A ou CNAME flattening se o provedor suportar. Alterações de DNS podem levar até 48 horas."
     },
     "status": {
       "title": "Domínio vinculado",
@@ -2310,9 +2340,13 @@
     }
   },
   "automationList": {
+    "sectionTitle": "Automações",
     "title": "Automações",
     "subtitle": "Crie fluxos que rodam no piloto automático.",
     "create": "Criar automação ({{current}}/{{limit}})",
+    "createWithCount": "+ Criar ({{current}}/{{limit}})",
+    "deleteTitle": "Excluir automação?",
+    "deleteDescription": "Esta ação não pode ser desfeita. Todos os dados associados a esta automação serão permanentemente excluídos.",
     "emailUsage": {
       "title": "Uso de e-mails",
       "subtitle": "Acompanhe seus limites mensais de envio.",
@@ -2464,11 +2498,51 @@
       "cancel": "Cancelar",
       "previewNextPost": "Prévia do próximo post",
       "delete": "Excluir"
+    },
+    "bioSummary": {
+      "title": "Entendimento da IA sobre sua bio",
+      "refresh": "Atualizar"
+    },
+    "sidebar": {
+      "recentAutoPosts": "Posts automáticos recentes",
+      "viewDetails": "Ver detalhes",
+      "noAutoPosts": "Nenhum post automático ainda"
+    },
+    "info": {
+      "title": "Como funciona",
+      "bullet1": "A IA analisa sua bio para um entendimento profundo",
+      "bullet2": "Gera conteúdo otimizado para SEO + GEO + AEO + AIO",
+      "bullet3": "Métricas detalhadas para cada post",
+      "bullet4": "Publica automaticamente no agendamento"
+    },
+    "preview": {
+      "title": "Prévia do post",
+      "subtitle": "Métricas completas de otimização para este post gerado",
+      "close": "Fechar",
+      "createSchedule": "Criar agendamento"
+    },
+    "metricsModal": {
+      "title": "Métricas do post",
+      "analysisTitle": "Análise de Métricas",
+      "seoScore": "Pontuação SEO",
+      "geoScore": "Pontuação GEO",
+      "aeoScore": "Pontuação AEO",
+      "aioScore": "Pontuação AIO",
+      "readability": "Legibilidade",
+      "titleChars": "Caracteres do título",
+      "keywords": "Palavras-chave",
+      "primary": "Principal",
+      "contentStructure": "Estrutura do conteúdo",
+      "headings": "Títulos",
+      "paragraphs": "Parágrafos",
+      "lists": "Listas",
+      "words": "Palavras",
+      "seoSuggestions": "Sugestões de SEO",
+      "geoSuggestions": "Sugestões de GEO",
+      "aeoSuggestions": "Sugestões de AEO",
+      "aioSuggestions": "Sugestões de AIO",
+      "close": "Fechar"
     }
-  },
-  "bioSummary": {
-    "title": "Entendimento da IA sobre sua bio",
-    "refresh": "Atualizar"
   },
   "admin": {
     "broadcast": {
@@ -2503,45 +2577,6 @@
   },
   "editorBadges": {
     "beta": "BETA"
-  },
-  "sidebar": {
-    "recentAutoPosts": "Posts automáticos recentes",
-    "viewDetails": "Ver detalhes",
-    "noAutoPosts": "Nenhum post automático ainda"
-  },
-  "info": {
-    "title": "Como funciona",
-    "bullet1": "A IA analisa sua bio para um entendimento profundo",
-    "bullet2": "Gera conteúdo otimizado para SEO + GEO + AEO + AIO",
-    "bullet3": "Métricas detalhadas para cada post",
-    "bullet4": "Publica automaticamente no agendamento"
-  },
-  "preview": {
-    "title": "Prévia do post",
-    "subtitle": "Métricas completas de otimização para este post gerado",
-    "close": "Fechar",
-    "createSchedule": "Criar agendamento"
-  },
-  "metricsModal": {
-    "title": "Métricas do post",
-    "seoScore": "Pontuação SEO",
-    "geoScore": "Pontuação GEO",
-    "aeoScore": "Pontuação AEO",
-    "aioScore": "Pontuação AIO",
-    "readability": "Legibilidade",
-    "titleChars": "Caracteres do título",
-    "keywords": "Palavras-chave",
-    "primary": "Principal",
-    "contentStructure": "Estrutura do conteúdo",
-    "headings": "Títulos",
-    "paragraphs": "Parágrafos",
-    "lists": "Listas",
-    "words": "Palavras",
-    "seoSuggestions": "Sugestões de SEO",
-    "geoSuggestions": "Sugestões de GEO",
-    "aeoSuggestions": "Sugestões de AEO",
-    "aioSuggestions": "Sugestões de AIO",
-    "close": "Fechar"
   },
   "siteAutoPost": {
     "confirmDelete": "Tem certeza que deseja excluir a automação?",
@@ -2648,5 +2683,251 @@
     "emptyTitle": "Nenhuma resposta ainda",
     "emptySubtitle": "Compartilhe seu formulário para começar a receber respostas.",
     "emptyValue": "Sem resposta"
+  },
+  "earningsPage": {
+    "title": "Ganhos",
+    "subtitle": "Visão geral dos seus ganhos (Produtos + Patrocinados + Marketing).",
+    "range": {
+      "custom": "Personalizado",
+      "to": "até"
+    },
+    "chart": {
+      "title": "Histórico detalhado de vendas",
+      "subtitle": "Produtos + Patrocinados por dia no período selecionado.",
+      "empty": "Sem dados para o período selecionado.",
+      "legend": {
+        "products": "Produtos",
+        "sponsored": "Patrocinados",
+        "line": "Linha = total diário"
+      }
+    },
+    "cards": {
+      "products": "Produtos",
+      "sponsored": "Patrocinados",
+      "marketing": "Marketing",
+      "summary": "Resumo"
+    },
+    "details": {
+      "products": "Produtos",
+      "sponsored": "Patrocinados",
+      "total": "Total"
+    },
+    "summaryText": "O filtro de período altera o histórico do gráfico e os totais de Produtos/Patrocinados. Marketing permanece como valor acumulado total das campanhas."
+  },
+  "sponsored": {
+    "title": "Links Patrocinados",
+    "subtitle": "Compartilhe links de empresas parceiras e ganhe por cada click.",
+    "tabs": {
+      "marketplace": "Marketplace",
+      "myLinks": "Meus Links"
+    },
+    "earnings": {
+      "totalBalance": "Saldo Total",
+      "thisMonth": "Este Mês",
+      "totalClicks": "Total Clicks",
+      "activeLinks": "Links Ativos"
+    },
+    "categories": {
+      "all": "Todos",
+      "food": "Alimentação",
+      "tech": "Tecnologia",
+      "fashion": "Moda",
+      "health": "Saúde",
+      "finance": "Finanças",
+      "education": "Educação",
+      "entertainment": "Entretenimento",
+      "travel": "Viagem",
+      "sports": "Esportes",
+      "other": "Outros"
+    },
+    "marketplace": {
+      "searchPlaceholder": "Buscar ofertas...",
+      "emptyTitle": "Nenhuma oferta disponível no momento",
+      "emptySubtitle": "Volte mais tarde para novas oportunidades",
+      "earnPerClick": "Ganhe por click",
+      "company": "Empresa",
+      "added": "Adicionado",
+      "limitReached": "Limite atingido",
+      "add": "Adicionar",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "pageOf": "Página {{page}} de {{total}}"
+    },
+    "myLinks": {
+      "emptyTitle": "Nenhum link patrocinado adotado",
+      "emptySubtitle": "Vá ao Marketplace e adicione ofertas para começar a ganhar!",
+      "exploreMarketplace": "Explorar Marketplace",
+      "clicks": "clicks",
+      "cpc": "CPC",
+      "viewLink": "Ver link",
+      "remove": "Remover",
+      "trackingLink": "Link de tracking"
+    },
+    "messages": {
+      "adopted": "Link patrocinado adicionado à sua bio!",
+      "removed": "Link removido com sucesso!",
+      "confirmRemove": "Tem certeza que deseja remover este link patrocinado?",
+      "errorLoad": "Erro ao carregar ofertas",
+      "errorAdopt": "Erro ao adotar oferta",
+      "errorRemove": "Erro ao remover link"
+    }
+  },
+  "design": {
+    "pageTitle": "Design",
+    "enhance": "Melhorar",
+    "preview": "Pré-visualização",
+    "sections": {
+      "header": "Cabeçalho",
+      "theme": "Tema",
+      "wallpaper": "Fundo",
+      "text": "Texto",
+      "buttons": "Botões",
+      "colors": "Cores",
+      "footer": "Rodapé"
+    },
+    "header": {
+      "title": "Cabeçalho",
+      "edit": "Editar",
+      "profileImageLayout": "Layout da imagem de perfil",
+      "classic": "Clássico",
+      "hero": "Hero",
+      "heroTransition": "Transição hero",
+      "heroTransitionDesc": "Gradiente suave da imagem hero para o conteúdo",
+      "navigationTabs": "Abas de navegação",
+      "navigationTabsDesc": "Personalize a barra de abas que aparece quando você tem blocos de Blog, Loja ou CV",
+      "tabBackground": "Fundo da aba",
+      "tabText": "Texto da aba",
+      "titleLabel": "Título",
+      "titleStyle": "Estilo do título",
+      "titleStyleText": "Texto",
+      "titleStyleLogo": "Logo",
+      "size": "Tamanho",
+      "small": "Pequeno",
+      "large": "Grande",
+      "titleFont": "Fonte do título",
+      "titleFontColor": "Cor da fonte do título",
+      "verification": "Verificação",
+      "verificationDesc": "Mostre que você é autêntico e ajude os visitantes a se sentirem mais confiantes ao interagir com seu conteúdo.",
+      "verified": "Verificado",
+      "pending": "Em análise",
+      "getVerified": "Obter verificação"
+    },
+    "theme": {
+      "title": "Tema",
+      "customizable": "Personalizável",
+      "curated": "Curado"
+    },
+    "wallpaper": {
+      "title": "Fundo",
+      "wallpaperStyle": "Estilo do fundo",
+      "backgroundColor": "Cor de fundo",
+      "secondaryColor": "Cor secundária",
+      "imageUrl": "URL da imagem",
+      "videoUrl": "URL do vídeo",
+      "settings": "Configurações de {{type}}",
+      "primaryColor": "Cor primária",
+      "direction": "Direção",
+      "dirLeftToRight": "Esquerda para Direita",
+      "dirRightToLeft": "Direita para Esquerda",
+      "dirTopToBottom": "Cima para Baixo",
+      "dirBottomToTop": "Baixo para Cima",
+      "dirDiagSE": "Diagonal ↘",
+      "dirDiagSW": "Diagonal ↙",
+      "dirDiagNE": "Diagonal ↗",
+      "dirDiagNW": "Diagonal ↖",
+      "blurIntensity": "Intensidade do desfoque",
+      "none": "Nenhum",
+      "max": "Máximo",
+      "patternType": "Tipo de padrão",
+      "patternColor": "Cor do padrão",
+      "imageFit": "Ajuste da imagem",
+      "coverFill": "Cobrir (preencher)",
+      "containFit": "Conter (ajustar)",
+      "repeatTile": "Repetir (ladrilho)",
+      "overlayOpacity": "Opacidade da sobreposição",
+      "loopVideo": "Repetir vídeo",
+      "muteAudio": "Silenciar áudio",
+      "apply": "Aplicar"
+    },
+    "wallpaperStyles": {
+      "fill": "Preenchimento",
+      "gradient": "Gradiente",
+      "blur": "Desfoque",
+      "pattern": "Padrão",
+      "image": "Imagem",
+      "video": "Vídeo"
+    },
+    "text": {
+      "title": "Texto",
+      "pageTextFont": "Fonte do texto da página",
+      "pageTextColor": "Cor do texto da página",
+      "titleFont": "Fonte do título",
+      "titleFontColor": "Cor da fonte do título"
+    },
+    "buttons": {
+      "title": "Botões",
+      "buttonStyle": "Estilo do botão",
+      "cornerRoundness": "Arredondamento",
+      "buttonShadow": "Sombra do botão",
+      "buttonColor": "Cor do botão",
+      "buttonTextColor": "Cor do texto do botão",
+      "solid": "Sólido",
+      "glass": "Vidro",
+      "outline": "Contorno",
+      "square": "Quadrado",
+      "round": "Arredondado",
+      "rounder": "Mais arredondado",
+      "full": "Completo",
+      "shadowNone": "Nenhuma",
+      "shadowSoft": "Suave",
+      "shadowStrong": "Forte",
+      "shadowHard": "Dura"
+    },
+    "colors": {
+      "title": "Cores",
+      "background": "Fundo",
+      "cardBackground": "Fundo do card",
+      "titleText": "Texto do título",
+      "buttonColor": "Cor do botão",
+      "buttonText": "Texto do botão"
+    },
+    "footer": {
+      "title": "Rodapé",
+      "hidePortyoFooter": "Ocultar rodapé do Portyo",
+      "enableSubscribeButton": "Ativar botão de inscrição",
+      "enableParallax": "Ativar efeito parallax",
+      "intensity": "Intensidade",
+      "depth": "Profundidade",
+      "axis": "Eixo",
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "both": "Ambos",
+      "floatingElements": "Elementos flutuantes",
+      "type": "Tipo",
+      "color": "Cor",
+      "density": "Densidade",
+      "size": "Tamanho",
+      "speed": "Velocidade",
+      "opacity": "Opacidade",
+      "blur": "Desfoque"
+    },
+    "floatingTypes": {
+      "circles": "Círculos",
+      "hearts": "Corações",
+      "fire": "Fogo",
+      "stars": "Estrelas",
+      "sparkles": "Brilhos",
+      "music": "Música",
+      "leaves": "Folhas",
+      "snow": "Neve",
+      "bubbles": "Bolhas",
+      "confetti": "Confete",
+      "diamonds": "Diamantes",
+      "petals": "Pétalas"
+    },
+    "previewCard": {
+      "yourLinkHere": "Seu link aqui",
+      "joinOn": "Junte-se a @{{username}} no Portyo"
+    }
   }
 }

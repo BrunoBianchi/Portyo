@@ -1,0 +1,61 @@
+{
+  "noToken": "Token de agendamento não fornecido.",
+  "loadError": "Falha ao carregar agendamento.",
+  "confirmError": "Falha ao confirmar agendamento.",
+  "cancelError": "Falha ao cancelar agendamento.",
+  "selectDateTime": "Por favor, selecione uma nova data e horário.",
+  "rescheduleError": "Falha ao reagendar.",
+  "notFound": "Agendamento Não Encontrado",
+  "notFoundMessage": "Este agendamento não existe ou o link expirou.",
+  "poweredBy": "Powered by Portyo",
+  "days": {
+    "su": "Do",
+    "mo": "Se",
+    "tu": "Te",
+    "we": "Qu",
+    "th": "Qi",
+    "fr": "Se",
+    "sa": "Sá"
+  },
+  "status": {
+    "cancelled": "Agendamento Cancelado",
+    "cancelledDesc": "Este compromisso foi cancelado.",
+    "pending": "Confirme Seu Agendamento",
+    "pendingDesc": "Por favor, confirme seu compromisso abaixo.",
+    "confirmed": "Agendamento Confirmado",
+    "confirmedDesc": "Seu compromisso está agendado."
+  },
+  "details": {
+    "date": "Data",
+    "time": "Horário",
+    "duration": "Duração",
+    "bookedWith": "Agendado com",
+    "yourDetails": "Seus Dados",
+    "notes": "Observações"
+  },
+  "actions": {
+    "confirm": "Confirmar Agendamento",
+    "confirming": "Confirmando...",
+    "reschedule": "Reagendar",
+    "cancel": "Cancelar"
+  },
+  "confirmedMessage": "Seu agendamento está confirmado!",
+  "confirmedSubMessage": "Estamos ansiosos para vê-lo.",
+  "cancelledMessage": "Este agendamento foi cancelado.",
+  "rescheduleModal": {
+    "title": "Reagendar",
+    "subtitle": "Selecione uma nova data e horário para seu compromisso.",
+    "availableTimes": "Horários disponíveis para {{date}}",
+    "noSlots": "Sem horários disponíveis para esta data.",
+    "rescheduling": "Reagendando...",
+    "confirmNewTime": "Confirmar Novo Horário"
+  },
+  "cancelModal": {
+    "title": "Cancelar Agendamento",
+    "message": "Tem certeza que deseja cancelar este compromisso?",
+    "reasonPlaceholder": "Motivo do cancelamento (opcional)",
+    "keep": "Manter Agendamento",
+    "cancelling": "Cancelando...",
+    "cancel": "Cancelar Agendamento"
+  }
+}

@@ -1,9 +1,9 @@
 import type { Route } from "./+types/home";
 import { lazy, Suspense } from "react";
 import LandingPage from "~/components/marketing/landing-page";
+import CompanyLandingPage, { CompanyLandingContent } from "~/components/company/company-landing-page";
 import BioLayout from "~/components/bio/bio-layout";
 import { BioNotFound } from "~/components/public-bio/not-found";
-import type { ay } from "node_modules/react-router/dist/development/router-5iOvts3c.mjs";
 import i18n from "~/i18n";
 
 const META_FALLBACK = {
@@ -33,8 +33,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const isOnRenderDomain = hostname.endsWith('.onrender.com');
   const isPortyoDomain = hostname.endsWith('portyo.me');
   const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
+  const isCompanySubdomain = hostname.startsWith('company.');
 
-  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost;
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompanySubdomain;
+
+  if (isCompanySubdomain) {
+    return { type: 'company', isCompanySubdomain: true };
+  }
 
   if (isCustomDomain) {
     const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
@@ -97,6 +102,12 @@ export function meta({ data, params }: Route.MetaArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  if (loaderData.isCompanySubdomain) {
+    // Company landing page - uses standard layout (navbar/footer from root)
+    // The CompanyLandingContent is the main content without its own navbar/footer
+    return <CompanyLandingContent />;
+  }
+
   if (loaderData.type === 'bio') {
     const { bio, hostname } = loaderData;
     if (!bio) return <BioNotFound username={hostname as any} />; // Or generic "Domain not claimed"
@@ -109,7 +120,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     // `root.tsx` ALWAYS renders `html`/`body`.
     // So even on custom domain root, we are inside `root.tsx`. 
     // So we MUST pass `isNested={true}` to avoid hydration error!
-
     return <BioLayout bio={bio} subdomain={bio.sufix || ''} isNested={true} />;
   }
 

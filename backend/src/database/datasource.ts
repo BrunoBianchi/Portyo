@@ -31,6 +31,12 @@ import { SiteAutoPostLogEntity } from "./entity/site-auto-post-log-entity"
 import { env } from "../config/env"
 import { SystemSettings } from "../entities/system-settings.entity"
 import { CustomDomainEntity } from "./entity/custom-domain-entity"
+import { CompanyEntity } from "./entity/company-entity"
+import { SponsoredOfferEntity } from "./entity/sponsored-offer-entity"
+import { SponsoredAdoptionEntity } from "./entity/sponsored-adoption-entity"
+import { SponsoredClickEntity } from "./entity/sponsored-click-entity"
+import { NewsletterLogEntity } from "./entity/newsletter-log-entity"
+import { SocialPlannerPostEntity } from "./entity/social-planner-post-entity"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -39,7 +45,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity, SiteAutoPostScheduleEntity, SiteAutoPostLogEntity, CustomDomainEntity],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity, SiteAutoPostScheduleEntity, SiteAutoPostLogEntity, CustomDomainEntity, CompanyEntity, SponsoredOfferEntity, SponsoredAdoptionEntity, SponsoredClickEntity, NewsletterLogEntity, SocialPlannerPostEntity],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? {

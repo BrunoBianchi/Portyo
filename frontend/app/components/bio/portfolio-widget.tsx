@@ -91,6 +91,16 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
         setPage(1);
     }, [activeFilter]);
 
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (selectedItem) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [selectedItem]);
+
     const hasPrevPage = page > 1;
     const hasNextPage = page < totalPages;
 
@@ -126,21 +136,41 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
     return (
         <>
-            <div className="w-full">
+            <div style={{ width: '100%' }}>
                 {/* Section Title */}
                 {title && (
-                    <h3 className="text-lg font-bold text-foreground mb-4 text-center">{title}</h3>
+                    <h3 style={{
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: '#1f2937',
+                        marginBottom: '16px',
+                        textAlign: 'center',
+                    }}>{title}</h3>
                 )}
 
                 {/* Category Filter */}
                 {categories.length > 0 && (
-                    <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginBottom: '16px',
+                        flexWrap: 'wrap',
+                    }}>
                         <button
                             onClick={() => setActiveFilter(null)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === null
-                                ? 'bg-gray-900 text-white'
-                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                }`}
+                            style={{
+                                padding: '6px 12px',
+                                borderRadius: '9999px',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                backgroundColor: activeFilter === null ? '#111827' : '#f3f4f6',
+                                color: activeFilter === null ? '#fff' : '#6b7280',
+                            }}
                         >
                             All
                         </button>
@@ -148,10 +178,17 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                             <button
                                 key={category.id}
                                 onClick={() => setActiveFilter(category.id)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeFilter === category.id
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                    }`}
+                                style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '9999px',
+                                    fontSize: '12px',
+                                    fontWeight: 500,
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    backgroundColor: activeFilter === category.id ? '#111827' : '#f3f4f6',
+                                    color: activeFilter === category.id ? '#fff' : '#6b7280',
+                                }}
                             >
                                 {category.name}
                             </button>
@@ -160,53 +197,133 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                 )}
 
                 {/* Grid with Carousel */}
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                     {/* Navigation Arrows */}
                     {hasPrevPage && (
                         <button
                             onClick={goToPrevPage}
-                            className="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface-card shadow-lg rounded-full hover:bg-muted transition-all border border-border"
+                            style={{
+                                position: 'absolute',
+                                left: '-12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                zIndex: 10,
+                                padding: '8px',
+                                backgroundColor: '#fff',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                borderRadius: '9999px',
+                                border: '1px solid #e5e7eb',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                             aria-label="Previous projects"
                         >
-                            <ChevronLeft className="w-5 h-5 text-foreground" />
+                            <ChevronLeft style={{ width: 20, height: 20, color: '#1f2937' }} />
                         </button>
                     )}
                     {hasNextPage && (
                         <button
                             onClick={goToNextPage}
-                            className="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface-card shadow-lg rounded-full hover:bg-muted transition-all border border-border"
+                            style={{
+                                position: 'absolute',
+                                right: '-12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                zIndex: 10,
+                                padding: '8px',
+                                backgroundColor: '#fff',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                borderRadius: '9999px',
+                                border: '1px solid #e5e7eb',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                             aria-label="Next projects"
                         >
-                            <ChevronRight className="w-5 h-5 text-foreground" />
+                            <ChevronRight style={{ width: 20, height: 20, color: '#1f2937' }} />
                         </button>
                     )}
 
-                    <div className="grid grid-cols-2 gap-3 min-h-[200px]">
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '12px',
+                        minHeight: '200px',
+                    }}>
                         {(loading || fetching) ? (
                             // Skeleton Loading
                             Array.from({ length: 4 }).map((_, idx) => (
-                                <div key={idx} className="aspect-square bg-muted rounded-xl animate-pulse border border-border" />
+                                <div key={idx} style={{
+                                    aspectRatio: '1',
+                                    backgroundColor: '#f3f4f6',
+                                    borderRadius: '16px',
+                                    border: '1px solid #e5e7eb',
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }} />
                             ))
                         ) : (
                             items.map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => setSelectedItem(item)}
-                                    className="group relative bg-surface-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-border text-left"
+                                    style={{
+                                        position: 'relative',
+                                        backgroundColor: '#fff',
+                                        borderRadius: '16px',
+                                        overflow: 'hidden',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                        border: '1px solid #e5e7eb',
+                                        textAlign: 'left' as const,
+                                        cursor: 'pointer',
+                                        padding: 0,
+                                        transition: 'box-shadow 0.2s, transform 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
                                 >
                                     {/* Image */}
-                                    <div className="aspect-square bg-muted overflow-hidden">
+                                    <div style={{
+                                        aspectRatio: '1',
+                                        backgroundColor: '#f3f4f6',
+                                        overflow: 'hidden',
+                                    }}>
                                         {item.images && item.images.length > 0 ? (
                                             <img
                                                 src={item.images[0]}
                                                 alt={item.title}
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.3s',
+                                                }}
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
-                                                <span className="text-3xl font-bold text-muted-foreground/30">
+                                            <div style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
+                                            }}>
+                                                <span style={{
+                                                    fontSize: '28px',
+                                                    fontWeight: 700,
+                                                    color: 'rgba(156,163,175,0.4)',
+                                                }}>
                                                     {item.title[0]?.toUpperCase()}
                                                 </span>
                                             </div>
@@ -215,19 +332,53 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
                                     {/* Multiple images badge */}
                                     {item.images && item.images.length > 1 && (
-                                        <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-white text-[10px] font-medium">
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            padding: '3px 8px',
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            backdropFilter: 'blur(4px)',
+                                            borderRadius: '9999px',
+                                            color: '#fff',
+                                            fontSize: '10px',
+                                            fontWeight: 500,
+                                        }}>
                                             {item.images.length} photos
                                         </div>
                                     )}
 
                                     {/* Title Overlay */}
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
-                                        <p className="text-white font-medium text-sm line-clamp-1 drop-shadow-sm">
+                                    <div style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
+                                        padding: '32px 12px 12px',
+                                    }}>
+                                        <p style={{
+                                            color: '#fff',
+                                            fontWeight: 500,
+                                            fontSize: '14px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                                            margin: 0,
+                                        }}>
                                             {item.title}
                                         </p>
                                         {item.category && (
-                                            <span className="inline-flex items-center gap-1 mt-1 text-white/80 text-[10px]">
-                                                <Tag className="w-2.5 h-2.5" />
+                                            <span style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                marginTop: '4px',
+                                                color: 'rgba(255,255,255,0.8)',
+                                                fontSize: '10px',
+                                            }}>
+                                                <Tag style={{ width: 10, height: 10 }} />
                                                 {item.category.name}
                                             </span>
                                         )}
@@ -238,17 +389,32 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
                     {/* Pagination Dots */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-1.5 mt-4 flex-wrap px-4">
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            marginTop: '16px',
+                            flexWrap: 'wrap',
+                            padding: '0 16px',
+                        }}>
                             {Array.from({ length: totalPages }, (_, idx) => {
                                 const p = idx + 1;
                                 return (
                                     <button
                                         key={idx}
                                         onClick={() => setPage(p)}
-                                        className={`w-2 h-2 rounded-full transition-all flex-shrink-0 ${p === page
-                                            ? 'bg-gray-900 w-4'
-                                            : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                                            }`}
+                                        style={{
+                                            width: p === page ? '16px' : '8px',
+                                            height: '8px',
+                                            borderRadius: '9999px',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            flexShrink: 0,
+                                            backgroundColor: p === page ? '#111827' : 'rgba(107,114,128,0.3)',
+                                            padding: 0,
+                                        }}
                                         aria-label={`Go to page ${p}`}
                                     />
                                 );
@@ -260,46 +426,93 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
 
             {/* Detail Modal with Carousel */}
             {selectedItem && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '16px',
+                }}>
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: 'rgba(0,0,0,0.85)',
+                            backdropFilter: 'blur(8px)',
+                        }}
                         onClick={() => setSelectedItem(null)}
                     />
 
                     {/* Modal */}
                     <div
-                        className="relative bg-surface-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col md:flex-row overflow-hidden animate-in zoom-in-95 duration-200"
+                        style={{
+                            position: 'relative',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '20px',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
+                            maxWidth: '900px',
+                            width: '100%',
+                            maxHeight: '90vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close Button */}
                         <button
                             onClick={() => setSelectedItem(null)}
-                            className="absolute top-4 right-4 z-50 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+                            style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                zIndex: 50,
+                                padding: '8px',
+                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                border: 'none',
+                                borderRadius: '9999px',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.5)'; }}
                         >
-                            <X className="w-5 h-5" />
+                            <X style={{ width: 20, height: 20 }} />
                         </button>
 
-                        {/* Image Carousel (Left/Top) */}
-                        <div className="relative md:w-2/3 bg-black/80 group">
+                        {/* Image Area */}
+                        <div style={{
+                            position: 'relative',
+                            backgroundColor: '#111',
+                            width: '100%',
+                        }}>
                             {selectedItem.images && selectedItem.images.length > 0 ? (
                                 <>
                                     <div
-                                        className="w-full h-[300px] md:h-[600px] cursor-zoom-in"
+                                        style={{
+                                            width: '100%',
+                                            height: '400px',
+                                            cursor: 'zoom-in',
+                                            overflow: 'hidden',
+                                        }}
                                         onClick={() => setShowLightbox(true)}
                                     >
                                         <img
                                             src={selectedItem.images[carouselIndex]}
                                             alt={selectedItem.title}
-                                            className="w-full h-full object-cover"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            }}
                                         />
-                                    </div>
-
-                                    {/* View Hint */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-black/20">
-                                        <span className="bg-black/50 text-white px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
-                                            Click to expand
-                                        </span>
                                     </div>
 
                                     {/* Carousel Navigation */}
@@ -307,19 +520,65 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                         <>
                                             <button
                                                 onClick={prevImage}
-                                                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-all z-20"
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: '12px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    padding: '8px',
+                                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    border: 'none',
+                                                    borderRadius: '9999px',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    zIndex: 20,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'background-color 0.2s',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'; }}
                                             >
-                                                <ChevronLeft className="w-6 h-6" />
+                                                <ChevronLeft style={{ width: 24, height: 24 }} />
                                             </button>
                                             <button
                                                 onClick={nextImage}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-all z-20"
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '12px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    padding: '8px',
+                                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    border: 'none',
+                                                    borderRadius: '9999px',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    zIndex: 20,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'background-color 0.2s',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'; }}
                                             >
-                                                <ChevronRight className="w-6 h-6" />
+                                                <ChevronRight style={{ width: 24, height: 24 }} />
                                             </button>
 
                                             {/* Dots */}
-                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '16px',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                display: 'flex',
+                                                gap: '6px',
+                                                zIndex: 20,
+                                            }}>
                                                 {selectedItem.images.map((_, idx) => (
                                                     <button
                                                         key={idx}
@@ -327,10 +586,16 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                                             e.stopPropagation();
                                                             setCarouselIndex(idx);
                                                         }}
-                                                        className={`w-2 h-2 rounded-full transition-all ${idx === carouselIndex
-                                                            ? 'bg-white w-6'
-                                                            : 'bg-white/50 hover:bg-white/70'
-                                                            }`}
+                                                        style={{
+                                                            width: idx === carouselIndex ? '24px' : '8px',
+                                                            height: '8px',
+                                                            borderRadius: '9999px',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s',
+                                                            backgroundColor: idx === carouselIndex ? '#fff' : 'rgba(255,255,255,0.5)',
+                                                            padding: 0,
+                                                        }}
                                                     />
                                                 ))}
                                             </div>
@@ -338,34 +603,74 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                     )}
                                 </>
                             ) : (
-                                <div className="w-full h-[300px] md:h-[600px] bg-muted flex items-center justify-center text-muted-foreground">
+                                <div style={{
+                                    width: '100%',
+                                    height: '300px',
+                                    backgroundColor: '#f3f4f6',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#9ca3af',
+                                    fontSize: '14px',
+                                }}>
                                     No Image
                                 </div>
                             )}
                         </div>
 
-                        {/* Content (Right/Bottom) */}
-                        <div className="flex-1 p-6 md:p-8 overflow-y-auto bg-surface-card flex flex-col">
-                            <div>
-                                <h3 className="text-2xl font-bold text-foreground mb-2 leading-tight">
-                                    {selectedItem.title}
-                                </h3>
+                        {/* Content */}
+                        <div style={{
+                            flex: 1,
+                            padding: '24px 28px',
+                            overflowY: 'auto',
+                            backgroundColor: '#ffffff',
+                        }}>
+                            <h3 style={{
+                                fontSize: '22px',
+                                fontWeight: 700,
+                                color: '#111827',
+                                marginBottom: '8px',
+                                lineHeight: 1.3,
+                            }}>
+                                {selectedItem.title}
+                            </h3>
 
-                                {selectedItem.category && (
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full mb-4">
-                                        <Tag className="w-3 h-3" />
-                                        {selectedItem.category.name}
-                                    </span>
-                                )}
-                            </div>
+                            {selectedItem.category && (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '4px 12px',
+                                    backgroundColor: '#f3f4f6',
+                                    color: '#6b7280',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    borderRadius: '9999px',
+                                    marginBottom: '16px',
+                                }}>
+                                    <Tag style={{ width: 12, height: 12 }} />
+                                    {selectedItem.category.name}
+                                </span>
+                            )}
 
-                            <div className="flex-1 mt-4">
+                            <div style={{ marginTop: '16px' }}>
                                 {selectedItem.description ? (
-                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+                                    <p style={{
+                                        color: '#4b5563',
+                                        lineHeight: 1.7,
+                                        whiteSpace: 'pre-wrap',
+                                        fontSize: '14px',
+                                        margin: 0,
+                                    }}>
                                         {selectedItem.description}
                                     </p>
                                 ) : (
-                                    <p className="text-muted-foreground italic text-sm">No description available</p>
+                                    <p style={{
+                                        color: '#9ca3af',
+                                        fontStyle: 'italic',
+                                        fontSize: '14px',
+                                        margin: 0,
+                                    }}>No description available</p>
                                 )}
                             </div>
                         </div>
@@ -374,20 +679,45 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                     {/* Lightbox Overlay */}
                     {showLightbox && selectedItem.images && selectedItem.images.length > 0 && (
                         <div
-                            className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center animate-in fade-in duration-200"
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                zIndex: 10000,
+                                backgroundColor: 'rgba(0,0,0,0.95)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                             onClick={() => setShowLightbox(false)}
                         >
                             <button
                                 onClick={() => setShowLightbox(false)}
-                                className="absolute top-4 right-4 p-3 text-white/70 hover:text-white transition-colors"
+                                style={{
+                                    position: 'absolute',
+                                    top: '16px',
+                                    right: '16px',
+                                    padding: '12px',
+                                    color: 'rgba(255,255,255,0.7)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
                             >
-                                <X className="w-8 h-8" />
+                                <X style={{ width: 32, height: 32 }} />
                             </button>
 
                             <img
                                 src={selectedItem.images[carouselIndex]}
                                 alt={selectedItem.title}
-                                className="max-w-[95vw] max-h-[95vh] object-contain select-none"
+                                style={{
+                                    maxWidth: '95vw',
+                                    maxHeight: '95vh',
+                                    objectFit: 'contain',
+                                    userSelect: 'none',
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                             />
 
@@ -399,23 +729,57 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                             e.stopPropagation();
                                             prevImage();
                                         }}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-4 text-white/70 hover:text-white transition-colors"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '16px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            padding: '16px',
+                                            color: 'rgba(255,255,255,0.7)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
                                     >
-                                        <ChevronLeft className="w-10 h-10" />
+                                        <ChevronLeft style={{ width: 40, height: 40 }} />
                                     </button>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             nextImage();
                                         }}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-4 text-white/70 hover:text-white transition-colors"
+                                        style={{
+                                            position: 'absolute',
+                                            right: '16px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            padding: '16px',
+                                            color: 'rgba(255,255,255,0.7)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
                                     >
-                                        <ChevronRight className="w-10 h-10" />
+                                        <ChevronRight style={{ width: 40, height: 40 }} />
                                     </button>
                                 </>
                             )}
 
-                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm font-medium">
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '24px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                color: 'rgba(255,255,255,0.8)',
+                                fontSize: '14px',
+                                fontWeight: 500,
+                            }}>
                                 {carouselIndex + 1} / {selectedItem.images.length}
                             </div>
                         </div>
