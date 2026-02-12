@@ -4,6 +4,7 @@ import { BioEntity } from "../../database/entity/bio-entity";
 import { UserEntity } from "../../database/entity/user-entity";
 import { logger } from "../utils/logger";
 import redisClient from "../../config/redis.client";
+import { env } from "../../config/env";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as dns from "dns";
@@ -34,6 +35,8 @@ const SAAS_DOMAINS = [
     'frontend'
 ];
 
+const IPV4_REGEX = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+
 export interface CustomDomainCheck {
     domain: string;
     isValid: boolean;
@@ -47,6 +50,48 @@ export interface CustomDomainCheck {
 export class CustomDomainService {
     private static repository = AppDataSource.getRepository(CustomDomainEntity);
     private static bioRepository = AppDataSource.getRepository(BioEntity);
+    private static hasSudo: boolean | null = null;
+
+    private static isIpAddress(host: string): boolean {
+        const clean = host.trim().toLowerCase();
+        if (!clean) return false;
+        if (IPV4_REGEX.test(clean)) {
+            return clean.split(".").every((part) => Number(part) >= 0 && Number(part) <= 255);
+        }
+        return clean.includes(":");
+    }
+
+    private static getBackendHost(): string | null {
+        try {
+            if (!env.BACKEND_URL) return null;
+            const parsed = new URL(env.BACKEND_URL);
+            return parsed.hostname.toLowerCase();
+        } catch {
+            return null;
+        }
+    }
+
+    private static async canUseSudo(): Promise<boolean> {
+        if (this.hasSudo !== null) {
+            return this.hasSudo;
+        }
+
+        try {
+            await execAsync("command -v sudo", { timeout: 5000 });
+            this.hasSudo = true;
+        } catch {
+            this.hasSudo = false;
+            logger.warn("[CustomDomain] sudo not found; privileged commands will run without sudo");
+        }
+
+        return this.hasSudo;
+    }
+
+    private static async runPrivileged(command: string, timeout: number): Promise<{ stdout: string; stderr: string }> {
+        const useSudo = await this.canUseSudo();
+        const finalCommand = useSudo ? `sudo ${command}` : command;
+        return execAsync(finalCommand, { timeout });
+    }
 
     /**
      * Verifica se um domínio é um domínio do SaaS (não personalizado)
@@ -54,9 +99,14 @@ export class CustomDomainService {
     static isSaasDomain(host: string): boolean {
         if (!host) return true;
         const cleanHost = host.split(':')[0].toLowerCase();
+
+        if (this.isIpAddress(cleanHost)) return true;
         
         if (SAAS_DOMAINS.includes(cleanHost)) return true;
         if (cleanHost.endsWith('.portyo.me')) return true;
+
+        const backendHost = this.getBackendHost();
+        if (backendHost && cleanHost === backendHost) return true;
         
         return false;
     }
@@ -69,7 +119,15 @@ export class CustomDomainService {
         const trimmed = host.trim().toLowerCase();
         const withoutProtocol = trimmed.replace(/^https?:\/\//, "");
         const withoutPath = withoutProtocol.split("/")[0];
-        const withoutPort = withoutPath.split(":")[0].trim();
+
+        let withoutPort = withoutPath;
+        if (withoutPath.startsWith("[")) {
+            const bracketEnd = withoutPath.indexOf("]");
+            withoutPort = bracketEnd >= 0 ? withoutPath.slice(1, bracketEnd) : withoutPath;
+        } else {
+            withoutPort = withoutPath.split(":")[0].trim();
+        }
+
         return withoutPort.replace(/\.$/, "");
     }
 
@@ -352,9 +410,9 @@ export class CustomDomainService {
 
             // Executa o script de geração de certificado
             const scriptPath = '/opt/portyo/deployment/add-custom-domain.sh';
-            const { stdout, stderr } = await execAsync(
-                `sudo ${scriptPath} ${domain.domain} admin@portyo.me`,
-                { timeout: 120000 }
+            const { stdout, stderr } = await this.runPrivileged(
+                `${scriptPath} ${domain.domain} admin@portyo.me`,
+                120000
             );
 
             if (stderr && !stderr.includes('Certbot')) {
@@ -420,7 +478,7 @@ export class CustomDomainService {
             // Remove o certificado SSL (opcional - pode manter para reutilização)
             if (domain.sslActive) {
                 try {
-                    await execAsync(`sudo certbot delete --cert-name ${domain.domain} --non-interactive`, { timeout: 60000 });
+                    await this.runPrivileged(`certbot delete --cert-name ${domain.domain} --non-interactive`, 60000);
                 } catch (error) {
                     logger.warn(`Erro ao remover certificado para ${domain.domain}:`, error);
                 }
@@ -570,7 +628,7 @@ export class CustomDomainService {
 
         // O Certbot já renova automaticamente, mas podemos forçar uma verificação
         try {
-            await execAsync('sudo certbot renew --quiet', { timeout: 300000 });
+            await this.runPrivileged('certbot renew --quiet', 300000);
             logger.info('Renovação de certificados concluída');
         } catch (error) {
             logger.error('Erro ao renovar certificados:', error);
