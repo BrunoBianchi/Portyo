@@ -12,6 +12,8 @@ EMAIL=${2:-"${CUSTOM_DOMAIN_CERTBOT_EMAIL:-admin@portyo.me}"}
 DATA_PATH="./data/certbot"
 NGINX_CUSTOM_DIR="./data/nginx/custom-domains"
 RSA_KEY_SIZE=4096
+CERTBOT_RETRY_ATTEMPTS=${CUSTOM_DOMAIN_CERTBOT_RETRY_ATTEMPTS:-3}
+CERTBOT_RETRY_DELAY_SECONDS=${CUSTOM_DOMAIN_CERTBOT_RETRY_DELAY_SECONDS:-20}
 
 # Cores para output
 RED='\033[0;31m'
@@ -52,26 +54,27 @@ fi
 
 mkdir -p "$DATA_PATH/www/.well-known/acme-challenge"
 
-# Validação prévia do challenge HTTP
-echo -e "${GREEN}🧪 Validando endpoint ACME challenge...${NC}"
-PROBE_TOKEN="portyo-probe-$(date +%s)"
-PROBE_FILE="$DATA_PATH/www/.well-known/acme-challenge/$PROBE_TOKEN"
-echo "$PROBE_TOKEN" > "$PROBE_FILE"
+validate_http_challenge_endpoint() {
+    echo -e "${GREEN}🧪 Validando endpoint ACME challenge...${NC}"
+    local probe_token="portyo-probe-$(date +%s)-$RANDOM"
+    local probe_file="$DATA_PATH/www/.well-known/acme-challenge/$probe_token"
+    local probe_url="http://$DOMAIN/.well-known/acme-challenge/$probe_token"
 
-HTTP_PROBE_URL="http://$DOMAIN/.well-known/acme-challenge/$PROBE_TOKEN"
-HTTP_PROBE_RESPONSE=$(curl -sL --max-time 12 "$HTTP_PROBE_URL" || true)
+    echo "$probe_token" > "$probe_file"
+    local probe_response
+    probe_response=$(curl -sL --max-time 12 "$probe_url" || true)
+    rm -f "$probe_file"
 
-if [ "$HTTP_PROBE_RESPONSE" != "$PROBE_TOKEN" ]; then
-    echo -e "${RED}❌ Falha no challenge HTTP antes de solicitar certificado${NC}"
-    echo "URL testada: $HTTP_PROBE_URL"
-    echo "Resposta obtida: ${HTTP_PROBE_RESPONSE:-<vazia>}"
-    echo "Confira se o domínio aponta para este servidor e se o Nginx está expondo /var/www/certbot/.well-known/acme-challenge/."
-    rm -f "$PROBE_FILE"
-    exit 1
-fi
+    if [ "$probe_response" != "$probe_token" ]; then
+        echo -e "${RED}❌ Falha no challenge HTTP${NC}"
+        echo "URL testada: $probe_url"
+        echo "Resposta obtida: ${probe_response:-<vazia>}"
+        return 1
+    fi
 
-rm -f "$PROBE_FILE"
-echo -e "${GREEN}✅ Endpoint ACME acessível${NC}"
+    echo -e "${GREEN}✅ Endpoint ACME acessível${NC}"
+    return 0
+}
 
 CERT_READY=0
 
@@ -91,16 +94,51 @@ fi
 if [ "$CERT_READY" -eq 0 ]; then
     echo -e "${GREEN}🔒 Gerando certificado SSL para $DOMAIN...${NC}"
 
-    docker compose run --rm --entrypoint certbot certbot \
-        certonly \
-        --webroot \
-        -w /var/www/certbot \
-        -d "$DOMAIN" \
-        --email "$EMAIL" \
-        --agree-tos \
-        --non-interactive \
-        --rsa-key-size "$RSA_KEY_SIZE" \
-        --force-renewal || true
+    certbot_success=0
+    attempt=1
+
+    while [ "$attempt" -le "$CERTBOT_RETRY_ATTEMPTS" ]; do
+        echo -e "${YELLOW}➡️  Tentativa $attempt/$CERTBOT_RETRY_ATTEMPTS para emitir certificado de $DOMAIN${NC}"
+
+        if ! validate_http_challenge_endpoint; then
+            echo -e "${YELLOW}⚠️  Endpoint ACME ainda não está consistente.${NC}"
+            if [ "$attempt" -lt "$CERTBOT_RETRY_ATTEMPTS" ]; then
+                echo "Aguardando ${CERTBOT_RETRY_DELAY_SECONDS}s antes da próxima tentativa..."
+                sleep "$CERTBOT_RETRY_DELAY_SECONDS"
+                attempt=$((attempt + 1))
+                continue
+            fi
+            break
+        fi
+
+        if docker compose run --rm --entrypoint certbot certbot \
+            certonly \
+            --webroot \
+            -w /var/www/certbot \
+            -d "$DOMAIN" \
+            --email "$EMAIL" \
+            --agree-tos \
+            --non-interactive \
+            --preferred-challenges http \
+            --rsa-key-size "$RSA_KEY_SIZE" \
+            --force-renewal; then
+            certbot_success=1
+            break
+        fi
+
+        if [ "$attempt" -lt "$CERTBOT_RETRY_ATTEMPTS" ]; then
+            echo -e "${YELLOW}⚠️  Certbot falhou na tentativa $attempt. Aguardando ${CERTBOT_RETRY_DELAY_SECONDS}s...${NC}"
+            sleep "$CERTBOT_RETRY_DELAY_SECONDS"
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    if [ "$certbot_success" -ne 1 ]; then
+        echo -e "${RED}❌ Certbot falhou após $CERTBOT_RETRY_ATTEMPTS tentativas${NC}"
+        docker compose run --rm --entrypoint certbot certbot certificates || true
+        exit 1
+    fi
 fi
 
 # Verificar se o certificado foi gerado
@@ -112,21 +150,7 @@ if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
     openssl x509 -in "$DATA_PATH/conf/live/$DOMAIN/fullchain.pem" -noout -subject -dates
 else
     echo -e "${RED}❌ Falha ao gerar certificado${NC}"
-    echo "Verificando logs..."
-    
-    # Tentar com modo verbose
-    echo -e "${YELLOW}Tentando novamente com mais detalhes...${NC}"
-    docker compose run --rm --entrypoint certbot certbot \
-        certonly \
-        --webroot \
-        -w /var/www/certbot \
-        -d "$DOMAIN" \
-        --email "$EMAIL" \
-        --agree-tos \
-        --non-interactive \
-        --rsa-key-size "$RSA_KEY_SIZE" \
-        -v || true
-    
+    echo "Verifique /var/log/letsencrypt/letsencrypt.log no container certbot para mais detalhes."
     exit 1
 fi
 
