@@ -44,16 +44,17 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (isCustomDomain) {
     const rawApiUrl = process.env.API_URL || process.env.VITE_API_URL || 'https://api.portyo.me';
     const apiUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+    const generatedAt = new Date().toISOString();
     try {
       const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
       if (res.ok) {
         const bio = await res.json();
-        return { type: 'bio', bio, hostname, origin };
+        return { type: 'bio', bio, hostname, origin, generatedAt };
       }
     } catch (e) {
       console.error("Failed to fetch bio for domain", hostname, e);
     }
-    return { type: 'bio', bio: null, hostname, origin }; // Bio not found
+    return { type: 'bio', bio: null, hostname, origin, generatedAt }; // Bio not found
   }
 
   return { type: 'marketing' };
@@ -109,7 +110,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   }
 
   if (loaderData.type === 'bio') {
-    const { bio, hostname } = loaderData;
+    const { bio, hostname, origin, generatedAt } = loaderData;
     if (!bio) return <BioNotFound username={hostname as any} />; // Or generic "Domain not claimed"
 
     // We pass isNested={false} because on custom domain root, 
@@ -120,7 +121,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     // `root.tsx` ALWAYS renders `html`/`body`.
     // So even on custom domain root, we are inside `root.tsx`. 
     // So we MUST pass `isNested={true}` to avoid hydration error!
-    return <BioLayout bio={bio} subdomain={bio.sufix || ''} isNested={true} />;
+    return <BioLayout bio={bio} subdomain={bio.sufix || ''} isNested={true} requestOrigin={origin} generatedAt={generatedAt} />;
   }
 
   return <LandingPage />;

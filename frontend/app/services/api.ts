@@ -10,15 +10,17 @@ export const resolveApiBaseURL = () => {
 
     const nodeEnvApiUrl = (typeof process !== "undefined" && process.env?.API_URL) || undefined;
 
-    // In the browser, use same-origin so requests go through the Vite proxy (dev)
-    // or nginx proxy (prod) without cross-origin issues.
+    // In browser, always use same-origin and rely on nginx /api proxy in production.
+    // This avoids cross-origin cookie/CORS issues between portyo.me and api.portyo.me.
     let browserBaseUrl: string | undefined;
     if (typeof window !== "undefined" && window.location?.origin) {
         browserBaseUrl = window.location.origin;
     }
 
-    // Prefer envs, then same-origin in browser, then fallback API domain.
-    const rawBase = envApiUrl || nodeEnvApiUrl || browserBaseUrl || "https://api.portyo.me";
+    const productionDefault = "https://api.portyo.me";
+
+    // Prefer browser same-origin at runtime; keep env/domain fallback for SSR and tooling.
+    const rawBase = browserBaseUrl || envApiUrl || nodeEnvApiUrl || productionDefault;
     const normalized = rawBase.replace(/\/+$/, "");
 
     return normalized.endsWith("/api") ? normalized : `${normalized}/api`;

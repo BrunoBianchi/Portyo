@@ -222,7 +222,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const fallbackLang = isLocalhost ? "en" : "en";
   const activeLang = (langMatch?.[1] || initialLang || fallbackLang) as (typeof SUPPORTED_LANGUAGES)[number];
-  const skipToContentLabel = i18n.t("meta.root.skipToContent", { lng: activeLang });
+  const skipToContentLabel = activeLang === "pt" ? "Pular para o conteúdo" : "Skip to content";
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -382,6 +382,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Skip link para acessibilidade */}
             <a
               href="#main-content"
+              suppressHydrationWarning
               className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] focus:px-4 focus:py-2 focus:bg-primary focus:text-background focus:rounded-lg"
             >
               {skipToContentLabel}

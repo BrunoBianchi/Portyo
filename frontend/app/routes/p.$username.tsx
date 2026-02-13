@@ -495,7 +495,7 @@ export default function PublicBioRoute() {
             {faqData && (
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqData) }} />
             )}
-            <BioLayout bio={bio} subdomain={username} isNested={true} />
+            <BioLayout bio={bio} subdomain={username} isNested={true} requestOrigin={safeOrigin} generatedAt={generatedAt} />
         </>
     );
 }

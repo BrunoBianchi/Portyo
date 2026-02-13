@@ -30,6 +30,8 @@ interface BioLayoutProps {
     subdomain: string;
     isPreview?: boolean;
     isNested?: boolean;
+    requestOrigin?: string;
+    generatedAt?: string;
 }
 
 
@@ -74,7 +76,7 @@ const ensureVerifiedStatusInHtml = (html: string, verified: boolean): string => 
     });
 };
 
-export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false, isNested = false }) => {
+export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview = false, isNested = false, requestOrigin, generatedAt }) => {
     useBioScripts(bio);
     useBioTracking(
         isPreview ? undefined : bio?.id
@@ -91,6 +93,14 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     const [nsfwOpen, setNsfwOpen] = useState(false);
     const [nsfwUrl, setNsfwUrl] = useState<string>('');
     const [activeNavTab, setActiveNavTab] = useState<string>('links');
+
+    // Safety: clear any stale scroll lock when entering public bio pages.
+    useEffect(() => {
+        if (typeof document === 'undefined' || isPreview) return;
+        document.body.style.overflow = '';
+        document.body.removeAttribute('data-nsfw-prev-overflow');
+        document.documentElement.style.overflow = '';
+    }, [isPreview]);
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
@@ -155,7 +165,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     if (htmlContent) {
         htmlContent = ensureVerifiedStatusInHtml(htmlContent, bio?.verified);
     }
-    const browserOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const browserOrigin = requestOrigin || '';
     const profileImageOrigin = (() => {
 
         try {
@@ -172,6 +182,15 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
         }
     })();
     const origin = profileImageOrigin || apiEnvOrigin || browserOrigin;
+    const stableImageVersion = (() => {
+        const candidates = [bio?.updatedAt, bio?.createdAt, generatedAt];
+        for (const value of candidates) {
+            if (!value || typeof value !== 'string') continue;
+            const parsed = Date.parse(value);
+            if (!Number.isNaN(parsed)) return String(parsed);
+        }
+        return '1';
+    })();
     const usernameColor = bio?.usernameColor || '#000000';
 
     const displayName = bio?.seoTitle || subdomain || '';
@@ -1579,7 +1598,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     <meta property="og:description" content={bio.ogDescription || bio.seoDescription || ""} />
                     {bio.ogImage && <meta property="og:image" content={bio.ogImage} />}
                     <meta property="og:type" content="profile" />
-                    <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+                    <meta property="og:url" content={requestOrigin ? `${requestOrigin}${location.pathname}${location.search}` : ''} />
 
                     {/* Twitter */}
                     <meta name="twitter:card" content="summary_large_image" />
@@ -2670,8 +2689,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 return `src=\"${bio.profileImage}\"`;
                             }
                             if (!bio?.userId) return `src="${_legacyPath}${legacyQuery || ''}"`;
-                            const v = Date.now();
-                            const url = `${origin}/api/images/${bio.userId}/medium.png?v=${v}`;
+                            const url = `${origin}/api/images/${bio.userId}/medium.png?v=${stableImageVersion}`;
                             return `src="${url}"`;
                         })
                         .replace(/(<img\s+)(src="\/(?:users-photos|api\/images)\/[^\"]+\")/i, '$1fetchpriority="high" $2')
