@@ -71,7 +71,13 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const formatDate = (dateStr?: string) => {
         if (!dateStr) return '';
         try {
-            return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return dateStr;
+            const months = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = months[date.getUTCMonth()] || '';
+            const year = date.getUTCFullYear();
+            return `${day} ${month} ${year}`.trim();
         } catch { return dateStr; }
     };
 

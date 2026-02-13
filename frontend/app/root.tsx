@@ -184,7 +184,7 @@ export function headers() {
       "font-src 'self' data: https://fonts.gstatic.com; " +
       "img-src 'self' data: https: blob: http://localhost:3000 http://localhost:5173 http://localhost:5174; " +
       `connect-src ${connectSrc}; ` +
-      "frame-src 'self'; " +
+      "frame-src 'self' https://www.google.com https://maps.google.com; " +
       "worker-src 'self' blob:; " +
       "media-src 'self' https:;",
   };

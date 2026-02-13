@@ -39,7 +39,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const pathname = url.pathname;
   const hostname = url.hostname;
+  const isOnRenderDomain = hostname.endsWith('.onrender.com');
+  const isPortyoDomain = hostname.endsWith('portyo.me');
+  const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
   const isCompany = hostname.startsWith("company.");
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompany;
+
+  if (isCustomDomain) {
+    throw redirect(`/${url.search}${url.hash}`);
+  }
 
   if (/^\/(en|pt)(\/|$)/.test(pathname)) {
     return null;
@@ -65,7 +73,16 @@ export default function RedirectLang() {
     if (/^\/(en|pt)(\/|$)/.test(pathname)) return;
 
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    const isOnRenderDomain = hostname.endsWith('.onrender.com');
+    const isPortyoDomain = hostname.endsWith('portyo.me');
+    const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
     const isCompany = hostname.startsWith("company.");
+    const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompany;
+
+    if (isCustomDomain) {
+      navigate(`/`, { replace: true });
+      return;
+    }
     const preferred = hostname === "localhost" || hostname.endsWith(".localhost") ? "en" : "en";
 
     // On company subdomain, redirect root to company login

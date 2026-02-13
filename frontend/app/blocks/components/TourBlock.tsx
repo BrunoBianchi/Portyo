@@ -53,7 +53,7 @@ export const TourBlock: React.FC<BlockComponentProps> = ({ block }) => {
                             <div style={{ padding: '12px 16px' }}>
                                 {tourDate && (
                                     <p style={{ fontSize: '12px', fontWeight: 600, color: block.accent || '#6366f1', margin: '0 0 4px 0' }}>
-                                        {tourDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        {tourDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
                                     </p>
                                 )}
                                 <h4 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 2px 0' }}>

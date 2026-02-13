@@ -20,6 +20,7 @@ const dnsResolveCname = util.promisify(dns.resolveCname);
 
 const CUSTOM_DOMAIN_DNS_QUEUE_KEY = "custom-domain:dns-queue";
 const CUSTOM_DOMAIN_DNS_QUEUE_LOCK_PREFIX = "custom-domain:dns-lock";
+const CUSTOM_DOMAIN_VERIFY_LOCK_PREFIX = "custom-domain:verify-lock";
 const CUSTOM_DOMAIN_DNS_QUEUE_BATCH = 10;
 
 const isLocalhostDomain = (value: string) => {
@@ -395,16 +396,25 @@ export class CustomDomainService {
      * Processa a verificação completa de um domínio (DNS + SSL)
      */
     static async processDomainVerification(domainId: string): Promise<void> {
-        const domain = await this.repository.findOne({
-            where: { id: domainId }
-        });
+        const verifyLockKey = `${CUSTOM_DOMAIN_VERIFY_LOCK_PREFIX}:${domainId}`;
+        const lockAcquired = await redisClient.set(verifyLockKey, "1", "NX", "EX", 900);
+        let domain: CustomDomainEntity | null = null;
 
-        if (!domain) {
-            logger.error(`Domínio ${domainId} não encontrado para verificação`);
+        if (!lockAcquired) {
+            logger.info(`[CustomDomain] Verificação já em andamento para ${domainId}, ignorando execução concorrente`);
             return;
         }
 
         try {
+            domain = await this.repository.findOne({
+                where: { id: domainId }
+            });
+
+            if (!domain) {
+                logger.error(`Domínio ${domainId} não encontrado para verificação`);
+                return;
+            }
+
             // Atualiza status
             domain.status = CustomDomainStatus.VERIFYING_DNS;
             domain.lastCheckedAt = new Date();
@@ -431,12 +441,16 @@ export class CustomDomainService {
             await this.generateSSLCertificate(domain);
 
         } catch (error) {
-            logger.error(`Erro na verificação do domínio ${domain.domain}:`, error);
-            domain.status = CustomDomainStatus.FAILED;
-            domain.errorMessage = "Falha ao verificar o domínio. Tente novamente mais tarde.";
-            domain.lastErrorAt = new Date();
-            domain.retryCount++;
-            await this.repository.save(domain);
+            logger.error(`Erro na verificação do domínio ${domain?.domain ?? domainId}:`, error);
+            if (domain) {
+                domain.status = CustomDomainStatus.FAILED;
+                domain.errorMessage = "Falha ao verificar o domínio. Tente novamente mais tarde.";
+                domain.lastErrorAt = new Date();
+                domain.retryCount++;
+                await this.repository.save(domain);
+            }
+        } finally {
+            await redisClient.del(verifyLockKey);
         }
     }
 
@@ -518,7 +532,13 @@ export class CustomDomainService {
             logger.error(`Erro ao gerar certificado para ${domain.domain}:`, error);
             domain.status = CustomDomainStatus.FAILED;
             const rawMessage = error instanceof Error ? error.message : 'Unknown';
-            domain.errorMessage = "Falha ao gerar certificado SSL. Tente novamente mais tarde.";
+
+            const retryAfterMatch = rawMessage.match(/retry after\s+([0-9:\-\s]+UTC)/i);
+            const retryAfterText = retryAfterMatch?.[1]?.trim();
+
+            domain.errorMessage = retryAfterText
+                ? `Falha ao gerar certificado SSL. Limite temporário da Let's Encrypt atingido. Tente novamente após ${retryAfterText}.`
+                : "Falha ao gerar certificado SSL. Tente novamente mais tarde.";
             domain.lastErrorAt = new Date();
             domain.retryCount++;
             await this.repository.save(domain);

@@ -107,6 +107,9 @@ const toLocalizedRoutes = (routes: RouteConfigEntry[], parentKey = ""): RouteCon
     });
 
 const nonLocalizedRoutes: RouteConfig = [
+    { path: '/', file: "routes/home.tsx", id: "home-direct" },
+    { path: '/home', file: "routes/home.tsx", id: "home-direct-alias" },
+    { path: '/p/:username/:tab?', file: "routes/p.$username.tsx", id: "bio-direct" },
     { path: '/robots.txt', file: "routes/robots.ts", id: "robots-txt" },
     { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
     { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },

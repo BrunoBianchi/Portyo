@@ -51,6 +51,20 @@ function getPreferredLang(request: Request): SupportedLang {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
+  const hostname = url.hostname;
+  const isOnRenderDomain = hostname.endsWith(".onrender.com");
+  const isPortyoDomain = hostname.endsWith("portyo.me");
+  const isLocalhost = hostname === "localhost" || hostname.endsWith(".localhost");
+  const isCompanySubdomain = hostname.startsWith("company.");
+  const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompanySubdomain;
+
+  if (isCustomDomain) {
+    const strippedPath = url.pathname.replace(/^\/(en|pt)(?=\/|$)/, "") || "/";
+    if (strippedPath !== url.pathname) {
+      throw redirect(`${strippedPath}${url.search}${url.hash}`);
+    }
+  }
+
   const langParam = params.lang?.toLowerCase();
 
   if (!langParam || !SUPPORTED.includes(langParam as SupportedLang)) {
@@ -60,7 +74,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   // On company subdomain, redirect bare /:lang to company login
-  const hostname = url.hostname;
   if (hostname.startsWith("company.")) {
     const pathAfterLang = url.pathname.replace(/^\/(en|pt)\/?/, "");
     if (!pathAfterLang) {
