@@ -101,6 +101,9 @@ export async function trackClick(
 
     const ipHash = hashIp(ip);
     const deviceUaHash = compoundFingerprint(ipHash, userAgent);
+    const deviceIpFingerprint = fingerprint?.trim()
+        ? crypto.createHash("sha256").update(`${ipHash}:${fingerprint.trim()}`).digest("hex")
+        : deviceUaHash;
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -125,6 +128,20 @@ export async function trackClick(
     if (veryRecentClick) {
         await saveInvalidClick(adoption, offer, ipHash, fingerprint, ip, userAgent, referrer, sessionId, "Click velocity too fast (<30s)");
         return { success: true, redirectUrl, valid: false, reason: "Click velocity too fast" };
+    }
+
+    // ── Unique click check (same rule as unique vote): 1 click per device+IP per adoption ──
+    const existingDeviceClick = await ClickRepository.findOne({
+        where: {
+            adoptionId: adoption.id,
+            fingerprint: deviceIpFingerprint,
+            isValid: true,
+        },
+    });
+
+    if (existingDeviceClick) {
+        await saveInvalidClick(adoption, offer, ipHash, deviceIpFingerprint, ip, userAgent, referrer, sessionId, "Already clicked from this device/IP");
+        return { success: true, redirectUrl, valid: false, reason: "Already clicked from this device/IP" };
     }
 
     // ── Fraud check 2: Same IP + same adoption within 24h ───────────────
@@ -155,11 +172,11 @@ export async function trackClick(
     }
 
     // ── Fraud check 4: Same fingerprint + same adoption within 24h ──────
-    if (fingerprint) {
+    if (deviceIpFingerprint) {
         const recentFpClick = await ClickRepository.findOne({
             where: {
                 adoptionId: adoption.id,
-                fingerprint,
+                fingerprint: deviceIpFingerprint,
                 createdAt: MoreThan(twentyFourHoursAgo),
             },
         });
@@ -182,7 +199,7 @@ export async function trackClick(
 
     // Only block if no explicit fingerprint already matched (compound is fallback)
     if (compoundClick && !fingerprint) {
-        await saveInvalidClick(adoption, offer, ipHash, fingerprint, ip, userAgent, referrer, sessionId, "Compound IP+UA duplicate");
+        await saveInvalidClick(adoption, offer, ipHash, deviceIpFingerprint, ip, userAgent, referrer, sessionId, "Compound IP+UA duplicate");
         return { success: true, redirectUrl, valid: false, reason: "Compound IP+UA duplicate" };
     }
 
@@ -227,7 +244,7 @@ export async function trackClick(
     click.adoptionId = adoption.id;
     click.offerId = offer.id;
     click.ipHash = ipHash;
-    click.fingerprint = fingerprint;
+    click.fingerprint = deviceIpFingerprint;
     click.country = country || undefined;
     click.city = city || undefined;
     click.device = parseDevice(userAgent);

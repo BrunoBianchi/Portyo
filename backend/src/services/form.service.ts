@@ -85,6 +85,7 @@ export const formService = {
     async submitAnswer(formId: string, data: any, metadata: { ip?: string, userAgent?: string }) {
         const form = await formRepository.findOneBy({ id: formId });
         if (!form) throw new Error("Form not found");
+        if (!form.isActive) throw new Error("Form is inactive");
 
         const answer = formAnswerRepository.create({
             formId,

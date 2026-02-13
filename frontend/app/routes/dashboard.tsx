@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
 import { NotificationBell } from "~/components/dashboard/notification-bell";
+import { RandomUpsellPopup } from "~/components/dashboard/random-upsell-popup";
 import { isCompanySubdomain } from "~/lib/company-utils";
 import { CompanyDashboardLayout } from "~/components/company/company-dashboard-layout";
 import { CompanyAuthProvider } from "~/contexts/company-auth.context";
@@ -199,6 +200,8 @@ function UserDashboard() {
 
                     <Outlet />
                 </main>
+
+                <RandomUpsellPopup />
             </div>
         </DashboardProviders>
     )

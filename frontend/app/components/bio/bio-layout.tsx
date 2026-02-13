@@ -10,7 +10,7 @@ const PortfolioWidget = React.lazy(() => import("./portfolio-widget").then(modul
 const MarketingWidget = React.lazy(() => import("./marketing-widget").then(module => ({ default: module.MarketingWidget })));
 import { BlogPostView } from "./blog-post-view";
 
-import { sanitizeHtml } from "~/utils/security";
+import { normalizeExternalUrl, sanitizeHtml } from "~/utils/security";
 
 import { useBioScripts } from "~/hooks/use-bio-scripts";
 import { useBioTracking } from "~/hooks/use-bio-tracking";
@@ -2054,7 +2054,10 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                     }}>
                                                         {Object.entries(bio.socials).map(([platform, url]) => {
                                                             if (!url) return null;
-                                                            const href = platform === 'email' ? `mailto:${String(url)}` : String(url);
+                                                            const rawUrl = String(url);
+                                                            const href = platform === 'email'
+                                                                ? (rawUrl.startsWith('mailto:') ? rawUrl : `mailto:${rawUrl}`)
+                                                                : normalizeExternalUrl(rawUrl);
                                                             const platformData = SOCIAL_PLATFORMS[platform];
                                                             const brandColor = platformData?.color || '#999';
                                                             return (
@@ -2239,7 +2242,6 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                             }
 
                                                             const tabColor = bio.navTabColor || '#000000';
-                                                            const tabTextColor = bio.navTabTextColor || '#ffffff';
                                                             const tabs: { id: string; label: string; blocks: any[] }[] = [
                                                                 { id: 'links', label: 'Links', blocks: linkBlocks },
                                                             ];
@@ -2254,11 +2256,10 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                                     <div style={{
                                                                         display: 'flex',
                                                                         justifyContent: 'center',
-                                                                        gap: '6px',
+                                                                        gap: '24px',
                                                                         marginBottom: '24px',
-                                                                        padding: '4px',
-                                                                        borderRadius: '14px',
-                                                                        background: 'rgba(0,0,0,0.06)',
+                                                                        paddingBottom: '16px',
+                                                                        borderBottom: '1px solid rgba(0,0,0,0.06)',
                                                                     }}>
                                                                         {tabs.map(tab => {
                                                                             const isActive = currentTab.id === tab.id;
@@ -2267,20 +2268,29 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                                                     key={tab.id}
                                                                                     onClick={() => setActiveNavTab(tab.id)}
                                                                                     style={{
-                                                                                        flex: 1,
-                                                                                        padding: '10px 16px',
-                                                                                        borderRadius: '10px',
+                                                                                        background: 'none',
                                                                                         border: 'none',
+                                                                                        padding: '8px 12px',
+                                                                                        fontSize: '15px',
+                                                                                        fontWeight: 700,
+                                                                                        color: isActive ? tabColor : '#6b7280',
+                                                                                        opacity: isActive ? 1 : 0.85,
                                                                                         cursor: 'pointer',
-                                                                                        fontSize: '14px',
-                                                                                        fontWeight: 600,
-                                                                                        transition: 'all 0.2s ease',
-                                                                                        background: isActive ? tabColor : 'transparent',
-                                                                                        color: isActive ? tabTextColor : '#6b7280',
-                                                                                        boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                                                                                        position: 'relative',
+                                                                                        transition: 'opacity 0.2s',
                                                                                     }}
                                                                                 >
                                                                                     {tab.label}
+                                                                                    <span style={{
+                                                                                        position: 'absolute',
+                                                                                        bottom: '-17px',
+                                                                                        left: 0,
+                                                                                        right: 0,
+                                                                                        height: '3px',
+                                                                                        background: isActive ? tabColor : 'transparent',
+                                                                                        borderRadius: '3px 3px 0 0',
+                                                                                        transition: 'background 0.2s',
+                                                                                    }} />
                                                                                 </button>
                                                                             );
                                                                         })}
@@ -2430,7 +2440,10 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                         }}>
                                             {Object.entries(bio.socials).map(([platform, url]) => {
                                                 if (!url) return null;
-                                                const href = platform === 'email' ? `mailto:${String(url)}` : String(url);
+                                                const rawUrl = String(url);
+                                                const href = platform === 'email'
+                                                    ? (rawUrl.startsWith('mailto:') ? rawUrl : `mailto:${rawUrl}`)
+                                                    : normalizeExternalUrl(rawUrl);
                                                 const platformData = SOCIAL_PLATFORMS[platform];
                                                 const brandColor = platformData?.color || '#666';
                                                 return (
@@ -2592,7 +2605,6 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                         }
 
                                         const tabColor = bio.navTabColor || '#000000';
-                                        const tabTextColor = bio.navTabTextColor || '#ffffff';
                                         const tabs: { id: string; label: string; blocks: any[] }[] = [
                                             { id: 'links', label: 'Links', blocks: linkBlocks },
                                         ];
@@ -2607,11 +2619,10 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                 <div style={{
                                                     display: 'flex',
                                                     justifyContent: 'center',
-                                                    gap: '6px',
+                                                    gap: '24px',
                                                     marginBottom: '24px',
-                                                    padding: '4px',
-                                                    borderRadius: '14px',
-                                                    background: 'rgba(0,0,0,0.06)',
+                                                    paddingBottom: '16px',
+                                                    borderBottom: '1px solid rgba(0,0,0,0.06)',
                                                 }}>
                                                     {tabs.map(tab => {
                                                         const isActive = currentTab.id === tab.id;
@@ -2620,20 +2631,29 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                                 key={tab.id}
                                                                 onClick={() => setActiveNavTab(tab.id)}
                                                                 style={{
-                                                                    flex: 1,
-                                                                    padding: '10px 16px',
-                                                                    borderRadius: '10px',
+                                                                    background: 'none',
                                                                     border: 'none',
+                                                                    padding: '8px 12px',
+                                                                    fontSize: '15px',
+                                                                    fontWeight: 700,
+                                                                    color: isActive ? tabColor : '#6b7280',
+                                                                    opacity: isActive ? 1 : 0.85,
                                                                     cursor: 'pointer',
-                                                                    fontSize: '14px',
-                                                                    fontWeight: 600,
-                                                                    transition: 'all 0.2s ease',
-                                                                    background: isActive ? tabColor : 'transparent',
-                                                                    color: isActive ? tabTextColor : '#6b7280',
-                                                                    boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                                                                    position: 'relative',
+                                                                    transition: 'opacity 0.2s',
                                                                 }}
                                                             >
                                                                 {tab.label}
+                                                                <span style={{
+                                                                    position: 'absolute',
+                                                                    bottom: '-17px',
+                                                                    left: 0,
+                                                                    right: 0,
+                                                                    height: '3px',
+                                                                    background: isActive ? tabColor : 'transparent',
+                                                                    borderRadius: '3px 3px 0 0',
+                                                                    transition: 'background 0.2s',
+                                                                }} />
                                                             </button>
                                                         );
                                                     })}

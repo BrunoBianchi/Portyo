@@ -1,6 +1,7 @@
 import { AppDataSource } from "../../database/datasource";
 import { AutomationEntity, AutomationExecutionEntity, AutomationNode, AutomationEdge } from "../../database/entity/automation-entity";
 import { BioEntity } from "../../database/entity/bio-entity";
+import { IntegrationEntity } from "../../database/entity/integration-entity";
 import { ApiError, APIErrors } from "../errors/api-error";
 import { logger } from "../utils/logger";
 import { env } from "../../config/env";
@@ -16,6 +17,7 @@ import Mailgun from "mailgun.js";
 const automationRepository = AppDataSource.getRepository(AutomationEntity);
 const executionRepository = AppDataSource.getRepository(AutomationExecutionEntity);
 const bioRepository = AppDataSource.getRepository(BioEntity);
+const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
 
 // Mailgun client for sending emails
 const mailgun = new Mailgun(FormData);
@@ -832,12 +834,173 @@ const processDiscordNode = async (node: AutomationNode, context: any): Promise<a
 };
 
 const processInstagramAction = async (node: AutomationNode, context: any): Promise<any> => {
-    const { actionType, message } = node.data;
+    const actionType = String(node.data.actionType || "send_dm").toLowerCase();
+    const message = replacePlaceholders(String(node.data.message || ""), context).trim();
+    const bioId = String(context.bioId || "").trim();
 
-    // Placeholder - Instagram API integration would go here
-    logger.info(`Instagram action: ${actionType} - "${message}" (placeholder)`);
+    if (!bioId) {
+        logger.warn("[Automation] Instagram action skipped: missing bioId in context");
+        return { ...context, instagramAction: actionType, instagramStatus: "missing_context" };
+    }
 
-    return { ...context, instagramAction: actionType };
+    const integration = await integrationRepository.findOne({
+        where: {
+            bio: { id: bioId },
+            provider: "instagram",
+        },
+    });
+
+    if (!integration?.accessToken || !integration?.account_id) {
+        logger.warn(`[Automation] Instagram integration missing for bio ${bioId}`);
+        return {
+            ...context,
+            instagramAction: actionType,
+            instagramStatus: "integration_missing",
+        };
+    }
+
+    const baseUrl = "https://graph.facebook.com/v21.0";
+
+    try {
+        if (actionType === "reply_comment") {
+            const commentId = replacePlaceholders(
+                String(node.data.commentId || context.commentId || context.comment_id || ""),
+                context
+            ).trim();
+
+            if (!commentId || !message) {
+                return {
+                    ...context,
+                    instagramAction: actionType,
+                    instagramStatus: "missing_comment_data",
+                };
+            }
+
+            const response = await axios.post(
+                `${baseUrl}/${commentId}/replies`,
+                null,
+                {
+                    params: {
+                        message,
+                        access_token: integration.accessToken,
+                    },
+                }
+            );
+
+            return {
+                ...context,
+                instagramAction: actionType,
+                instagramStatus: "completed",
+                instagramReplyId: response.data?.id || "",
+            };
+        }
+
+        if (actionType === "send_dm") {
+            const recipientId = replacePlaceholders(
+                String(node.data.recipientId || context.recipientId || context.senderId || ""),
+                context
+            ).trim();
+
+            if (!recipientId || !message) {
+                return {
+                    ...context,
+                    instagramAction: actionType,
+                    instagramStatus: "missing_dm_data",
+                };
+            }
+
+            const response = await axios.post(
+                `${baseUrl}/${integration.account_id}/messages`,
+                {
+                    recipient: { id: recipientId },
+                    message: { text: message },
+                    messaging_type: "RESPONSE",
+                },
+                {
+                    params: {
+                        access_token: integration.accessToken,
+                    },
+                }
+            );
+
+            return {
+                ...context,
+                instagramAction: actionType,
+                instagramStatus: "completed",
+                instagramMessageId: response.data?.message_id || "",
+            };
+        }
+
+        if (actionType === "post_story") {
+            const imageUrl = replacePlaceholders(
+                String(node.data.imageUrl || context.imageUrl || context.storyImageUrl || ""),
+                context
+            ).trim();
+
+            if (!imageUrl) {
+                return {
+                    ...context,
+                    instagramAction: actionType,
+                    instagramStatus: "missing_story_image",
+                };
+            }
+
+            const containerResponse = await axios.post(
+                `${baseUrl}/${integration.account_id}/media`,
+                null,
+                {
+                    params: {
+                        image_url: imageUrl,
+                        media_type: "STORIES",
+                        caption: message || undefined,
+                        access_token: integration.accessToken,
+                    },
+                }
+            );
+
+            const creationId = containerResponse.data?.id;
+            if (!creationId) {
+                return {
+                    ...context,
+                    instagramAction: actionType,
+                    instagramStatus: "story_container_failed",
+                };
+            }
+
+            const publishResponse = await axios.post(
+                `${baseUrl}/${integration.account_id}/media_publish`,
+                null,
+                {
+                    params: {
+                        creation_id: creationId,
+                        access_token: integration.accessToken,
+                    },
+                }
+            );
+
+            return {
+                ...context,
+                instagramAction: actionType,
+                instagramStatus: "completed",
+                instagramStoryId: publishResponse.data?.id || "",
+            };
+        }
+
+        logger.warn(`[Automation] Unsupported Instagram action type: ${actionType}`);
+        return {
+            ...context,
+            instagramAction: actionType,
+            instagramStatus: "unsupported_action",
+        };
+    } catch (error: any) {
+        logger.error(`[Automation] Instagram action failed: ${error.message}`);
+        return {
+            ...context,
+            instagramAction: actionType,
+            instagramStatus: "failed",
+            instagramError: error.response?.data?.error?.message || error.message,
+        };
+    }
 };
 
 const processYoutubeAction = async (node: AutomationNode, context: any): Promise<any> => {

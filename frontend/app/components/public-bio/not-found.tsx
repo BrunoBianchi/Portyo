@@ -1,41 +1,47 @@
 import React from "react";
-import { Links, Meta, Scripts } from "react-router";
 
 export const BioNotFound = ({ username }: { username: string }) => {
-    // Basic construction of main domain URL
-    const mainDomain = typeof window !== 'undefined' ? window.location.host : 'portyo.me';
     const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
-    const claimUrl = `${protocol}//${mainDomain}/sign-up?step=1&sufix=${username}`;
+    const baseUrl = `${protocol}//portyo.me`;
+    const cleanUsername = (username || "").replace(/^@+/, "").trim();
+    const claimUrl = `${baseUrl}/sign-up?step=1&sufix=${encodeURIComponent(cleanUsername)}`;
+    const homeUrl = `${baseUrl}/`;
 
     return (
-        <div className="bg-[#F9F4E8] font-sans text-[#171717] min-h-screen">
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <div className="text-center p-8 bg-white shadow-xl rounded-3xl max-w-md w-full border border-[#e5e5e5] relative overflow-hidden">
-                    <div className="mb-6 text-6xl animate-bounce">😕</div>
-                    <h1 className="text-3xl font-bold mb-3 text-[#171717]">Bio not found</h1>
-                    <p className="text-[#737373] mb-8 text-lg">
-                        The bio for <span className="font-bold text-[#171717]">@{username}</span> hasn't been created yet.
+        <div className="min-h-screen bg-[#F3F3F1] text-[#1A1A1A] font-sans">
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <div className="w-full max-w-md rounded-[28px] border-2 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-7 sm:p-8 text-center">
+                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF7D1] border-2 border-black text-4xl">
+                        🥲
+                    </div>
+
+                    <p className="inline-flex items-center rounded-full border border-black/15 bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-black/60 mb-4">
+                        This username is available
                     </p>
 
-                    <div className="space-y-4">
-                        <p className="text-sm text-[#737373] font-medium uppercase tracking-wide">Is this your brand?</p>
+                    <h1 className="text-3xl sm:text-[34px] leading-tight font-black tracking-tight mb-3">
+                        Bio not found
+                    </h1>
+
+                    <p className="text-[15px] leading-relaxed text-black/60 mb-7">
+                        The bio for <span className="font-extrabold text-black">@{cleanUsername}</span> doesn’t exist yet.
+                    </p>
+
+                    <div className="space-y-3">
                         <a
                             href={claimUrl}
-                            className="block w-full py-4 px-6 bg-[#d2e823] hover:bg-[#c4d922] text-[#171717] font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            className="block w-full rounded-2xl border-2 border-black bg-[#D2E823] px-6 py-3.5 text-[16px] font-black text-[#1A1A1A] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
                         >
-                            Claim <span className="underline decoration-2 decoration-black/20">{username}</span> now
+                            Claim @{cleanUsername}
                         </a>
+
                         <a
-                            href="/"
-                            className="block w-full py-4 px-6 bg-white border-2 border-[#e5e5e5] hover:border-[#d4d4d4] hover:bg-[#f5f5f5] text-[#171717] font-bold rounded-xl transition-all duration-200"
+                            href={homeUrl}
+                            className="block w-full rounded-2xl border-2 border-black/15 bg-white px-6 py-3.5 text-[15px] font-bold text-[#1A1A1A] transition-colors hover:bg-black/[0.03]"
                         >
                             Go to Portyo Home
                         </a>
                     </div>
-                </div>
-
-                <div className="mt-8 text-[#737373] text-sm">
-                    Powered by <span className="font-bold text-[#171717]">Portyo</span>
                 </div>
             </div>
         </div>

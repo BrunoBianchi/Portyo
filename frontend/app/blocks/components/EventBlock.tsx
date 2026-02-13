@@ -25,7 +25,7 @@ const calcTimeLeft = (targetDate: string): TimeLeft => {
     };
 };
 
-export const EventBlock: React.FC<BlockComponentProps> = ({ block }) => {
+export const EventBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const [isMounted, setIsMounted] = useState(false);
     const [timeLeft, setTimeLeft] = useState<TimeLeft>({
         days: 0,
@@ -50,6 +50,9 @@ export const EventBlock: React.FC<BlockComponentProps> = ({ block }) => {
 
     const bgColor = block.eventColor || '#111827';
     const textColor = block.eventTextColor || '#ffffff';
+    const eventPageUrl = bioId && block.id
+        ? `/event/${encodeURIComponent(bioId)}/${encodeURIComponent(block.id)}?title=${encodeURIComponent(block.eventTitle || block.title || 'Evento')}&date=${encodeURIComponent(block.eventDate || '')}&buttonText=${encodeURIComponent(block.eventButtonText || 'Get Tickets')}&buttonUrl=${encodeURIComponent(block.eventButtonUrl || '')}`
+        : '';
 
     const timerBoxStyle: React.CSSProperties = {
         display: 'flex',
@@ -125,37 +128,64 @@ export const EventBlock: React.FC<BlockComponentProps> = ({ block }) => {
                     <p style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 16px 0' }}>Event has started!</p>
                 )}
 
-                {block.eventButtonUrl && (
-                    <a
-                        href={block.eventButtonUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                            display: 'inline-block',
-                            padding: '12px 32px',
-                            background: '#ffffff',
-                            color: bgColor,
-                            borderRadius: '99px',
-                            textDecoration: 'none',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-                            transition: 'all 0.25s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            const el = e.currentTarget as HTMLAnchorElement;
-                            el.style.transform = 'translateY(-2px)';
-                            el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            const el = e.currentTarget as HTMLAnchorElement;
-                            el.style.transform = 'translateY(0)';
-                            el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)';
-                        }}
-                    >
-                        {block.eventButtonText || 'Get Tickets'}
-                    </a>
-                )}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                }}>
+                    {eventPageUrl && (
+                        <a
+                            href={eventPageUrl}
+                            style={{
+                                display: 'inline-block',
+                                padding: '12px 24px',
+                                background: 'rgba(255,255,255,0.15)',
+                                color: '#ffffff',
+                                borderRadius: '99px',
+                                textDecoration: 'none',
+                                fontWeight: 700,
+                                fontSize: '14px',
+                                border: '1px solid rgba(255,255,255,0.45)',
+                            }}
+                        >
+                            Ver página do evento
+                        </a>
+                    )}
+
+                    {block.eventButtonUrl && (
+                        <a
+                            href={block.eventButtonUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-block',
+                                padding: '12px 32px',
+                                background: '#ffffff',
+                                color: bgColor,
+                                borderRadius: '99px',
+                                textDecoration: 'none',
+                                fontWeight: 700,
+                                fontSize: '14px',
+                                boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                                transition: 'all 0.25s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                const el = e.currentTarget as HTMLAnchorElement;
+                                el.style.transform = 'translateY(-2px)';
+                                el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                const el = e.currentTarget as HTMLAnchorElement;
+                                el.style.transform = 'translateY(0)';
+                                el.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)';
+                            }}
+                        >
+                            {block.eventButtonText || 'Get Tickets'}
+                        </a>
+                    )}
+                </div>
             </div>
         </BlockWrapper>
     );

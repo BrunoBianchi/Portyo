@@ -708,7 +708,7 @@ export default function DashboardAutomation() {
 
   const showLeadSelectionOptionsForAction = selectedNode?.type === 'action' && selectedNode?.id && (showLeadSelectionOptions || isConnectedToStripeDiscountNode(selectedNode.id));
 
-  const applyQuickTemplate = (template: 'welcome' | 'discord' | 'webhook') => {
+  const applyQuickTemplate = (template: 'welcome' | 'discord' | 'webhook' | 'instagram_auto_reply') => {
     const templates = {
       welcome: {
         name: 'Welcome Subscriber',
@@ -731,6 +731,14 @@ export default function DashboardAutomation() {
         nodes: [
           normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'Link Clicked', eventType: 'link_click' } }),
           normalizeNodeData({ id: 't2', type: 'webhook', position: { x: 220, y: 280 }, data: { label: 'Send Webhook', webhookMethod: 'POST' } }),
+        ],
+        edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
+      },
+      instagram_auto_reply: {
+        name: 'Instagram Auto Reply',
+        nodes: [
+          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'Webhook Trigger', eventType: 'webhook_received' } }),
+          normalizeNodeData({ id: 't2', type: 'instagram', position: { x: 220, y: 280 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Thanks for your comment! 💜', commentId: '{{commentId}}' } }),
         ],
         edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
       },
@@ -824,6 +832,7 @@ export default function DashboardAutomation() {
           <button onClick={() => applyQuickTemplate('welcome')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Welcome Email</button>
           <button onClick={() => applyQuickTemplate('discord')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Discord Alert</button>
           <button onClick={() => applyQuickTemplate('webhook')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Webhook Bridge</button>
+          <button onClick={() => applyQuickTemplate('instagram_auto_reply')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Instagram Auto Reply</button>
           <span className="text-[11px] text-gray-500 ml-1 md:ml-auto">No mobile, toque no ícone para adicionar bloco.</span>
         </div>
 
@@ -1543,6 +1552,47 @@ export default function DashboardAutomation() {
                         <option value="post_story">Post Story</option>
                       </select>
                     </div>
+
+                    {selectedNode.data.actionType === 'reply_comment' && (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Comment ID</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border-2 border-black rounded-xl text-sm font-bold text-[#1A1A1A] placeholder-gray-400 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          placeholder="{{commentId}}"
+                          value={selectedNode.data.commentId || ''}
+                          onChange={(e) => updateNodeData('commentId', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">Use <strong>{'{{commentId}}'}</strong> quando vier do webhook.</p>
+                      </div>
+                    )}
+
+                    {selectedNode.data.actionType === 'send_dm' && (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Recipient ID</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 bg-white border-2 border-black rounded-xl text-sm font-bold text-[#1A1A1A] placeholder-gray-400 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          placeholder="{{recipientId}}"
+                          value={selectedNode.data.recipientId || ''}
+                          onChange={(e) => updateNodeData('recipientId', e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    {selectedNode.data.actionType === 'post_story' && (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Image URL</label>
+                        <input
+                          type="url"
+                          className="w-full px-4 py-3 bg-white border-2 border-black rounded-xl text-sm font-bold text-[#1A1A1A] placeholder-gray-400 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          placeholder="https://..."
+                          value={selectedNode.data.imageUrl || ''}
+                          onChange={(e) => updateNodeData('imageUrl', e.target.value)}
+                        />
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Message</label>
                       <textarea

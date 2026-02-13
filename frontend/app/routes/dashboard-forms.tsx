@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import type { Route } from "../+types/root";
 import { Plus, Trash2, FileText, Loader2, Sparkles, AlertCircle, X } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import { api } from "~/services/api";
@@ -9,11 +9,16 @@ import { DeleteConfirmationModal } from "~/components/dashboard/delete-confirmat
 import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
+import i18n from "~/i18n";
 
-export function meta({ }: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
+    const lang = params?.lang === "pt" ? "pt" : "en";
+    const title = i18n.t("meta.dashboard.forms.title", { lng: lang, defaultValue: "Forms | Portyo" });
+    const description = i18n.t("meta.dashboard.forms.description", { lng: lang, defaultValue: "Manage your custom forms" });
+
     return [
-        { title: "Forms | Portyo" },
-        { name: "description", content: "Manage your custom forms" },
+        { title },
+        { name: "description", content: description },
     ];
 }
 
@@ -33,6 +38,7 @@ export default function DashboardFormsList() {
     const { bio, updateBio } = useContext(BioContext);
     const { t } = useTranslation("dashboard");
     const navigate = useNavigate();
+    const location = useLocation();
     const [forms, setForms] = useState<Form[]>([]);
     const [loading, setLoading] = useState(true);
     const [createError, setCreateError] = useState<string | null>(null);
@@ -51,6 +57,10 @@ export default function DashboardFormsList() {
         id: null
     });
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
+    const dateLocale = currentLang === "pt" ? "pt-BR" : "en-US";
 
     // Upgrade Popup State
     const [showUpgradePopup, setShowUpgradePopup] = useState(false);
@@ -128,7 +138,7 @@ export default function DashboardFormsList() {
                 description: t("dashboard.forms.newFormDesc"),
                 fields: []
             });
-            navigate(`/dashboard/forms/${response.data.id}`);
+            navigate(withLang(`/dashboard/forms/${response.data.id}`));
         } catch (error: any) {
             console.error("Failed to create form:", error);
             if (error.response?.status === 403) {
@@ -215,7 +225,7 @@ export default function DashboardFormsList() {
 
                             <div className="flex flex-col gap-3">
                                 <Link
-                                    to="/pricing"
+                                    to={withLang("/pricing")}
                                     className="w-full py-4 bg-[#1A1A1A] text-white rounded-[14px] font-black text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-none hover:translate-y-[2px] transition-all"
                                 >
                                     {t("dashboard.forms.upgrade.cta")}
@@ -262,18 +272,19 @@ export default function DashboardFormsList() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-tour="forms-grid">
                         {forms.map((form, index) => (
-                            <Link
+                            <div
                                 key={form.id}
                                 data-tour={index === 0 ? "forms-card" : undefined}
-                                to={`/dashboard/forms/${form.id}`}
                                 className="group bg-white p-6 rounded-[24px] border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all flex flex-col h-full relative overflow-hidden"
                             >
                                 <div className="absolute top-0 left-0 w-full h-2 bg-[#C6F035] border-b-2 border-black" />
 
                                 <div className="flex justify-between items-start mb-4 mt-2">
-                                    <h3 className="text-xl font-black text-[#1A1A1A] line-clamp-1 group-hover:underline decoration-2 underline-offset-2 decoration-[#C6F035]">
-                                        {form.title}
-                                    </h3>
+                                    <Link to={withLang(`/dashboard/forms/${form.id}`)} className="min-w-0">
+                                        <h3 className="text-xl font-black text-[#1A1A1A] line-clamp-1 group-hover:underline decoration-2 underline-offset-2 decoration-[#C6F035]">
+                                            {form.title}
+                                        </h3>
+                                    </Link>
                                     <button
                                         onClick={(e) => handleDeleteClick(e, form)}
                                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -295,10 +306,25 @@ export default function DashboardFormsList() {
                                         {form._count?.answers ?? form.submissions ?? 0} {t("dashboard.forms.answersCount")}
                                     </div>
                                     <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
-                                        {new Date(form.updatedAt).toLocaleDateString()}
+                                        {new Date(form.updatedAt).toLocaleDateString(dateLocale)}
                                     </span>
                                 </div>
-                            </Link>
+
+                                <div className="mt-4 flex items-center gap-3">
+                                    <Link
+                                        to={withLang(`/dashboard/forms/${form.id}`)}
+                                        className="flex-1 py-2.5 px-3 rounded-[12px] border-2 border-black text-center font-black text-sm bg-[#C6F035] text-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                    >
+                                        {t("common.edit")}
+                                    </Link>
+                                    <Link
+                                        to={withLang(`/dashboard/forms/${form.id}/answers`)}
+                                        className="flex-1 py-2.5 px-3 rounded-[12px] border-2 border-black text-center font-black text-sm bg-white text-[#1A1A1A] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                    >
+                                        {t("dashboard.forms.viewAnswers")}
+                                    </Link>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 )}

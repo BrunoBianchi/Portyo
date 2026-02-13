@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import type { BlockComponentProps } from "./types";
 import { fetchBioSponsoredLinks, type SponsoredLinkPublic } from "~/services/sponsored-api";
 import { DollarSign, ExternalLink, Sparkles } from "lucide-react";
+import { getFingerprint } from "~/utils/fingerprint";
 
 export function SponsoredLinksBlock({ block, bioId }: BlockComponentProps) {
     const [links, setLinks] = useState<SponsoredLinkPublic[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fingerprint, setFingerprint] = useState<string>("");
+    const [sessionId, setSessionId] = useState<string>("");
 
     useEffect(() => {
         if (!bioId) return;
@@ -14,6 +17,29 @@ export function SponsoredLinksBlock({ block, bioId }: BlockComponentProps) {
             .catch(() => setLinks([]))
             .finally(() => setLoading(false));
     }, [bioId]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const existingSid = sessionStorage.getItem("sponsored_click_sid");
+        if (existingSid) {
+            setSessionId(existingSid);
+        } else {
+            const sid = typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID()
+                : `sid-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            sessionStorage.setItem("sponsored_click_sid", sid);
+            setSessionId(sid);
+        }
+
+        getFingerprint()
+            .then((fp) => {
+                if (fp && fp !== "fp-error") setFingerprint(fp);
+            })
+            .catch(() => {
+                // ignore fingerprint failures and keep fallback behavior
+            });
+    }, []);
 
     if (loading) {
         return (
@@ -36,7 +62,10 @@ export function SponsoredLinksBlock({ block, bioId }: BlockComponentProps) {
             </div>
 
             {links.map(link => {
-                const clickUrl = `${apiBase}/api/public/sponsored/click/${link.trackingCode}`;
+                const params = new URLSearchParams();
+                if (fingerprint) params.set("fp", fingerprint);
+                if (sessionId) params.set("sid", sessionId);
+                const clickUrl = `${apiBase}/api/public/sponsored/click/${link.trackingCode}${params.toString() ? `?${params.toString()}` : ""}`;
                 const offer = link.offer;
                 const layout = offer.layout || "card";
 

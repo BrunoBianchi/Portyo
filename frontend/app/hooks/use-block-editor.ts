@@ -28,6 +28,8 @@ interface UseBlockEditorReturn {
 
 export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEditorReturn {
   const { initialBlocks = [], onSave, key } = options;
+
+  const isVariation = (current: string | undefined, expected: string) => current === expected;
   
   const [blocks, setBlocks] = useState<BioBlock[]>(initialBlocks);
   const [history, setHistory] = useState<BioBlock[][]>([]);
@@ -89,6 +91,30 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             textColor: "#475569",
           };
         case "button":
+          if (isVariation(variation, "button-gradient")) {
+            return {
+              ...baseBlock,
+              title: "Acessar agora",
+              href: "https://",
+              accent: "#7c3aed",
+              textColor: "#ffffff",
+              buttonStyle: "gradient",
+              buttonShape: "pill",
+            };
+          }
+
+          if (isVariation(variation, "button-neon")) {
+            return {
+              ...baseBlock,
+              title: "Ver oferta",
+              href: "https://",
+              accent: "#22c55e",
+              textColor: "#052e16",
+              buttonStyle: "neon",
+              buttonShape: "rounded",
+            };
+          }
+
           return {
             ...baseBlock,
             title: defaultTitle,
@@ -138,6 +164,28 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             ...baseBlock,
           };
         case "qrcode":
+          if (isVariation(variation, "qr-multiple")) {
+            return {
+              ...baseBlock,
+              qrCodeLayout: "multiple",
+              qrCodeValue: "",
+              qrCodeColor: "#111827",
+              qrCodeBgColor: "#FFFFFF",
+              qrCodeItems: [],
+            };
+          }
+
+          if (isVariation(variation, "qr-grid")) {
+            return {
+              ...baseBlock,
+              qrCodeLayout: "grid",
+              qrCodeValue: "",
+              qrCodeColor: "#111827",
+              qrCodeBgColor: "#FFFFFF",
+              qrCodeItems: [],
+            };
+          }
+
           return {
             ...baseBlock,
             qrCodeLayout: "single",
@@ -172,25 +220,82 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             eventTextColor: "#ffffff",
           };
         case "form":
+          if (isVariation(variation, "form-signup")) {
+            return {
+              ...baseBlock,
+              formId: "",
+              formBackgroundColor: "#eff6ff",
+              formTextColor: "#1e3a8a",
+            };
+          }
+
           return {
             ...baseBlock,
             formId: "",
             formBackgroundColor: "#ffffff",
             formTextColor: "#1f2937",
           };
-        case "portfolio":
+        case "poll":
+          if (isVariation(variation, "poll-research")) {
+            return {
+              ...baseBlock,
+              pollId: "",
+              pollBackgroundColor: "#f8fafc",
+              pollTextColor: "#334155",
+            };
+          }
+
           return {
             ...baseBlock,
-            portfolioTitle: "",
+            pollId: "",
+            pollBackgroundColor: "#ffffff",
+            pollTextColor: "#1f2937",
+          };
+        case "portfolio":
+          if (isVariation(variation, "portfolio-minimal")) {
+            return {
+              ...baseBlock,
+              portfolioTitle: "Projetos",
+              blockBackground: "#ffffff",
+              blockBorderRadius: 12,
+              blockBorderWidth: 1,
+              blockBorderColor: "#e5e7eb",
+              blockPadding: 16,
+            };
+          }
+
+          return {
+            ...baseBlock,
+            portfolioTitle: "Portfólio em destaque",
+            blockBackground: "#f8fafc",
+            blockBorderRadius: 16,
+            blockPadding: 20,
           };
         case "experience":
+          if (isVariation(variation, "experience-clean")) {
+            return {
+              ...baseBlock,
+              experienceTitle: "Resumo profissional",
+              experiences: [],
+              experienceRoleColor: "#111827",
+              experienceTextColor: "#4b5563",
+              experienceLineColor: "#e5e7eb",
+              blockBackground: "#ffffff",
+              blockBorderRadius: 14,
+              blockPadding: 16,
+            };
+          }
+
           return {
             ...baseBlock,
-            experienceTitle: "",
+            experienceTitle: "Minha jornada",
             experiences: [],
-            experienceRoleColor: "#111827",
-            experienceTextColor: "#374151",
-            experienceLineColor: "#e5e7eb",
+            experienceRoleColor: "#0f172a",
+            experienceTextColor: "#334155",
+            experienceLineColor: "#bae6fd",
+            blockBackground: "#f8fafc",
+            blockBorderRadius: 16,
+            blockPadding: 18,
           };
         case "tour":
           return {
@@ -199,10 +304,41 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             tours: [],
           };
         case "blog":
+          if (isVariation(variation, "blog-editorial")) {
+            return {
+              ...baseBlock,
+              blogLayout: "magazine",
+              blogCardStyle: "featured",
+              blogPostCount: 4,
+              blogBackgroundColor: "#ffffff",
+              blogTextColor: "#334155",
+              blogTitleColor: "#0f172a",
+              blogDateColor: "#64748b",
+              blogTagBackgroundColor: "#f1f5f9",
+              blogTagTextColor: "#0f172a",
+            };
+          }
+
+          if (isVariation(variation, "blog-minimal")) {
+            return {
+              ...baseBlock,
+              blogLayout: "list",
+              blogCardStyle: "minimal",
+              blogPostCount: 5,
+              blogShowImages: false,
+              blogBackgroundColor: "#ffffff",
+              blogTextColor: "#475569",
+              blogTitleColor: "#111827",
+              blogDateColor: "#94a3b8",
+              blogTagBackgroundColor: "#f8fafc",
+              blogTagTextColor: "#334155",
+            };
+          }
+
           return {
             ...baseBlock,
-            blogLayout: "grid",
-            blogCardStyle: "modern",
+            blogLayout: "carousel",
+            blogCardStyle: "featured",
             blogPostCount: 3,
             blogBackgroundColor: "#ffffff",
             blogTextColor: "#1f2937",
@@ -212,6 +348,33 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             blogTagTextColor: "#111827",
           };
         case "product":
+          if (isVariation(variation, "product-minimal")) {
+            return {
+              ...baseBlock,
+              products: [],
+              productLayout: "list",
+              productCardStyle: "minimal",
+              productShowDescriptions: false,
+              productBackgroundColor: "#ffffff",
+              productTextColor: "#111827",
+              productAccentColor: "#111827",
+              productButtonText: "Comprar",
+            };
+          }
+
+          if (isVariation(variation, "product-carousel")) {
+            return {
+              ...baseBlock,
+              products: [],
+              productLayout: "carousel",
+              productCardStyle: "default",
+              productBackgroundColor: "#ffffff",
+              productTextColor: "#1f2937",
+              productAccentColor: "#7c3aed",
+              productButtonText: "Ver produto",
+            };
+          }
+
           return {
             ...baseBlock,
             products: [],
@@ -243,9 +406,27 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             affiliateTextColor: "#1f2937",
           };
         case "marketing":
+          if (isVariation(variation, "marketing-compact")) {
+            return {
+              ...baseBlock,
+              marketingId: "",
+              marketingLayout: "compact",
+              marketingShowImage: false,
+              marketingShowButton: true,
+            };
+          }
+
           return {
             ...baseBlock,
             marketingId: "",
+            marketingLayout: "banner",
+            marketingShowImage: true,
+            marketingShowButton: true,
+          };
+        case "sponsored_links":
+          return {
+            ...baseBlock,
+            title: "Links patrocinados",
           };
         case "whatsapp":
           return {

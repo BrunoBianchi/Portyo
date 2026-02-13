@@ -13,6 +13,7 @@ import { PortfolioItemEntity } from "./portfolio-item-entity";
 import { BioVerificationRequestEntity } from "./bio-verification-request-entity";
 import { AutoPostScheduleEntity } from "./auto-post-schedule-entity";
 import { ShortUrlEntity } from "./short-url-entity";
+import { PollEntity } from "./poll-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -285,6 +286,9 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => FormEntity, (form) => form.bio)
     forms!: FormEntity[];
+
+    @OneToMany(() => PollEntity, (poll) => poll.bio)
+    polls!: PollEntity[];
 
     @OneToMany(() => ShortUrlEntity, (shortUrl) => shortUrl.bio)
     shortUrls!: ShortUrlEntity[];

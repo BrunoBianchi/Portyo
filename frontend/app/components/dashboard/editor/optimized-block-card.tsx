@@ -189,6 +189,7 @@ function BlockIcon({ type }: { type: string }) {
     calendar: "📅",
     map: "🗺️",
     form: "📋",
+    poll: "🗳️",
     portfolio: "💼",
     experience: "⭐",
     marketing: "📢",
@@ -254,6 +255,10 @@ function getBlockPreview(block: BioBlock, t: any): string {
       return block.formId
         ? t("editor.preview.formSelected")
         : t("editor.preview.noFormSelected");
+    case "poll":
+      return block.pollId
+        ? t("editor.preview.pollSelected", { defaultValue: "Poll selected" })
+        : t("editor.preview.noPollSelected", { defaultValue: "No poll selected" });
     case "portfolio":
       return block.portfolioTitle || t("editor.preview.portfolioFallback");
     case "experience": {

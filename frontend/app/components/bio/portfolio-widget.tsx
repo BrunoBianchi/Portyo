@@ -348,6 +348,26 @@ export function PortfolioWidget({ bioId, title = "Portfolio" }: PortfolioWidgetP
                                         </div>
                                     )}
 
+                                    <a
+                                        href={`/portfolio/${encodeURIComponent(bioId)}/${encodeURIComponent(item.id)}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            left: '8px',
+                                            padding: '4px 8px',
+                                            backgroundColor: 'rgba(255,255,255,0.92)',
+                                            borderRadius: '9999px',
+                                            color: '#111827',
+                                            fontSize: '10px',
+                                            fontWeight: 700,
+                                            textDecoration: 'none',
+                                            border: '1px solid rgba(0,0,0,0.08)',
+                                        }}
+                                    >
+                                        Ver página
+                                    </a>
+
                                     {/* Title Overlay */}
                                     <div style={{
                                         position: 'absolute',

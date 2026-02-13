@@ -62,6 +62,8 @@ export async function customDomainMiddleware(
             return next();
         }
 
+        const isApiRequest = req.path.startsWith('/api/');
+
         // Busca o domínio personalizado no banco de dados
         const customDomain = await CustomDomainService.findActiveByDomain(domain);
 
@@ -73,6 +75,19 @@ export async function customDomainMiddleware(
             if (pendingDomain) {
                 // Domínio existe mas não está ativo ainda
                 logger.info(`Acesso a domínio pendente: ${domain}, status: ${pendingDomain.status}`);
+
+                // Para APIs, não bloquear domínios já registrados.
+                // Isso evita quebrar endpoints públicos (forms/blog/track/fonts) enquanto o status não está ACTIVE.
+                if (isApiRequest) {
+                    req.customDomain = pendingDomain;
+                    req.isCustomDomain = true;
+                    req.targetBioId = pendingDomain.bioId;
+                    req.targetBioSlug = pendingDomain.bio?.sufix;
+
+                    res.setHeader('X-Custom-Domain', 'true');
+                    res.setHeader('X-Bio-Id', pendingDomain.bioId);
+                    return next();
+                }
                 
                 // Se estiver em processo de verificação, mostra página de status
                 if (pendingDomain.status === 'pending' || 

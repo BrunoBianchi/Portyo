@@ -50,6 +50,11 @@ export default function ClaimBio() {
             return;
         }
 
+        if (!loading && user?.provider === "google" && !user?.onboardingCompleted) {
+            navigate(withLang("/onboarding"));
+            return;
+        }
+
         if (!loading && user?.onboardingCompleted) {
             navigate(withLang("/dashboard"));
             return;

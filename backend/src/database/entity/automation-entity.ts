@@ -22,6 +22,9 @@ export interface AutomationNode {
         actionType?: string;
         message?: string;
         comment?: string;
+        commentId?: string;
+        recipientId?: string;
+        imageUrl?: string;
         platform?: string;
         sendToAllLeads?: boolean;
         leadCount?: number;

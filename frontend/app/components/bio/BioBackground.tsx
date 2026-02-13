@@ -229,14 +229,14 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
                         backgroundImage: "url('/background/Design sem nome (4).svg')",
                         backgroundSize: '600px 600px', backgroundRepeat: 'repeat',
                         transform: 'rotate(15deg) translateZ(0)', opacity: 0.4,
-                        zIndex: 0, pointerEvents: 'none',
+                        zIndex: -3, pointerEvents: 'none',
                     }} />
                     <div style={{
                         position: 'fixed', inset: 0,
                         backgroundImage: "url('/background/Design sem nome (5).svg')",
                         backgroundSize: '500px 500px', backgroundRepeat: 'repeat',
                         transform: 'rotate(-10deg) translateZ(0)', opacity: 0.6,
-                        zIndex: 1, pointerEvents: 'none',
+                        zIndex: -2, pointerEvents: 'none',
                     }} />
                 </React.Fragment>
             );
@@ -251,14 +251,14 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
                         backgroundImage: "url('/background/wheat/Design sem nome (7).svg')",
                         backgroundSize: '600px 600px', backgroundRepeat: 'repeat',
                         transform: 'rotate(15deg) translateZ(0)', opacity: 0.4,
-                        zIndex: 0, pointerEvents: 'none',
+                        zIndex: -3, pointerEvents: 'none',
                     }} />
                     <div style={{
                         position: 'fixed', inset: 0,
                         backgroundImage: "url('/background/wheat/Design sem nome (8).svg')",
                         backgroundSize: '500px 500px', backgroundRepeat: 'repeat',
                         transform: 'rotate(-10deg) translateZ(0)', opacity: 0.6,
-                        zIndex: 1, pointerEvents: 'none',
+                        zIndex: -2, pointerEvents: 'none',
                     }} />
                 </React.Fragment>
             );
@@ -268,7 +268,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
         if (bgType === 'aurora') {
             elements.push(
                 <React.Fragment key="aurora">
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: -2, pointerEvents: 'none', overflow: 'hidden' }}>
                         <div style={{
                             position: 'absolute', inset: '-50%',
                             background: `radial-gradient(ellipse 80% 50% at 50% 120%, ${bgSecondary}80, transparent), radial-gradient(ellipse 60% 40% at 30% 100%, ${bgColor}60, transparent)`,
@@ -292,7 +292,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
         if (bgType === 'bubbles') {
             elements.push(
                 <React.Fragment key="bubbles">
-                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -2, pointerEvents: 'none' }}>
                         {Array.from({ length: 10 }).map((_, i) => (
                             <div key={i} style={{
                                 position: 'absolute', bottom: '-100px',
@@ -314,7 +314,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
             const colors = [bgSecondary, bgColor, '#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3'];
             elements.push(
                 <React.Fragment key="confetti">
-                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -2, pointerEvents: 'none' }}>
                         {Array.from({ length: 30 }).map((_, i) => (
                             <div key={i} style={{
                                 position: 'absolute', top: '-20px',
@@ -336,7 +336,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
         if (bgType === 'starfield') {
             elements.push(
                 <React.Fragment key="starfield">
-                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -2, pointerEvents: 'none' }}>
                         {Array.from({ length: 50 }).map((_, i) => (
                             <div key={i} style={{
                                 position: 'absolute',
@@ -357,7 +357,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
         if (bgType === 'rain') {
             elements.push(
                 <React.Fragment key="rain">
-                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -2, pointerEvents: 'none' }}>
                         {Array.from({ length: 40 }).map((_, i) => (
                             <div key={i} style={{
                                 position: 'absolute', top: '-20px',
@@ -378,7 +378,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
         if (bgType === 'particles-float') {
             elements.push(
                 <React.Fragment key="particles-float">
-                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -2, pointerEvents: 'none' }}>
                         {Array.from({ length: 20 }).map((_, i) => (
                             <div key={i} style={{
                                 position: 'absolute',
@@ -405,7 +405,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
                 const repeat = layer.repeat !== false;
                 const rotate = typeof layer.rotate === 'number' ? layer.rotate : 0;
                 const blur = typeof layer.blur === 'number' ? layer.blur : 0;
-                const zIdx = typeof layer.zIndex === 'number' ? layer.zIndex : 1;
+                const zIdx = typeof layer.zIndex === 'number' ? Math.min(layer.zIndex, -1) : -1;
                 const posX = typeof layer.positionX === 'number' ? layer.positionX : 0;
                 const posY = typeof layer.positionY === 'number' ? layer.positionY : 0;
 
@@ -436,7 +436,7 @@ export const BioBackgroundLayers: React.FC<BioBackgroundProps> = React.memo(({ b
 
             if (parallaxElements.length > 0) {
                 elements.push(
-                    <div key="parallax-layers" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+                    <div key="parallax-layers" style={{ position: 'fixed', inset: 0, zIndex: -2, pointerEvents: 'none', overflow: 'hidden' }}>
                         {parallaxElements}
                     </div>
                 );

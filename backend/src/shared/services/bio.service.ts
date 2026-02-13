@@ -102,11 +102,27 @@ export interface UpdateBioOptions {
 import { env } from "../../config/env"
 // ... existing code ...
 
+const getInitialsFromName = (name?: string, fallback?: string): string => {
+    const source = (name || fallback || "U").trim();
+    if (!source) return "U";
+
+    const parts = source.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+        return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+    }
+
+    return source.slice(0, 2).toUpperCase();
+};
+
+export const buildDefaultProfileImage = (bioName?: string, fallback?: string): string => {
+    const initials = getInitialsFromName(bioName, fallback);
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=256&background=111827&color=ffffff&bold=true&format=png`;
+};
+
 const normalizeBio = (bio: BioEntity | null): Bio | null => {
     if (!bio) return null;
     if (!bio.profileImage) {
-        const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173';
-        bio.profileImage = `${frontendUrl}/base-img/card_base_image.png`;
+        bio.profileImage = buildDefaultProfileImage(bio.sufix);
     }
     return bio as unknown as Bio;
 }
@@ -178,7 +194,7 @@ export const getRandomPublicBios = async (limit: number): Promise<Array<{ sufix:
         .getRawMany();
 
     return bios.map((row) => {
-        const profileImage = row.bio_profileImage || `${env.FRONTEND_URL || 'http://localhost:5173'}/base-img/card_base_image.png`;
+        const profileImage = row.bio_profileImage || buildDefaultProfileImage(row.bio_sufix);
         return {
             sufix: row.bio_sufix,
             fullName: row.user_fullName,
@@ -370,7 +386,10 @@ export const createNewBio = async (sufix: string, userEmail: string): Promise<Pa
         );
     }
 
-    let newBio = await repository.create({ sufix })
+    let newBio = await repository.create({
+        sufix,
+        profileImage: buildDefaultProfileImage(sufix)
+    })
     newBio.user = user as UserEntity;
     await repository.save(newBio)
     const payload = {
@@ -465,16 +484,7 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
     }
 
     if (Array.isArray(bio.blocks)) {
-        bio.blocks = bio.blocks.filter((block: any) => {
-    // Filter Pro-only blocks
-            if (block.type === 'tour' && !isPro) return false;
-            if (block.type === 'calendar' && !isPro) return false;
-            
-            // Filter other potential pro blocks if defined in future
-            // e.g. if we add more pro blocks, add them here
-            
-            return true;
-        });
+        bio.blocks = bio.blocks.filter((block: any) => !!block && !!block.type);
     }
 
     // Ensure frontend gets the correct active plan

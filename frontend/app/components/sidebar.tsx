@@ -78,9 +78,17 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
 
         setStartingTrial(true);
         try {
-            await api.post('/stripe/start-trial');
-            await refreshUser();
-            toast.success('Your 7-day trial is now active.');
+            const response = await api.post('/stripe/create-checkout-session', {
+                plan: 'standard',
+                interval: 'monthly'
+            });
+
+            if (response?.data?.url) {
+                window.location.href = response.data.url;
+                return;
+            }
+
+            throw new Error('No checkout URL received');
         } catch (error: any) {
             const message = error?.response?.data?.error || 'Unable to start trial right now.';
             toast.error(message);
@@ -394,6 +402,7 @@ export function Sidebar({ isOpen = false, onClose, handleChangeBio }: SidebarPro
                         <div className="rounded-xl border border-border bg-gradient-to-br from-primary/15 to-primary/5 p-3">
                             <p className="text-xs font-bold uppercase tracking-wider text-primary">7-Day Free Trial</p>
                             <p className="mt-1 text-sm font-semibold text-foreground">Unlock Standard features before subscribing.</p>
+                            <p className="mt-1 text-[11px] font-medium text-muted-foreground">Automatic billing after 7 days, cancel anytime, and we’ll remind you 1 day before billing.</p>
                             <button
                                 onClick={handleStartTrial}
                                 disabled={startingTrial}

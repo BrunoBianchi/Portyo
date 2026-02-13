@@ -16,6 +16,7 @@ import webhookRoute from "./stripe/[post]-webhook.route"
 import integrationRoute from "./integration/integration.route"
 import formRoute from "./form/form.route"
 import publicFormRoute from "./public/form/form.route"
+import publicPollRoute from "./public/poll/poll.route"
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import googleRoute from "../api/google/google.route"
 import googleAnalyticsRoute from "./google-analytics/google-analytics.route"
@@ -39,6 +40,7 @@ import imageRoute from "./images/image.route";
 import siteBlogRoute from "./site-blog/site-blog.route"
 import publicSiteBlogRoute from "./public/site-blog.public.route"
 import notificationRoute from "./notification/notification.route"
+import pollRoute from "./poll/poll.route"
 
 const router: Router = Router();
 // Specific routes first
@@ -76,12 +78,14 @@ router.use('/public/bookings', publicBookingRoute)
 router.use('/public', publicTrackRoute)
 router.use('/redirect', redirectRoute)
 router.use('/public/forms', publicFormRoute)
+router.use('/public/polls', publicPollRoute)
 
 router.use('/qrcode/',authMiddleware ,QrRoute)
 router.use('/email', authMiddleware, emailRoute)
 router.use('/stripe', authMiddleware, stripeRoute)
 router.use('/integration', authMiddleware, integrationRoute)
 router.use('/form', authMiddleware, formRoute)
+router.use('/poll', authMiddleware, pollRoute)
 router.use('/automation', authMiddleware, automationRoute)
 router.use('/analytics', authMiddleware, analyticsOverviewRoute)
 router.use('/analytics', authMiddleware, analyticsSalesRoute)

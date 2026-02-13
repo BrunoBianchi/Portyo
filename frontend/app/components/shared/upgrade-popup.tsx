@@ -191,12 +191,19 @@ export function UpgradePopup({ isOpen, onClose, forcePlan }: UpgradePopupProps) 
                                             </button>
                                         </>
                                     ) : (
-                                        <button
-                                            onClick={() => handleUpgrade('standard')}
-                                            className="w-full bg-[#1A1A1A] text-white hover:bg-black font-black py-4 px-6 rounded-full transition-all cursor-pointer text-lg shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
-                                        >
-                                            {currentPlan === 'pro' ? 'Downgrade to Standard' : 'Start 7-Day Free Trial'}
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={() => handleUpgrade('standard')}
+                                                className="w-full bg-[#1A1A1A] text-white hover:bg-black font-black py-4 px-6 rounded-full transition-all cursor-pointer text-lg shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                                            >
+                                                {currentPlan === 'pro' ? 'Downgrade to Standard' : 'Start 7-Day Free Trial'}
+                                            </button>
+                                            {currentPlan !== 'pro' && (
+                                                <p className="text-[11px] text-gray-500 font-bold text-center">
+                                                    Automatic billing after 7 days. Cancel anytime. We’ll remind you 1 day before billing.
+                                                </p>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>

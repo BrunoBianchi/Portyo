@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useLocation } from "react-router";
 import { ArrowLeft, Download, Search, FileText, Calendar, Clock, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "~/contexts/auth.context";
@@ -21,9 +21,13 @@ interface FormDefinition {
 
 export default function DashboardFormsAnswers() {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
+    const location = useLocation();
     const { user } = useAuth();
-    const { t } = useTranslation();
+    const { t } = useTranslation("dashboard");
+
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
+    const dateLocale = currentLang === "pt" ? "pt-BR" : "en-US";
 
     const [answers, setAnswers] = useState<FormAnswer[]>([]);
     const [form, setForm] = useState<FormDefinition | null>(null);
@@ -66,7 +70,7 @@ export default function DashboardFormsAnswers() {
                 return normalized ? `"${String(normalized).replace(/"/g, '""')}"` : "";
             });
             return [
-                new Date(answer.createdAt).toLocaleString(),
+                new Date(answer.createdAt).toLocaleString(dateLocale),
                 answer.ipAddress || t("dashboard.formsAnswers.unknown"),
                 ...fieldValues
             ];
@@ -118,14 +122,14 @@ export default function DashboardFormsAnswers() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
                 <div className="flex items-center gap-4">
                     <Link
-                        to="/dashboard/forms"
+                        to={withLang("/dashboard/forms")}
                         className="w-12 h-12 flex items-center justify-center rounded-[12px] bg-white border-2 border-black text-black hover:bg-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0"
                     >
                         <ArrowLeft className="w-6 h-6 stroke-[3px]" />
                     </Link>
                     <div>
                         <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-gray-500 mb-1">
-                            <span className="hover:text-black transition-colors">Forms</span>
+                            <span className="hover:text-black transition-colors">{t("dashboard.nav.forms")}</span>
                             <span className="text-gray-300">/</span>
                             <span className="hover:text-black transition-colors max-w-[150px] truncate text-black">{form.title}</span>
                             <span className="text-gray-300">/</span>
@@ -159,7 +163,7 @@ export default function DashboardFormsAnswers() {
                             <span className="whitespace-nowrap hidden sm:inline">{t("dashboard.formsAnswers.exportCsv")}</span>
                         </button>
                         <Link
-                            to={`/dashboard/forms/${id}`}
+                            to={withLang(`/dashboard/forms/${id}`)}
                             className="flex-1 sm:flex-none h-full px-6 bg-[#1A1A1A] text-white hover:bg-black rounded-[14px] font-black text-sm transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] hover:translate-y-[1px] flex items-center justify-center gap-2 border-2 border-black"
                         >
                             <FileText className="w-5 h-5 stroke-[2.5px]" />
@@ -199,11 +203,11 @@ export default function DashboardFormsAnswers() {
                                             <div className="flex flex-col gap-1.5">
                                                 <div className="flex items-center gap-2 text-sm font-bold text-[#1A1A1A]">
                                                     <Calendar className="w-4 h-4 text-gray-400" />
-                                                    {new Date(answer.createdAt).toLocaleDateString()}
+                                                    {new Date(answer.createdAt).toLocaleDateString(dateLocale)}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
                                                     <Clock className="w-3.5 h-3.5" />
-                                                    {new Date(answer.createdAt).toLocaleTimeString()}
+                                                    {new Date(answer.createdAt).toLocaleTimeString(dateLocale)}
                                                 </div>
                                                 {answer.ipAddress && (
                                                     <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 font-mono bg-gray-100 px-2 py-0.5 rounded-lg w-fit border border-gray-200">

@@ -1,16 +1,20 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useRef } from "react";
 import { api } from "~/services/api";
 import AuthContext from "~/contexts/auth.context";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "portfolio" | "marketing" | "whatsapp" | "experience" | "sponsored_links";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "poll" | "portfolio" | "marketing" | "whatsapp" | "experience" | "sponsored_links";
     title?: string;
     body?: string;
     // Form specific
     formId?: string;
     formBackgroundColor?: string;
     formTextColor?: string;
+    // Poll specific
+    pollId?: string;
+    pollBackgroundColor?: string;
+    pollTextColor?: string;
     href?: string;
     align?: "left" | "center" | "right" | "justify";
     fontSize?: string;
@@ -374,6 +378,7 @@ const BioContext = createContext<BioData>({} as BioData);
 export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [bios, setBios] = useState<Bio[]>([]);
     const [bio, setBio] = useState<Bio | null>(null);
+    const updateRequestSeqRef = useRef<Record<string, number>>({});
     const { user } = useContext(AuthContext);
 
     const getBios = async () => {
@@ -418,9 +423,23 @@ export const BioProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     const updateBio = async (id: string, payload: Partial<Bio>) => {
+        const nextSeq = (updateRequestSeqRef.current[id] || 0) + 1;
+        updateRequestSeqRef.current[id] = nextSeq;
+
         try {
             const response = await api.post(`/bio/update/${id}`, payload);
-            setBio(response.data);
+
+            if (updateRequestSeqRef.current[id] !== nextSeq) {
+                return;
+            }
+
+            setBio((prev) => {
+                if (!prev || prev.id !== id) {
+                    return prev;
+                }
+
+                return { ...prev, ...response.data };
+            });
             setBios((prev) => prev.map((b) => (b.id === id ? { ...b, ...response.data } : b)));
         } catch (error) {
             console.error("Failed to update bio", error);

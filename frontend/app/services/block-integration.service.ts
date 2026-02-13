@@ -16,6 +16,24 @@ export interface FormField {
   required: boolean;
 }
 
+export interface PollOption {
+  id: string;
+  label: string;
+}
+
+export interface Poll {
+  id: string;
+  title: string;
+  description?: string;
+  options: PollOption[];
+  isActive: boolean;
+  votes?: number;
+  allowMultipleChoices?: boolean;
+  requireName?: boolean;
+  requireEmail?: boolean;
+  showResultsPublic?: boolean;
+}
+
 // Portfolio types
 export interface PortfolioItem {
   id: string;
@@ -103,7 +121,14 @@ export const BlockIntegrationService = {
   async getForms(bioId: string): Promise<Form[]> {
     try {
       const response = await api.get(`/form/bios/${bioId}/forms`);
-      return response.data || [];
+      const forms = Array.isArray(response.data) ? response.data : [];
+      return forms.map((form: any) => ({
+        id: form.id,
+        name: form.name || form.title || "Untitled Form",
+        description: form.description || undefined,
+        fields: Array.isArray(form.fields) ? form.fields : [],
+        responsesCount: typeof form.submissions === "number" ? form.submissions : form.responsesCount,
+      }));
     } catch (error) {
       console.error("Failed to fetch forms:", error);
       return [];
@@ -113,9 +138,63 @@ export const BlockIntegrationService = {
   async getFormById(formId: string): Promise<Form | null> {
     try {
       const response = await api.get(`/form/forms/${formId}`);
-      return response.data || null;
+      const form = response.data;
+      if (!form) return null;
+      return {
+        id: form.id,
+        name: form.name || form.title || "Untitled Form",
+        description: form.description || undefined,
+        fields: Array.isArray(form.fields) ? form.fields : [],
+        responsesCount: typeof form.submissions === "number" ? form.submissions : form.responsesCount,
+      };
     } catch (error) {
       console.error("Failed to fetch form:", error);
+      return null;
+    }
+  },
+
+  // Polls
+  async getPolls(bioId: string): Promise<Poll[]> {
+    try {
+      const response = await api.get(`/poll/bios/${bioId}/polls`);
+      const polls = Array.isArray(response.data) ? response.data : [];
+      return polls.map((poll: any) => ({
+        id: poll.id,
+        title: poll.title || "Untitled Poll",
+        description: poll.description || undefined,
+        options: Array.isArray(poll.options) ? poll.options : [],
+        isActive: Boolean(poll.isActive),
+        votes: typeof poll.votes === "number" ? poll.votes : 0,
+        allowMultipleChoices: Boolean(poll.allowMultipleChoices),
+        requireName: Boolean(poll.requireName),
+        requireEmail: Boolean(poll.requireEmail),
+        showResultsPublic: Boolean(poll.showResultsPublic),
+      }));
+    } catch (error) {
+      console.error("Failed to fetch polls:", error);
+      return [];
+    }
+  },
+
+  async getPollById(pollId: string): Promise<Poll | null> {
+    try {
+      const response = await api.get(`/poll/polls/${pollId}`);
+      const poll = response.data;
+      if (!poll) return null;
+      return {
+        id: poll.id,
+        title: poll.title || "Untitled Poll",
+        description: poll.description || undefined,
+        options: Array.isArray(poll.options) ? poll.options : [],
+        isActive: Boolean(poll.isActive),
+        votes: typeof poll.votes === "number" ? poll.votes : 0,
+        allowMultipleChoices: Boolean(poll.allowMultipleChoices),
+        requireName: Boolean(poll.requireName),
+        requireEmail: Boolean(poll.requireEmail),
+        showResultsPublic: Boolean(poll.showResultsPublic),
+      };
+    } catch (error) {
+      console.error("Failed to fetch poll:", error);
       return null;
     }
   },
@@ -124,7 +203,23 @@ export const BlockIntegrationService = {
   async getPortfolioItems(bioId: string): Promise<PortfolioItem[]> {
     try {
       const response = await api.get(`/portfolio/${bioId}`);
-      return response.data?.items || [];
+      const payload = response.data;
+      const items = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload?.items)
+            ? payload.items
+            : [];
+
+      return items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || undefined,
+        imageUrl: Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : undefined,
+        categoryId: item.categoryId || undefined,
+        order: typeof item.order === "number" ? item.order : 0,
+      }));
     } catch (error) {
       console.error("Failed to fetch portfolio items:", error);
       return [];

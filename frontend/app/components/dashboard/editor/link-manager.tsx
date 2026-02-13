@@ -40,7 +40,8 @@ import {
     Instagram,
     Newspaper,
     ShoppingCart,
-    Gem
+    Gem,
+    Vote
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay } from "@dnd-kit/core";
@@ -75,6 +76,7 @@ const BLOCK_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
     calendar: Calendar,
     map: Map,
     form: FormInput,
+    poll: Vote,
     portfolio: Briefcase,
     product: ShoppingBag,
     featured: Star,
@@ -359,6 +361,10 @@ function getBlockPreview(block: BioBlock, t: any): string {
             return block.eventTitle || safeT(t, "editor.preview.eventFallback");
         case 'form':
             return block.formId ? safeT(t, "editor.preview.formSelected") : safeT(t, "editor.preview.noFormSelected");
+        case 'poll':
+            return block.pollId
+                ? safeT(t, "editor.preview.pollSelected", { defaultValue: "Poll selected" })
+                : safeT(t, "editor.preview.noPollSelected", { defaultValue: "No poll selected" });
         case 'portfolio':
             return block.portfolioTitle || safeT(t, "editor.preview.portfolioFallback");
         case 'experience': {

@@ -81,7 +81,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
         myPortyo: true,
         earn: true,
-        audience: false,
+        audience: true,
         tools: false,
         admin: true
     });
@@ -372,6 +372,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 { name: t("dashboard.nav.analytics"), path: "/dashboard/analytics", icon: BarChart3, isPro: true },
                 { name: t("dashboard.nav.leads"), path: "/dashboard/leads", icon: Users, isPro: true },
                 { name: t("dashboard.nav.forms"), path: "/dashboard/forms", icon: MessageSquare, tourId: "dashboard-nav-forms" },
+                { name: t("dashboard.nav.polls", { defaultValue: "Polls" }), path: "/dashboard/polls", icon: BarChart3 },
             ]
         },
         {

@@ -158,7 +158,8 @@ router.post("/track", async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Invalid request data" });
         }
         console.error("Track error:", error);
-        return res.status(500).json({ error: "Internal server error" });
+        // Tracking should never break public pages; fail-open.
+        return res.status(200).json({ success: true, ignored: true });
     }
 });
 

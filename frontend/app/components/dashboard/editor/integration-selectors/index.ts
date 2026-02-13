@@ -1,4 +1,5 @@
 export { FormSelector } from "./form-selector";
+export { PollSelector } from "./poll-selector";
 export { PortfolioSelector } from "./portfolio-selector";
 export { ProductSelector } from "./product-selector";
 export { MarketingSlotSelector } from "./marketing-slot-selector";

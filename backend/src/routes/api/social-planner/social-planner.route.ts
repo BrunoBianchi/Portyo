@@ -43,6 +43,9 @@ const QuerySchema = z.object({
     status: z.enum(STATUSES).or(z.literal("all")).optional(),
 });
 
+const hasAtLeastOneMediaUrl = (mediaUrls: string[] | null | undefined) =>
+    Array.isArray(mediaUrls) && mediaUrls.some((url) => typeof url === "string" && url.trim().length > 0);
+
 const getOwnedBio = async (bioId: string, userId: string) => {
     const bioRepo = AppDataSource.getRepository(BioEntity);
     return bioRepo.findOne({ where: { id: bioId, userId } });
@@ -162,6 +165,10 @@ router.post("/:bioId/posts", async (req, res) => {
             .map((url) => url.trim())
             .filter(Boolean);
 
+        if (payload.channel === "instagram" && !hasAtLeastOneMediaUrl(normalizedMediaUrls)) {
+            return res.status(400).json({ message: "Instagram posts require at least one media URL" });
+        }
+
         const repository = AppDataSource.getRepository(SocialPlannerPostEntity);
         const post = repository.create({
             bioId,
@@ -221,6 +228,15 @@ router.patch("/:bioId/posts/:postId", async (req, res) => {
         }
         if (payload.hashtags !== undefined) post.hashtags = payload.hashtags;
         if (payload.timezone !== undefined) post.timezone = payload.timezone;
+
+        const nextChannel = payload.channel ?? post.channel;
+        const nextMediaUrls = payload.mediaUrls !== undefined
+            ? payload.mediaUrls.map((url) => url.trim()).filter(Boolean)
+            : post.mediaUrls;
+
+        if (nextChannel === "instagram" && !hasAtLeastOneMediaUrl(nextMediaUrls)) {
+            return res.status(400).json({ message: "Instagram posts require at least one media URL" });
+        }
 
         if (payload.scheduledAt !== undefined) {
             if (!payload.scheduledAt) {

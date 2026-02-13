@@ -84,6 +84,7 @@ const envSchema = z.object({
   // Instagram
   INSTAGRAM_CLIENT_ID: z.string().optional(),
   INSTAGRAM_CLIENT_SECRET: z.string().optional(),
+  INSTAGRAM_REDIRECT_URI: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

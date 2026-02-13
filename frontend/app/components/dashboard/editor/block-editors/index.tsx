@@ -13,6 +13,7 @@ import { TourBlockEditor } from "./tour-editor";
 import { ExperienceBlockEditor } from "./experience-editor";
 import { MarketingBlockEditor } from "./MarketingBlockEditor";
 import { FormBlockEditor } from "./FormBlockEditor";
+import { PollBlockEditor } from "./PollBlockEditor";
 import { PortfolioBlockEditor } from "./PortfolioBlockEditor";
 import { ProductBlockEditor } from "./ProductBlockEditor";
 import { BlogBlockEditor } from "./BlogBlockEditor";
@@ -52,6 +53,7 @@ export const BlockEditors: Record<string, React.ComponentType<BlockEditorProps>>
   featured: FeaturedBlockEditor,
   affiliate: AffiliateBlockEditor,
   form: FormBlockEditor,
+  poll: PollBlockEditor,
   portfolio: PortfolioBlockEditor,
   product: ProductBlockEditor,
   blog: BlogBlockEditor,
@@ -84,6 +86,7 @@ export * from "./featured-editor";
 export * from "./affiliate-editor";
 export * from "./generic-editor";
 export * from "./FormBlockEditor";
+export * from "./PollBlockEditor";
 export * from "./PortfolioBlockEditor";
 export * from "./ProductBlockEditor";
 export * from "./BlogBlockEditor";

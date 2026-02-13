@@ -38,6 +38,8 @@ import { SponsoredClickEntity } from "./entity/sponsored-click-entity"
 import { NewsletterLogEntity } from "./entity/newsletter-log-entity"
 import { SocialPlannerPostEntity } from "./entity/social-planner-post-entity"
 import { ShortUrlEntity } from "./entity/short-url-entity"
+import { PollEntity } from "./entity/poll-entity"
+import { PollVoteEntity } from "./entity/poll-vote-entity"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -46,7 +48,7 @@ export const AppDataSource = new DataSource({
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     database: env.DB_DATABASE,
-    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity, SiteAutoPostScheduleEntity, SiteAutoPostLogEntity, CustomDomainEntity, CompanyEntity, SponsoredOfferEntity, SponsoredAdoptionEntity, SponsoredClickEntity, NewsletterLogEntity, SocialPlannerPostEntity, ShortUrlEntity],
+    entities: [UserEntity, BioEntity, PostEntity, SitePostEntity, QRCodeEntity, EmailEntity, IntegrationEntity, ActivityEntity, AutomationEntity, AutomationExecutionEntity, EmailTemplateEntity, BookingSettingsEntity, BookingEntity, BillingEntity, PageViewEntity, FormEntity, FormAnswerEntity, VerificationTokenEntity, PasswordResetEntity, SystemSettings, PortfolioItemEntity, PortfolioCategoryEntity, MarketingSlotEntity, MarketingProposalEntity, ThemeEntity, BioVerificationRequestEntity, NotificationEntity, AutoPostLogEntity, AutoPostScheduleEntity, SiteAutoPostScheduleEntity, SiteAutoPostLogEntity, CustomDomainEntity, CompanyEntity, SponsoredOfferEntity, SponsoredAdoptionEntity, SponsoredClickEntity, NewsletterLogEntity, SocialPlannerPostEntity, ShortUrlEntity, PollEntity, PollVoteEntity],
     synchronize: true,
     logging: false,
     ssl: env.DB_SSL ? {

@@ -223,6 +223,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const fallbackLang = isLocalhost ? "en" : "en";
   const activeLang = (langMatch?.[1] || initialLang || fallbackLang) as (typeof SUPPORTED_LANGUAGES)[number];
+  const htmlLang = (initialLang || activeLang) as (typeof SUPPORTED_LANGUAGES)[number];
   const skipToContentLabel = activeLang === "pt" ? "Pular para o conteúdo" : "Skip to content";
 
   useEffect(() => {
@@ -273,7 +274,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <CookiesProvider>
       <AuthProvider>
-        <html lang={activeLang} dir="ltr">
+        <html lang={htmlLang} dir="ltr" suppressHydrationWarning>
           <head>
             <meta charSet="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

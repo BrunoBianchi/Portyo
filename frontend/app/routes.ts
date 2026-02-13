@@ -13,6 +13,7 @@ const baseRoutes: RouteConfig = [
     { path: '/about', file: "routes/about.tsx" },
     { path: '/legal', file: "routes/legal.tsx" },
     { path: '/contact', file: "routes/contact.tsx" },
+    { path: '/privacy', file: "routes/privacy-policy.tsx" },
     { path: '/privacy-policy', file: "routes/privacy-policy.tsx" },
     { path: '/terms-of-service', file: "routes/terms-of-service.tsx" },
     { path: '/pricing', file: "routes/pricing.tsx" },
@@ -28,8 +29,14 @@ const baseRoutes: RouteConfig = [
             { path: "leads", file: "routes/dashboard-leads.tsx" },
             { path: "automation", file: "routes/dashboard-automation._index.tsx" },
             { path: "forms", file: "routes/dashboard-forms.tsx" },
+            { path: "polls", file: "routes/dashboard-polls.tsx", id: "dashboard-polls" },
+            { path: "enquetes", file: "routes/dashboard-polls.tsx", id: "dashboard-polls-pt" },
             { path: "forms/:id", file: "routes/dashboard-forms.editor.tsx" },
+            { path: "polls/:id", file: "routes/dashboard-polls.editor.tsx", id: "dashboard-polls-editor" },
+            { path: "enquetes/:id", file: "routes/dashboard-polls.editor.tsx", id: "dashboard-polls-editor-pt" },
             { path: "forms/:id/answers", file: "routes/dashboard-forms-answers.tsx" },
+            { path: "polls/:id/results", file: "routes/dashboard-polls-results.tsx", id: "dashboard-polls-results" },
+            { path: "enquetes/:id/respostas", file: "routes/dashboard-polls-results.tsx", id: "dashboard-polls-results-pt" },
             { path: "automation/:id", file: "routes/dashboard-automation.$id.tsx" },
             { path: "integrations", file: "routes/dashboard-integrations.tsx" },
             { path: "settings", file: "routes/dashboard-settings.tsx" },
@@ -72,6 +79,11 @@ const baseRoutes: RouteConfig = [
     },
     { path: "redirect-qrcode/:id", file: "routes/redirect-qrcode.$id.tsx" },
     { path: "bookings/manage", file: "routes/booking-manage.tsx" },
+    { path: "poll/:id", file: "routes/poll.$id.tsx", id: "public-poll" },
+    { path: "product/:bioId/:productId", file: "routes/product.$bioId.$productId.tsx", id: "public-product" },
+    { path: "portfolio/:bioId/:itemId", file: "routes/portfolio.$bioId.$itemId.tsx", id: "public-portfolio-item" },
+    { path: "form/:id", file: "routes/form.$id.tsx", id: "public-form" },
+    { path: "event/:bioId/:blockId", file: "routes/event.$bioId.$blockId.tsx", id: "public-event" },
     { path: "blog", file: "routes/blog.tsx" },
     { path: "blog/:id", file: "routes/site-blog.$id.tsx" },
     { path: "blog/post/:postId", file: "routes/blog.$postId.tsx" },
@@ -91,7 +103,7 @@ const toLocalizedRoutes = (routes: RouteConfigEntry[], parentKey = ""): RouteCon
         const normalizedPath = originalPath === "/" ? "index" : stripLeadingSlash(originalPath || "index");
         const fileKey = route.file ?? route.id ?? "route";
         const localKey = [parentKey, fileKey, normalizedPath].filter(Boolean).join(":");
-        mapped.id = `lang:${localKey}`;
+        mapped.id = route.id ? `lang:${route.id}` : `lang:${localKey}`;
 
         if (route.path === "/") {
             delete mapped.path;

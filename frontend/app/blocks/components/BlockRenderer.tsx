@@ -38,6 +38,7 @@ const YouTubeBlock = lazy(() => import('./YouTubeBlock').then(m => ({ default: m
 const BlogBlock = lazy(() => import('./BlogBlock').then(m => ({ default: m.BlogBlock })));
 const ProductBlock = lazy(() => import('./ProductBlock').then(m => ({ default: m.ProductBlock })));
 const FormBlock = lazy(() => import('./FormBlock').then(m => ({ default: m.FormBlock })));
+const PollBlock = lazy(() => import('./PollBlock').then(m => ({ default: m.PollBlock })));
 const PortfolioBlock = lazy(() => import('./PortfolioBlock').then(m => ({ default: m.PortfolioBlock })));
 const MarketingBlock = lazy(() => import('./MarketingBlock').then(m => ({ default: m.MarketingBlock })));
 const SponsoredLinksBlock = lazy(() => import('./SponsoredLinksBlock').then(m => ({ default: m.SponsoredLinksBlock })));
@@ -80,6 +81,7 @@ const LAZY_BLOCK_MAP: Record<string, React.LazyExoticComponent<React.ComponentTy
     blog: BlogBlock,
     product: ProductBlock,
     form: FormBlock,
+    poll: PollBlock,
     portfolio: PortfolioBlock,
     marketing: MarketingBlock,
     sponsored_links: SponsoredLinksBlock,

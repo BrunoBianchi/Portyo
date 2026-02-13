@@ -257,7 +257,7 @@ export default function PricingSection() {
         <div className="mt-24 pt-12 border-t-4 border-[#1A1A1A]/10 flex flex-wrap justify-center gap-12 text-[#1A1A1A]">
           {[
             { text: t("home.pricing.cancelAnytime", "Cancel anytime") },
-            { text: t("home.pricing.noHiddenFees", "No hidden fees") },
+            { text: t("home.pricing.trialReminder", "1-day reminder before billing") },
             { text: t("home.pricing.securePayment", "Secure payment") },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3 font-bold text-lg">

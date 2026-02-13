@@ -128,23 +128,28 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         return;
     }
 
-    // Default to 30 days if not specified
-    const days = 30;
-    const amount = session.amount_total ? session.amount_total / 100 : 0;
-    
-    // Determine days based on plan or interval if available
-    // Note: Checkout session for subscription doesn't always have 'interval' in metadata if we don't put it there. 
-    // But we added it in create-checkout-session.
-    let duration = 30;
-    if (session.metadata?.interval === 'annually') {
-        duration = 365;
+    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+    const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+
+    if (subscriptionId) {
+        try {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            if (subscription.status === 'trialing' && subscription.trial_end) {
+                const trialEndsAt = new Date(subscription.trial_end * 1000);
+                await BillingService.createTrialBilling(
+                    userId,
+                    plan,
+                    trialEndsAt,
+                    stripeCustomerId,
+                    subscription.id,
+                );
+                logger.info(`Trial billing registered for user ${userId} until ${trialEndsAt.toISOString()}`);
+            }
+        } catch (error: any) {
+            logger.error(`Failed to persist trial billing for user ${userId}: ${error.message}`);
+        }
     }
 
-    // const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
-    // const paymentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.id;
-
-    // User requested to ONLY create plan on invoice.paid
-    // await BillingService.createBilling(userId, plan, duration, amount, stripeCustomerId, paymentId);
     logger.info(`Checkout session completed for user ${userId}. Waiting for invoice.paid to activate plan.`);
 }
 

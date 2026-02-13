@@ -5,6 +5,7 @@ import { BioEntity } from "../../../database/entity/bio-entity";
 import { UserEntity } from "../../../database/entity/user-entity";
 import { authMiddleware } from "../../../middlewares/auth.middleware";
 import { THEME_PRESETS } from "../../../seed-themes";
+import { buildDefaultProfileImage } from "../../../shared/services/bio.service";
 
 const router: Router = Router();
 const themeRepository = AppDataSource.getRepository(ThemeEntity);
@@ -243,11 +244,13 @@ router.post("/apply", authMiddleware, async (req: any, res) => {
             }
         } else {
             // Create new bio with theme
+            const generatedSufix = `my-bio-${Date.now()}`;
             bio = bioRepository.create({
-                sufix: `my-bio-${Date.now()}`,
+                sufix: generatedSufix,
                 userId,
                 html: "",
-                blocks: theme.sampleBlocks || []
+                blocks: theme.sampleBlocks || [],
+                profileImage: buildDefaultProfileImage(generatedSufix)
             });
         }
         

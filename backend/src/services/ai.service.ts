@@ -62,6 +62,144 @@ const generateBlockId = (): string => {
     return `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
+const MAX_ABOUT_CHARS = 220;
+const MAX_TEXT_BLOCK_CHARS = 220;
+const MAX_HEADING_SUBTITLE_CHARS = 72;
+const MAX_BUTTON_TITLE_CHARS = 28;
+
+const compactText = (value: string): string => {
+    return (value || "").replace(/\s+/g, " ").trim();
+};
+
+const trimAtWordBoundary = (value: string, maxChars: number): string => {
+    const normalized = compactText(value);
+    if (!normalized || maxChars <= 0 || normalized.length <= maxChars) {
+        return normalized;
+    }
+
+    const sliced = normalized.slice(0, maxChars).trim();
+    const lastSpaceIndex = sliced.lastIndexOf(" ");
+    if (lastSpaceIndex >= Math.floor(maxChars * 0.55)) {
+        return sliced.slice(0, lastSpaceIndex).trim();
+    }
+
+    return sliced;
+};
+
+export const buildProfessionalAboutSummary = (answers: OnboardingAnswers): string => {
+    const about = compactText(answers.aboutYou);
+    const profession = compactText(answers.profession);
+
+    const skills = Array.isArray(answers.skills)
+        ? answers.skills.map((skill) => compactText(skill)).filter(Boolean).slice(0, 3)
+        : [];
+    const goals = Array.isArray(answers.goals)
+        ? answers.goals.map((goal) => compactText(goal)).filter(Boolean).slice(0, 2)
+        : [];
+
+    const hasEducation = answers.education?.hasGraduation;
+    const educationParts = [
+        compactText(answers.education?.courseName || ""),
+        compactText(answers.education?.degree || ""),
+    ].filter(Boolean);
+    const educationSummary = hasEducation && educationParts.length > 0
+        ? `Formal training in ${educationParts[0]}`
+        : "";
+
+    const summaryParts = [
+        about,
+        profession ? `Works as ${profession}` : "",
+        skills.length > 0 ? `Key skills: ${skills.join(", ")}` : "",
+        goals.length > 0 ? `Focused on ${goals.join(" and ")}` : "",
+        educationSummary,
+    ].filter(Boolean);
+
+    return trimAtWordBoundary(summaryParts.join(". "), MAX_ABOUT_CHARS);
+};
+
+const normalizeGeneratedBlocks = (blocks: any[], answers: OnboardingAnswers): BioBlock[] => {
+    const sourceBlocks = Array.isArray(blocks) ? blocks.filter(Boolean) : [];
+    const aboutSummary = buildProfessionalAboutSummary(answers);
+
+    const headingIndex = sourceBlocks.findIndex((block: any) => block?.type === "heading");
+    const textIndex = sourceBlocks.findIndex((block: any) => block?.type === "text");
+
+    const headingBlock = headingIndex >= 0
+        ? { ...sourceBlocks[headingIndex] }
+        : {
+            type: "heading",
+            title: compactText(answers.profession) || "Professional Profile",
+            body: "",
+            align: "center",
+        };
+
+    const textBlock = textIndex >= 0
+        ? { ...sourceBlocks[textIndex] }
+        : {
+            type: "text",
+            body: aboutSummary,
+            align: "center",
+        };
+
+    if (typeof headingBlock.body === "string") {
+        headingBlock.body = trimAtWordBoundary(headingBlock.body, MAX_HEADING_SUBTITLE_CHARS);
+    }
+
+    textBlock.body = aboutSummary;
+
+    const remainingBlocks = sourceBlocks.filter((_, index) => index !== headingIndex && index !== textIndex);
+
+    const normalizedOrderedBlocks = [headingBlock, textBlock, ...remainingBlocks].map((block: any) => {
+        const nextBlock = { ...block };
+
+        if (nextBlock.type === "text" && typeof nextBlock.body === "string") {
+            nextBlock.body = trimAtWordBoundary(nextBlock.body, MAX_TEXT_BLOCK_CHARS);
+        }
+
+        if (nextBlock.type === "heading" && typeof nextBlock.body === "string") {
+            nextBlock.body = trimAtWordBoundary(nextBlock.body, MAX_HEADING_SUBTITLE_CHARS);
+        }
+
+        if (nextBlock.type === "button" && typeof nextBlock.title === "string") {
+            nextBlock.title = trimAtWordBoundary(nextBlock.title, MAX_BUTTON_TITLE_CHARS);
+        }
+
+        return nextBlock;
+    });
+
+    let normalizedBlocks = normalizedOrderedBlocks.slice(0, 8);
+
+    const hasCTA = normalizedBlocks.some((block: any) => block?.type === "button");
+    if (!hasCTA) {
+        const ctaBlock = {
+            type: "button",
+            title: "Get in Touch",
+            href: "mailto:contact@example.com",
+            buttonStyle: "solid",
+            align: "center",
+        };
+
+        if (normalizedBlocks.length >= 8) {
+            normalizedBlocks[normalizedBlocks.length - 1] = ctaBlock;
+        } else {
+            normalizedBlocks.push(ctaBlock);
+        }
+    }
+
+    return normalizedBlocks.map((block: any) => ({
+        ...block,
+        id: generateBlockId(),
+        ...(block.type === "button_grid" && Array.isArray(block.gridItems)
+            ? {
+                gridItems: block.gridItems.map((item: any) => ({
+                    ...item,
+                    id: generateBlockId(),
+                })),
+            }
+            : {}),
+    }));
+};
+
 const SYSTEM_PROMPT = `You are PortyoAI, an elite AI architect for Portyo — a link-in-bio and digital portfolio platform (like Linktree, but with way more power). You create stunning, conversion-optimized personal pages that captivate visitors, build personal brands, and achieve business goals.
 
 === WHAT IS PORTYO? ===
@@ -271,10 +409,12 @@ If a theme is selected, RESPECT its:
 }`;
 
 const buildUserPrompt = (answers: OnboardingAnswers): string => {
+    const aboutSummary = buildProfessionalAboutSummary(answers);
     let prompt = `Create a professional, conversion-optimized Portyo bio page for the following person:\n\n`;
     
     prompt += `=== PROFESSIONAL PROFILE ===\n`;
-    prompt += `About: ${answers.aboutYou}\n`;
+    prompt += `About (raw): ${answers.aboutYou}\n`;
+    prompt += `About (preferred concise): ${aboutSummary}\n`;
     prompt += `Profession: ${answers.profession}\n`;
     
     if (answers.education.hasGraduation) {
@@ -344,6 +484,9 @@ const buildUserPrompt = (answers: OnboardingAnswers): string => {
     prompt += `10. The "socials" block should only list platforms relevant to the profession (leave URLs empty)\n`;
     prompt += `11. Use entrance animations sparingly: "fadeIn" or "slideUp" on key blocks only\n`;
     prompt += `12. Respond ONLY with the JSON object. No additional text.\n`;
+    prompt += `13. The SECOND block must be "text" and contain only the concise preferred about summary (max ${MAX_TEXT_BLOCK_CHARS} chars).\n`;
+    prompt += `14. NEVER copy the full raw about text when it is long; rewrite it into an elegant, concise professional summary.\n`;
+    prompt += `15. Keep tone elegant, professional, and result-oriented with short readable sentences.\n`;
     
     return prompt;
 };
@@ -385,8 +528,10 @@ const extractThemeSettings = (answers: OnboardingAnswers): Record<string, any> |
     return themeSettings;
 };
 
-export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<{ blocks: BioBlock[], settings: any }> => {
+export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Promise<{ blocks: BioBlock[], settings: any, aboutSummary: string }> => {
     try {
+        const aboutSummary = buildProfessionalAboutSummary(answers);
+
         const completion = await groq.chat.completions.create({
             messages: [
                 {
@@ -399,7 +544,7 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
                 },
             ],
             model: "llama-3.3-70b-versatile",
-            temperature: 0.6,
+            temperature: 0.25,
             max_tokens: 4096,
             response_format: { type: "json_object" },
         });
@@ -444,17 +589,9 @@ export const generateBioFromOnboarding = async (answers: OnboardingAnswers): Pro
             settings = { ...settings, ...themeSettings };
         }
 
-        // Add IDs to each block
-        const blocksWithIds: BioBlock[] = blocks.map((block: any) => ({
-            ...block,
-            id: generateBlockId(),
-            // Ensure ID on grid items too if button_grid
-            ...(block.type === 'button_grid' && block.gridItems ? {
-                gridItems: block.gridItems.map((item: any) => ({ ...item, id: generateBlockId() }))
-            } : {})
-        }));
+        const blocksWithIds = normalizeGeneratedBlocks(blocks, answers);
 
-        return { blocks: blocksWithIds, settings };
+        return { blocks: blocksWithIds, settings, aboutSummary };
     } catch (error) {
         console.error("Error generating bio from AI:", error);
         throw error;

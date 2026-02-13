@@ -204,9 +204,27 @@ export const InstagramBlock: React.FC<BlockComponentProps> = ({ block, bioId, gl
                         </a>
                     ))
                 ) : (
-                    <div style={{ gridColumn: 'span 3', textAlign: 'center', padding: '20px', color: '#9ca3af', fontSize: '13px' }}>
-                        Nenhum post encontrado
-                    </div>
+                    <a
+                        href={profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            gridColumn: 'span 3',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '20px',
+                            color: textColor,
+                            fontSize: '13px',
+                            textDecoration: 'none',
+                            background: 'rgba(0,0,0,0.03)',
+                            borderRadius: '10px',
+                        }}
+                    >
+                        <InstagramIcon size={18} />
+                        Ver perfil @{username}
+                    </a>
                 )}
             </div>
 

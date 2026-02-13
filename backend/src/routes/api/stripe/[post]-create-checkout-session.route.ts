@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import Stripe from "stripe";
 import { env } from "../../../config/env";
 import { logger } from "../../../shared/utils/logger";
-import { UserEntity } from "../../../database/entity/user-entity";
+import { BillingService } from "../../../services/billing.service";
 
 const router: Router = Router();
 
@@ -55,6 +55,9 @@ router.post("/create-checkout-session", async (req: Request, res: Response) => {
              return res.status(500).json({ error: "Price configuration error" });
         }
 
+           const trialEligible = plan === 'standard' && !(await BillingService.hasUsedStandardTrial(user.id));
+           const applyTrial = trialEligible;
+
         const session = await stripe.checkout.sessions.create({
             customer_email: user.email,
             client_reference_id: user.id,
@@ -70,13 +73,15 @@ router.post("/create-checkout-session", async (req: Request, res: Response) => {
             metadata: {
                 userId: user.id,
                 plan: plan,
-                interval: interval
+                interval: interval,
+                trialApplied: applyTrial ? 'true' : 'false'
             },
             subscription_data: {
                 metadata: {
                      userId: user.id,
                      plan: plan
-                }
+                },
+                ...(applyTrial ? { trial_period_days: 7 } : {})
             }
         });
 

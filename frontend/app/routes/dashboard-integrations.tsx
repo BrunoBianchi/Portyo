@@ -113,6 +113,9 @@ export default function DashboardIntegrations() {
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
   const connectableProviders = useMemo(() => new Set(["stripe", "instagram", "google-analytics"]), []);
+  const integrationApiUrl = typeof window !== "undefined" && window.location.hostname.includes("localhost")
+    ? "http://localhost:3000"
+    : "https://portyo.me";
 
   const filteredIntegrations = integrations.filter(
     (item) => filter === "all" || item.category === filter
@@ -277,10 +280,7 @@ export default function DashboardIntegrations() {
     if (!bio?.id) return;
     try {
       setPendingAction("google-analytics-connect");
-      const res = await api.get(`/google-analytics/auth?bioId=${bio.id}`);
-      if (res.data.url) {
-        window.location.href = res.data.url;
-      }
+      window.location.href = `${integrationApiUrl}/api/google-analytics/auth?bioId=${encodeURIComponent(bio.id)}`;
     } catch (error) {
       console.error("Failed to connect google analytics", error);
       toast.error("Unable to start Google Analytics connection.");
@@ -292,10 +292,8 @@ export default function DashboardIntegrations() {
     if (!bio?.id) return;
     try {
       setPendingAction("instagram-connect");
-      const res = await api.get(`/instagram/auth?bioId=${bio.id}`);
-      if (res.data.url) {
-        window.location.href = res.data.url;
-      }
+      const returnTo = typeof window !== "undefined" ? window.location.origin : "";
+      window.location.href = `${integrationApiUrl}/api/instagram/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
     } catch (error) {
       console.error("Failed to connect instagram", error);
       toast.error("Unable to start Instagram connection.");

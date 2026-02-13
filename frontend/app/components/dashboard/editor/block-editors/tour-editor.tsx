@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { BioBlock } from "~/contexts/bio.context";
 import { EditorInput } from "./shared/editor-fields";
+import { ImageUpload } from "../image-upload";
 
 interface TourDate {
   id: string;
@@ -253,14 +254,12 @@ export function TourBlockEditor({ block, onChange }: Props) {
               </div>
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-wider mb-1 text-black/40">
-                  Imagem URL
+                  Imagem
                 </label>
-                <input
-                  type="text"
+                <ImageUpload
                   value={tour.image || ""}
-                  onChange={(e) => updateTour(tour.id, "image", e.target.value)}
-                  className="w-full p-2.5 bg-white border-2 border-gray-200 rounded-xl font-mono font-medium text-sm focus:border-black outline-none transition-all placeholder:text-black/20"
-                  placeholder="https://..."
+                  onChange={(url) => updateTour(tour.id, "image", url)}
+                  placeholder="Upload ou URL"
                 />
               </div>
               <div className="flex gap-4">

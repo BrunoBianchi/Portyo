@@ -96,17 +96,28 @@ const isAllowedOrigin = async (origin: string): Promise<boolean> => {
     return false;
   }
   
-  // Check custom domains with cache
+  // Check custom domains with cache (registered domains should be allowed too)
   const now = Date.now();
   if (now > customDomainCacheExpiry) {
     try {
       const { CustomDomainService } = await import('./shared/services/custom-domain.service');
-      const { CustomDomainStatus } = await import('./database/entity/custom-domain-entity');
-      const activeDomains = await CustomDomainService.listAllDomains(CustomDomainStatus.ACTIVE);
-      customDomainCache = new Set(
-        activeDomains.map((d: any) => `https://${d.domain}`)
-          .concat(activeDomains.map((d: any) => `https://www.${d.domain}`))
-      );
+      const allDomains = await CustomDomainService.listAllDomains();
+      customDomainCache = new Set();
+
+      for (const d of allDomains as any[]) {
+        if (!d?.domain) continue;
+        const normalized = CustomDomainService.extractDomain(d.domain);
+        if (!normalized) continue;
+
+        customDomainCache.add(`https://${normalized}`);
+        customDomainCache.add(`https://www.${normalized}`);
+
+        const apex = normalized.replace(/^www\./, '');
+        if (apex) {
+          customDomainCache.add(`https://${apex}`);
+          customDomainCache.add(`https://www.${apex}`);
+        }
+      }
       customDomainCacheExpiry = now + CUSTOM_DOMAIN_CACHE_TTL;
     } catch (err) {
       logger.error('Failed to refresh CORS custom domain cache', err as any);

@@ -7,6 +7,24 @@ export const BioRenderer = ({ html }: { html: string }) => {
 
     useEffect(() => {
         if (!containerRef.current) return;
+        let isActive = true;
+
+        const toSafeHttpUrl = (value: unknown): string | null => {
+            if (typeof value !== "string") return null;
+            const trimmed = value.trim();
+            if (!trimmed) return null;
+
+            try {
+                const parsed = new URL(trimmed);
+                if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+                    return parsed.toString();
+                }
+            } catch {
+                return null;
+            }
+
+            return null;
+        };
 
         // Store interval IDs to clear them on unmount
         const intervals: number[] = [];
@@ -82,9 +100,11 @@ export const BioRenderer = ({ html }: { html: string }) => {
                     ? "aspect-ratio:1; width:100%;"
                     : "aspect-ratio:1; width:100%; max-height:400px;";
 
-                api.get(`/public/instagram/${username}`)
+                api.get(`/public/instagram/${encodeURIComponent(username)}`)
                     .then(res => res.data)
                     .then(posts => {
+                        if (!isActive || !feed.isConnected) return;
+
                         if (!posts || !Array.isArray(posts) || posts.length === 0) {
                             feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#6b7280; font-size:12px;">No posts found</div>';
                             return;
@@ -95,8 +115,10 @@ export const BioRenderer = ({ html }: { html: string }) => {
                         // Variation 1: grid-shop - with shopping/link overlay indicators
                         if (variation === 'grid-shop') {
                             posts.slice(0, 3).forEach((post: any, index: number) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px; transition:transform 0.2s;">
-                                    <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
+                                const safePostUrl = toSafeHttpUrl(post?.url) || "#";
+                                const safeImageUrl = toSafeHttpUrl(post?.imageUrl) || "";
+                                html += `<a href="${safePostUrl}" target="_blank" rel="noopener noreferrer" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px; transition:transform 0.2s;">
+                                    <img src="${safeImageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
                                     <div class="instagram-shop-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; pointer-events:none;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
                                     </div>
@@ -106,16 +128,20 @@ export const BioRenderer = ({ html }: { html: string }) => {
                         // Variation 2: visual-gallery - clean, minimal, photo-focused
                         else if (variation === 'visual-gallery') {
                             posts.slice(0, 3).forEach((post: any, index: number) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#fafafa; transition:opacity 0.2s;">
-                                    <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
+                                const safePostUrl = toSafeHttpUrl(post?.url) || "#";
+                                const safeImageUrl = toSafeHttpUrl(post?.imageUrl) || "";
+                                html += `<a href="${safePostUrl}" target="_blank" rel="noopener noreferrer" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#fafafa; transition:opacity 0.2s;">
+                                    <img src="${safeImageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
                                 </a>`;
                             });
                         }
                         // Fallback: default grid rendering
                         else {
                             posts.slice(0, 3).forEach((post: any, index: number) => {
-                                html += `<a href="${post.url}" target="_blank" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
-                                    <img src="${post.imageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
+                                const safePostUrl = toSafeHttpUrl(post?.url) || "#";
+                                const safeImageUrl = toSafeHttpUrl(post?.imageUrl) || "";
+                                html += `<a href="${safePostUrl}" target="_blank" rel="noopener noreferrer" aria-label="View Instagram post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:8px;">
+                                    <img src="${safeImageUrl}" alt="Instagram post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
                                 </a>`;
                             });
                         }
@@ -151,6 +177,7 @@ export const BioRenderer = ({ html }: { html: string }) => {
                         }
                     })
                     .catch(err => {
+                        if (!isActive || !feed.isConnected) return;
                         console.error("Instagram fetch error:", err);
                         feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#ef4444; font-size:12px;">Error loading posts</div>';
                     });
@@ -349,6 +376,7 @@ export const BioRenderer = ({ html }: { html: string }) => {
         ensureInstagramEmbeds();
 
         return () => {
+            isActive = false;
             observer.disconnect();
             window.clearInterval(safetyInterval);
             intervals.forEach(window.clearInterval);

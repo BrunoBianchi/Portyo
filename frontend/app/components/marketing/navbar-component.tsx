@@ -24,6 +24,7 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
   const currentLabel = LANGUAGES.find((l) => l.code === value)?.label ?? value;
 
   useEffect(() => {
@@ -33,8 +34,17 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
         setOpen(false);
       }
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+      }
+    }
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
   return (
@@ -42,10 +52,13 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`${buttonClassName} flex items-center gap-2`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        className={`${buttonClassName} flex min-h-10 items-center gap-2 rounded-full px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
       >
         <Globe className="w-4 h-4" />
-        <span className="hidden sm:inline">{currentLabel}</span>
+        <span className="hidden sm:inline text-sm">{currentLabel}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -56,21 +69,28 @@ function LanguageSelect({ value, onChange, buttonClassName }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-border bg-surface-card shadow-xl overflow-hidden z-50"
+            id={listboxId}
+            role="listbox"
+            className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-2xl border-2 border-black/90 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
           >
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
+                role="option"
+                aria-selected={lang.code === value}
                 onClick={() => {
                   onChange(lang.code);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${lang.code === value
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
+                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition-colors focus-visible:outline-none ${lang.code === value
+                    ? "bg-primary/10 text-foreground"
+                    : "text-foreground hover:bg-muted/70"
                   }`}
               >
-                {lang.label}
+                <span>{lang.label}</span>
+                {lang.code === value ? (
+                  <span className="text-xs font-semibold text-primary">•</span>
+                ) : null}
               </button>
             ))}
           </motion.div>

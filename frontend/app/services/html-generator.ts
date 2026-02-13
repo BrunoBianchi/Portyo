@@ -985,8 +985,6 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
     const isCompact = block.spotifyCompact;
     const variation = block.spotifyVariation || "single-track";
     
-    console.log(`[DEBUG HTML] Spotify block - variation: ${variation}, url: ${url}`);
-    
     if (!url) return "";
 
     let embedUrl = "";
@@ -1034,8 +1032,6 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
     const showText = block.instagramShowText !== false;
     const textPosition = block.instagramTextPosition || "bottom";
     const textColor = block.instagramTextColor || "#0095f6";
-    
-    console.log(`[DEBUG HTML] Instagram block - variation: ${variation}, username: ${username}`);
     
     // Different rendering based on variation
     if (variation === "simple-link") {
@@ -1571,7 +1567,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
     cardCss += `box-shadow: 0 8px 32px -8px rgba(0,0,0,0.15), 0 4px 16px -4px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06); `;
     cardCss += `border: 1px solid rgba(0,0,0,0.06); `;
     
-    if (cardStyleType === 'frosted') {
+    if (cardStyleType === 'frosted' || cardStyleType === 'glass') {
         cardCss += `backdrop-filter: blur(${Math.max(cardBlur, 12)}px); -webkit-backdrop-filter: blur(${Math.max(cardBlur, 12)}px); `;
         cardCss += `border: 1px solid rgba(255,255,255,0.25); `;
         cardCss += `box-shadow: 0 8px 32px -8px rgba(0,0,0,0.18), 0 4px 16px -4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3); `;

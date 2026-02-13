@@ -9,7 +9,7 @@ export class BillingEntity extends BaseEntity {
     plan!: 'standard' | 'pro';
 
     @Column({ type: "varchar", default: 'paid' })
-    status!: 'paid' | 'canceled' | 'refunded';
+    status!: 'paid' | 'trialing' | 'canceled' | 'refunded';
 
     @Column({ type: "float" })
     price!: number;

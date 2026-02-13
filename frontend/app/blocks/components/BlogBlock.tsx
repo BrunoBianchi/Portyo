@@ -1,17 +1,11 @@
 /**
  * BlogBlock — fetches and displays blog posts in carousel/grid/list layouts.
- * Card styles: featured, modern, minimal. Clicking opens BlogPostPopup.
+ * Card styles: featured, modern, minimal. Clicking opens dedicated post page.
  */
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { BlockComponentProps } from './types';
 import { BlockWrapper } from './BlockWrapper';
 import { api } from '~/services/api';
-
-const BlogPostPopup = lazy(() =>
-    import('~/components/bio/blog-post-popup').then(m => ({
-        default: m.BlogPostPopup,
-    }))
-);
 
 interface BlogPost {
     id: string;
@@ -33,7 +27,6 @@ interface BlogPost {
 export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
     const layout = block.blogLayout || 'carousel';
     const cardStyle = block.blogCardStyle || 'featured';
@@ -45,10 +38,12 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const dateColor = block.blogDateColor || '#9ca3af';
     const tagBgColor = block.blogTagBackgroundColor || '#e5e7eb';
     const tagTextColor = block.blogTagTextColor || '#374151';
-    const popupStyle = block.blogPopupStyle || 'classic';
-    const popupBgColor = block.blogPopupBackgroundColor || '#ffffff';
-    const popupTextColor = block.blogPopupTextColor || '#1f2937';
-    const popupOverlayColor = block.blogPopupOverlayColor || 'rgba(0,0,0,0.6)';
+    const openPostPage = (post: BlogPost) => {
+        if (typeof window === 'undefined') return;
+        const identifier = post.slug || post.id;
+        if (!identifier) return;
+        window.location.href = `/blog/post/${encodeURIComponent(identifier)}`;
+    };
 
     useEffect(() => {
         if (!bioId) return;
@@ -116,7 +111,7 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const renderFeaturedCard = (post: BlogPost) => (
         <div
             key={post.id}
-            onClick={() => setSelectedPost(post)}
+            onClick={() => openPostPage(post)}
             style={{
                 minWidth: layout === 'carousel' ? '300px' : undefined,
                 maxWidth: layout === 'carousel' ? '300px' : undefined,
@@ -197,7 +192,7 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const renderModernCard = (post: BlogPost) => (
         <div
             key={post.id}
-            onClick={() => setSelectedPost(post)}
+            onClick={() => openPostPage(post)}
             style={{
                 minWidth: layout === 'carousel' ? '320px' : undefined,
                 maxWidth: layout === 'carousel' ? '320px' : undefined,
@@ -238,7 +233,7 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
     const renderMinimalCard = (post: BlogPost) => (
         <div
             key={post.id}
-            onClick={() => setSelectedPost(post)}
+            onClick={() => openPostPage(post)}
             style={{
                 minWidth: layout === 'carousel' ? '200px' : undefined,
                 maxWidth: layout === 'carousel' ? '200px' : undefined,
@@ -282,7 +277,7 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
         return (
             <div
                 key={post.id}
-                onClick={() => setSelectedPost(post)}
+                onClick={() => openPostPage(post)}
                 style={{
                     minWidth: layout === 'carousel' ? (featured ? '360px' : '280px') : undefined,
                     maxWidth: layout === 'carousel' ? (featured ? '360px' : '280px') : undefined,
@@ -361,7 +356,7 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
         return (
             <div
                 key={post.id}
-                onClick={() => setSelectedPost(post)}
+                onClick={() => openPostPage(post)}
                 style={{
                     display: 'flex',
                     gap: '16px',
@@ -483,20 +478,6 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
                     )}
                 </div>
 
-                {selectedPost && (
-                    <Suspense fallback={null}>
-                        <BlogPostPopup
-                            post={selectedPost}
-                            config={{
-                                style: popupStyle as 'classic' | 'modern' | 'simple',
-                                backgroundColor: popupBgColor,
-                                textColor: popupTextColor,
-                                overlayColor: popupOverlayColor,
-                            }}
-                            onClose={() => setSelectedPost(null)}
-                        />
-                    </Suspense>
-                )}
             </BlockWrapper>
         );
     }
@@ -525,20 +506,6 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
                 {posts.map((p, i) => renderCard(p, i))}
             </div>
 
-            {selectedPost && (
-                <Suspense fallback={null}>
-                    <BlogPostPopup
-                        post={selectedPost}
-                        config={{
-                            style: popupStyle as 'classic' | 'modern' | 'simple',
-                            backgroundColor: popupBgColor,
-                            textColor: popupTextColor,
-                            overlayColor: popupOverlayColor,
-                        }}
-                        onClose={() => setSelectedPost(null)}
-                    />
-                </Suspense>
-            )}
         </BlockWrapper>
     );
 };

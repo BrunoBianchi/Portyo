@@ -273,6 +273,13 @@ export const FormWidget: React.FC<FormWidgetProps> = ({ formId, bioId, backgroun
                         form.submitButtonText || "Submit"
                     )}
                 </button>
+
+                <a
+                    href={`/form/${encodeURIComponent(formId)}`}
+                    className="inline-flex items-center justify-center w-full text-sm font-semibold underline opacity-70 hover:opacity-100 mt-2"
+                >
+                    Abrir página do formulário
+                </a>
             </form>
         </div>
     );

@@ -79,7 +79,7 @@ export class CronService {
     }
 
     /**
-     * Check for plans expiring in 2 days or already expired
+     * Check for plans expiring in 1 day or already expired
      */
     static async checkPlanExpiration() {
         console.log("🔄 Running Plan Expiration Check...");
@@ -91,10 +91,10 @@ export class CronService {
             const today = new Date();
             
             // ---------------------------------------------------------
-            // 1. Upcoming Expirations (In 2 days)
+            // 1. Upcoming Expirations (In 1 day)
             // ---------------------------------------------------------
             const targetDateStart = new Date(today);
-            targetDateStart.setDate(today.getDate() + 2);
+            targetDateStart.setDate(today.getDate() + 1);
             targetDateStart.setHours(0, 0, 0, 0);
             
             const targetDateEnd = new Date(targetDateStart);
@@ -117,7 +117,7 @@ export class CronService {
                 const isTrial = lastBilling?.price === 0;
 
                 // Send In-App Notification
-                await notificationService.createPlanExpirationNotification(user.id, 2, isTrial);
+                await notificationService.createPlanExpirationNotification(user.id, 1, isTrial);
 
                 // Send Email (only if not sent effectively for this cycle)
                 // Logic: Not sent yet, or sent before the current expiry date (meaning previous cycle or never)
@@ -126,7 +126,7 @@ export class CronService {
                                               user.planExpirationEmailSentAt > new Date(user.planExpiresAt.getTime() - 30 * 24 * 60 * 60 * 1000);
 
                 if (!alreadySentForThisCycle) {
-                     await MailService.sendPlanExpirationEmail(user.email, user.fullName, 2, isTrial, false);
+                     await MailService.sendPlanExpirationEmail(user.email, user.fullName, 1, isTrial, false);
                      
                      user.planExpirationEmailSentAt = new Date();
                      await userRepo.save(user);

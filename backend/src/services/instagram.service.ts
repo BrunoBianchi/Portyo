@@ -8,92 +8,117 @@ import redisClient from "../config/redis.client";
 export class InstagramService {
   private readonly clientId = env.INSTAGRAM_CLIENT_ID;
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
-  private readonly redirectUri = `${env.BACKEND_URL}/api/instagram/auth/callback`;
   private readonly graphVersion = "v21.0";
+
+  private getDefaultRedirectUri() {
+    return `${env.FRONTEND_URL || env.BACKEND_URL}/api/instagram/auth`;
+  }
 
   private get graphBaseUrl() {
     return `https://graph.facebook.com/${this.graphVersion}`;
   }
 
-  public getAuthUrl() {
+  public getAuthUrl(redirectUri?: string) {
     if (!this.clientId) {
       throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
     }
+    const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
-      "instagram_basic",
-      "instagram_content_publish",
-      "pages_show_list",
-      "pages_read_engagement",
-      "business_management",
+      "instagram_business_basic",
+      "instagram_business_manage_comments",
+      "instagram_business_manage_messages",
+      "instagram_business_content_publish",
+      "instagram_business_manage_insights",
     ];
     const params = new URLSearchParams({
       client_id: this.clientId,
-      redirect_uri: this.redirectUri,
+      redirect_uri: resolvedRedirectUri,
       response_type: "code",
       scope: scopes.join(","),
     });
-    const url = `https://www.facebook.com/${this.graphVersion}/dialog/oauth?${params.toString()}`;
+    const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
     return url;
   }
 
-  public async exchangeCodeForToken(code: string) {
+  public async exchangeCodeForToken(code: string, redirectUri?: string) {
     if (!this.clientId || !this.clientSecret) {
       throw new ApiError(APIErrors.internalServerError, "Instagram credentials not configured", 500);
     }
 
+    const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
+
     try {
-      const shortLivedTokenResponse = await axios.get(`${this.graphBaseUrl}/oauth/access_token`, {
-        params: {
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          redirect_uri: this.redirectUri,
-          code,
-        },
+      const tokenBody = new URLSearchParams({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: "authorization_code",
+        redirect_uri: resolvedRedirectUri,
+        code,
       });
+
+      const shortLivedTokenResponse = await axios.post(
+        "https://api.instagram.com/oauth/access_token",
+        tokenBody.toString(),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
 
       const shortLivedUserToken = shortLivedTokenResponse.data?.access_token;
       if (!shortLivedUserToken) {
         throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
       }
 
-      const longLivedResponse = await axios.get(`${this.graphBaseUrl}/oauth/access_token`, {
+      const longLivedResponse = await axios.get("https://graph.instagram.com/access_token", {
         params: {
-          grant_type: "fb_exchange_token",
-          client_id: this.clientId,
+          grant_type: "ig_exchange_token",
           client_secret: this.clientSecret,
-          fb_exchange_token: shortLivedUserToken,
+          access_token: shortLivedUserToken,
         },
       });
 
       const longLivedUserToken = longLivedResponse.data?.access_token || shortLivedUserToken;
       const expiresIn = longLivedResponse.data?.expires_in;
 
-      const pagesResponse = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
-        params: {
-          fields: "id,name,access_token,instagram_business_account{id,username}",
-          access_token: longLivedUserToken,
-        },
-      });
+      let instagramUserId: string | null = null;
+      let instagramUsername: string | null = null;
 
-      const pages = Array.isArray(pagesResponse.data?.data) ? pagesResponse.data.data : [];
-      const pageWithInstagram = pages.find((page: any) => page?.instagram_business_account?.id && page?.access_token);
+      try {
+        const meResponse = await axios.get("https://graph.instagram.com/me", {
+          params: {
+            fields: "user_id,username",
+            access_token: longLivedUserToken,
+          },
+        });
 
-      if (!pageWithInstagram) {
-        throw new ApiError(
-          APIErrors.badRequestError,
-          "No Instagram Business account linked to any Facebook Page for this user.",
-          400
-        );
+        instagramUserId = meResponse.data?.user_id ? String(meResponse.data.user_id) : null;
+        instagramUsername = meResponse.data?.username || null;
+      } catch {
+        const meFallbackResponse = await axios.get(`${this.graphBaseUrl}/me`, {
+          params: {
+            fields: "id,username",
+            access_token: longLivedUserToken,
+          },
+        });
+
+        instagramUserId = meFallbackResponse.data?.id ? String(meFallbackResponse.data.id) : null;
+        instagramUsername = meFallbackResponse.data?.username || null;
+      }
+
+      if (!instagramUserId) {
+        throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
       }
 
       return {
-        accessToken: pageWithInstagram.access_token,
+        accessToken: longLivedUserToken,
         userToken: longLivedUserToken,
-        userId: shortLivedTokenResponse.data?.user_id || null,
-        instagramBusinessAccountId: pageWithInstagram.instagram_business_account.id,
-        instagramUsername: pageWithInstagram.instagram_business_account.username || null,
-        pageId: pageWithInstagram.id,
-        pageName: pageWithInstagram.name || null,
+        userId: shortLivedTokenResponse.data?.user_id || instagramUserId,
+        instagramBusinessAccountId: instagramUserId,
+        instagramUsername,
+        pageId: null,
+        pageName: null,
         expiresIn,
       };
     } catch (error: any) {

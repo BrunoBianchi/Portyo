@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   BlockIntegrationService,
   type Form,
+  type Poll,
   type PortfolioItem,
   type PortfolioCategory,
   type Product,
@@ -16,6 +17,42 @@ import {
 interface UseBlockIntegrationOptions {
   bioId: string | null;
   enabled?: boolean;
+}
+
+// Hook for Polls
+export function usePolls({ bioId, enabled = true }: UseBlockIntegrationOptions) {
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchPolls = useCallback(async () => {
+    if (!bioId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await BlockIntegrationService.getPolls(bioId);
+      setPolls(data);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [bioId]);
+
+  useEffect(() => {
+    if (enabled && bioId) {
+      fetchPolls();
+    }
+  }, [enabled, bioId, fetchPolls]);
+
+  const getPollById = useCallback(
+    (pollId: string) => {
+      return polls.find((p) => p.id === pollId) || null;
+    },
+    [polls]
+  );
+
+  return { polls, isLoading, error, refetch: fetchPolls, getPollById };
 }
 
 // Hook for Forms
@@ -417,6 +454,7 @@ export function useYouTubePreview(url: string, enabled = true) {
 // Combined hook for all integrations
 export function useBlockIntegrations(bioId: string | null) {
   const forms = useForms({ bioId });
+  const polls = usePolls({ bioId });
   const portfolio = usePortfolio({ bioId });
   const products = useProducts({ bioId });
   const marketing = useMarketingSlots({ bioId });
@@ -426,6 +464,7 @@ export function useBlockIntegrations(bioId: string | null) {
 
   const isLoadingAny =
     forms.isLoading ||
+    polls.isLoading ||
     portfolio.isLoading ||
     products.isLoading ||
     marketing.isLoading ||
@@ -435,16 +474,18 @@ export function useBlockIntegrations(bioId: string | null) {
 
   const refreshAll = useCallback(() => {
     forms.refetch();
+    polls.refetch();
     portfolio.refetch();
     products.refetch();
     marketing.refetch();
     blog.refetch();
     bookingSettings.refetch();
     qrcodes.refetch();
-  }, [forms, portfolio, products, marketing, blog, bookingSettings, qrcodes]);
+  }, [forms, polls, portfolio, products, marketing, blog, bookingSettings, qrcodes]);
 
   return {
     forms,
+    polls,
     portfolio,
     products,
     marketing,

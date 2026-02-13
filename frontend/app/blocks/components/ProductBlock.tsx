@@ -107,6 +107,7 @@ export const ProductBlock: React.FC<BlockComponentProps> = ({ block, bioId }) =>
     const renderProductCard = (product: Product) => {
         const isMinimal = cardStyle === 'minimal';
         const imgSrc = product.image || product.imageUrl;
+        const detailUrl = bioId ? `/product/${encodeURIComponent(bioId)}/${encodeURIComponent(product.id)}` : '';
 
         return (
             <div key={product.id} style={{
@@ -137,7 +138,17 @@ export const ProductBlock: React.FC<BlockComponentProps> = ({ block, bioId }) =>
                         display: '-webkit-box', WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical', overflow: 'hidden',
                     }}>
-                        {product.title}
+                        {detailUrl ? (
+                            <a
+                                href={detailUrl}
+                                style={{ color: textColor, textDecoration: 'none' }}
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                {product.title}
+                            </a>
+                        ) : (
+                            product.title
+                        )}
                     </h4>
                     {showDescriptions && product.description && (
                         <p style={{
@@ -173,6 +184,24 @@ export const ProductBlock: React.FC<BlockComponentProps> = ({ block, bioId }) =>
                         >
                             {buying === product.id ? '...' : buttonText}
                         </button>
+                        {detailUrl && (
+                            <a
+                                href={detailUrl}
+                                style={{
+                                    padding: '6px 10px',
+                                    color: textColor,
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(0,0,0,0.12)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    textDecoration: 'none',
+                                    whiteSpace: 'nowrap',
+                                }}
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                Detalhes
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>

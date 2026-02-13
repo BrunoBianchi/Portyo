@@ -38,7 +38,8 @@ import {
     CalendarDays,
     FileText,
     MoreHorizontal,
-    DollarSign
+    DollarSign,
+    Vote
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -71,10 +72,12 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
 
     // Quick action items that appear at the top as cards
     const QUICK_ACTIONS = [
+        { type: "button", label: "Link Premium", icon: LinkIcon, variation: "button-gradient" },
         { type: "button_grid", label: "Coleção", icon: LayoutGrid },
-        { type: "button", label: "Link", icon: LinkIcon },
-        { type: "product", label: "Produto", icon: Tag },
-        { type: "form", label: "Formulário", icon: FileText },
+        { type: "product", label: "Vitrine", icon: Tag, variation: "product-showcase" },
+        { type: "blog", label: "Blog", icon: Newspaper, variation: "blog-editorial" },
+        { type: "poll", label: "Enquete", icon: Vote, variation: "poll-engagement" },
+        { type: "portfolio", label: "Portfólio", icon: Briefcase, variation: "portfolio-showcase" },
     ];
 
     // Block variations - each block can have multiple variations
@@ -104,6 +107,49 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             { type: "whatsapp", label: "Botão de contato direto", description: "Abra uma conversa do WhatsApp diretamente com um clique no botão.", icon: MessageCircle, color: "#25D366", variation: "direct-button" },
             { type: "whatsapp", label: "Formulário com mensagem pré-preenchida", description: "Formulário de contato que abre o WhatsApp com mensagem pré-configurada.", icon: Contact, color: "#25D366", variation: "pre-filled-form" },
         ],
+        button: [
+            { type: "button", label: "Botão sólido clássico", description: "Botão direto e limpo para links principais da sua bio.", icon: LinkIcon, color: "#111827", variation: "button-solid" },
+            { type: "button", label: "Botão gradiente premium", description: "Visual moderno com gradiente para aumentar destaque e cliques.", icon: Star, color: "#8B5CF6", variation: "button-gradient" },
+            { type: "button", label: "Botão neon chamativo", description: "Estilo vibrante para campanhas, lançamentos e promoções.", icon: TrendingUp, color: "#22C55E", variation: "button-neon" },
+        ],
+        blog: [
+            { type: "blog", label: "Editorial em grade", description: "Layout de revista para apresentar seus melhores artigos com impacto visual.", icon: Newspaper, color: "#F97316", variation: "blog-editorial" },
+            { type: "blog", label: "Lista minimalista", description: "Lista limpa para leitura rápida, ideal para creators e newsletters.", icon: Text, color: "#64748B", variation: "blog-minimal" },
+            { type: "blog", label: "Carrossel destaque", description: "Cards com foco em imagem para destacar posts mais importantes.", icon: LayoutGrid, color: "#F59E0B", variation: "blog-featured" },
+        ],
+        product: [
+            { type: "product", label: "Vitrine em grade", description: "Mostre vários produtos de forma organizada com alto apelo visual.", icon: ShoppingBag, color: "#F97316", variation: "product-showcase" },
+            { type: "product", label: "Lista minimal de produtos", description: "Versão compacta e clean para páginas com foco em conversão.", icon: FileText, color: "#0EA5E9", variation: "product-minimal" },
+            { type: "product", label: "Carrossel para mobile", description: "Experiência de swipe para descoberta rápida de produtos.", icon: Play, color: "#8B5CF6", variation: "product-carousel" },
+        ],
+        qrcode: [
+            { type: "qrcode", label: "QR único para ação principal", description: "Um QR central para WhatsApp, site ou pagamento rápido.", icon: QrCode, color: "#F59E0B", variation: "qr-single" },
+            { type: "qrcode", label: "Múltiplos QRs organizados", description: "Mostre diferentes destinos em um mesmo bloco.", icon: LayoutGrid, color: "#D97706", variation: "qr-multiple" },
+            { type: "qrcode", label: "Grid de QR Codes", description: "Layout em grade para menus, eventos e campanhas com vários links.", icon: LayoutGrid, color: "#92400E", variation: "qr-grid" },
+        ],
+        poll: [
+            { type: "poll", label: "Enquete de engajamento", description: "Ideal para interação rápida com seu público e decisões instantâneas.", icon: Vote, color: "#8B5CF6", variation: "poll-engagement" },
+            { type: "poll", label: "Enquete para pesquisa", description: "Visual mais sóbrio para feedback e validação de ideias.", icon: FileText, color: "#6366F1", variation: "poll-research" },
+        ],
+        form: [
+            { type: "form", label: "Formulário de leads", description: "Capture contatos de forma simples para marketing e vendas.", icon: Contact, color: "#2563EB", variation: "form-leads" },
+            { type: "form", label: "Formulário de inscrição", description: "Perfeito para eventos, waitlist e lançamentos.", icon: Calendar, color: "#0EA5E9", variation: "form-signup" },
+        ],
+        portfolio: [
+            { type: "portfolio", label: "Portfólio showcase", description: "Destaque seus melhores projetos com visual profissional.", icon: Briefcase, color: "#F43F5E", variation: "portfolio-showcase" },
+            { type: "portfolio", label: "Portfólio minimal", description: "Apresentação discreta para foco no conteúdo e cases.", icon: Gem, color: "#0EA5E9", variation: "portfolio-minimal" },
+        ],
+        sponsored_links: [
+            { type: "sponsored_links", label: "Ofertas patrocinadas", description: "Monetize sua audiência com links patrocinados em destaque.", icon: DollarSign, color: "#10B981", variation: "sponsored-featured" },
+        ],
+        marketing: [
+            { type: "marketing", label: "Banner promocional", description: "Bloco de campanha com alto destaque para produto ou oferta.", icon: TrendingUp, color: "#8B5CF6", variation: "marketing-banner" },
+            { type: "marketing", label: "Card compacto", description: "Formato leve para promoções rápidas sem poluir a página.", icon: Tag, color: "#6366F1", variation: "marketing-compact" },
+        ],
+        experience: [
+            { type: "experience", label: "Timeline profissional", description: "Mostre sua trajetória em formato de linha do tempo elegante.", icon: Briefcase, color: "#0EA5E9", variation: "experience-timeline" },
+            { type: "experience", label: "Resumo de carreira", description: "Versão limpa para apresentar cargos e conquistas principais.", icon: Gem, color: "#06B6D4", variation: "experience-clean" },
+        ],
     };
 
     const CATEGORIES = useMemo(() => [
@@ -117,6 +163,11 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "spotify", label: "Spotify", description: "Compartilhe suas músicas favoritas", icon: Music, color: "#1DB954" },
                 { type: "socials", label: "Redes Sociais", description: "Liste todos os seus perfis", icon: Share2, color: "#14B8A6" },
                 { type: "whatsapp", label: "WhatsApp", description: "Botão de contato direto", icon: MessageCircle, color: "#25D366" },
+                { type: "blog", label: "Blog", description: "Mostre seus posts", icon: Newspaper, color: "#F97316" },
+                { type: "portfolio", label: "Portfólio", description: "Destaque seus projetos", icon: Briefcase, color: "#F43F5E" },
+                { type: "experience", label: "Experiência", description: "Conte sua trajetória", icon: Gem, color: "#0EA5E9" },
+                { type: "marketing", label: "Marketing", description: "Promoções e campanhas", icon: TrendingUp, color: "#8B5CF6" },
+                { type: "sponsored_links", label: "Links Patrocinados", description: "Monetize sua audiência", icon: DollarSign, color: "#10B981" },
             ]
         },
         {
@@ -127,6 +178,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
                 { type: "featured", label: "Destaque", description: "Item em destaque", icon: Star, color: "#F59E0B" },
                 { type: "affiliate", label: "Afiliado", description: "Link de cupom/afiliado", icon: Tag, color: "#22C55E" },
+                { type: "button", label: "Link de Conversão", description: "CTA com visual forte", icon: LinkIcon, color: "#111827" },
                 { type: "sponsored_links", label: "Links Patrocinados", description: "Ganhe com links de empresas", icon: DollarSign, color: "#10B981" },
             ]
         },
@@ -149,6 +201,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "video", label: "Vídeo", description: "Incorpore um vídeo", icon: Video, color: "#EF4444" },
                 { type: "youtube", label: "YouTube", description: "Canal ou vídeos", icon: Youtube, color: "#DC2626" },
                 { type: "spotify", label: "Spotify", description: "Música ou podcast", icon: Music, color: "#1DB954" },
+                { type: "blog", label: "Blog", description: "Feed de conteúdo", icon: Newspaper, color: "#F97316" },
             ]
         },
         {
@@ -156,7 +209,9 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             label: t("addBlock.categories.contact", { defaultValue: "Contato" }),
             icon: Users,
             items: [
-                { type: "form", label: "Formulário", description: "Capture contatos", icon: Contact, color: "#6366F1" },
+                { type: "form", label: "Enquete / Formulário", description: "Capture contatos e respostas", icon: Contact, color: "#6366F1" },
+                { type: "poll", label: "Enquete", description: "Crie votação com resultados", icon: Vote, color: "#8B5CF6" },
+                { type: "whatsapp", label: "WhatsApp", description: "Contato instantâneo", icon: MessageCircle, color: "#25D366" },
                 { type: "calendar", label: "Agenda", description: "Agendamentos", icon: Calendar, color: "#0EA5E9" },
                 { type: "map", label: "Mapa", description: "Localização", icon: Map, color: "#84CC16" },
                 { type: "qrcode", label: "QR Code", description: "QR personalizado", icon: QrCode, color: "#F59E0B" },
@@ -182,6 +237,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "divider", label: "Divisor", description: "Separe seções", icon: Minus, color: "#6B7280" },
                 { type: "button", label: "Link", description: "Adicione um botão de link", icon: LinkIcon, color: "#EF4444" },
                 { type: "button_grid", label: "Grid de Botões", description: "Grade de links", icon: LayoutGrid, color: "#6366F1" },
+                { type: "qrcode", label: "QR Code", description: "Escaneie para abrir links", icon: QrCode, color: "#F59E0B" },
             ]
         },
         {
@@ -203,7 +259,8 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
                 { type: "featured", label: "Destaque", description: "Item em destaque", icon: Star, color: "#F59E0B" },
                 { type: "affiliate", label: "Afiliado", description: "Cupom/afiliado", icon: Tag, color: "#22C55E" },
-                { type: "form", label: "Formulário", description: "Capture contatos", icon: Contact, color: "#6366F1" },
+                { type: "form", label: "Enquete / Formulário", description: "Capture contatos e respostas", icon: Contact, color: "#6366F1" },
+                { type: "poll", label: "Enquete", description: "Votação com resultados", icon: Vote, color: "#8B5CF6" },
                 { type: "marketing", label: "Marketing", description: "Bloco promocional", icon: TrendingUp, color: "#8B5CF6" },
                 { type: "portfolio", label: "Portfólio", description: "Seção de projetos", icon: Briefcase, color: "#F43F5E" },
                 { type: "experience", label: "Experiência", description: "Histórico profissional", icon: Gem, color: "#38BDF8" },
@@ -221,11 +278,24 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
 
     // Filter logic
     const displayedItems = useMemo(() => {
+        const SEARCH_SYNONYMS: Record<string, string[]> = {
+            form: ["enquete", "pesquisa", "questionario", "questionário", "poll", "survey", "formulario", "formulário"],
+            poll: ["enquete", "poll", "votacao", "votação", "voto", "pesquisa"],
+        };
+
         if (search.trim()) {
             return CATEGORIES.flatMap(c => c.items).filter((item, index, self) =>
                 index === self.findIndex((t) => t.type === item.type && t.label === item.label) &&
-                (item.label.toLowerCase().includes(search.toLowerCase()) ||
-                    item.description.toLowerCase().includes(search.toLowerCase()))
+                (() => {
+                    const query = search.toLowerCase();
+                    const synonyms = SEARCH_SYNONYMS[item.type] || [];
+                    return (
+                        item.label.toLowerCase().includes(query) ||
+                        item.description.toLowerCase().includes(query) ||
+                        item.type.toLowerCase().includes(query) ||
+                        synonyms.some((term) => term.includes(query) || query.includes(term))
+                    );
+                })()
             );
         }
         return CATEGORIES.find(c => c.id === activeCategory)?.items || [];
@@ -342,7 +412,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                                 <button
                                                     key={idx}
                                                     onClick={() => {
-                                                        onAdd(item.type as BioBlock['type']);
+                                                        onAdd(item.type as BioBlock['type'], item.variation);
                                                         onClose();
                                                     }}
                                                     className="flex flex-col items-center p-4 bg-gray-50 hover:bg-[#c8e600]/10 border border-gray-100 hover:border-[#c8e600]/30 rounded-xl transition-all group"
@@ -395,6 +465,11 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                                         <div className="flex-1 min-w-0">
                                                             <span className="font-semibold text-gray-900 block">{item.label}</span>
                                                             <span className="text-sm text-gray-500">{item.description}</span>
+                                                            {hasVariations && (
+                                                                <span className="inline-flex mt-1.5 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#c8e600]/15 text-[#7f9200]">
+                                                                    Variações
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         {/* Chevron */}

@@ -152,7 +152,7 @@ export default function DashboardAutomationList() {
     ], [t]);
 
 
-    const handleCreate = async (template: "welcome" | "discord" | "webhook" = "welcome") => {
+    const handleCreate = async (template: "welcome" | "discord" | "webhook" | "instagram_auto_reply" = "welcome") => {
         if (!bio?.id) return;
         setCreating(true);
         try {
@@ -178,6 +178,14 @@ export default function DashboardAutomationList() {
                     nodes: [
                         { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'Link Clicked', eventType: 'link_click' } },
                         { id: '2', type: 'webhook', position: { x: 250, y: 250 }, data: { label: 'Send Webhook', webhookMethod: 'POST' } }
+                    ],
+                    edges: [{ id: 'e1-2', source: '1', target: '2' }]
+                },
+                instagram_auto_reply: {
+                    name: "Instagram Auto Reply",
+                    nodes: [
+                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'Webhook Trigger', eventType: 'webhook_received' } },
+                        { id: '2', type: 'instagram', position: { x: 250, y: 250 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Thanks for your comment! 💜', commentId: '{{commentId}}' } }
                     ],
                     edges: [{ id: 'e1-2', source: '1', target: '2' }]
                 }
@@ -275,7 +283,7 @@ export default function DashboardAutomationList() {
                     </div>
 
                     {/* Quick Start Templates */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <button
                             onClick={() => handleCreate("welcome")}
                             disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
@@ -299,6 +307,14 @@ export default function DashboardAutomationList() {
                         >
                             <p className="font-black text-[#1A1A1A]">Webhook Bridge</p>
                             <p className="text-xs text-gray-500 mt-1">Envia dados para sistemas externos.</p>
+                        </button>
+                        <button
+                            onClick={() => handleCreate("instagram_auto_reply")}
+                            disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
+                            className="text-left p-4 bg-white rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                        >
+                            <p className="font-black text-[#1A1A1A]">Instagram Auto Reply</p>
+                            <p className="text-xs text-gray-500 mt-1">Responde comentários usando o nó Instagram.</p>
                         </button>
                     </div>
 

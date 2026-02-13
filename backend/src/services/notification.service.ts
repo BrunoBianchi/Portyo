@@ -261,7 +261,7 @@ export class NotificationService {
             : `📅 Sua assinatura vence em ${daysRemaining} dias`;
 
         const message = isTrial
-            ? "Você está prestes a perder funcionalidades exclusivas e limitar seu crescimento. Assine agora para continuar evoluindo!"
+            ? "Seu teste grátis termina em breve e a cobrança será automática após o período. Você pode cancelar a qualquer momento antes da cobrança."
             : "Renove sua assinatura para manter seu acesso sem interrupções.";
 
         return await this.createNotification({

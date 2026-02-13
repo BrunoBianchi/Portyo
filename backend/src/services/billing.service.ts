@@ -1,10 +1,21 @@
-import { MoreThan, LessThanOrEqual } from "typeorm";
+import { In, MoreThan, LessThanOrEqual } from "typeorm";
 import { AppDataSource } from "../database/datasource";
 import { BillingEntity } from "../database/entity/billing-entity";
 import { UserEntity } from "../database/entity/user-entity";
 
 export class BillingService {
     private static repository = AppDataSource.getRepository(BillingEntity);
+
+    static async hasUsedStandardTrial(userId: string): Promise<boolean> {
+        const trialCount = await this.repository.count({
+            where: [
+                { userId, status: 'trialing' },
+                { userId, price: 0 },
+            ]
+        });
+
+        return trialCount > 0;
+    }
 
     /**
      * Checks the active plan for a user based on their billing history.
@@ -41,6 +52,13 @@ export class BillingService {
     }
 
     static async createBilling(userId: string, plan: 'standard' | 'pro', days: number, price: number, stripeCustomerId?: string, stripePaymentId?: string, stripeTransactionId?: string, stripeSubscriptionId?: string) {
+        if (stripePaymentId) {
+            const existing = await this.repository.findOne({ where: { stripePaymentId } });
+            if (existing) {
+                return existing;
+            }
+        }
+
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + days);
@@ -81,6 +99,45 @@ export class BillingService {
         return billing;
     }
 
+    static async createTrialBilling(userId: string, plan: 'standard' | 'pro', trialEndsAt: Date, stripeCustomerId?: string, stripeSubscriptionId?: string) {
+        const existingActiveTrial = await this.repository.findOne({
+            where: {
+                userId,
+                status: 'trialing',
+                endDate: MoreThan(new Date())
+            },
+            order: { startDate: 'DESC' }
+        });
+
+        if (existingActiveTrial) {
+            return existingActiveTrial;
+        }
+
+        const now = new Date();
+        const billing = this.repository.create({
+            userId,
+            plan,
+            price: 0,
+            startDate: now,
+            endDate: trialEndsAt,
+            stripeCustomerId,
+            stripeSubscriptionId,
+            status: 'trialing'
+        });
+
+        await this.repository.save(billing);
+
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOneBy({ id: userId });
+        if (user) {
+            user.plan = plan;
+            user.planExpiresAt = trialEndsAt;
+            await userRepo.save(user);
+        }
+
+        return billing;
+    }
+
     static async ensureStandardTrial(userId: string, days: number = 7) {
         const existingCount = await this.repository.count({ where: { userId } });
         if (existingCount > 0) return null;
@@ -94,16 +151,43 @@ export class BillingService {
             where: {
                 userId: userId,
                 endDate: MoreThan(now),
-                status: 'paid'
+                status: In(['paid', 'trialing'])
             },
             order: { startDate: 'DESC' }
         });
 
-        if (!activeBilling) {
+        const userRepo = AppDataSource.getRepository(UserEntity);
+        const user = await userRepo.findOneBy({ id: userId });
+
+        let stripeSubscriptionId = activeBilling?.stripeSubscriptionId;
+        let stripeCustomerId = activeBilling?.stripeCustomerId;
+
+        if (!stripeSubscriptionId && user?.email) {
+            try {
+                const { env } = await import("../config/env");
+                const Stripe = (await import("stripe")).default;
+                const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
+
+                const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+                const customer = customers.data[0];
+                if (customer) {
+                    stripeCustomerId = customer.id;
+                    const subs = await stripe.subscriptions.list({ customer: customer.id, status: 'all', limit: 10 });
+                    const candidate = subs.data.find((sub) => ['trialing', 'active', 'past_due', 'unpaid'].includes(sub.status));
+                    if (candidate) {
+                        stripeSubscriptionId = candidate.id;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to recover active subscription from Stripe:", err);
+            }
+        }
+
+        if (!stripeSubscriptionId && !activeBilling) {
             throw new Error("No active subscription found to cancel");
         }
 
-        if (activeBilling.stripeSubscriptionId) {
+        if (stripeSubscriptionId) {
             try {
                 // Initialize Stripe
                 const { env } = await import("../config/env");
@@ -111,7 +195,7 @@ export class BillingService {
                 const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
 
                 // Cancel IMMEDIATELY as requested, but keep local access until end date
-                const updatedSub = await stripe.subscriptions.cancel(activeBilling.stripeSubscriptionId);
+                const updatedSub = await stripe.subscriptions.cancel(stripeSubscriptionId);
                 
                 console.log("⬇️ STRIPE PAYLOAD ACORDING TO REQUEST ⬇️");
                 console.log(JSON.stringify(updatedSub, null, 2));
@@ -120,17 +204,17 @@ export class BillingService {
                 console.error("Failed to cancel Stripe subscription:", err);
                 throw new Error("Failed to communicate with payment provider");
             }
-        } else if (activeBilling.stripeCustomerId) {
+        } else if (stripeCustomerId) {
             // Self-healing: Try to find active subscription for this customer in Stripe
             try {
                 const { env } = await import("../config/env");
                 const Stripe = (await import("stripe")).default;
                 const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", { apiVersion: "2025-12-15.clover" as any });
 
-                console.log(`[Self-Healing] activeBilling missing stripeSubscriptionId. Searching Stripe for customer ${activeBilling.stripeCustomerId}...`);
+                console.log(`[Self-Healing] activeBilling missing stripeSubscriptionId. Searching Stripe for customer ${stripeCustomerId}...`);
                 const subs = await stripe.subscriptions.list({
-                    customer: activeBilling.stripeCustomerId,
-                    status: 'active',
+                    customer: stripeCustomerId,
+                    status: 'all',
                     limit: 1
                 });
 
@@ -145,10 +229,12 @@ export class BillingService {
                     console.log("⬆️ END PAYLOAD ⬆️");
                     
                     // Update our record
-                    activeBilling.stripeSubscriptionId = foundSub.id;
-                    await this.repository.save(activeBilling);
+                    if (activeBilling) {
+                        activeBilling.stripeSubscriptionId = foundSub.id;
+                        await this.repository.save(activeBilling);
+                    }
                 } else {
-                    console.warn(`[Self-Healing] No active subscriptions found for customer ${activeBilling.stripeCustomerId}`);
+                    console.warn(`[Self-Healing] No active subscriptions found for customer ${stripeCustomerId}`);
                 }
             } catch (err) {
                 console.error("[Self-Healing] Failed to auto-recover subscription ID:", err);
@@ -158,9 +244,12 @@ export class BillingService {
         }
 
         // Update local status
-        activeBilling.status = 'canceled';
-        await this.repository.save(activeBilling);
+        if (activeBilling) {
+            activeBilling.status = 'canceled';
+            await this.repository.save(activeBilling);
+            return activeBilling;
+        }
 
-        return activeBilling;
+        return null;
     }
 }

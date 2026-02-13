@@ -1,7 +1,7 @@
 import { Router } from "express";
 import z from "zod";
 import { authMiddleware } from "../../../middlewares/auth.middleware";
-import { generateBioFromOnboarding, getDefaultBlocks, OnboardingAnswers } from "../../../services/ai.service";
+import { generateBioFromOnboarding, getDefaultBlocks, OnboardingAnswers, buildProfessionalAboutSummary } from "../../../services/ai.service";
 import { AppDataSource } from "../../../database/datasource";
 import { UserEntity } from "../../../database/entity/user-entity";
 import { BioEntity } from "../../../database/entity/bio-entity";
@@ -94,19 +94,27 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
         }
 
         // Generate blocks using AI
-        let generatedResult;
+        let generatedResult: Awaited<ReturnType<typeof generateBioFromOnboarding>> | ReturnType<typeof getDefaultBlocks>;
+        const fallbackAboutSummary = buildProfessionalAboutSummary(answers);
         try {
             generatedResult = await generateBioFromOnboarding(answers);
         } catch (aiError) {
             console.error("AI generation failed, using default blocks:", aiError);
-            generatedResult = getDefaultBlocks(user.fullName);
+            generatedResult = {
+                ...getDefaultBlocks(user.fullName),
+                aboutSummary: fallbackAboutSummary,
+            };
         }
 
         const { blocks, settings } = generatedResult;
+        const aboutSummary =
+            "aboutSummary" in generatedResult && typeof generatedResult.aboutSummary === "string"
+                ? generatedResult.aboutSummary
+                : fallbackAboutSummary;
 
         // Update bio with generated blocks and settings
         bio.blocks = blocks;
-        bio.description = answers.aboutYou;
+        bio.description = aboutSummary;
 
         // Apply settings to bio entity
         if (settings) {

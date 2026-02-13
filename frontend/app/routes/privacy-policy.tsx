@@ -23,6 +23,31 @@ export default function PrivacyPolicy() {
                 </header>
 
                 <div className="prose prose-lg prose-neutral max-w-none text-text-secondary space-y-12">
+                    <section className="rounded-2xl border border-black/10 bg-white p-6">
+                        <h2 className="text-2xl font-bold text-text-main mb-4">Checklist para uso público (Instagram/Facebook OAuth)</h2>
+                        <p className="mb-4">
+                            O app está funcional para desenvolvimento, mas precisa dos ajustes abaixo para operação pública:
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2">
+                            <li>
+                                <strong>Criar página de privacidade:</strong> Disponibilizar em <a href="https://portyo.me/privacy" className="text-primary hover:underline">https://portyo.me/privacy</a>
+                            </li>
+                            <li>
+                                <strong>Adicionar usuários de teste:</strong> Em <em>Funções do app &gt; Usuários de teste</em>
+                            </li>
+                            <li>
+                                <strong>Testar todas as funcionalidades</strong> com contas de teste
+                            </li>
+                            <li>
+                                <strong>Submeter para App Review</strong> quando estiver pronto para usuários reais
+                            </li>
+                        </ul>
+                        <p className="mt-4">
+                            <strong>Importante:</strong> Continue usando a API do Instagram que já está no app, mas garanta que as contas que vão conectar/login sejam do tipo <strong>Business</strong> ou <strong>Creator</strong>.
+                        </p>
+                        <p className="mt-4">O app está funcional para desenvolvimento, mas precisará dos ajustes acima para uso público. 🎉</p>
+                    </section>
+
                     <section>
                         <h2 className="text-2xl font-bold text-text-main mb-4">{t("privacyPage.sections.introduction.title")}</h2>
                         <p>
