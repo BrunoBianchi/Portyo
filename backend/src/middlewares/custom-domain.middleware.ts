@@ -1,7 +1,31 @@
 import { Request, Response, NextFunction } from "express";
+import { isIP } from "node:net";
 import { CustomDomainService } from "../shared/services/custom-domain.service";
 import { CustomDomainEntity } from "../database/entity/custom-domain-entity";
 import { logger } from "../shared/utils/logger";
+
+const unknownDomainWarnCache = new Map<string, number>();
+const UNKNOWN_DOMAIN_WARN_COOLDOWN_MS = 10 * 60 * 1000;
+
+const shouldLogUnknownDomainWarn = (domain: string): boolean => {
+    const now = Date.now();
+    const lastLoggedAt = unknownDomainWarnCache.get(domain) || 0;
+
+    if (now - lastLoggedAt < UNKNOWN_DOMAIN_WARN_COOLDOWN_MS) {
+        return false;
+    }
+
+    unknownDomainWarnCache.set(domain, now);
+
+    if (unknownDomainWarnCache.size > 5000) {
+        const entries = [...unknownDomainWarnCache.entries()].sort((a, b) => a[1] - b[1]);
+        for (const [oldKey] of entries.slice(0, 1000)) {
+            unknownDomainWarnCache.delete(oldKey);
+        }
+    }
+
+    return true;
+};
 
 // Extiende a interface Request do Express para incluir dados do domínio personalizado
 declare global {
@@ -27,6 +51,11 @@ export async function customDomainMiddleware(
     try {
         const host = req.headers.host || '';
         const domain = CustomDomainService.extractDomain(host);
+
+        // Ignora IP direto (probes/healthchecks), deixando o fluxo normal seguir
+        if (!domain || isIP(domain) !== 0) {
+            return next();
+        }
 
         // Verifica se é um domínio do SaaS (não personalizado)
         if (CustomDomainService.isSaasDomain(domain)) {
@@ -70,7 +99,11 @@ export async function customDomainMiddleware(
             }
 
             // Domínio não existe no sistema
-            logger.warn(`Acesso a domínio desconhecido: ${domain}`);
+            if (shouldLogUnknownDomainWarn(domain)) {
+                logger.warn(`Acesso a domínio desconhecido: ${domain}`);
+            } else {
+                logger.debug(`Acesso repetido a domínio desconhecido (suprimido): ${domain}`);
+            }
             res.status(404).json({
                 message: 'Domínio não encontrado',
                 domain: domain

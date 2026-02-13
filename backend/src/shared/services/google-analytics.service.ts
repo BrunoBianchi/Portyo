@@ -11,7 +11,7 @@ const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 
 import { env } from "../../config/env";
 
-export const getGoogleAnalyticsAuthUrl = (bioId: string) => {
+export const getGoogleAnalyticsAuthUrl = (stateToken: string) => {
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID!,
     redirect_uri: `${env.BACKEND_URL}/api/google-analytics/callback`,
@@ -19,14 +19,14 @@ export const getGoogleAnalyticsAuthUrl = (bioId: string) => {
     scope: "https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/analytics https://www.googleapis.com/auth/analytics.edit",
     access_type: "offline",
     prompt: "consent",
-    state: bioId // Pass bioId in state to link it back
+        state: stateToken,
   });
   const url = `${googleAuthUrl}?${params.toString()}`;
 
   return url;
 };
 
-export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) => {
+export const parseGoogleAnalyticsCallback = async (code: string, bioId: string, userId: string) => {
 
   const response = await axios.post(
     googleTokenUrl,
@@ -51,16 +51,26 @@ export const parseGoogleAnalyticsCallback = async (code: string, bioId: string) 
   // For now, we just store the tokens. 
   // We might need to ask the user to select a property later.
   
-  const bio = await bioRepository.findOneBy({ id: bioId });
+    const bio = await bioRepository.findOneBy({ id: bioId, userId });
   if (!bio) throw new Error("Bio not found");
 
-  const integration = new IntegrationEntity();
-  integration.name = "google-analytics";
-  integration.provider = "google-analytics";
-  integration.accessToken = access_token;
-  integration.refreshToken = refresh_token;
-  integration.account_id = "pending"; // User needs to select property
-  integration.bio = bio;
+    let integration = await integrationRepository.findOne({
+        where: {
+            bio: { id: bio.id },
+            provider: "google-analytics",
+        },
+    });
+
+    if (!integration) {
+        integration = new IntegrationEntity();
+        integration.name = "google-analytics";
+        integration.provider = "google-analytics";
+        integration.bio = bio;
+    }
+
+    integration.accessToken = access_token;
+    integration.refreshToken = refresh_token || integration.refreshToken;
+    integration.account_id = integration.account_id || "pending";
 
   await integrationRepository.save(integration);
 

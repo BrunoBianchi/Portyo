@@ -113,40 +113,40 @@ const EditorHeader = memo(function EditorHeader({
         </div>
       </div>
 
-      {/* Row 1: Mobile Header - Simplified */}
-      <div className="flex md:hidden h-14 px-3 items-center justify-between">
-        {/* Left: Back button */}
-        <Link
-          to="/dashboard"
-          className="p-2.5 -ml-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0 touch-manipulation"
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-        </Link>
+      {/* Row 1: Mobile Header - Improved spacing */}
+      <div className="md:hidden px-3 pt-2 pb-3">
+        <div className="h-10 flex items-center">
+          <Link
+            to="/dashboard"
+            className="p-2 -ml-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0 touch-manipulation"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </Link>
 
-        {/* Center: Title + Nav em uma linha */}
-        <div className="flex-1 flex flex-col items-center px-2 min-w-0">
-          <span className="text-xs font-medium text-gray-500">
-            {t("top.editor")}
-          </span>
-          <EditorNav activeTab={activeTab} onChangeTab={onTabChange} />
+          <div className="flex-1 text-center px-2 min-w-0">
+            <span className="text-sm font-semibold text-gray-600 truncate">{t("top.editor")}</span>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={onShare}
+              className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={onToggleMobilePreview}
+              className="p-2 bg-black text-white rounded-full shadow-lg touch-manipulation"
+              title={t("editor.togglePreview")}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Right: Preview Toggle + Share */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={onShare}
-            className="p-2.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onToggleMobilePreview}
-            className="p-2.5 bg-black text-white rounded-full shadow-lg touch-manipulation"
-            title={t("editor.togglePreview")}
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+        <div className="mt-2">
+          <EditorNav activeTab={activeTab} onChangeTab={onTabChange} />
         </div>
       </div>
     </header>
@@ -576,7 +576,7 @@ export default function DashboardEditor() {
         <div className="flex-1 flex overflow-hidden relative">
           {/* Main Content Area */}
           <main className="flex-1 flex flex-col min-w-0 bg-[#F3F3F1]">
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 lg:p-8 custom-scrollbar">
               <div className="max-w-xl lg:max-w-2xl mx-auto w-full pb-20 sm:pb-24">
                 {activeTab === 'links' && (
                   <LinksTab

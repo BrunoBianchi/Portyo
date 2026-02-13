@@ -66,25 +66,25 @@ const socialPlatforms = [
 ] as const;
 
 const socialPlaceholders: Record<string, string> = {
-  instagram: "@seuusuario",
-  tiktok: "@seuusuario",
-  twitter: "@seuusuario",
-  youtube: "https://youtube.com/@canal",
-  linkedin: "https://linkedin.com/in/perfil",
-  github: "seuusuario",
-  facebook: "https://facebook.com/pagina",
-  email: "seu@email.com",
-  website: "https://seusite.com",
-  threads: "@seuusuario",
-  twitch: "seuusuario",
-  discord: "https://discord.gg/convite",
-  pinterest: "https://pinterest.com/perfil",
-  snapchat: "@seuusuario",
+  instagram: "@yourusername",
+  tiktok: "@yourusername",
+  twitter: "@yourusername",
+  youtube: "https://youtube.com/@channel",
+  linkedin: "https://linkedin.com/in/profile",
+  github: "yourusername",
+  facebook: "https://facebook.com/page",
+  email: "you@email.com",
+  website: "https://yourwebsite.com",
+  threads: "@yourusername",
+  twitch: "yourusername",
+  discord: "https://discord.gg/invite",
+  pinterest: "https://pinterest.com/profile",
+  snapchat: "@yourusername",
   whatsapp: "+5511999999999",
-  telegram: "@seuusuario",
+  telegram: "@yourusername",
   spotify: "https://open.spotify.com/...",
-  behance: "https://behance.net/perfil",
-  dribbble: "https://dribbble.com/perfil",
+  behance: "https://behance.net/profile",
+  dribbble: "https://dribbble.com/profile",
 };
 
 const ProfileHeader = memo(function ProfileHeader({
@@ -96,6 +96,7 @@ const ProfileHeader = memo(function ProfileHeader({
   user: User | null;
   onUpdateBio: (payload: Partial<Bio>) => void;
 }) {
+  const { t } = useTranslation("dashboard");
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -109,6 +110,26 @@ const ProfileHeader = memo(function ProfileHeader({
   const editOverlayRef = useRef<HTMLDivElement>(null);
 
   const socials = bio?.socials || {};
+  const localizedPlaceholders: Record<string, string> = {
+    ...socialPlaceholders,
+    instagram: t("dashboard.linksTab.placeholders.username"),
+    tiktok: t("dashboard.linksTab.placeholders.username"),
+    twitter: t("dashboard.linksTab.placeholders.username"),
+    youtube: t("dashboard.linksTab.placeholders.youtube"),
+    linkedin: t("dashboard.linksTab.placeholders.linkedin"),
+    github: t("dashboard.linksTab.placeholders.github"),
+    facebook: t("dashboard.linksTab.placeholders.facebook"),
+    email: t("dashboard.linksTab.placeholders.email"),
+    website: t("dashboard.linksTab.placeholders.website"),
+    threads: t("dashboard.linksTab.placeholders.username"),
+    twitch: t("dashboard.linksTab.placeholders.twitch"),
+    discord: t("dashboard.linksTab.placeholders.discord"),
+    pinterest: t("dashboard.linksTab.placeholders.pinterest"),
+    snapchat: t("dashboard.linksTab.placeholders.username"),
+    telegram: t("dashboard.linksTab.placeholders.telegram"),
+    behance: t("dashboard.linksTab.placeholders.behance"),
+    dribbble: t("dashboard.linksTab.placeholders.dribbble"),
+  };
 
   const handleAddPlatform = useCallback(
     (key: string) => {
@@ -189,7 +210,7 @@ const ProfileHeader = memo(function ProfileHeader({
 
   return (
     <>
-      <div className="bg-white border-2 border-black rounded-[24px] p-6 mb-6 flex flex-col items-center text-center relative group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5">
+      <div className="bg-white border-2 border-black rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 mb-4 sm:mb-6 flex flex-col items-center text-center relative group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-0.5">
         {/* 3-dot menu */}
         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <button className="p-2 hover:bg-black/5 rounded-full text-gray-400 hover:text-black transition-colors">
@@ -202,12 +223,12 @@ const ProfileHeader = memo(function ProfileHeader({
         </div>
 
         {/* Profile Image */}
-        <div className="relative mb-4">
-          <div className="w-24 h-24 rounded-full bg-[#f3f3f1] border-[3px] border-black shadow-sm overflow-hidden">
+        <div className="relative mb-3 sm:mb-4">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#f3f3f1] border-[3px] border-black shadow-sm overflow-hidden">
             <img
               src={
                 bio?.profileImage ||
-                `https://ui-avatars.com/api/?name=${bio?.sufix || user?.fullname || "Usuário"}&background=random`
+                `https://ui-avatars.com/api/?name=${bio?.sufix || user?.fullname || t("dashboard.sidebar.userFallback")}&background=random`
               }
               alt={bio?.sufix}
               className="w-full h-full object-cover"
@@ -216,7 +237,7 @@ const ProfileHeader = memo(function ProfileHeader({
         </div>
 
         {/* Username + Verified Badge */}
-        <h2 className="font-black text-xl mb-1 flex items-center gap-2 justify-center tracking-tight">
+        <h2 className="font-black text-3xl sm:text-xl mb-1 flex items-center gap-2 justify-center tracking-tight break-all">
           @{bio?.sufix || "username"}
           {bio?.verified && (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
@@ -230,7 +251,7 @@ const ProfileHeader = memo(function ProfileHeader({
         {!bio?.verified && (
           <button
             onClick={() => setShowVerificationModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all mb-3"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all mb-3 max-w-full"
             style={{
               background: verificationStatus === "pending"
                 ? "linear-gradient(135deg, #fffbeb, #fef3c7)"
@@ -244,7 +265,7 @@ const ProfileHeader = memo(function ProfileHeader({
             {verificationStatus === "pending" ? (
               <>
                 <Clock className="w-3 h-3" />
-                Em análise
+                {t("dashboard.linksTab.status.underReview")}
               </>
             ) : (
               <>
@@ -252,14 +273,14 @@ const ProfileHeader = memo(function ProfileHeader({
                   <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74Z" fill="#3b82f6"/>
                   <path d="m9 12 2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Obter verificação
+                {t("dashboard.linksTab.status.getVerified")}
               </>
             )}
           </button>
         )}
 
         {/* Social icons row */}
-        <div className="flex items-center gap-2 mb-6 flex-wrap justify-center relative">
+        <div className="flex items-center gap-2 mb-5 sm:mb-6 flex-wrap justify-center relative">
           {activePlatforms.map((platform) => (
             <div key={platform.key} className="relative group/social">
               <button
@@ -279,7 +300,7 @@ const ProfileHeader = memo(function ProfileHeader({
                   handleRemovePlatform(platform.key);
                 }}
                 className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/social:opacity-100 transition-opacity hover:bg-red-600"
-                title="Remover"
+                title={t("dashboard.linksTab.actions.remove")}
               >
                 <X className="w-2.5 h-2.5" />
               </button>
@@ -291,16 +312,16 @@ const ProfileHeader = memo(function ProfileHeader({
             ref={dropdownRef}
             onClick={() => { setShowDropdown(!showDropdown); setEditingPlatform(null); }}
             className="w-9 h-9 rounded-full bg-white border-2 border-black text-black hover:bg-[#C6F035] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center"
-            title="Adicionar rede social"
+            title={t("dashboard.linksTab.actions.addSocial")}
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 text-xs font-bold text-gray-400 uppercase tracking-widest">
-          <span>0 clicks</span>
-          <span>0 views</span>
+        <div className="grid grid-cols-3 w-full max-w-md text-[11px] sm:text-xs font-bold text-gray-400 uppercase tracking-[0.14em] sm:tracking-widest gap-2">
+          <span className="text-center">0 {t("dashboard.linksTab.stats.clicks")}</span>
+          <span className="text-center">0 {t("dashboard.linksTab.stats.views")}</span>
           <span>0% CTR</span>
         </div>
       </div>
@@ -318,7 +339,7 @@ const ProfileHeader = memo(function ProfileHeader({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <h3 className="text-sm font-black tracking-tight">Adicionar rede social</h3>
+              <h3 className="text-sm font-black tracking-tight">{t("dashboard.linksTab.actions.addSocial")}</h3>
               <button
                 onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
                 className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
@@ -336,7 +357,7 @@ const ProfileHeader = memo(function ProfileHeader({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar..."
+                  placeholder={t("dashboard.linksTab.actions.search")}
                   className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:bg-white focus:border-black transition-all"
                 />
               </div>
@@ -345,7 +366,7 @@ const ProfileHeader = memo(function ProfileHeader({
             {/* Platform grid */}
             <div className="max-h-[280px] overflow-y-auto px-3 pb-3">
               {filteredAvailable.length === 0 ? (
-                <p className="text-center text-sm text-gray-400 py-6">Nenhum resultado</p>
+                <p className="text-center text-sm text-gray-400 py-6">{t("dashboard.linksTab.actions.noResults")}</p>
               ) : (
                 <div className="grid grid-cols-2 gap-1.5">
                   {filteredAvailable.map((platform) => (
@@ -395,7 +416,7 @@ const ProfileHeader = memo(function ProfileHeader({
                 <h3 className="text-sm font-black tracking-tight">
                   {socialPlatforms.find((p) => p.key === editingPlatform)?.label}
                 </h3>
-                <p className="text-[11px] text-gray-400 font-medium">Insira o link ou nome de usuário</p>
+                <p className="text-[11px] text-gray-400 font-medium">{t("dashboard.linksTab.actions.insertLinkOrUser")}</p>
               </div>
               <button
                 onClick={() => { setEditingPlatform(null); setEditValue(""); }}
@@ -415,7 +436,7 @@ const ProfileHeader = memo(function ProfileHeader({
                 if (e.key === "Enter") handleSaveEdit();
                 if (e.key === "Escape") { setEditingPlatform(null); setEditValue(""); }
               }}
-              placeholder={socialPlaceholders[editingPlatform] || ""}
+              placeholder={localizedPlaceholders[editingPlatform] || ""}
               className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 focus:border-black rounded-xl text-sm font-bold outline-none transition-all placeholder:text-gray-300 placeholder:font-medium mb-3"
             />
 
@@ -425,13 +446,13 @@ const ProfileHeader = memo(function ProfileHeader({
                 onClick={() => { setEditingPlatform(null); setEditValue(""); }}
                 className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-bold rounded-xl transition-colors"
               >
-                Cancelar
+                {t("dashboard.linksTab.actions.cancel")}
               </button>
               <button
                 onClick={handleSaveEdit}
                 className="flex-1 px-4 py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-bold rounded-xl transition-colors"
               >
-                Salvar
+                {t("dashboard.linksTab.actions.save")}
               </button>
             </div>
           </div>

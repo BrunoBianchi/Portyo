@@ -141,4 +141,10 @@ router.use('/public/newsletter', publicNewsletterRoute)
 import socialPlannerRoute from "./social-planner/social-planner.route"
 router.use('/social-planner', socialPlannerRoute)
 
+import shortLinksRoute from "./short-links/short-links.route"
+router.use('/short-links', authMiddleware, shortLinksRoute)
+
+import publicShortLinksRoute from "./public/short-links.public.route"
+router.use('/public/short-links', publicShortLinksRoute)
+
 export default router;

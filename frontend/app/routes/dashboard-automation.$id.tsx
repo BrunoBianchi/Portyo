@@ -85,19 +85,19 @@ interface NodeData {
 }
 
 const NODE_CONFIG: Record<NodeType, NodeData> = {
-  trigger: { title: "Trigger", icon: Zap, color: "bg-amber-500/200" },
-  action: { title: "Email", icon: Mail, color: "bg-blue-500/100" },
-  condition: { title: "Condition", icon: GitBranch, color: "bg-orange-500/200" },
+  trigger: { title: "Trigger", icon: Zap, color: "bg-amber-100" },
+  action: { title: "Email", icon: Mail, color: "bg-blue-100" },
+  condition: { title: "Condition", icon: GitBranch, color: "bg-orange-100" },
   delay: { title: "Delay", icon: Clock, color: "bg-primary" },
   instagram: { title: "Instagram", icon: Instagram, color: "bg-pink-600" },
   youtube: { title: "YouTube", icon: Youtube, color: "bg-red-600" },
-  integration: { title: "Integration", icon: Share2, color: "bg-indigo-500/200" },
+  integration: { title: "Integration", icon: Share2, color: "bg-indigo-100" },
   page_event: { title: "Page Event", icon: Layout, color: "bg-teal-500" },
   update_element: { title: "Update Element", icon: Edit, color: "bg-amber-500" },
-  sms: { title: "SMS", icon: Mail, color: "bg-green-500/100" },
+  sms: { title: "SMS", icon: Mail, color: "bg-green-100" },
   webhook: { title: "Webhook", icon: Globe, color: "bg-violet-600" },
-  tag: { title: "Add Tag", icon: CheckCircle, color: "bg-emerald-500/200" },
-  split_test: { title: "A/B Split", icon: Settings, color: "bg-cyan-500/200" },
+  tag: { title: "Add Tag", icon: CheckCircle, color: "bg-emerald-100" },
+  split_test: { title: "A/B Split", icon: Settings, color: "bg-cyan-100" },
   notification: { title: "Push Notify", icon: AlertCircle, color: "bg-rose-500" },
   math_operation: { title: "Math", icon: Calculator, color: "bg-indigo-600" },
   wait: { title: "Wait", icon: Timer, color: "bg-slate-500" },
@@ -121,7 +121,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
   };
 
   return (
-    <div data-tour="automation-builder-node" className={`w-[280px] bg-white rounded-[20px] transition-all duration-200 group relative
+    <div data-tour="automation-builder-node" className={`w-[300px] md:w-[320px] bg-white rounded-[20px] transition-all duration-200 group relative
       ${selected
         ? 'border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10'
         : 'border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5'
@@ -137,19 +137,19 @@ const CustomNode = ({ id, data, type, selected }: any) => {
       )}
 
       {/* Main Content */}
-      <div className="p-4 flex items-center gap-4">
+      <div className="p-4 md:p-5 flex items-center gap-3 md:gap-4">
         <div className={`w-12 h-12 rounded-xl border-2 border-black ${config.color} flex items-center justify-center text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0`}>
           <Icon className="w-6 h-6 stroke-[2.5px]" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-black text-[#1A1A1A] truncate leading-tight mb-0.5" style={{ fontFamily: 'var(--font-display)' }}>{data.label || config.title}</h3>
-          <p className="text-[10px] text-gray-500 font-bold tracking-wider uppercase">{config.title}</p>
+          <h3 className="text-[17px] md:text-base font-black text-[#1A1A1A] truncate leading-tight mb-0.5" style={{ fontFamily: 'var(--font-display)' }}>{data.label || config.title}</h3>
+          <p className="text-[11px] md:text-[10px] text-gray-500 font-bold tracking-wider uppercase">{config.title}</p>
         </div>
 
         <button
           onClick={onDelete}
-          className="text-black bg-[#E94E77] opacity-0 group-hover:opacity-100 transition-all p-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:scale-110"
+          className="text-black bg-[#E94E77] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all p-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:scale-110"
         >
           <Trash2 className="w-4 h-4 text-white stroke-[3px]" />
         </button>
@@ -159,7 +159,7 @@ const CustomNode = ({ id, data, type, selected }: any) => {
       <div className="h-0.5 bg-black mx-4" />
 
       {/* Node Details / Preview */}
-      <div className="p-3 px-4 text-xs font-bold text-gray-600 min-h-[44px] flex items-center bg-gray-50 rounded-b-[16px]">
+      <div className="p-3 px-4 text-sm md:text-xs font-bold text-gray-600 min-h-[56px] flex items-center bg-gray-50 rounded-b-[16px]">
         {type === 'trigger' && (
           <div className="flex items-center gap-2">
             <Zap className="w-3.5 h-3.5 text-amber-600 fill-current" />
@@ -708,6 +708,42 @@ export default function DashboardAutomation() {
 
   const showLeadSelectionOptionsForAction = selectedNode?.type === 'action' && selectedNode?.id && (showLeadSelectionOptions || isConnectedToStripeDiscountNode(selectedNode.id));
 
+  const applyQuickTemplate = (template: 'welcome' | 'discord' | 'webhook') => {
+    const templates = {
+      welcome: {
+        name: 'Welcome Subscriber',
+        nodes: [
+          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'New Subscriber', eventType: 'newsletter_subscribe' } }),
+          normalizeNodeData({ id: 't2', type: 'action', position: { x: 220, y: 280 }, data: { label: 'Welcome Email', subject: 'Welcome!', content: 'Thanks for subscribing!' } }),
+        ],
+        edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
+      },
+      discord: {
+        name: 'Discord Alert Flow',
+        nodes: [
+          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'New Subscriber', eventType: 'newsletter_subscribe' } }),
+          normalizeNodeData({ id: 't2', type: 'discord', position: { x: 220, y: 280 }, data: { label: 'Discord Alert', discordMessage: 'Novo inscrito: {{email}}' } }),
+        ],
+        edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
+      },
+      webhook: {
+        name: 'Webhook Bridge',
+        nodes: [
+          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'Link Clicked', eventType: 'link_click' } }),
+          normalizeNodeData({ id: 't2', type: 'webhook', position: { x: 220, y: 280 }, data: { label: 'Send Webhook', webhookMethod: 'POST' } }),
+        ],
+        edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
+      },
+    } as const;
+
+    const selectedTemplate = templates[template];
+    setAutomationName(selectedTemplate.name);
+    setNodes(selectedTemplate.nodes as any);
+    setEdges(selectedTemplate.edges as any);
+    setSelectedNodeId(null);
+    setStatusMessage({ type: 'success', message: 'Template applied. Customize and save.' });
+  };
+
   return (
     <AuthorizationGuard minPlan="standard">
       <div className="h-[calc(100vh-65px)] md:h-screen flex flex-col bg-[#F3F3F1] flex-1 overflow-hidden font-sans">
@@ -783,6 +819,14 @@ export default function DashboardAutomation() {
           </div>
         </div>
 
+        <div className="px-4 md:px-6 py-3 border-b-2 border-black/10 bg-white/90 flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+          <span className="text-[11px] font-black uppercase tracking-wide text-gray-500">Quick start</span>
+          <button onClick={() => applyQuickTemplate('welcome')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Welcome Email</button>
+          <button onClick={() => applyQuickTemplate('discord')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Discord Alert</button>
+          <button onClick={() => applyQuickTemplate('webhook')} className="px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-white hover:bg-[#C6F035] transition-all">Webhook Bridge</button>
+          <span className="text-[11px] text-gray-500 ml-1 md:ml-auto">No mobile, toque no ícone para adicionar bloco.</span>
+        </div>
+
         <div data-tour="automation-builder-canvas" className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
           <ReactFlowProvider>
             <ReactFlow
@@ -798,16 +842,25 @@ export default function DashboardAutomation() {
               onPaneClick={onPaneClick}
               nodeTypes={nodeTypes}
               fitView
-              fitViewOptions={{ maxZoom: 1 }}
-              minZoom={0.1}
-              maxZoom={1}
-              className="bg-[#F3F3F1] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px]"
+              fitViewOptions={{ maxZoom: 0.95, padding: 0.28 }}
+              minZoom={0.35}
+              maxZoom={1.2}
+              className="bg-[#F3F3F1]"
             >
-              <Background color="#000000" gap={24} size={1} className="opacity-5" />
+              <Background color="#000000" gap={30} size={1.2} className="opacity-10" />
               <Controls className="!bg-white !border-2 !border-black !shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] !rounded-xl !m-4 !bottom-24 md:!bottom-4" />
 
+              <Panel position="top-right" className="!m-4 z-20 hidden md:block">
+                <button
+                  onClick={() => reactFlowInstance?.fitView({ padding: 0.28, duration: 300, maxZoom: 0.95 })}
+                  className="px-3 py-2 text-xs font-black bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-[#C6F035] transition-all"
+                >
+                  Centralizar blocos
+                </button>
+              </Panel>
+
               <Panel position="top-left" className="!m-0 !top-auto !bottom-0 !left-0 !right-0 md:!top-4 md:!bottom-auto md:!left-0 md:!right-auto md:!m-4 w-full md:w-auto z-10">
-                <div data-tour="automation-builder-palette" className="bg-white border-t-4 md:border-2 border-black md:rounded-[20px] shadow-[0_-4px_0px_0px_rgba(0,0,0,1)] md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 md:p-3 flex flex-row md:flex-col gap-3 md:gap-2 w-full md:w-16 items-center overflow-x-auto md:overflow-visible no-scrollbar">
+                <div data-tour="automation-builder-palette" className="relative overflow-hidden bg-white border-t-4 md:border-2 border-black md:rounded-[20px] shadow-[0_-2px_0px_0px_rgba(0,0,0,1)] md:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] p-4 md:p-2.5 flex flex-row md:flex-col gap-3 md:gap-1.5 w-full md:w-14 items-center overflow-x-auto md:overflow-x-hidden md:overflow-y-auto md:max-h-[calc(100vh-210px)] no-scrollbar md:[scrollbar-width:none] md:[-ms-overflow-style:none] md:[&::-webkit-scrollbar]:hidden">
                   {[
                     { type: 'trigger', label: t("dashboard.automationBuilder.palette.trigger"), icon: Zap, color: 'text-amber-600 bg-amber-50' },
                     { type: 'action', label: t("dashboard.automationBuilder.palette.email"), icon: Mail, color: 'text-blue-500 bg-blue-50' },
@@ -819,11 +872,13 @@ export default function DashboardAutomation() {
                     { type: 'page_event', label: t("dashboard.automationBuilder.palette.pageEvent"), icon: Layout, color: 'text-teal-600 bg-teal-50' },
                     { type: 'update_element', label: t("dashboard.automationBuilder.palette.updateElement"), icon: Edit, color: 'text-orange-600 bg-orange-50' },
                     { type: 'math_operation', label: t("dashboard.automationBuilder.palette.math"), icon: Calculator, color: 'text-indigo-600 bg-indigo-50' },
+                    { type: 'webhook', label: 'Webhook', icon: Globe, color: 'text-violet-600 bg-violet-50' },
+                    { type: 'discord', label: 'Discord', icon: MessageSquare, color: 'text-indigo-600 bg-indigo-50' },
                     { type: 'stripe_discount', label: t("dashboard.automationBuilder.palette.stripeDiscount"), icon: BadgePercent, color: 'text-emerald-600 bg-emerald-50' },
                   ].map((item) => (
                     <div
                       key={item.type}
-                      className={`w-12 h-12 md:w-11 md:h-11 rounded-xl border-2 border-transparent hover:border-black hover:bg-[#d2e823]/20 flex items-center justify-center transition-all cursor-grab active:cursor-grabbing relative group shrink-0`}
+                      className={`w-12 h-12 md:w-9 md:h-9 rounded-xl border-2 border-transparent hover:border-black hover:bg-[#d2e823]/20 flex items-center justify-center transition-all cursor-grab active:cursor-grabbing relative group shrink-0 ${item.color}`}
                       onDragStart={(event) => {
                         event.dataTransfer.setData('application/reactflow', item.type);
                         event.dataTransfer.setData('application/label', item.label);
@@ -848,7 +903,7 @@ export default function DashboardAutomation() {
                         }
                       }}
                     >
-                      <item.icon className="w-6 h-6 md:w-6 md:h-6 stroke-[2px]" />
+                      <item.icon className="w-6 h-6 md:w-5 md:h-5 stroke-[2px]" />
                       <span className="hidden md:block absolute left-full ml-3 px-3 py-1.5 bg-black text-white text-xs font-bold rounded-lg shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                         {item.label}
                       </span>
@@ -1650,8 +1705,8 @@ export default function DashboardAutomation() {
                       <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Method</label>
                       <select
                         className="w-full px-4 py-3 bg-white border-2 border-black rounded-xl text-sm font-bold text-[#1A1A1A] focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] appearance-none cursor-pointer"
-                        value={selectedNode.data.method || 'POST'}
-                        onChange={(e) => updateNodeData('method', e.target.value)}
+                        value={selectedNode.data.webhookMethod || selectedNode.data.method || 'POST'}
+                        onChange={(e) => updateNodeData('webhookMethod', e.target.value)}
                       >
                         <option value="POST">POST</option>
                         <option value="GET">GET</option>
@@ -1674,12 +1729,46 @@ export default function DashboardAutomation() {
                       <textarea
                         className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all shadow-sm min-h-[60px] resize-y font-mono text-xs"
                         placeholder='{"Authorization": "Bearer token"}'
-                        value={selectedNode.data.headers || ''}
-                        onChange={(e) => updateNodeData('headers', e.target.value)}
+                        value={selectedNode.data.webhookHeaders || selectedNode.data.headers || ''}
+                        onChange={(e) => updateNodeData('webhookHeaders', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Body (JSON or text)</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all shadow-sm min-h-[80px] resize-y font-mono text-xs"
+                        placeholder='{"email":"{{email}}","event":"{{triggerType}}"}'
+                        value={selectedNode.data.webhookBody || ''}
+                        onChange={(e) => updateNodeData('webhookBody', e.target.value)}
                       />
                     </div>
                     <div className="bg-primary/20 border border-primary/30 rounded-xl p-3">
                       <p className="text-xs text-violet-400">📤 All context data will be sent in the request body as JSON.</p>
+                    </div>
+                  </div>
+                )}
+
+                {(selectedNode as any).type === 'discord' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Discord Webhook URL</label>
+                      <input
+                        type="url"
+                        className="w-full px-4 py-3 bg-white border-2 border-black rounded-xl text-sm font-bold text-[#1A1A1A] placeholder-gray-400 focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                        placeholder="https://discord.com/api/webhooks/..."
+                        value={selectedNode.data.discordWebhookUrl || ''}
+                        onChange={(e) => updateNodeData('discordWebhookUrl', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider">Message</label>
+                      <textarea
+                        className="w-full px-4 py-3 bg-surface-card border border-border rounded-xl text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50 transition-all shadow-sm min-h-[90px] resize-y"
+                        placeholder="Novo lead: {{email}}"
+                        value={selectedNode.data.discordMessage || ''}
+                        onChange={(e) => updateNodeData('discordMessage', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">Você pode usar variáveis como {'{{email}}'}, {'{{bioName}}'} e {'{{triggerType}}'}.</p>
                     </div>
                   </div>
                 )}

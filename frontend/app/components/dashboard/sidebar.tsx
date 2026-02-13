@@ -42,7 +42,8 @@ import {
     Circle,
     ExternalLinkIcon,
     Palette,
-    DollarSign
+    DollarSign,
+    Link2
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -379,6 +380,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             items: [
                 { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.socialPlanner", { defaultValue: "Social planner" }), path: "/dashboard/social-planner", icon: Calendar, isPro: true },
+                { name: t("dashboard.nav.linkShortener", { defaultValue: "Link shortener" }), path: "/dashboard/link-shortener", icon: Link2 },
                 { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
@@ -490,14 +492,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <aside
                 data-tour="dashboard-sidebar"
                 className={`
-                    w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
+                    w-[14rem] xl:w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
                     transition-transform duration-300 ease-out border-r border-[#E5E5E5]
                     ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
                     md:translate-x-0 md:shadow-none font-sans
                 `}
             >
                 {/* Header: Profile & Notifications */}
-                <div className="p-5 flex items-center justify-between gap-2">
+                <div className="p-4 xl:p-5 flex items-center justify-between gap-2">
                     <div className="relative min-w-0 flex-1" ref={dropdownRef}>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -525,7 +527,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.15 }}
-                                    className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-hidden z-50 p-2"
+                                    className="absolute top-full left-0 mt-2 w-[min(18rem,calc(100vw-2rem))] md:w-72 bg-white rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-hidden z-50 p-2"
                                 >
                                     <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                         {t("dashboard.sidebar.yourPages")}
@@ -582,7 +584,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                <div className="flex-1 overflow-y-auto px-3 xl:px-4 py-2 space-y-5 xl:space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     {bio ? (
                         navGroups.map((group) => (
                             <div key={group.key} className="space-y-1">
@@ -667,8 +669,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
                 {/* Setup Widget (Checklist) */}
                 {bio && !isSetupComplete && (
-                    <div className="p-4 bg-[#F3F3F1] border-t border-[#E5E5E5] animate-in slide-in-from-bottom duration-500">
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col gap-4">
+                    <div className="p-3 xl:p-4 bg-[#F3F3F1] border-t border-[#E5E5E5] animate-in slide-in-from-bottom duration-500">
+                        <div className="bg-white rounded-2xl p-3.5 xl:p-4 shadow-sm border border-gray-100 flex flex-col gap-3 xl:gap-4">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-display mb-1">{t("dashboard.sidebar.setup")}</span>
                                 <div className="flex items-center justify-between">

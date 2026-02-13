@@ -84,6 +84,80 @@
       "list": "Acompanhe o status de todos os seus domínios"
     }
   },
+  "verificationModal": {
+    "errors": {
+      "sendFailed": "Falha ao enviar solicitação. Tente novamente."
+    },
+    "verified": {
+      "title": "Página verificada!",
+      "description": "Sua página já possui o selo de verificação.",
+      "close": "Fechar"
+    },
+    "pending": {
+      "title": "Em análise",
+      "description1": "Sua solicitação está sendo analisada pela nossa equipe.",
+      "description2": "Você será notificado quando houver uma atualização.",
+      "ack": "Entendi"
+    },
+    "success": {
+      "title": "Solicitação enviada!",
+      "description1": "Recebemos sua solicitação. Nossa equipe vai analisar",
+      "description2": "seus dados e você será notificado em breve.",
+      "close": "Fechar"
+    },
+    "form": {
+      "title": "Solicitar verificação",
+      "subtitle": "Comprove sua identidade para obter o selo",
+      "whatIs": "O que é a verificação?",
+      "whatIsDescription1": "O selo confirma que sua página é autêntica.",
+      "whatIsDescription2": "Ele aumenta a confiança dos visitantes e a credibilidade do seu perfil.",
+      "fullName": "Nome completo *",
+      "fullNamePlaceholder": "Seu nome completo",
+      "email": "Email *",
+      "emailPlaceholder": "voce@email.com",
+      "phone": "Telefone",
+      "why": "Por que você merece o selo?",
+      "whyPlaceholder": "Descreva quem você é, sua profissão e links sociais que comprovem sua identidade...",
+      "whyHelp": "Inclua links de redes sociais, site profissional ou qualquer informação que ajude na verificação",
+      "cancel": "Cancelar",
+      "sending": "Enviando...",
+      "send": "Enviar solicitação"
+    }
+  },
+  "linksTab": {
+    "status": {
+      "underReview": "Em análise",
+      "getVerified": "Obter verificação"
+    },
+    "actions": {
+      "remove": "Remover",
+      "addSocial": "Adicionar rede social",
+      "search": "Buscar...",
+      "noResults": "Nenhum resultado",
+      "insertLinkOrUser": "Insira o link ou nome de usuário",
+      "cancel": "Cancelar",
+      "save": "Salvar"
+    },
+    "stats": {
+      "clicks": "cliques",
+      "views": "visualizações"
+    },
+    "placeholders": {
+      "username": "@seuusuario",
+      "youtube": "https://youtube.com/@canal",
+      "linkedin": "https://linkedin.com/in/perfil",
+      "github": "seuusuario",
+      "facebook": "https://facebook.com/pagina",
+      "email": "voce@email.com",
+      "website": "https://seusite.com",
+      "twitch": "seuusuario",
+      "discord": "https://discord.gg/convite",
+      "pinterest": "https://pinterest.com/perfil",
+      "telegram": "@seuusuario",
+      "behance": "https://behance.net/perfil",
+      "dribbble": "https://dribbble.com/perfil"
+    }
+  },
   "editor": {
     "tabs": {
       "links": "Links",

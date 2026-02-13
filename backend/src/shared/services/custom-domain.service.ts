@@ -28,10 +28,16 @@ const isLocalhostDomain = (value: string) => {
     return clean === "localhost" || clean.endsWith(".localhost");
 };
 
+const SAAS_BASE_DOMAIN = env.SAAS_BASE_DOMAIN.toLowerCase();
+const COMPANY_SUBDOMAIN = env.COMPANY_SUBDOMAIN.toLowerCase();
+const CUSTOM_DOMAIN_CNAME_TARGET = env.CUSTOM_DOMAIN_CNAME_TARGET.toLowerCase();
+const CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY = env.CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY;
+
 const SAAS_DOMAINS = [
-    'portyo.me',
-    'www.portyo.me',
-    'api.portyo.me',
+    SAAS_BASE_DOMAIN,
+    `www.${SAAS_BASE_DOMAIN}`,
+    `api.${SAAS_BASE_DOMAIN}`,
+    COMPANY_SUBDOMAIN,
     'localhost',
     '127.0.0.1',
     'backend',
@@ -101,7 +107,24 @@ export class CustomDomainService {
     ): Promise<{ stdout: string; stderr: string }> {
         const useSudo = await this.canUseSudo();
         const finalCommand = useSudo ? `sudo ${command}` : command;
-        return execAsync(finalCommand, { timeout, cwd });
+
+        try {
+            return await execAsync(finalCommand, { timeout, cwd });
+        } catch (error: any) {
+            const rawMessage = String(error?.message || "");
+            const stderr = String(error?.stderr || "");
+            const sudoFailure = /sudo:\s*not found|sudo:\s*a password is required|sudo:\s*permission denied/i.test(
+                `${rawMessage}\n${stderr}`
+            );
+
+            if (useSudo && sudoFailure) {
+                this.hasSudo = false;
+                logger.warn("[CustomDomain] sudo failed at runtime; retrying privileged command without sudo");
+                return execAsync(command, { timeout, cwd });
+            }
+
+            throw error;
+        }
     }
 
     private static shellEscape(value: string): string {
@@ -156,7 +179,7 @@ export class CustomDomainService {
         if (this.isIpAddress(cleanHost)) return true;
         
         if (SAAS_DOMAINS.includes(cleanHost)) return true;
-        if (cleanHost.endsWith('.portyo.me')) return true;
+        if (cleanHost.endsWith(`.${SAAS_BASE_DOMAIN}`)) return true;
 
         const backendHost = this.getBackendHost();
         if (backendHost && cleanHost === backendHost) return true;
@@ -239,9 +262,10 @@ export class CustomDomainService {
         const cleanHost = this.extractDomain(host);
         if (!cleanHost) return null;
         if (SAAS_DOMAINS.includes(cleanHost)) return null;
-        if (!cleanHost.endsWith('.portyo.me')) return null;
+        const saasSuffix = `.${SAAS_BASE_DOMAIN}`;
+        if (!cleanHost.endsWith(saasSuffix)) return null;
 
-        const sub = cleanHost.replace(/\.portyo\.me$/, "");
+        const sub = cleanHost.slice(0, cleanHost.length - saasSuffix.length);
         if (!sub || sub.includes('.')) return null;
         return sub;
     }
@@ -250,7 +274,7 @@ export class CustomDomainService {
      * Retorna o domínio do SaaS para um sufix (ex: user => user.portyo.me)
      */
     static getSaasSubdomainDomain(sufix: string): string {
-        return `${sufix}.portyo.me`;
+        return `${sufix}.${SAAS_BASE_DOMAIN}`;
     }
 
     /**
@@ -263,7 +287,7 @@ export class CustomDomainService {
         message: string 
     }> {
         try {
-            const cnameTarget = "cname.portyo.me";
+            const cnameTarget = CUSTOM_DOMAIN_CNAME_TARGET;
 
             const [domainIps, cnameIps, cnames] = await Promise.all([
                 dnsResolve4(domain).catch(() => [] as string[]),
@@ -286,29 +310,31 @@ export class CustomDomainService {
                 };
             }
 
-            const expectedIps = new Set(cnameIps);
-            const matchingIp = domainIps.find((ip) => expectedIps.has(ip));
+            if (!CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY) {
+                const expectedIps = new Set(cnameIps);
+                const matchingIp = domainIps.find((ip) => expectedIps.has(ip));
 
-            if (!matchingIp) {
-                return {
-                    configured: false,
-                    actualIp: domainIps.join(', '),
-                    expectedIp: cnameIps.join(', '),
-                    message: `O registro DNS deve apontar para ${cnameTarget}.`
-                };
+                if (matchingIp) {
+                    return {
+                        configured: true,
+                        actualIp: matchingIp,
+                        expectedIp: cnameIps.join(", ") || undefined,
+                        message: `DNS configurado por A record compatível com ${cnameTarget} (${matchingIp})`
+                    };
+                }
             }
 
             return {
-                configured: true,
-                actualIp: matchingIp,
-                expectedIp: cnameIps.join(', '),
-                message: `DNS configurado corretamente (${matchingIp})`
+                configured: false,
+                actualIp: domainIps.join(', ') || undefined,
+                expectedIp: cnameTarget,
+                message: `DNS inválido: configure um registro CNAME de ${domain} para ${cnameTarget}.`
             };
         } catch (error) {
             logger.error(`[CustomDomain][DNS] Falha na resolução para ${domain}:`, error);
             return {
                 configured: false,
-                message: `Não foi possível resolver o DNS. Verifique se o registro A aponta para cname.portyo.me.`
+                message: `Não foi possível resolver o DNS. Verifique se o CNAME aponta para ${CUSTOM_DOMAIN_CNAME_TARGET}.`
             };
         }
     }
@@ -494,7 +520,7 @@ export class CustomDomainService {
             }
 
             const { stdout, stderr } = await this.runPrivilegedWithOptions(
-                `${this.shellEscape(scriptPath)} ${this.shellEscape(domain.domain)} admin@portyo.me`,
+                `${this.shellEscape(scriptPath)} ${this.shellEscape(domain.domain)} ${this.shellEscape(env.CUSTOM_DOMAIN_CERTBOT_EMAIL)}`,
                 120000,
                 deploymentDir
             );

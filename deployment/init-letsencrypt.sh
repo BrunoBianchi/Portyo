@@ -5,20 +5,16 @@ if ! docker compose version > /dev/null 2>&1; then
   exit 1
 fi
 
-# Hardcoded for portyo.me based on user request
-domains=(portyo.me www.portyo.me api.portyo.me)
+# SaaS hosts covered by initial certificate
+base_domain="${SAAS_BASE_DOMAIN:-portyo.me}"
+company_subdomain="${COMPANY_SUBDOMAIN:-company.${base_domain}}"
+domains=("$base_domain" "www.$base_domain" "api.$base_domain" "$company_subdomain")
 rsa_key_size=4096
 data_path="./data/certbot"
-email="admin@portyo.me" # Using a generic email, change if needed
+email="${CUSTOM_DOMAIN_CERTBOT_EMAIL:-admin@portyo.me}"
 staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
-if [ -d "$data_path" ]; then
-  read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
-  if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
-    exit
-  fi
-fi
-
+mkdir -p "$data_path/conf" "$data_path/www" "./data/nginx/custom-domains"
 
 if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
@@ -38,7 +34,6 @@ docker compose run --rm --entrypoint "\
     -subj '/CN=localhost'" certbot
 echo
 
-
 echo "### Starting nginx ..."
 mkdir -p "$data_path/www"
 chmod 777 "$data_path/www"
@@ -51,7 +46,6 @@ docker compose run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/archive/${domains[0]} && \
   rm -Rf /etc/letsencrypt/renewal/${domains[0]}.conf" certbot
 echo
-
 
 echo "### Requesting Let's Encrypt certificate for $domains ..."
 #Join $domains to -d args

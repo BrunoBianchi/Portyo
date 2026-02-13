@@ -70,6 +70,9 @@ After the script finishes, the app should be running with HTTPS enabled.
 The setup script uses `init-letsencrypt.sh` to automatically obtain SSL certificates for your domain and subdomains.
 *   Certificates are stored in `deployment/data/certbot`.
 *   The `certbot` container checks for renewal every 12 hours.
+*   SaaS hosts included by default: `portyo.me`, `www.portyo.me`, `api.portyo.me`, `company.portyo.me`.
+*   Custom domains are provisioned automatically by the backend with dedicated Nginx vhosts in `deployment/data/nginx/custom-domains`.
+*   Custom domains must use `CNAME -> cname.portyo.me`.
 
 
 ## Manual Docker Installation (Optional)

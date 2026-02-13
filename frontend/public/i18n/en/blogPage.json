@@ -16,6 +16,13 @@
   "endBadge": "The End",
   "thanksReading": "Thanks for reading! If you enjoyed this article, consider sharing it.",
   "shareArticle": "Share this article",
+  "featured": "Featured",
+  "readNow": "READ NOW",
+  "minRead": "{{count}} min read",
+  "meta": {
+    "title": "Portyo Blog - Insights for Creators",
+    "description": "Tips, strategies, and stories to grow your online presence."
+  },
   "notFound": {
     "title": "Post not found",
     "description": "The post you're looking for doesn't exist."

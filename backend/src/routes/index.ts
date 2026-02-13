@@ -24,6 +24,23 @@ router.use("/", async (req: Request, res: Response, next: NextFunction) => {
             return next();
         }
 
+        if (
+            req.path.startsWith('/assets/') ||
+            req.path.startsWith('/build/') ||
+            req.path.startsWith('/favicons/') ||
+            req.path.startsWith('/icons/') ||
+            req.path.startsWith('/fonts/') ||
+            req.path.startsWith('/i18n/') ||
+            req.path.startsWith('/background/') ||
+            req.path.startsWith('/base-img/') ||
+            req.path.startsWith('/manifest') ||
+            req.path.startsWith('/sw.js') ||
+            req.path.startsWith('/@') ||
+            req.path.includes('.')
+        ) {
+            return next();
+        }
+
         // Domínio personalizado detectado
         const bio = req.customDomain.bio;
         if (!bio) {
@@ -44,9 +61,11 @@ router.use("/", async (req: Request, res: Response, next: NextFunction) => {
         // Para a raiz (/), redireciona internamente para a página do bio
         // O frontend deve estar preparado para renderizar o bio baseado no header X-Bio-Slug
         // ou na URL /p/:slug
+        const queryString = req.url.slice(req.path.length);
         if (req.path === '/') {
-            // Redireciona internamente (mantendo URL original no navegador)
-            req.url = `/p/${bio.sufix}`;
+            req.url = `/p/${bio.sufix}${queryString}`;
+        } else {
+            req.url = `/p/${bio.sufix}${req.path}${queryString}`;
         }
 
         next();

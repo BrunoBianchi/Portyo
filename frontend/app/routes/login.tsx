@@ -108,8 +108,8 @@ export default function Login() {
 
     return (
         <AuthLayoutBold
-            title={t("auth.login.title", "Bem-vindo de volta")}
-            subtitle={t("auth.login.subtitle", "Faça login na sua Linktree")}
+            title={t("auth.login.title", "Welcome back")}
+            subtitle={t("auth.login.subtitle", "Log in to your Portyo account")}
         >
             <form className="space-y-6" onSubmit={handleLogin}>
                 {error && (
@@ -136,7 +136,7 @@ export default function Login() {
 
                     <div className="relative">
                         <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
-                            {t("auth.login.passwordPlaceholder", "Senha")}
+                            {t("auth.login.passwordPlaceholder", "Password")}
                         </label>
                         <input
                             type={showPassword ? "text" : "password"}
@@ -170,7 +170,7 @@ export default function Login() {
                         type="submit"
                         className="w-full bg-[#1A1A1A] text-white font-display font-bold text-lg py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#1A1A1A]/10"
                     >
-                        {t("auth.login.submit", "Entrar")}
+                        {t("auth.login.submit", "Sign in")}
                     </button>
 
                     <div className="relative flex items-center justify-center py-2">

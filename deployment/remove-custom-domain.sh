@@ -9,6 +9,7 @@ set -e
 
 DOMAIN=$1
 DATA_PATH="./data/certbot"
+NGINX_CUSTOM_DIR="./data/nginx/custom-domains"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,7 +47,17 @@ else
 fi
 
 # Recarregar Nginx
+CONF_FILE="$NGINX_CUSTOM_DIR/$DOMAIN.conf"
+if [ -f "$CONF_FILE" ]; then
+    rm -f "$CONF_FILE"
+    echo -e "${GREEN}🧹 VHost removido: $CONF_FILE${NC}"
+fi
+
 echo -e "${GREEN}🔄 Recarregando Nginx...${NC}"
+docker compose exec nginx nginx -t >/dev/null 2>&1 || {
+    echo -e "${RED}❌ Configuração Nginx inválida. Abortando reload.${NC}"
+    exit 1
+}
 docker compose exec nginx nginx -s reload 2>/dev/null || true
 
 echo -e "${GREEN}✅ Domínio $DOMAIN removido com sucesso!${NC}"

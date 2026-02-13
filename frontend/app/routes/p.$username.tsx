@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { redirect, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
 import { BioLayout } from "~/components/bio/bio-layout";
 import { BioNotFound } from "~/components/public-bio/not-found";
@@ -86,6 +86,7 @@ const serializeBioHtml = (bio: any) => {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const username = params.username;
+    const shortSlug = params.tab;
     const requestUrl = new URL(request.url);
     const origin = requestUrl.origin;
     const isLocalhost = requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1";
@@ -101,6 +102,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const generatedAt = new Date().toISOString();
 
     if (!username) return { bio: null, username: null, origin, generatedAt };
+
+    if (shortSlug) {
+        try {
+            const shortLinkRes = await fetch(`${apiUrl}/public/short-links/resolve/${username}/${shortSlug}`);
+            if (shortLinkRes.ok) {
+                const shortLink = await shortLinkRes.json();
+                if (shortLink?.destinationUrl) {
+                    throw redirect(shortLink.destinationUrl, { status: 302 });
+                }
+            }
+        } catch (error) {
+            if (error instanceof Response) {
+                throw error;
+            }
+        }
+    }
 
     try {
         const fetchUrl = `${apiUrl}/public/bio/${username}`;

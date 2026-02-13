@@ -228,9 +228,24 @@ export const BlockIntegrationService = {
     nextPost?: string;
   } | null> {
     try {
-      const response = await api.get(`/autopost/bio/${bioId}/status`);
-      return response.data || null;
+      const response = await api.get(`/auto-post/${bioId}`);
+      const schedule = response.data;
+
+      if (!schedule) {
+        return null;
+      }
+
+      return {
+        isActive: Boolean(schedule.isActive),
+        nextPost: schedule.nextPostDate,
+      };
     } catch (error) {
+      const status = (error as any)?.response?.status;
+      if (status === 404) {
+        return {
+          isActive: false,
+        };
+      }
       console.error("Failed to fetch autopost status:", error);
       return null;
     }

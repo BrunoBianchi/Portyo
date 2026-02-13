@@ -343,6 +343,40 @@
       }
     ]
   },
+  "landingBold": {
+    "socialProof": "Confiado por mais de 50.000 criadores",
+    "featureA": {
+      "title": "ANALYTICS EM QUE VOCÊ CONFIA.",
+      "description": "Chega de métricas de vaidade. Veja exatamente quem clica, quem compra e de onde vem o tráfego. Dados reais para crescimento real."
+    },
+    "featureB": {
+      "title": "VENDA MAIS. MUITO MAIS.",
+      "description": "Integre produtos digitais, agendamentos e newsletters direto no seu link. Transforme seguidores em clientes em dois cliques."
+    },
+    "hero": {
+      "badge": "✦ NOVO DESIGN SYSTEM",
+      "line1": "A FORMA MAIS RÁPIDA",
+      "line2": "LINK NA BIO",
+      "line3": "DE CRIAR SEU SITE.",
+      "subtitle": "Crie seu próprio site em minutos. Sem código. Sem design complicado. Só você e sua audiência.",
+      "ctaPrimary": "Começar Grátis",
+      "ctaSecondary": "Ver Planos"
+    },
+    "testimonial": {
+      "quote": "Portyo mudou meu negócio. Antes eu gerenciava cinco links espalhados, agora centralizo tudo em um só lugar digital. Minhas vendas dobraram em 30 dias.",
+      "role": "Influencer & Empreendedora Digital"
+    }
+  },
+  "catchall": {
+    "title": "Página não encontrada",
+    "description": "Parece que você se perdeu no espaço digital. A página que você procura não existe ou foi movida.",
+    "backDashboard": "Voltar ao Dashboard",
+    "backHome": "Voltar ao Início",
+    "contactSupport": "Falar com Suporte",
+    "popularLinks": "Links populares",
+    "pricing": "Preços",
+    "themes": "Temas"
+  },
   "creatorMarquee": {
     "title": "Confiado por",
     "highlight": "criadores no mundo todo",

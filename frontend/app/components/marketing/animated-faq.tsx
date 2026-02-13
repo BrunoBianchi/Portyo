@@ -27,11 +27,12 @@ export default function AnimatedFAQ() {
           className="mb-20"
         >
           <span className="inline-block font-display font-bold text-[#D2E823] tracking-widest uppercase mb-4">
-            Dúvidas?
+            {t("home.faq.title")}
           </span>
           <h2 className="font-display font-black text-5xl sm:text-6xl lg:text-7xl leading-[0.9] tracking-tighter text-white uppercase">
-            Perguntas<br />Frequentes
+            {t("home.faq.highlight")}
           </h2>
+          <p className="mt-4 text-base sm:text-lg text-gray-400 max-w-xl">{t("home.faq.subtitle")}</p>
         </motion.div>
 
         <div className="space-y-4">
@@ -43,13 +44,13 @@ export default function AnimatedFAQ() {
         {/* Contact CTA */}
         <div className="mt-20 pt-10 border-t border-white/10 text-center sm:text-left">
           <p className="font-body text-xl text-gray-400 mb-6">
-            Ainda tem dúvidas? Fale com nosso suporte.
+            {t("home.catchall.contactSupport")}
           </p>
           <a
             href="mailto:support@portyo.me"
             className="inline-block bg-[#D2E823] text-[#1A1A1A] font-display font-bold text-lg px-8 py-4 rounded-full hover:scale-105 transition-transform"
           >
-            Falar com Suporte
+            {t("home.catchall.contactSupport")}
           </a>
         </div>
       </div>

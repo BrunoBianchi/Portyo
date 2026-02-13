@@ -14,8 +14,15 @@
     "role": "Autor & Criador"
   },
   "endBadge": "Fim",
-  "thanksReading": "Obrigado por ler! Se gostou deste artigo, considere compartilhá-lo."
+  "thanksReading": "Obrigado por ler! Se gostou deste artigo, considere compartilhá-lo.",
   "shareArticle": "Compartilhar este artigo",
+  "featured": "Destaque",
+  "readNow": "LER AGORA",
+  "minRead": "{{count}} min de leitura",
+  "meta": {
+    "title": "Blog Portyo - Insights para Criadores",
+    "description": "Dicas, estratégias e histórias para crescer sua presença online."
+  },
   "notFound": {
     "title": "Post não encontrado",
     "description": "O post que você está procurando não existe."

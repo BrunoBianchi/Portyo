@@ -57,6 +57,11 @@ const envSchema = z.object({
   // Custom Domains / SSL
   CUSTOM_DOMAIN_DEPLOYMENT_DIR: z.string().optional(),
   CUSTOM_DOMAIN_ADD_SCRIPT_PATH: z.string().optional(),
+  CUSTOM_DOMAIN_CNAME_TARGET: z.string().default("cname.portyo.me"),
+  CUSTOM_DOMAIN_CERTBOT_EMAIL: z.string().default("admin@portyo.me"),
+  CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY: z.string().transform((val) => val !== "false").default(true),
+  SAAS_BASE_DOMAIN: z.string().default("portyo.me"),
+  COMPANY_SUBDOMAIN: z.string().default("company.portyo.me"),
 
   // Redis
   REDIS_HOST: z.string().default("localhost"),

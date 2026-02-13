@@ -177,7 +177,7 @@ function UserDashboard() {
             <div className="min-h-screen bg-surface-alt flex font-sans text-text-main">
                 <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-                <main className="flex-1 md:ml-64 transition-all duration-300 min-w-0">
+                <main className="flex-1 md:ml-[14rem] xl:ml-64 transition-all duration-300 min-w-0">
                     {/* Mobile Header */}
                     <div className="md:hidden bg-surface/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between sticky top-0 z-40">
                         <div className="flex items-center gap-3">

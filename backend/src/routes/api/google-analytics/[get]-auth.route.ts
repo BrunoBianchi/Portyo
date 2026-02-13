@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { getGoogleAnalyticsAuthUrl } from "../../../shared/services/google-analytics.service";
+import { generateToken } from "../../../shared/services/jwt.service";
+import { AppDataSource } from "../../../database/datasource";
+import { BioEntity } from "../../../database/entity/bio-entity";
 
 const router: Router = Router();
+const bioRepository = AppDataSource.getRepository(BioEntity);
 
 router.get("/", async (req, res) => {
     try {
@@ -15,13 +19,37 @@ router.get("/", async (req, res) => {
             return;
         }
 
+        if (!req.user?.id) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
+
+        const bio = await bioRepository.findOne({
+            where: {
+                id: bioId,
+                userId: req.user.id,
+            },
+        });
+
+        if (!bio) {
+            res.status(404).json({ error: "Bio not found" });
+            return;
+        }
+
         // Check if user is on free plan
         if (!req.user || (req.user.plan || 'free').toLowerCase() === 'free') {
             res.status(403).json({ error: "Google Analytics integration is only available for Standard and Pro plans." });
             return;
         }
 
-        const url = getGoogleAnalyticsAuthUrl(bioId);
+        const state = await generateToken({
+            id: req.user.id,
+            bioId,
+            provider: "google-analytics",
+            type: "integration-state",
+        });
+
+        const url = getGoogleAnalyticsAuthUrl(state);
         res.json({ url });
     } catch (error) {
         console.error(error);

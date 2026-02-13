@@ -165,6 +165,7 @@ export function headers() {
   const connectSrc = isDev
     ? "'self' https://api.portyo.me http://localhost:3000 http://localhost:5173 http://localhost:5174 ws://localhost:5173 ws://localhost:5174 ws://localhost:3000"
     : "'self' https://api.portyo.me";
+  const analyticsConnectSrc = " https://www.google-analytics.com https://region1.google-analytics.com";
   return {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Frame-Options": "SAMEORIGIN",
@@ -179,11 +180,11 @@ export function headers() {
     // Content Security Policy - mais permissivo para desenvolvimento
     "Content-Security-Policy":
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.googletagmanager.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-      "font-src 'self' data: https://fonts.gstatic.com; " +
+      "font-src 'self' data: https://fonts.gstatic.com https://api.portyo.me https://*.portyo.me; " +
       "img-src 'self' data: https: blob: http://localhost:3000 http://localhost:5173 http://localhost:5174; " +
-      `connect-src ${connectSrc}; ` +
+      `connect-src ${connectSrc}${analyticsConnectSrc}; ` +
       "frame-src 'self' https://www.google.com https://maps.google.com; " +
       "worker-src 'self' blob:; " +
       "media-src 'self' https:;",

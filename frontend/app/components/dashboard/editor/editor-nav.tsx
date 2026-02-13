@@ -75,7 +75,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             {/* Container principal com scroll */}
             <nav
                 ref={scrollRef}
-                className="flex items-center gap-0.5 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-xl shadow-lg shadow-black/5 w-full md:w-full lg:w-fit max-w-full overflow-x-auto scrollbar-hide scroll-smooth"
+                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full md:w-full lg:w-fit max-w-full overflow-x-auto scrollbar-hide scroll-smooth"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {tabs.map((tab) => {
@@ -89,13 +89,13 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                             onClick={() => onChangeTab(tab.id)}
                             className={`
                                 relative flex items-center justify-center gap-1 sm:gap-1.5 
-                                px-2 sm:px-3 md:px-2 lg:px-4 
-                                py-2 sm:py-2.5 
+                                px-2.5 sm:px-3 md:px-2 lg:px-4 
+                                py-2 sm:py-2.5
                                 rounded-lg sm:rounded-full 
-                                font-bold text-[11px] sm:text-xs 
+                                font-bold text-[11px] sm:text-xs
                                 transition-all duration-200 ease-out
                                 whitespace-nowrap flex-shrink-0
-                                min-w-[44px] sm:min-w-[auto]
+                                min-w-[72px] sm:min-w-[auto]
                                 touch-manipulation
                                 ${isActive
                                     ? 'bg-[#1A1A1A] text-white shadow-lg shadow-black/20 transform scale-[1.02]'
@@ -109,7 +109,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                             />
 
                             {/* Label - muda conforme o tamanho da tela */}
-                            <span className="hidden sm:inline lg:hidden">
+                            <span className="inline lg:hidden">
                                 {tab.shortLabel}
                             </span>
                             <span className="hidden lg:inline">

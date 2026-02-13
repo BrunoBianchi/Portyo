@@ -8,6 +8,11 @@ const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
 
 router.get("/", async (req, res) => {
     try {
+        if (!req.user?.id) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
+
         const bioId = req.query.bioId as string;
         if (!bioId) {
             res.status(400).json({ error: "Bio ID is required" });
@@ -15,7 +20,13 @@ router.get("/", async (req, res) => {
         }
 
         const integration = await integrationRepository.findOne({
-            where: { bio: { id: bioId }, provider: "google-analytics" }
+            where: {
+                bio: {
+                    id: bioId,
+                    userId: req.user.id,
+                },
+                provider: "google-analytics",
+            },
         });
 
         if (!integration) {

@@ -39,3 +39,26 @@ export const getIntegrationsByBioId = async(bioId:string) => {
         }
     })
 }
+
+export const disconnectIntegrationByProvider = async (bioId: string, provider: string) => {
+    const normalizedProvider = provider.trim().toLowerCase();
+    const integration = await repository.findOne({
+        where: [
+            {
+                bio: { id: bioId },
+                provider: normalizedProvider,
+            },
+            {
+                bio: { id: bioId },
+                name: normalizedProvider,
+            },
+        ],
+    });
+
+    if (!integration) {
+        return false;
+    }
+
+    await repository.remove(integration);
+    return true;
+}

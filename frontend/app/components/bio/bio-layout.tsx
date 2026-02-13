@@ -97,9 +97,32 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
     // Safety: clear any stale scroll lock when entering public bio pages.
     useEffect(() => {
         if (typeof document === 'undefined' || isPreview) return;
+
+        const prevBodyOverflow = document.body.style.overflow;
+        const prevBodyOverflowX = document.body.style.overflowX;
+        const prevBodyOverflowY = document.body.style.overflowY;
+        const prevHtmlOverflow = document.documentElement.style.overflow;
+        const prevHtmlOverflowX = document.documentElement.style.overflowX;
+        const prevHtmlOverflowY = document.documentElement.style.overflowY;
+
         document.body.style.overflow = '';
+        document.body.style.overflowX = 'hidden';
+        document.body.style.overflowY = 'auto';
         document.body.removeAttribute('data-nsfw-prev-overflow');
+
         document.documentElement.style.overflow = '';
+        document.documentElement.style.overflowX = 'hidden';
+        document.documentElement.style.overflowY = 'auto';
+
+        return () => {
+            document.body.style.overflow = prevBodyOverflow;
+            document.body.style.overflowX = prevBodyOverflowX;
+            document.body.style.overflowY = prevBodyOverflowY;
+
+            document.documentElement.style.overflow = prevHtmlOverflow;
+            document.documentElement.style.overflowX = prevHtmlOverflowX;
+            document.documentElement.style.overflowY = prevHtmlOverflowY;
+        };
     }, [isPreview]);
 
     useEffect(() => {
@@ -1502,6 +1525,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             padding: 0;
                             min-height: 100vh;
                             width: 100%;
+                            overflow-x: hidden;
                             ${bgCssString};
                         }
 

@@ -12,6 +12,7 @@ import { FormEntity } from "./form-entity";
 import { PortfolioItemEntity } from "./portfolio-item-entity";
 import { BioVerificationRequestEntity } from "./bio-verification-request-entity";
 import { AutoPostScheduleEntity } from "./auto-post-schedule-entity";
+import { ShortUrlEntity } from "./short-url-entity";
 
 @Entity()
 export class BioEntity extends BaseEntity {
@@ -284,6 +285,9 @@ export class BioEntity extends BaseEntity {
 
     @OneToMany(() => FormEntity, (form) => form.bio)
     forms!: FormEntity[];
+
+    @OneToMany(() => ShortUrlEntity, (shortUrl) => shortUrl.bio)
+    shortUrls!: ShortUrlEntity[];
 
     @OneToMany(() => PortfolioItemEntity, (item) => item.bio)
     portfolioItems!: PortfolioItemEntity[];

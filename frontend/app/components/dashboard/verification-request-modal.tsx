@@ -2,6 +2,7 @@ import { memo, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X, CheckCircle, Clock, Shield, Loader2, BadgeCheck, Sparkles } from "lucide-react";
 import { api } from "~/services/api";
+import { useTranslation } from "react-i18next";
 
 interface VerificationRequestModalProps {
   bioId: string;
@@ -18,6 +19,7 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
   onClose,
   onSuccess,
 }: VerificationRequestModalProps) {
+  const { t } = useTranslation("dashboard");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -46,7 +48,7 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
       } catch (err: any) {
         const msg =
           err?.response?.data?.message ||
-          "Falha ao enviar solicitação. Tente novamente.";
+          t("dashboard.verificationModal.errors.sendFailed");
         setError(msg);
       } finally {
         setLoading(false);
@@ -66,15 +68,15 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
               <BadgeCheck className="w-9 h-9 text-white" />
             </div>
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Página verificada!</h3>
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">{t("dashboard.verificationModal.verified.title")}</h3>
           <p className="text-sm text-gray-500 font-medium max-w-[260px] mx-auto leading-relaxed">
-            Sua página já possui o selo de verificação e autenticidade.
+            {t("dashboard.verificationModal.verified.description")}
           </p>
           <button
             onClick={onClose}
             className="mt-6 px-8 py-3 bg-gray-900 text-white rounded-full font-bold text-sm hover:bg-black transition-colors border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5"
           >
-            Fechar
+            {t("dashboard.verificationModal.verified.close")}
           </button>
         </div>
       </Overlay>
@@ -92,16 +94,17 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
               <Clock className="w-9 h-9 text-white" />
             </div>
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Em análise</h3>
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">{t("dashboard.verificationModal.pending.title")}</h3>
           <p className="text-sm text-gray-500 font-medium max-w-[280px] mx-auto leading-relaxed">
-            Sua solicitação está sendo analisada pela nossa equipe.
-            Você será notificado quando houver uma atualização.
+            {t("dashboard.verificationModal.pending.description1")}
+            {" "}
+            {t("dashboard.verificationModal.pending.description2")}
           </p>
           <button
             onClick={onClose}
             className="mt-6 px-8 py-3 bg-gray-900 text-white rounded-full font-bold text-sm hover:bg-black transition-colors border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5"
           >
-            Entendi
+            {t("dashboard.verificationModal.pending.ack")}
           </button>
         </div>
       </Overlay>
@@ -119,16 +122,17 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
               <CheckCircle className="w-9 h-9 text-white" />
             </div>
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Solicitação enviada!</h3>
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">{t("dashboard.verificationModal.success.title")}</h3>
           <p className="text-sm text-gray-500 font-medium max-w-[280px] mx-auto leading-relaxed">
-            Recebemos sua solicitação. Nossa equipe irá analisar
-            seus dados e você será notificado em breve.
+            {t("dashboard.verificationModal.success.description1")}
+            {" "}
+            {t("dashboard.verificationModal.success.description2")}
           </p>
           <button
             onClick={onClose}
             className="mt-6 px-8 py-3 bg-gray-900 text-white rounded-full font-bold text-sm hover:bg-black transition-colors border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5"
           >
-            Fechar
+            {t("dashboard.verificationModal.success.close")}
           </button>
         </div>
       </Overlay>
@@ -144,9 +148,9 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
           <Shield className="w-5 h-5 text-white" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight">Solicitar verificação</h3>
+          <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight">{t("dashboard.verificationModal.form.title")}</h3>
           <p className="text-[11px] sm:text-xs text-gray-400 font-medium">
-            Comprove sua identidade para obter o selo
+            {t("dashboard.verificationModal.form.subtitle")}
           </p>
         </div>
       </div>
@@ -160,10 +164,11 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
             </div>
           </div>
           <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-bold text-blue-900 mb-0.5">O que é a verificação?</p>
+            <p className="text-xs sm:text-sm font-bold text-blue-900 mb-0.5">{t("dashboard.verificationModal.form.whatIs")}</p>
             <p className="text-[11px] sm:text-xs text-blue-600/80 leading-relaxed">
-              O selo confirma que sua página é autêntica e pertence a quem diz ser.
-              Aumenta a confiança dos visitantes e dá credibilidade ao seu perfil.
+              {t("dashboard.verificationModal.form.whatIsDescription1")}
+              {" "}
+              {t("dashboard.verificationModal.form.whatIsDescription2")}
             </p>
           </div>
         </div>
@@ -174,7 +179,7 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
         <div className="grid gap-3.5 sm:gap-4 sm:grid-cols-2">
           <div>
             <label className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-gray-400 mb-1 block">
-              Nome completo *
+              {t("dashboard.verificationModal.form.fullName")}
             </label>
             <input
               type="text"
@@ -182,21 +187,21 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
               onChange={(e) => setName(e.target.value)}
               required
               minLength={2}
-              placeholder="Seu nome completo"
+              placeholder={t("dashboard.verificationModal.form.fullNamePlaceholder")}
               className="w-full px-3.5 py-2.5 sm:py-3 bg-gray-50 border-2 border-gray-200 focus:border-black focus:bg-white rounded-xl font-bold text-sm outline-none transition-all placeholder:text-gray-300 placeholder:font-medium"
             />
           </div>
 
           <div>
             <label className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-gray-400 mb-1 block">
-              Email *
+              {t("dashboard.verificationModal.form.email")}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="seu@email.com"
+              placeholder={t("dashboard.verificationModal.form.emailPlaceholder")}
               className="w-full px-3.5 py-2.5 sm:py-3 bg-gray-50 border-2 border-gray-200 focus:border-black focus:bg-white rounded-xl font-bold text-sm outline-none transition-all placeholder:text-gray-300 placeholder:font-medium"
             />
           </div>
@@ -204,7 +209,7 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
 
         <div>
           <label className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-gray-400 mb-1 block">
-            Telefone
+            {t("dashboard.verificationModal.form.phone")}
           </label>
           <input
             type="tel"
@@ -217,17 +222,17 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
 
         <div>
           <label className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-gray-400 mb-1 block">
-            Por que você merece o selo?
+            {t("dashboard.verificationModal.form.why")}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="Descreva quem você é, sua profissão, links de redes sociais que comprovem sua identidade..."
+            placeholder={t("dashboard.verificationModal.form.whyPlaceholder")}
             className="w-full px-3.5 py-2.5 sm:py-3 bg-gray-50 border-2 border-gray-200 focus:border-black focus:bg-white rounded-xl font-bold text-sm outline-none transition-all placeholder:text-gray-300 placeholder:font-medium resize-none"
           />
           <p className="text-[10px] text-gray-400 font-medium mt-1 leading-relaxed">
-            Inclua links de redes sociais, site profissional ou qualquer outra informação que ajude na verificação
+            {t("dashboard.verificationModal.form.whyHelp")}
           </p>
         </div>
 
@@ -244,7 +249,7 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
             onClick={onClose}
             className="flex-1 px-4 py-2.5 sm:py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold text-sm text-gray-600 transition-colors"
           >
-            Cancelar
+            {t("dashboard.verificationModal.form.cancel")}
           </button>
           <button
             type="submit"
@@ -254,12 +259,12 @@ export const VerificationRequestModal = memo(function VerificationRequestModal({
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Enviando...
+                {t("dashboard.verificationModal.form.sending")}
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                Enviar solicitação
+                {t("dashboard.verificationModal.form.send")}
               </>
             )}
           </button>

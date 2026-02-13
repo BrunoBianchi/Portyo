@@ -18,6 +18,11 @@ services:
       - REDIS_PASSWORD=
       - CUSTOM_DOMAIN_DEPLOYMENT_DIR=/deployment
       - CUSTOM_DOMAIN_ADD_SCRIPT_PATH=/deployment/add-custom-domain.sh
+      - CUSTOM_DOMAIN_CNAME_TARGET=${CUSTOM_DOMAIN_CNAME_TARGET:-cname.portyo.me}
+      - CUSTOM_DOMAIN_CERTBOT_EMAIL=${CUSTOM_DOMAIN_CERTBOT_EMAIL:-admin@portyo.me}
+      - SAAS_BASE_DOMAIN=${SAAS_BASE_DOMAIN:-portyo.me}
+      - COMPANY_SUBDOMAIN=${COMPANY_SUBDOMAIN:-company.portyo.me}
+      - CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY=${CUSTOM_DOMAIN_REQUIRE_CNAME_ONLY:-true}
       - MAILGUN_API_SECRET=${MAILGUN_API_SECRET}
       - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
       - MAILGUN_FROM_EMAIL=${MAILGUN_FROM_EMAIL}
@@ -85,6 +90,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+      - ./data/nginx/custom-domains:/etc/nginx/custom-domains
     depends_on:
       - frontend
       - backend

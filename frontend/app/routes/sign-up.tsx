@@ -107,8 +107,8 @@ export default function Signup() {
 
     return (
         <AuthLayoutBold
-            title={t("auth.signup.titleStep1", "Crie sua Portyo")}
-            subtitle={t("auth.signup.subtitleStep1", "Comece grátis, sem cartão de crédito.")}
+            title={t("auth.signup.titleStep1", "Create your Portyo account")}
+            subtitle={t("auth.signup.subtitleStep1", "Start free, no credit card required.")}
         >
             <form className="space-y-6" onSubmit={handleContinue}>
                 {signupError && (
@@ -119,7 +119,7 @@ export default function Signup() {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
-                            {t("auth.signup.fullNamePlaceholder", "Nome de usuário")}
+                            {t("auth.signup.fullNamePlaceholder", "Username")}
                         </label>
                         <input
                             type="text"
@@ -149,7 +149,7 @@ export default function Signup() {
 
                     <div className="relative">
                         <label className="block text-sm font-bold text-[#1A1A1A] mb-2 pl-1">
-                            {t("auth.signup.passwordPlaceholder", "Senha")}
+                            {t("auth.signup.passwordPlaceholder", "Password")}
                         </label>
                         <input
                             type={showPassword ? "text" : "password"}
@@ -170,19 +170,19 @@ export default function Signup() {
                     </div>
 
                     <div className="pt-2 pl-1">
-                        <p className="text-xs font-bold text-[#1A1A1A]/60 uppercase tracking-wider mb-3">Requisitos da senha:</p>
+                        <p className="text-xs font-bold text-[#1A1A1A]/60 uppercase tracking-wider mb-3">Password requirements:</p>
                         <ul className="space-y-2">
                             <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasFullName ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
                                 {hasFullName ? <CheckIcon /> : <CircleIcon />}
-                                <span>{t("auth.signup.requirements.fullName", "Nome de usuário preenchido")}</span>
+                                <span>{t("auth.signup.requirements.fullName", "Username filled")}</span>
                             </li>
                             <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasUppercase ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
                                 {hasUppercase ? <CheckIcon /> : <CircleIcon />}
-                                <span>{t("auth.signup.requirements.uppercase", "Pelo menos 1 letra maiúscula")}</span>
+                                <span>{t("auth.signup.requirements.uppercase", "At least 1 uppercase letter")}</span>
                             </li>
                             <li className={`flex items-center gap-2 text-sm font-bold transition-colors ${hasMinLength ? 'text-[#022C22]' : 'text-[#1A1A1A]/30'}`}>
                                 {hasMinLength ? <CheckIcon /> : <CircleIcon />}
-                                <span>{t("auth.signup.requirements.length", "Mínimo de 8 caracteres")}</span>
+                                <span>{t("auth.signup.requirements.length", "Minimum 8 characters")}</span>
                             </li>
                         </ul>
                     </div>
@@ -194,7 +194,7 @@ export default function Signup() {
                         disabled={!isFormValid || isSubmitting}
                         className="w-full bg-[#1A1A1A] text-white font-display font-bold text-lg py-4 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#1A1A1A]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isSubmitting ? t("auth.signup.submitting", "Criando...") : t("auth.signup.submit", "Criar conta")}
+                        {isSubmitting ? t("auth.signup.submitting", "Creating...") : t("auth.signup.submit", "Create account")}
                     </button>
                 </div>
             </form>
@@ -205,7 +205,7 @@ export default function Signup() {
                         <div className="w-full border-t border-[#1A1A1A]/10"></div>
                     </div>
                     <span className="relative bg-white px-4 text-xs font-bold text-[#1A1A1A]/40 uppercase tracking-widest">
-                        {t("auth.signup.or", "OU")}
+                        {t("auth.signup.or", "OR")}
                     </span>
                 </div>
 

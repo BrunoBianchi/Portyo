@@ -84,6 +84,80 @@
       "list": "Track the status of all your domains"
     }
   },
+  "verificationModal": {
+    "errors": {
+      "sendFailed": "Failed to send request. Please try again."
+    },
+    "verified": {
+      "title": "Page verified!",
+      "description": "Your page already has the verification badge.",
+      "close": "Close"
+    },
+    "pending": {
+      "title": "Under review",
+      "description1": "Your request is being reviewed by our team.",
+      "description2": "You will be notified once there is an update.",
+      "ack": "Got it"
+    },
+    "success": {
+      "title": "Request sent!",
+      "description1": "We received your request. Our team will review",
+      "description2": "your details and notify you soon.",
+      "close": "Close"
+    },
+    "form": {
+      "title": "Request verification",
+      "subtitle": "Verify your identity to get the badge",
+      "whatIs": "What is verification?",
+      "whatIsDescription1": "The badge confirms your page is authentic.",
+      "whatIsDescription2": "It builds visitor trust and adds credibility to your profile.",
+      "fullName": "Full name *",
+      "fullNamePlaceholder": "Your full name",
+      "email": "Email *",
+      "emailPlaceholder": "you@email.com",
+      "phone": "Phone",
+      "why": "Why do you deserve the badge?",
+      "whyPlaceholder": "Describe who you are, your profession, and social links that help verify your identity...",
+      "whyHelp": "Include social links, a professional website, or any information that helps verification",
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "send": "Send request"
+    }
+  },
+  "linksTab": {
+    "status": {
+      "underReview": "Under review",
+      "getVerified": "Get verified"
+    },
+    "actions": {
+      "remove": "Remove",
+      "addSocial": "Add social profile",
+      "search": "Search...",
+      "noResults": "No results found",
+      "insertLinkOrUser": "Enter the link or username",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "stats": {
+      "clicks": "clicks",
+      "views": "views"
+    },
+    "placeholders": {
+      "username": "@yourusername",
+      "youtube": "https://youtube.com/@channel",
+      "linkedin": "https://linkedin.com/in/profile",
+      "github": "yourusername",
+      "facebook": "https://facebook.com/page",
+      "email": "you@email.com",
+      "website": "https://yourwebsite.com",
+      "twitch": "yourusername",
+      "discord": "https://discord.gg/invite",
+      "pinterest": "https://pinterest.com/profile",
+      "telegram": "@yourusername",
+      "behance": "https://behance.net/profile",
+      "dribbble": "https://dribbble.com/profile"
+    }
+  },
   "sidebar": {
     "groups": {
       "myPortyo": "My Portyo",

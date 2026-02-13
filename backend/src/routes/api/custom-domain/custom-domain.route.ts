@@ -5,8 +5,10 @@ import { requireAdmin } from "../../../middlewares/admin.middleware";
 import { CustomDomainService } from "../../../shared/services/custom-domain.service";
 import { logger } from "../../../shared/utils/logger";
 import { CustomDomainStatus } from "../../../database/entity/custom-domain-entity";
+import { env } from "../../../config/env";
 
 const router = Router();
+const customDomainCnameTarget = env.CUSTOM_DOMAIN_CNAME_TARGET;
 
 /**
  * GET /api/custom-domains
@@ -88,8 +90,8 @@ router.post("/", requireAuth, isUserPro, async (req, res) => {
                 verificationToken: result.domain!.verificationToken
             },
             instructions: {
-                dns: `Configure um registro DNS A apontando ${domain} para cname.portyo.me`,
-                cname: `Domínios serão verificados apenas quando o registro A apontar para cname.portyo.me`
+                dns: `Configure um registro DNS CNAME apontando ${domain} para ${customDomainCnameTarget}`,
+                cname: `Domínios serão verificados apenas quando o CNAME apontar para ${customDomainCnameTarget}`
             }
         });
     } catch (error) {
@@ -207,7 +209,7 @@ router.post("/:id/verify", requireAuth, async (req, res) => {
             return res.json({
                 success: true,
                 dnsConfigured: false,
-                message: "DNS ainda não configurado. Crie um registro A apontando para cname.portyo.me."
+                message: `DNS ainda não configurado. Crie um registro CNAME apontando para ${customDomainCnameTarget}.`
             });
         }
 

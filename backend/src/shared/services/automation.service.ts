@@ -703,12 +703,24 @@ const processWaitNode = async (node: AutomationNode): Promise<void> => {
 };
 
 const processWebhookNode = async (node: AutomationNode, context: any): Promise<any> => {
-    const { webhookUrl, webhookMethod, webhookHeaders, webhookBody } = node.data;
+    const webhookUrl = (node.data as any).webhookUrl || (node.data as any).url;
+    const webhookMethod = (node.data as any).webhookMethod || (node.data as any).method;
+    const webhookHeaders = (node.data as any).webhookHeaders || (node.data as any).headers;
+    const webhookBody = (node.data as any).webhookBody || (node.data as any).body;
     if (!webhookUrl) return context;
 
     try {
         const url = replacePlaceholders(webhookUrl, context);
-        const headers = webhookHeaders || {};
+        let headers: Record<string, string> = {};
+        if (typeof webhookHeaders === "string" && webhookHeaders.trim()) {
+            try {
+                headers = JSON.parse(replacePlaceholders(webhookHeaders, context));
+            } catch {
+                headers = {};
+            }
+        } else {
+            headers = webhookHeaders || {};
+        }
         const method = webhookMethod || "POST";
         
         let body = context;

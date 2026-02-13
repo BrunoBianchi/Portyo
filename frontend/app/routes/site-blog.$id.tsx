@@ -142,9 +142,9 @@ export default function SiteBlogPostPage() {
     const isHtmlContent = /<\/?[a-z][\s\S]*>/i.test(post.content || "");
 
     return (
-        <article className="min-h-screen bg-surface-alt text-foreground">
+        <article className="min-h-screen bg-surface-alt text-foreground pt-20 md:pt-24">
             <motion.div
-                className="max-w-3xl mx-auto px-6 py-12 md:py-20"
+                className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-12 md:pt-10 md:pb-20"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
@@ -168,8 +168,8 @@ export default function SiteBlogPostPage() {
                 </div>
 
                 {/* Editorial Header */}
-                <header className="mb-12 text-center">
-                    <div className="flex items-center justify-center gap-3 text-xs font-bold tracking-widest text-muted-foreground uppercase mb-6">
+                <header className="mb-10 md:mb-12 text-center">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs font-bold tracking-widest text-muted-foreground uppercase mb-5 md:mb-6">
                         <span suppressHydrationWarning>{formattedDate}</span>
                         <span>•</span>
                         <span suppressHydrationWarning>{readTime} min read</span>
@@ -177,7 +177,7 @@ export default function SiteBlogPostPage() {
                         <span suppressHydrationWarning>{t("views", { count: post.views ?? 0 })}</span>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-[1.1] mb-8 tracking-tight">
+                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground leading-[1.08] mb-7 md:mb-8 tracking-tight break-words">
                         {post.title}
                     </h1>
 
@@ -229,38 +229,38 @@ export default function SiteBlogPostPage() {
 
             <style>{`
                 .blog-markdown {
-                    font-size: 1.05rem;
-                    line-height: 1.9;
-                    color: #e5e7eb;
+                    font-size: 1rem;
+                    line-height: 1.85;
+                    color: #1a1a1a;
                 }
                 .blog-markdown > * + * { margin-top: 1.25rem; }
-                .blog-markdown h1 { font-size: 2.25rem; line-height: 1.2; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; }
-                .blog-markdown h2 { font-size: 1.75rem; line-height: 1.3; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; }
-                .blog-markdown h3 { font-size: 1.4rem; line-height: 1.35; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.5rem; }
-                .blog-markdown h4 { font-size: 1.15rem; line-height: 1.4; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+                .blog-markdown h1 { font-size: 2rem; line-height: 1.2; font-weight: 800; margin-top: 2.25rem; margin-bottom: 0.9rem; color: #1a1a1a; }
+                .blog-markdown h2 { font-size: 1.6rem; line-height: 1.3; font-weight: 800; margin-top: 1.9rem; margin-bottom: 0.7rem; color: #1a1a1a; }
+                .blog-markdown h3 { font-size: 1.35rem; line-height: 1.35; font-weight: 700; margin-top: 1.7rem; margin-bottom: 0.5rem; color: #1a1a1a; }
+                .blog-markdown h4 { font-size: 1.1rem; line-height: 1.4; font-weight: 700; margin-top: 1.4rem; margin-bottom: 0.5rem; color: #1a1a1a; }
                 .blog-markdown p { margin: 0 0 1rem; white-space: pre-wrap; }
-                .blog-markdown a { color: #d7f000; text-decoration: underline; text-underline-offset: 3px; }
-                .blog-markdown a:hover { color: #f3ff7a; }
+                .blog-markdown a { color: #1a1a1a; text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
+                .blog-markdown a:hover { color: #0047ff; }
                 .blog-markdown ul, .blog-markdown ol { margin: 0 0 1rem; padding-left: 1.5rem; }
                 .blog-markdown li { margin: 0.4rem 0; }
                 .blog-markdown blockquote {
-                    border-left: 4px solid #334155;
-                    background: #0f172a;
-                    color: #e2e8f0;
+                    border-left: 4px solid #1a1a1a;
+                    background: #f3f3f1;
+                    color: #1a1a1a;
                     padding: 0.75rem 1rem;
                     border-radius: 0.75rem;
                     margin: 1.5rem 0;
                 }
                 .blog-markdown code {
-                    background: #111827;
-                    color: #e2e8f0;
+                    background: #1a1a1a;
+                    color: #d2e823;
                     padding: 0.15rem 0.4rem;
                     border-radius: 0.4rem;
                     font-size: 0.95em;
                 }
                 .blog-markdown pre {
-                    background: #0b1020;
-                    color: #e5e7eb;
+                    background: #1a1a1a;
+                    color: #f3f3f1;
                     padding: 1rem;
                     border-radius: 0.75rem;
                     overflow-x: auto;
@@ -270,13 +270,25 @@ export default function SiteBlogPostPage() {
                 .blog-markdown img {
                     max-width: 100%;
                     border-radius: 12px;
-                    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+                    box-shadow: 0 10px 24px rgba(26, 26, 26, 0.12);
                     margin: 1.5rem 0;
                 }
-                .blog-markdown hr { border: none; border-top: 1px solid #1f2937; margin: 2rem 0; }
+                .blog-markdown hr { border: none; border-top: 1px solid rgba(26, 26, 26, 0.2); margin: 2rem 0; }
                 .blog-markdown table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
-                .blog-markdown th, .blog-markdown td { border: 1px solid #1f2937; padding: 0.6rem 0.75rem; }
-                .blog-markdown th { background: #0f172a; text-align: left; }
+                .blog-markdown th, .blog-markdown td { border: 1px solid rgba(26, 26, 26, 0.18); padding: 0.6rem 0.75rem; }
+                .blog-markdown th { background: #f3f3f1; text-align: left; }
+
+                @media (max-width: 640px) {
+                    .blog-markdown {
+                        font-size: 0.96rem;
+                        line-height: 1.75;
+                    }
+                    .blog-markdown h1 { font-size: 1.65rem; margin-top: 1.8rem; }
+                    .blog-markdown h2 { font-size: 1.35rem; margin-top: 1.55rem; }
+                    .blog-markdown h3 { font-size: 1.15rem; margin-top: 1.35rem; }
+                    .blog-markdown h4 { font-size: 1rem; margin-top: 1.15rem; }
+                    .blog-markdown table { font-size: 0.88rem; }
+                }
             `}</style>
         </article>
     );

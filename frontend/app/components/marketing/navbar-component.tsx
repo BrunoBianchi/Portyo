@@ -336,7 +336,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/85 backdrop-blur-[2px]"
             />
 
             {/* Menu Panel */}
@@ -345,7 +345,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-surface-card shadow-2xl border-l border-border"
+              className="absolute right-0 top-0 bottom-0 w-[82%] max-w-[360px] bg-[#F3F3F1] shadow-2xl border-l-2 border-[#1A1A1A]/20"
             >
               <div className="p-6 pt-20">
                 <nav className="space-y-2">
@@ -363,7 +363,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                       key={item.label}
                       to={withLang(item.href)}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block px-4 py-3 text-lg font-semibold text-foreground hover:bg-muted rounded-xl transition-colors"
+                      className="block px-4 py-3 text-lg font-bold text-[#1A1A1A] hover:bg-black/5 rounded-xl transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -372,7 +372,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
 
                 {/* Language Selector */}
                 <div className="mt-6 pt-6 border-t border-border">
-                  <p className="px-4 text-sm font-medium text-muted-foreground mb-3">{t("nav.language")}</p>
+                  <p className="px-4 text-sm font-bold text-[#1A1A1A]/70 mb-3">{t("nav.language")}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {LANGUAGES.map((lang) => (
                       <button
@@ -382,9 +382,9 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                           navigate(buildLocalizedPath(lang.code), { replace: true });
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${lang.code === (i18n.resolvedLanguage || i18n.language)
-                            ? "bg-primary text-background"
-                            : "bg-muted text-muted-foreground hover:bg-muted-hover"
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${lang.code === (i18n.resolvedLanguage || i18n.language)
+                            ? "bg-[#D2E823] text-[#1A1A1A]"
+                            : "bg-white text-[#1A1A1A]/75 border border-[#1A1A1A]/10 hover:bg-[#ECECEA]"
                           }`}
                       >
                         {lang.label}
@@ -401,14 +401,14 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                       <Link
                         to={getCompanyPath("login")}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                        className="block w-full px-4 py-3 text-center font-semibold text-[#1A1A1A] bg-white border border-[#1A1A1A]/10 rounded-xl hover:bg-[#ECECEA] transition-colors"
                       >
                         {t("nav.signIn", "Sign In")}
                       </Link>
                       <Link
                         to={getCompanyPath("register")}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-3 text-center font-bold text-background bg-primary rounded-xl hover:bg-primary-hover transition-colors"
+                        className="block w-full px-4 py-3 text-center font-bold text-[#1A1A1A] bg-[#D2E823] rounded-xl border-2 border-[#D2E823] hover:bg-[#C6DD18] transition-colors"
                       >
                         {t("nav.register", "Register")}
                       </Link>
@@ -418,7 +418,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                       <Link
                         to="/dashboard"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                        className="block w-full px-4 py-3 text-center font-semibold text-[#1A1A1A] bg-white border border-[#1A1A1A]/10 rounded-xl hover:bg-[#ECECEA] transition-colors"
                       >
                         {t("nav.goToDashboard")}
                       </Link>
@@ -427,7 +427,7 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                           logout();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="block w-full px-4 py-3 text-center font-semibold text-destructive bg-destructive/10 rounded-xl hover:bg-destructive/20 transition-colors"
+                        className="block w-full px-4 py-3 text-center font-bold text-[#1A1A1A] bg-[#D2E823] rounded-xl border-2 border-[#D2E823] hover:bg-[#C6DD18] transition-colors"
                       >
                         {t("nav.signOut")}
                       </button>
@@ -437,14 +437,14 @@ export default function Navbar({ isCompanyMode = false }: NavbarProps) {
                       <Link
                         to={withLang(`/login?redirect=${encodeURIComponent(currentPathWithSearch)}`)}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-3 text-center font-semibold text-foreground bg-muted rounded-xl hover:bg-muted-hover transition-colors"
+                        className="block w-full px-4 py-3 text-center font-semibold text-[#1A1A1A] bg-white border border-[#1A1A1A]/10 rounded-xl hover:bg-[#ECECEA] transition-colors"
                       >
                         {t("nav.signIn")}
                       </Link>
                       <Link
                         to={withLang('/sign-up')}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block w-full px-4 py-3 text-center font-bold text-background bg-primary rounded-xl hover:bg-primary-hover transition-colors"
+                        className="block w-full px-4 py-3 text-center font-bold text-[#1A1A1A] bg-[#D2E823] rounded-xl border-2 border-[#D2E823] hover:bg-[#C6DD18] transition-colors"
                       >
                         {t("nav.startFree")}
                       </Link>

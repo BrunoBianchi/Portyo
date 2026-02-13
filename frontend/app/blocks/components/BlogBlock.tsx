@@ -5,6 +5,7 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import type { BlockComponentProps } from './types';
 import { BlockWrapper } from './BlockWrapper';
+import { api } from '~/services/api';
 
 const BlogPostPopup = lazy(() =>
     import('~/components/bio/blog-post-popup').then(m => ({
@@ -53,17 +54,22 @@ export const BlogBlock: React.FC<BlockComponentProps> = ({ block, bioId }) => {
         if (!bioId) return;
         let cancelled = false;
 
-        const origin = typeof window !== 'undefined' ? window.location.origin : '';
-        fetch(`${origin}/api/blog/${bioId}?publicView=true`)
-            .then(r => r.json())
-            .then(data => {
+        api.get(`/public/blog/${bioId}`)
+            .then((response) => {
+                if (cancelled) return;
+                const data = response?.data;
+                const items = Array.isArray(data) ? data : data?.posts || [];
+                setPosts(items.slice(0, block.blogPostCount || 6));
+            })
+            .catch((error) => {
                 if (!cancelled) {
-                    const items = Array.isArray(data) ? data : data?.posts || [];
-                    setPosts(items.slice(0, block.blogPostCount || 6));
+                    console.error('Failed to load bio blog posts:', error);
+                    setPosts([]);
                 }
             })
-            .catch(() => {})
-            .finally(() => { if (!cancelled) setLoading(false); });
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
 
         return () => { cancelled = true; };
     }, [bioId, block.blogPostCount]);

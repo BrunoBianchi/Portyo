@@ -343,6 +343,40 @@
       }
     ]
   },
+  "landingBold": {
+    "socialProof": "Trusted by over 50,000 creators",
+    "featureA": {
+      "title": "ANALYTICS YOU CAN TRUST.",
+      "description": "No more vanity metrics. See exactly who clicks, who buys, and where traffic comes from. Real data for real growth."
+    },
+    "featureB": {
+      "title": "SELL MORE. A LOT MORE.",
+      "description": "Integrate digital products, bookings, and newsletters directly into your link. Turn followers into customers in two clicks."
+    },
+    "hero": {
+      "badge": "✦ NEW DESIGN SYSTEM",
+      "line1": "THE FASTEST WAY",
+      "line2": "LINK IN BIO",
+      "line3": "TO BUILD YOUR SITE.",
+      "subtitle": "Build your own site in minutes. No code. No complex design. Just you and your audience.",
+      "ctaPrimary": "Get Started Free",
+      "ctaSecondary": "View Plans"
+    },
+    "testimonial": {
+      "quote": "Portyo changed my business. I used to manage five scattered links, and now I run everything from one central digital hub. My sales doubled in 30 days.",
+      "role": "Influencer & Digital Entrepreneur"
+    }
+  },
+  "catchall": {
+    "title": "Page not found",
+    "description": "Looks like you got lost in digital space. The page you are looking for doesn’t exist or has been moved.",
+    "backDashboard": "Back to Dashboard",
+    "backHome": "Back to Home",
+    "contactSupport": "Contact Support",
+    "popularLinks": "Popular links",
+    "pricing": "Pricing",
+    "themes": "Themes"
+  },
   "creatorMarquee": {
     "title": "Trusted by",
     "highlight": "creators worldwide",

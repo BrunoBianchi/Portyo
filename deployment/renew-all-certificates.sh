@@ -13,6 +13,8 @@ NC='\033[0m'
 
 echo -e "${GREEN}🔄 Renovando todos os certificados SSL...${NC}"
 
+mkdir -p ./data/nginx/custom-domains
+
 # Verificar se containers estão rodando
 if ! docker compose ps | grep -q "certbot"; then
     echo -e "${YELLOW}⚠️  Container certbot não está rodando${NC}"
@@ -32,6 +34,10 @@ docker compose run --rm --entrypoint certbot certbot \
 
 # Recarregar Nginx
 echo -e "${GREEN}🔄 Recarregando Nginx...${NC}"
+docker compose exec nginx nginx -t >/dev/null 2>&1 || {
+    echo -e "${RED}❌ Configuração Nginx inválida. Abortando reload.${NC}"
+    exit 1
+}
 docker compose exec nginx nginx -s reload
 
 echo -e "${GREEN}✅ Renovação concluída!${NC}"

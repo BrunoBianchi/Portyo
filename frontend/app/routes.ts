@@ -46,6 +46,7 @@ const baseRoutes: RouteConfig = [
             { path: "qrcode", file: "routes/dashboard-qrcode.tsx" },
             { path: "scheduler", file: "routes/dashboard-scheduler.tsx" },
             { path: "social-planner", file: "routes/dashboard-social-planner.tsx" },
+            { path: "link-shortener", file: "routes/dashboard-link-shortener.tsx" },
             { path: "templates", file: "routes/dashboard-templates.tsx" },
             { path: "templates/:id", file: "routes/dashboard-templates.editor.tsx" },
             { path: "admin", file: "routes/dashboard.admin.tsx" },

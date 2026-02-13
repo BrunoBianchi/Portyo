@@ -152,19 +152,44 @@ export default function DashboardAutomationList() {
     ], [t]);
 
 
-    const handleCreate = async () => {
+    const handleCreate = async (template: "welcome" | "discord" | "webhook" = "welcome") => {
         if (!bio?.id) return;
         setCreating(true);
         try {
-            // Create a default "New Automation"
+            const templates = {
+                welcome: {
+                    name: "Welcome Subscriber",
+                    nodes: [
+                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'New Subscriber', eventType: 'newsletter_subscribe' } },
+                        { id: '2', type: 'action', position: { x: 250, y: 250 }, data: { label: 'Welcome Email', subject: 'Welcome!', content: 'Thanks for subscribing!' } }
+                    ],
+                    edges: [{ id: 'e1-2', source: '1', target: '2' }]
+                },
+                discord: {
+                    name: "Discord Alert Flow",
+                    nodes: [
+                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'New Subscriber', eventType: 'newsletter_subscribe' } },
+                        { id: '2', type: 'discord', position: { x: 250, y: 250 }, data: { label: 'Discord Alert', discordMessage: 'Novo inscrito: {{email}}' } }
+                    ],
+                    edges: [{ id: 'e1-2', source: '1', target: '2' }]
+                },
+                webhook: {
+                    name: "Webhook Bridge",
+                    nodes: [
+                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'Link Clicked', eventType: 'link_click' } },
+                        { id: '2', type: 'webhook', position: { x: 250, y: 250 }, data: { label: 'Send Webhook', webhookMethod: 'POST' } }
+                    ],
+                    edges: [{ id: 'e1-2', source: '1', target: '2' }]
+                }
+            } as const;
+
+            const selectedTemplate = templates[template];
+
             const newAutomation = await createAutomation(
                 bio.id,
-                "Untitled Automation",
-                [
-                    { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'New Subscriber', eventType: 'newsletter_subscribe' } },
-                    { id: '2', type: 'action', position: { x: 250, y: 250 }, data: { label: 'Welcome Email', subject: 'Welcome!', content: 'Thanks for subscribing!' } }
-                ],
-                [{ id: 'e1-2', source: '1', target: '2' }]
+                selectedTemplate.name,
+                selectedTemplate.nodes as any,
+                selectedTemplate.edges as any
             );
             navigate(`/dashboard/automation/${newAutomation.id}`);
         } catch (error) {
@@ -246,6 +271,34 @@ export default function DashboardAutomationList() {
                         >
                             {creating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className="w-6 h-6 stroke-[3px]" />}
                             {t("dashboard.automationList.createWithCount", { current: emailUsage ? automations.length : 0, limit: emailUsage ? getAutomationLimit(emailUsage.plan) : 0 })}
+                        </button>
+                    </div>
+
+                    {/* Quick Start Templates */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button
+                            onClick={() => handleCreate("welcome")}
+                            disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
+                            className="text-left p-4 bg-white rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                        >
+                            <p className="font-black text-[#1A1A1A]">Welcome Email</p>
+                            <p className="text-xs text-gray-500 mt-1">Trigger + email pronto para assinantes.</p>
+                        </button>
+                        <button
+                            onClick={() => handleCreate("discord")}
+                            disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
+                            className="text-left p-4 bg-white rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                        >
+                            <p className="font-black text-[#1A1A1A]">Discord Alert</p>
+                            <p className="text-xs text-gray-500 mt-1">Notificação de evento direto no Discord.</p>
+                        </button>
+                        <button
+                            onClick={() => handleCreate("webhook")}
+                            disabled={creating || (emailUsage ? automations.length >= getAutomationLimit(emailUsage.plan) : false)}
+                            className="text-left p-4 bg-white rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all"
+                        >
+                            <p className="font-black text-[#1A1A1A]">Webhook Bridge</p>
+                            <p className="text-xs text-gray-500 mt-1">Envia dados para sistemas externos.</p>
                         </button>
                     </div>
 

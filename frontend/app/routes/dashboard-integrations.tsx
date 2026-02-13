@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import type { MetaFunction } from "react-router";
 import { api } from "~/services/api";
+import { toast } from "react-hot-toast";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
 import AuthContext from "~/contexts/auth.context";
@@ -60,7 +61,7 @@ const buildIntegrations = (t: (key: string) => string): Integration[] => [
     name: "YouTube",
     description: t("dashboard.integrations.items.youtube"),
     icon: <YouTubeIcon className="w-8 h-8 text-[#FF0000]" />,
-    status: "connected",
+    status: "coming_soon",
     category: "content"
   },
   {
@@ -68,7 +69,7 @@ const buildIntegrations = (t: (key: string) => string): Integration[] => [
     name: "TikTok",
     description: t("dashboard.integrations.items.tiktok"),
     icon: <TikTokIcon className="w-8 h-8 text-[#000000]" />,
-    status: "disconnected",
+    status: "coming_soon",
     category: "social"
   },
   {
@@ -76,7 +77,7 @@ const buildIntegrations = (t: (key: string) => string): Integration[] => [
     name: "Spotify",
     description: t("dashboard.integrations.items.spotify"),
     icon: <SpotifyIcon className="w-8 h-8 text-[#1DB954]" />,
-    status: "disconnected",
+    status: "coming_soon",
     category: "content"
   },
   {
@@ -84,7 +85,7 @@ const buildIntegrations = (t: (key: string) => string): Integration[] => [
     name: "X (Twitter)",
     description: t("dashboard.integrations.items.twitter"),
     icon: <TwitterIcon className="w-8 h-8 text-[#1DA1F2]" />,
-    status: "disconnected",
+    status: "coming_soon",
     category: "social"
   },
   {
@@ -103,6 +104,7 @@ export default function DashboardIntegrations() {
   const { bio } = useContext(BioContext);
   const [searchParams] = useSearchParams();
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
   const baseIntegrations = useMemo(() => buildIntegrations(t), [t]);
   const [integrations, setIntegrations] = useState<Integration[]>(baseIntegrations);
   const [tourPrimaryColor, setTourPrimaryColor] = useState("#d2e823");
@@ -110,6 +112,7 @@ export default function DashboardIntegrations() {
   const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:integrations-tour-done" });
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
+  const connectableProviders = useMemo(() => new Set(["stripe", "instagram", "google-analytics"]), []);
 
   const filteredIntegrations = integrations.filter(
     (item) => filter === "all" || item.category === filter
@@ -171,33 +174,33 @@ export default function DashboardIntegrations() {
     },
   ], [t]);
 
+  const fetchIntegrations = async () => {
+    if (!bio?.id) return;
+    try {
+      const res = await api.get(`/integration?bioId=${bio.id}`);
+      const connectedIntegrations = res.data;
+
+      setIntegrations(prevIntegrations => prevIntegrations.map(integration => {
+        if (integration.status === "coming_soon") return integration;
+
+        const isConnected = connectedIntegrations.some((i: any) => {
+          const provider = typeof i?.provider === "string" ? i.provider.toLowerCase() : "";
+          const name = typeof i?.name === "string" ? i.name.toLowerCase().replace(/\s+/g, "-") : "";
+          return provider === integration.id || name === integration.id;
+        });
+
+        if (isConnected) {
+          return { ...integration, status: "connected" };
+        }
+        return { ...integration, status: "disconnected" };
+      }));
+    } catch (error) {
+      console.error("Failed to fetch integrations", error);
+      toast.error("Failed to load integrations status.");
+    }
+  };
+
   useEffect(() => {
-    const fetchIntegrations = async () => {
-      if (!bio?.id) return;
-      try {
-        const res = await api.get(`/integration?bioId=${bio.id}`);
-        const connectedIntegrations = res.data;
-
-        setIntegrations(prevIntegrations => prevIntegrations.map(integration => {
-          if (integration.status === "coming_soon") return integration;
-
-          const isConnected = connectedIntegrations.some((i: any) => {
-            const provider = typeof i?.provider === "string" ? i.provider.toLowerCase() : "";
-            const name = typeof i?.name === "string" ? i.name.toLowerCase().replace(/\s+/g, "-") : "";
-            return provider === integration.id || name === integration.id;
-          });
-
-          if (isConnected) {
-            return { ...integration, status: "connected" };
-          } else {
-            return { ...integration, status: "disconnected" };
-          }
-        }));
-      } catch (error) {
-        console.error("Failed to fetch integrations", error);
-      }
-    };
-
     fetchIntegrations();
   }, [bio?.id]);
 
@@ -212,13 +215,17 @@ export default function DashboardIntegrations() {
 
       const successParam = searchParams.get("success");
       if (successParam === "instagram_connected") {
-        // Re-fetch integration status
-        // We can just rely on the main useEffect that fetches integrations, 
-        // but we might want to show a toast or clean the URL.
-        // For now, let's just let the main useEffect update the state because it depends on bio.id
-        // We can force a refetch if needed, but the component remount or state update might trigger it.
-        // Actually, better to explicitly re-fetch or rely on the fact that we just redirected back.
-        // The main useEffect [bio?.id] runs on mount.
+        toast.success("Instagram connected successfully.");
+        fetchIntegrations();
+      }
+
+      const gaStatus = searchParams.get("google_analytics");
+      if (gaStatus === "connected") {
+        toast.success("Google Analytics connected successfully.");
+        fetchIntegrations();
+      }
+      if (gaStatus === "error") {
+        toast.error("Google Analytics connection failed.");
       }
     }
   }, [searchParams, bio?.id]);
@@ -269,28 +276,61 @@ export default function DashboardIntegrations() {
   const handleConnectGoogleAnalytics = async () => {
     if (!bio?.id) return;
     try {
+      setPendingAction("google-analytics-connect");
       const res = await api.get(`/google-analytics/auth?bioId=${bio.id}`);
       if (res.data.url) {
         window.location.href = res.data.url;
       }
     } catch (error) {
       console.error("Failed to connect google analytics", error);
+      toast.error("Unable to start Google Analytics connection.");
+      setPendingAction(null);
     }
   };
 
   const handleConnectInstagram = async () => {
     if (!bio?.id) return;
     try {
+      setPendingAction("instagram-connect");
       const res = await api.get(`/instagram/auth?bioId=${bio.id}`);
       if (res.data.url) {
         window.location.href = res.data.url;
       }
     } catch (error) {
       console.error("Failed to connect instagram", error);
+      toast.error("Unable to start Instagram connection.");
+      setPendingAction(null);
+    }
+  };
+
+  const handleDisconnect = async (provider: string) => {
+    if (!bio?.id) return;
+    try {
+      setPendingAction(`${provider}-disconnect`);
+      await api.delete("/integration/disconnect", {
+        data: {
+          bioId: bio.id,
+          provider,
+        },
+      });
+
+      setIntegrations(prev => prev.map(item =>
+        item.id === provider ? { ...item, status: "disconnected" } : item
+      ));
+      toast.success("Integration disconnected.");
+    } catch (error) {
+      console.error("Failed to disconnect integration", error);
+      toast.error("Unable to disconnect integration.");
+    } finally {
+      setPendingAction(null);
     }
   };
 
   const handleConnect = (id: string) => {
+    if (!connectableProviders.has(id)) {
+      return;
+    }
+
     if (id === "stripe") {
       handleConnectStripe();
       return;
@@ -303,22 +343,15 @@ export default function DashboardIntegrations() {
       handleConnectInstagram();
       return;
     }
-    // Simulate connection
-    setIntegrations(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: item.status === "connected" ? "disconnected" : "connected" };
-      }
-      return item;
-    }));
   };
 
   return (
     <AuthorizationGuard>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="px-4 py-4 sm:p-6 max-w-7xl mx-auto">
 
         <div className="mb-8" data-tour="integrations-header">
-          <h1 className="text-4xl font-black text-[#1A1A1A] uppercase tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.integrations.title")}</h1>
-          <p className="text-gray-600 font-medium text-lg">{t("dashboard.integrations.subtitle")}</p>
+          <h1 className="text-2xl sm:text-4xl font-black text-[#1A1A1A] uppercase tracking-tighter mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.integrations.title")}</h1>
+          <p className="text-gray-600 font-medium text-sm sm:text-lg">{t("dashboard.integrations.subtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -338,12 +371,12 @@ export default function DashboardIntegrations() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-tour="integrations-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-tour="integrations-grid">
           {filteredIntegrations.map((integration, index) => (
             <div
               key={integration.id}
               data-tour={index === 0 ? "integrations-card" : undefined}
-              className="bg-white rounded-[20px] border-4 border-black p-6 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col h-full group hover:-translate-y-1"
+              className="bg-white rounded-[20px] border-4 border-black p-4 sm:p-6 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 flex flex-col h-full group hover:-translate-y-1"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-gray-100 border-2 border-black rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
@@ -362,8 +395,8 @@ export default function DashboardIntegrations() {
                 )}
               </div>
 
-              <h3 className="text-xl font-black text-[#1A1A1A] mb-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{integration.name}</h3>
-              <p className="text-sm text-gray-600 font-medium mb-6 flex-1 leading-relaxed">
+              <h3 className="text-lg sm:text-xl font-black text-[#1A1A1A] mb-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{integration.name}</h3>
+              <p className="text-sm text-gray-600 font-medium mb-5 sm:mb-6 flex-1 leading-relaxed">
                 {integration.description}
               </p>
 
@@ -382,6 +415,8 @@ export default function DashboardIntegrations() {
                     onClick={() => {
                       if (integration.id === "stripe" && integration.status === "connected") {
                         handleStripeDashboard();
+                      } else if (integration.status === "connected" && integration.id !== "stripe") {
+                        handleDisconnect(integration.id);
                       } else if (integration.id === "google-analytics" && (user?.plan === 'free' || !user?.plan)) {
                         // Prevent click for free users
                         return;
@@ -389,13 +424,13 @@ export default function DashboardIntegrations() {
                         handleConnect(integration.id);
                       }
                     }}
-                    disabled={integration.id === "stripe" && isLoadingStripe}
+                    disabled={(integration.id === "stripe" && isLoadingStripe) || pendingAction === `${integration.id}-connect` || pendingAction === `${integration.id}-disconnect` || integration.status === "coming_soon" || (!connectableProviders.has(integration.id) && integration.id !== "stripe")}
                     className={`w-full py-3 px-4 rounded-xl text-sm font-black transition-all duration-200 flex items-center justify-center gap-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0 ${integration.status === "connected"
                       ? "bg-white text-black hover:bg-gray-50"
                       : "bg-[#E94E77] text-white hover:bg-[#D43D64]"
                       } ${integration.id === "google-analytics" && (user?.plan === 'free' || !user?.plan) ? "opacity-50 cursor-not-allowed bg-gray-400 border-gray-500 text-white" : ""}`}
                   >
-                    {integration.id === "stripe" && isLoadingStripe ? (
+                    {(integration.id === "stripe" && isLoadingStripe) || pendingAction === `${integration.id}-connect` || pendingAction === `${integration.id}-disconnect` ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : integration.status === "connected" ? (
                       <>

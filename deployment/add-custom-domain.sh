@@ -8,8 +8,9 @@
 set -e
 
 DOMAIN=$1
-EMAIL=${2:-"admin@portyo.me"}
+EMAIL=${2:-"${CUSTOM_DOMAIN_CERTBOT_EMAIL:-admin@portyo.me}"}
 DATA_PATH="./data/certbot"
+NGINX_CUSTOM_DIR="./data/nginx/custom-domains"
 RSA_KEY_SIZE=4096
 
 # Cores para output
@@ -26,6 +27,8 @@ if [ -z "$DOMAIN" ]; then
 fi
 
 echo -e "${GREEN}🔧 Configurando domínio personalizado: $DOMAIN${NC}"
+
+mkdir -p "$NGINX_CUSTOM_DIR"
 
 # Verificar se o Docker Compose está rodando
 if ! docker compose ps --services --filter "status=running" | grep -q "^nginx$"; then
@@ -70,38 +73,35 @@ fi
 rm -f "$PROBE_FILE"
 echo -e "${GREEN}✅ Endpoint ACME acessível${NC}"
 
+CERT_READY=0
+
 # Verificar se o certificado já existe
 if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
     echo -e "${YELLOW}⚠️  Certificado já existe para $DOMAIN${NC}"
     echo "Verificando validade..."
-    
-    # Verificar se o certificado é válido
+
     if openssl x509 -checkend 86400 -noout -in "$DATA_PATH/conf/live/$DOMAIN/fullchain.pem" 2>/dev/null; then
         echo -e "${GREEN}✅ Certificado ainda é válido${NC}"
-        
-        # Recarregar nginx para garantir
-        echo "🔄 Recarregando Nginx..."
-        docker compose exec nginx nginx -s reload 2>/dev/null || true
-        
-        exit 0
+        CERT_READY=1
     else
         echo -e "${YELLOW}⚠️  Certificado expirado, renovando...${NC}"
     fi
 fi
 
-# Gerar certificado usando Certbot
-echo -e "${GREEN}🔒 Gerando certificado SSL para $DOMAIN...${NC}"
+if [ "$CERT_READY" -eq 0 ]; then
+    echo -e "${GREEN}🔒 Gerando certificado SSL para $DOMAIN...${NC}"
 
-docker compose run --rm --entrypoint certbot certbot \
-    certonly \
-    --webroot \
-    -w /var/www/certbot \
-    -d "$DOMAIN" \
-    --email "$EMAIL" \
-    --agree-tos \
-    --non-interactive \
-    --rsa-key-size "$RSA_KEY_SIZE" \
-    --force-renewal || true
+    docker compose run --rm --entrypoint certbot certbot \
+        certonly \
+        --webroot \
+        -w /var/www/certbot \
+        -d "$DOMAIN" \
+        --email "$EMAIL" \
+        --agree-tos \
+        --non-interactive \
+        --rsa-key-size "$RSA_KEY_SIZE" \
+        --force-renewal || true
+fi
 
 # Verificar se o certificado foi gerado
 if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
@@ -130,14 +130,74 @@ else
     exit 1
 fi
 
-# Recarregar Nginx para usar o novo certificado
+# Criar/atualizar vhost dedicado para o domínio
+CONF_FILE="$NGINX_CUSTOM_DIR/$DOMAIN.conf"
+cat > "$CONF_FILE" <<EOF
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name $DOMAIN;
+
+    client_max_body_size 20m;
+
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+
+    location /api/ {
+        proxy_pass http://backend;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Host \$host;
+        proxy_set_header Origin \$http_origin;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        proxy_pass http://frontend;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Host \$host;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+EOF
+
+# Validar configuração do Nginx antes de recarregar
+if ! docker compose exec nginx nginx -t >/dev/null 2>&1; then
+    echo -e "${RED}❌ Configuração Nginx inválida após gerar vhost para $DOMAIN${NC}"
+    rm -f "$CONF_FILE"
+    exit 1
+fi
+
 echo -e "${GREEN}🔄 Recarregando Nginx...${NC}"
-docker compose exec nginx nginx -s reload
+docker compose exec nginx nginx -s reload >/dev/null 2>&1 || true
 
 echo -e "${GREEN}✅ Domínio $DOMAIN configurado com sucesso!${NC}"
 echo ""
 echo -e "${GREEN}📋 Resumo:${NC}"
 echo "   Domínio: $DOMAIN"
 echo "   Certificado: $DATA_PATH/conf/live/$DOMAIN/"
-echo "   Expira em: $(openssl x509 -in $DATA_PATH/conf/live/$DOMAIN/fullchain.pem -noout -enddate | cut -d= -f2)"
+echo "   Expira em: $(openssl x509 -in "$DATA_PATH/conf/live/$DOMAIN/fullchain.pem" -noout -enddate | cut -d= -f2)"
 echo ""

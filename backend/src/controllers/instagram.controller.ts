@@ -6,6 +6,7 @@ import { IntegrationEntity } from "../database/entity/integration-entity";
 import { BioEntity } from "../database/entity/bio-entity";
 import { AppDataSource } from "../database/datasource";
 import { env } from "../config/env";
+import { generateToken, decryptToken } from "../shared/services/jwt.service";
 
 export const getLatestPosts = async (req: Request, res: Response, next: NextFunction) => {
     const { username } = req.params;
@@ -72,16 +73,39 @@ export const getImage = async (req: Request, res: Response, next: NextFunction) 
 }
 
 
-export const initiateAuth = (req: Request, res: Response, next: NextFunction) => {
+export const initiateAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { bioId } = req.query;
       
       if (!bioId) {
         throw new ApiError(APIErrors.badRequestError, "Bio ID is required", 400);
       }
+
+      if (!req.user?.id) {
+        throw new ApiError(APIErrors.unauthorizedError, "Unauthorized", 401);
+      }
+
+      const bioRepository = AppDataSource.getRepository(BioEntity);
+      const bio = await bioRepository.findOne({
+        where: {
+          id: String(bioId),
+          userId: req.user.id,
+        },
+      });
+
+      if (!bio) {
+        throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
+      }
+
+      const state = await generateToken({
+        id: req.user.id,
+        bioId: bio.id,
+        provider: "instagram",
+        type: "integration-state",
+      });
       
       const authUrl = instagramService.getAuthUrl();
-      const authUrlWithState = `${authUrl}&state=${bioId}`;
+      const authUrlWithState = `${authUrl}&state=${encodeURIComponent(state)}`;
       
       if (req.xhr || req.headers.accept?.indexOf('json')! > -1) {
          return res.json({ url: authUrlWithState });
@@ -106,9 +130,17 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         throw new ApiError(APIErrors.badRequestError, "Authorization code missing", 400);
       }
 
-      const bioId = state as string;
-      if (!bioId) {
-         throw new ApiError(APIErrors.badRequestError, "State (bioId) missing", 400);
+      if (!state || typeof state !== "string") {
+        throw new ApiError(APIErrors.badRequestError, "State missing", 400);
+      }
+
+      const statePayload = await decryptToken(state);
+      const bioId = (statePayload as any).bioId as string | undefined;
+      const userId = (statePayload as any).id as string | undefined;
+      const provider = (statePayload as any).provider as string | undefined;
+
+      if (!bioId || !userId || provider !== "instagram") {
+        throw new ApiError(APIErrors.badRequestError, "Invalid state", 400);
       }
 
       const tokenData = await instagramService.exchangeCodeForToken(code);
@@ -116,7 +148,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       const bioRepository = AppDataSource.getRepository(BioEntity);
       const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
 
-      const bio = await bioRepository.findOne({ where: { id: bioId } });
+      const bio = await bioRepository.findOne({ where: { id: bioId, userId } });
       if (!bio) {
          throw new ApiError(APIErrors.notFoundError, "Bio not found", 404);
       }

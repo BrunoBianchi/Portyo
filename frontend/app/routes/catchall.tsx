@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function CatchAll() {
   const location = useLocation();
+  const { t } = useTranslation("home");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -18,6 +20,8 @@ export default function CatchAll() {
   }, []);
 
   const isDashboard = location.pathname.startsWith("/dashboard");
+  const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+  const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] px-4 relative overflow-hidden">
@@ -93,10 +97,10 @@ export default function CatchAll() {
         {/* Message */}
         <div className="space-y-4 mb-10">
           <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">
-            Página não encontrada
+            {t("home.catchall.title")}
           </h2>
           <p className="text-lg text-white/60 max-w-md mx-auto leading-relaxed">
-            Parece que você se perdeu no espaço digital. A página que você procura não existe ou foi movida.
+            {t("home.catchall.description")}
           </p>
         </div>
 
@@ -115,7 +119,7 @@ export default function CatchAll() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            to={isDashboard ? "/dashboard" : "/"}
+            to={withLang(isDashboard ? "/dashboard" : "/")}
             className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-[#0a0a0f] rounded-xl font-semibold text-lg hover:bg-white/90 transition-all hover:scale-105 active:scale-95"
           >
             <svg 
@@ -126,33 +130,33 @@ export default function CatchAll() {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            {isDashboard ? "Voltar ao Dashboard" : "Voltar ao Início"}
+            {isDashboard ? t("home.catchall.backDashboard") : t("home.catchall.backHome")}
           </Link>
 
           <Link
-            to="/contact"
+            to={withLang("/contact")}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white/5 text-white border border-white/10 rounded-xl font-semibold text-lg hover:bg-white/10 transition-all"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            Falar com Suporte
+            {t("home.catchall.contactSupport")}
           </Link>
         </div>
 
         {/* Quick Links */}
         <div className="mt-12 pt-8 border-t border-white/10">
-          <p className="text-sm text-white/40 mb-4">Links populares</p>
+          <p className="text-sm text-white/40 mb-4">{t("home.catchall.popularLinks")}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {[
               { label: "Dashboard", href: "/dashboard" },
-              { label: "Preços", href: "/pricing" },
-              { label: "Temas", href: "/themes" },
+              { label: t("home.catchall.pricing"), href: "/pricing" },
+              { label: t("home.catchall.themes"), href: "/themes" },
               { label: "Blog", href: "/blog" },
             ].map((link) => (
               <Link
                 key={link.href}
-                to={link.href}
+                to={withLang(link.href)}
                 className="px-4 py-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
               >
                 {link.label}

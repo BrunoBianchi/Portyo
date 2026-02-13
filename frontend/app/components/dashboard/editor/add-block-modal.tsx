@@ -259,7 +259,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-end md:items-center justify-center p-0 md:p-4"
                     >
                         {/* Modal */}
                         <motion.div
@@ -267,11 +267,11 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative"
+                            className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-4xl h-[92dvh] md:h-[85vh] flex flex-col shadow-2xl overflow-hidden relative"
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                                <h2 className="text-xl font-bold text-gray-900">Adicionar</h2>
+                            <div className="flex items-center justify-between px-5 md:px-6 py-4 md:py-5 border-b border-gray-100 shrink-0">
+                                <h2 className="text-2xl md:text-xl font-bold text-gray-900">Adicionar</h2>
                                 <button
                                     onClick={onClose}
                                     className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -281,7 +281,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                             </div>
 
                             {/* Search */}
-                            <div className="px-6 py-4">
+                            <div className="px-5 md:px-6 py-3 md:py-4 shrink-0">
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
@@ -289,13 +289,13 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                         placeholder="Cole ou pesquise um link"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3.5 bg-gray-100 hover:bg-gray-200/70 focus:bg-white border-2 border-transparent focus:border-[#c8e600] rounded-xl text-base font-medium outline-none transition-all placeholder:text-gray-400 text-gray-900"
+                                        className="w-full pl-12 pr-4 py-3 bg-gray-100 hover:bg-gray-200/70 focus:bg-white border-2 border-transparent focus:border-[#c8e600] rounded-xl text-base font-medium outline-none transition-all placeholder:text-gray-400 text-gray-900"
                                         autoFocus
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex flex-1 overflow-hidden">
+                            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
                                 {/* Sidebar (Categories) */}
                                 <div className="w-52 border-r border-gray-100 overflow-y-auto hidden md:block shrink-0">
                                     <div className="py-2">
@@ -316,12 +316,13 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                 </div>
 
                                 {/* Categories (Mobile) */}
-                                <div className="md:hidden px-4 py-3 overflow-x-auto flex gap-2 no-scrollbar shrink-0 border-b border-gray-100">
+                                <div className="md:hidden px-4 py-3 overflow-x-auto no-scrollbar shrink-0 border-b border-gray-100">
+                                    <div className="flex items-center gap-2 w-max min-w-full">
                                     {CATEGORIES.map(cat => (
                                         <button
                                             key={cat.id}
                                             onClick={() => { setActiveCategory(cat.id); setSearch(""); }}
-                                            className={`px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all ${activeCategory === cat.id && !search
+                                            className={`px-4 h-9 rounded-full font-medium text-sm whitespace-nowrap transition-all shrink-0 ${activeCategory === cat.id && !search
                                                 ? 'bg-[#c8e600] text-gray-900'
                                                 : 'bg-gray-100 text-gray-600'
                                                 }`}
@@ -329,13 +330,14 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                             {cat.label}
                                         </button>
                                     ))}
+                                    </div>
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 overflow-y-auto">
+                                <div className="flex-1 min-h-0 overflow-y-auto">
                                     {/* Quick Actions (only on suggested) */}
                                     {activeCategory === "suggested" && !search && (
-                                        <div className="p-6 grid grid-cols-4 gap-3">
+                                        <div className="p-4 md:p-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
                                             {QUICK_ACTIONS.map((item, idx) => (
                                                 <button
                                                     key={idx}
@@ -355,14 +357,14 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                     )}
 
                                     {/* Section Title */}
-                                    <div className="px-6 py-3 sticky top-0 bg-white z-10 border-b border-gray-50">
+                                    <div className="px-4 md:px-6 py-3 sticky top-0 bg-white z-10 border-b border-gray-50">
                                         <h3 className="text-sm font-semibold text-gray-400">
                                             {search ? `Resultados para "${search}"` : CATEGORIES.find(c => c.id === activeCategory)?.label}
                                         </h3>
                                     </div>
 
                                     {/* Block Items List */}
-                                    <div className="px-4 pb-6">
+                                    <div className="px-3 md:px-4 pb-6">
                                         {displayedItems.map((item, idx) => {
                                             const hasVariations = BLOCK_VARIATIONS[item.type];
                                             const isExpanded = expandedBlocks.has(item.type);

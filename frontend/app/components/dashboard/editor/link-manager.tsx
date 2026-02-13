@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type BioBlock } from "~/contexts/bio.context";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,6 +23,8 @@ import {
     Grid3X3,
     Share2,
     Video,
+    ChevronUp,
+    ChevronDown,
     Minus,
     QrCode,
     Calendar,
@@ -86,6 +88,21 @@ export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }:
     const { t } = useTranslation("dashboard");
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 767px)');
+        const handleChange = (event: MediaQueryListEvent) => {
+            setIsMobile(event.matches);
+        };
+
+        setIsMobile(mediaQuery.matches);
+        mediaQuery.addEventListener('change', handleChange);
+
+        return () => {
+            mediaQuery.removeEventListener('change', handleChange);
+        };
+    }, []);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -122,14 +139,24 @@ export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }:
         }
     };
 
+    const moveBlock = (id: string, direction: 'up' | 'down') => {
+        const currentIndex = blocks.findIndex((block) => block.id === id);
+        if (currentIndex === -1) return;
+
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= blocks.length) return;
+
+        onUpdateBlocks(arrayMove(blocks, currentIndex, targetIndex));
+    };
+
     return (
-        <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 pb-16 sm:pb-20">
+        <div className="w-full max-w-2xl mx-auto space-y-3 sm:space-y-6 pb-14 sm:pb-20">
             {/* Big Add Button (Bold/Black Style) */}
             <motion.button
                 onClick={() => setIsAddModalOpen(true)}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-4 bg-[#1A1A1A] hover:bg-black text-white hover:text-[#C6F035] rounded-full font-black text-lg shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 border-2 border-black"
+                className="w-full py-3.5 sm:py-4 bg-[#1A1A1A] hover:bg-black text-white hover:text-[#C6F035] rounded-full font-black text-base sm:text-lg shadow-[4px_4px_0px_0px_rgba(198,240,53,1)] hover:shadow-[2px_2px_0px_0px_rgba(198,240,53,1)] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 border-2 border-black"
             >
                 <Plus className="w-6 h-6" strokeWidth={3} />
                 {t("editor.addLink")}
@@ -143,42 +170,58 @@ export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }:
 
             {/* Blocks List */}
             <div className="space-y-3 sm:space-y-4">
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    modifiers={[restrictToVerticalAxis]}
-                >
-                    <SortableContext
-                        items={blocks.map(b => b.id)}
-                        strategy={verticalListSortingStrategy}
-                    >
+                {isMobile ? (
+                    <>
                         {blocks.map((block) => (
-                            <SortableItem
+                            <BlockCard
                                 key={block.id}
                                 block={block}
                                 onEdit={() => onEditBlock(block)}
                                 onDelete={(e) => handleDelete(block.id, e)}
+                                isMobile={true}
+                                onMoveUp={blocks.findIndex((b) => b.id === block.id) > 0 ? () => moveBlock(block.id, 'up') : undefined}
+                                onMoveDown={blocks.findIndex((b) => b.id === block.id) < blocks.length - 1 ? () => moveBlock(block.id, 'down') : undefined}
                             />
                         ))}
-                    </SortableContext>
-                    <DragOverlay>
-                        {activeId ? (
-                            <div className="opacity-90 scale-105 cursor-grabbing">
-                                <BlockCard block={blocks.find(b => b.id === activeId)!} />
-                            </div>
-                        ) : null}
-                    </DragOverlay>
-                </DndContext>
+                    </>
+                ) : (
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        modifiers={[restrictToVerticalAxis]}
+                    >
+                        <SortableContext
+                            items={blocks.map(b => b.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {blocks.map((block) => (
+                                <SortableItem
+                                    key={block.id}
+                                    block={block}
+                                    onEdit={() => onEditBlock(block)}
+                                    onDelete={(e) => handleDelete(block.id, e)}
+                                />
+                            ))}
+                        </SortableContext>
+                        <DragOverlay>
+                            {activeId ? (
+                                <div className="opacity-90 scale-105 cursor-grabbing">
+                                    <BlockCard block={blocks.find(b => b.id === activeId)!} />
+                                </div>
+                            ) : null}
+                        </DragOverlay>
+                    </DndContext>
+                )}
 
                 {blocks.length === 0 && (
-                    <div className="text-center py-12 sm:py-16 border-2 border-dashed border-black/10 rounded-[20px] sm:rounded-[24px] bg-white group hover:border-[#C6F035] transition-colors">
+                    <div className="text-center py-10 sm:py-16 px-4 sm:px-6 border-2 border-dashed border-black/10 rounded-[20px] sm:rounded-[24px] bg-white group hover:border-[#C6F035] transition-colors">
                         <div className="w-16 h-16 bg-[#F3F3F1] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#C6F035] transition-colors">
                             <Plus className="w-6 h-6 text-black/40 group-hover:text-black" />
                         </div>
-                        <p className="text-black font-bold text-lg">{t("dashboard.editor.empty.body")}</p>
-                        <p className="text-gray-400 font-medium text-sm mt-1">Toque no botão preto para começar</p>
+                        <p className="text-black font-bold text-base sm:text-lg leading-snug max-w-[22rem] mx-auto">{t("dashboard.editor.empty.body")}</p>
+                        <p className="text-gray-400 font-medium text-sm mt-2">{t("dashboard.editor.empty.hint", "Toque no botão acima para começar")}</p>
                     </div>
                 )}
             </div>
@@ -212,6 +255,7 @@ function SortableItem({ block, onEdit, onDelete }: { block: BioBlock, onEdit: ()
                 onEdit={onEdit}
                 onDelete={onDelete}
                 dragListeners={listeners}
+                isMobile={false}
             />
         </div>
     );
@@ -343,7 +387,23 @@ function getBlockPreview(block: BioBlock, t: any): string {
 }
 
 // Card Component (Bold/Linktree Style)
-function BlockCard({ block, onEdit, onDelete, dragListeners }: { block: BioBlock, onEdit?: () => void, onDelete?: (e: any) => void, dragListeners?: any }) {
+function BlockCard({
+    block,
+    onEdit,
+    onDelete,
+    dragListeners,
+    isMobile,
+    onMoveUp,
+    onMoveDown,
+}: {
+    block: BioBlock,
+    onEdit?: () => void,
+    onDelete?: (e: any) => void,
+    dragListeners?: any,
+    isMobile?: boolean,
+    onMoveUp?: () => void,
+    onMoveDown?: () => void,
+}) {
     const Icon = BLOCK_ICONS[block.type as keyof typeof BLOCK_ICONS] || BLOCK_ICONS.divider;
     const { t } = useTranslation("dashboard");
 
@@ -379,13 +439,15 @@ function BlockCard({ block, onEdit, onDelete, dragListeners }: { block: BioBlock
 
             <div className="flex items-center gap-3 p-4">
                 {/* Drag Handle */}
-                <div
-                    {...dragListeners}
-                    className="p-2.5 hover:bg-gray-100 rounded-lg cursor-move transition-colors shrink-0 text-gray-300 hover:text-black touch-manipulation"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <GripVertical className="w-5 h-5" />
-                </div>
+                {!isMobile && (
+                    <div
+                        {...dragListeners}
+                        className="p-2.5 hover:bg-gray-100 rounded-lg cursor-move transition-colors shrink-0 text-gray-300 hover:text-black touch-manipulation"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <GripVertical className="w-5 h-5" />
+                    </div>
+                )}
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 flex items-center gap-4">
@@ -410,6 +472,30 @@ function BlockCard({ block, onEdit, onDelete, dragListeners }: { block: BioBlock
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    {isMobile && (
+                        <>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onMoveUp?.();
+                                }}
+                                disabled={!onMoveUp}
+                                className="p-2 hover:bg-black hover:text-white rounded-lg text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onMoveDown?.();
+                                }}
+                                disabled={!onMoveDown}
+                                className="p-2 hover:bg-black hover:text-white rounded-lg text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                            </button>
+                        </>
+                    )}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();

@@ -2,8 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FeaturedTestimonial() {
+    const { t } = useTranslation("home");
+
     return (
         <section className="w-full py-32 px-6 sm:px-12 lg:px-20 bg-[#F3F3F1] text-[#1A1A1A]">
             <div className="max-w-[1200px] mx-auto">
@@ -32,12 +35,12 @@ export default function FeaturedTestimonial() {
                         <Quote className="w-12 h-12 sm:w-16 sm:h-16 text-[#D2E823] fill-current mb-8 mx-auto lg:mx-0" />
 
                         <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-[2.5rem] leading-tight mb-8">
-                            "O Portyo mudou minha vida. Antes eu tinha 5 links espalhados, agora tenho um império digital centralizado. Minhas vendas dobraram em 30 dias."
+                            "{t("home.landingBold.testimonial.quote")}"
                         </h2>
 
                         <div className="flex flex-col lg:items-start items-center">
                             <span className="font-display font-black text-xl uppercase tracking-wider">MARIA SILVA</span>
-                            <span className="font-body font-medium text-lg text-gray-500">Influencer & Empreendedora Digital</span>
+                            <span className="font-body font-medium text-lg text-gray-500">{t("home.landingBold.testimonial.role")}</span>
                         </div>
                     </div>
                 </motion.div>
