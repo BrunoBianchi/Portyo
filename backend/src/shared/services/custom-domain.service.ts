@@ -9,6 +9,8 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import * as dns from "dns";
 import * as util from "util";
+import * as fs from "fs";
+import * as path from "path";
 import { In } from "typeorm";
 
 const execAsync = promisify(exec);
@@ -88,9 +90,59 @@ export class CustomDomainService {
     }
 
     private static async runPrivileged(command: string, timeout: number): Promise<{ stdout: string; stderr: string }> {
+        return this.runPrivilegedWithOptions(command, timeout);
+    }
+
+    private static async runPrivilegedWithOptions(
+        command: string,
+        timeout: number,
+        cwd?: string
+    ): Promise<{ stdout: string; stderr: string }> {
         const useSudo = await this.canUseSudo();
         const finalCommand = useSudo ? `sudo ${command}` : command;
-        return execAsync(finalCommand, { timeout });
+        return execAsync(finalCommand, { timeout, cwd });
+    }
+
+    private static shellEscape(value: string): string {
+        return `'${value.replace(/'/g, `'"'"'`)}'`;
+    }
+
+    private static resolveDeploymentDir(): string | null {
+        const candidates = [
+            process.env.CUSTOM_DOMAIN_DEPLOYMENT_DIR,
+            path.resolve(process.cwd(), "deployment"),
+            path.resolve(process.cwd(), "..", "deployment"),
+            path.resolve(__dirname, "../../../../deployment"),
+            "/var/www/portyo/deployment",
+            "/opt/portyo/deployment",
+        ].filter((value): value is string => Boolean(value));
+
+        for (const candidate of candidates) {
+            const normalized = path.resolve(candidate);
+            const composePath = path.join(normalized, "docker-compose.yml");
+            const addScriptPath = path.join(normalized, "add-custom-domain.sh");
+
+            if (fs.existsSync(composePath) && fs.existsSync(addScriptPath)) {
+                return normalized;
+            }
+        }
+
+        return null;
+    }
+
+    private static resolveScriptPath(deploymentDir: string, scriptName: string, overridePath?: string): string | null {
+        const candidates = [overridePath, path.join(deploymentDir, scriptName)].filter(
+            (value): value is string => Boolean(value)
+        );
+
+        for (const candidate of candidates) {
+            const normalized = path.resolve(candidate);
+            if (fs.existsSync(normalized)) {
+                return normalized;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -408,11 +460,29 @@ export class CustomDomainService {
             domain.status = CustomDomainStatus.GENERATING_SSL;
             await this.repository.save(domain);
 
-            // Executa o script de geração de certificado
-            const scriptPath = '/opt/portyo/deployment/add-custom-domain.sh';
-            const { stdout, stderr } = await this.runPrivileged(
-                `${scriptPath} ${domain.domain} admin@portyo.me`,
-                120000
+            const deploymentDir = this.resolveDeploymentDir();
+            if (!deploymentDir) {
+                throw new Error(
+                    "Diretório de deployment não encontrado. Configure CUSTOM_DOMAIN_DEPLOYMENT_DIR com o caminho correto (ex: /var/www/portyo/deployment)."
+                );
+            }
+
+            const scriptPath = this.resolveScriptPath(
+                deploymentDir,
+                "add-custom-domain.sh",
+                process.env.CUSTOM_DOMAIN_ADD_SCRIPT_PATH
+            );
+
+            if (!scriptPath) {
+                throw new Error(
+                    `Script add-custom-domain.sh não encontrado em ${deploymentDir}. Configure CUSTOM_DOMAIN_ADD_SCRIPT_PATH se necessário.`
+                );
+            }
+
+            const { stdout, stderr } = await this.runPrivilegedWithOptions(
+                `${this.shellEscape(scriptPath)} ${this.shellEscape(domain.domain)} admin@portyo.me`,
+                120000,
+                deploymentDir
             );
 
             if (stderr && !stderr.includes('Certbot')) {
@@ -478,7 +548,20 @@ export class CustomDomainService {
             // Remove o certificado SSL (opcional - pode manter para reutilização)
             if (domain.sslActive) {
                 try {
-                    await this.runPrivileged(`certbot delete --cert-name ${domain.domain} --non-interactive`, 60000);
+                    const deploymentDir = this.resolveDeploymentDir();
+                    const removeScriptPath = deploymentDir
+                        ? this.resolveScriptPath(deploymentDir, "remove-custom-domain.sh")
+                        : null;
+
+                    if (deploymentDir && removeScriptPath) {
+                        await this.runPrivilegedWithOptions(
+                            `${this.shellEscape(removeScriptPath)} ${this.shellEscape(domain.domain)}`,
+                            120000,
+                            deploymentDir
+                        );
+                    } else {
+                        await this.runPrivileged(`certbot delete --cert-name ${domain.domain} --non-interactive`, 60000);
+                    }
                 } catch (error) {
                     logger.warn(`Erro ao remover certificado para ${domain.domain}:`, error);
                 }
@@ -628,7 +711,16 @@ export class CustomDomainService {
 
         // O Certbot já renova automaticamente, mas podemos forçar uma verificação
         try {
-            await this.runPrivileged('certbot renew --quiet', 300000);
+            const deploymentDir = this.resolveDeploymentDir();
+            const renewScriptPath = deploymentDir
+                ? this.resolveScriptPath(deploymentDir, "renew-all-certificates.sh")
+                : null;
+
+            if (deploymentDir && renewScriptPath) {
+                await this.runPrivilegedWithOptions(this.shellEscape(renewScriptPath), 300000, deploymentDir);
+            } else {
+                await this.runPrivileged('certbot renew --quiet', 300000);
+            }
             logger.info('Renovação de certificados concluída');
         } catch (error) {
             logger.error('Erro ao renovar certificados:', error);

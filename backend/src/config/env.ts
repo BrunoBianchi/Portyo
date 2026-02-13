@@ -54,6 +54,10 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().default("https://portyo.me"),
   BACKEND_URL: z.string().default("https://api.portyo.me"),
 
+  // Custom Domains / SSL
+  CUSTOM_DOMAIN_DEPLOYMENT_DIR: z.string().optional(),
+  CUSTOM_DOMAIN_ADD_SCRIPT_PATH: z.string().optional(),
+
   // Redis
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.any().transform((val) => Number(val)).default(6379),
