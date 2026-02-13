@@ -23,13 +23,12 @@ fi
 
 # Executar renovação
 echo -e "${GREEN}📜 Executando certbot renew...${NC}"
-docker compose run --rm --entrypoint "\"
-certbot renew \\
-    --webroot \\
-    -w /var/www/certbot \\
-    --quiet \\
+docker compose run --rm --entrypoint certbot certbot \
+    renew \
+    --webroot \
+    -w /var/www/certbot \
+    --quiet \
     --no-random-sleep-on-renew
-\"" certbot
 
 # Recarregar Nginx
 echo -e "${GREEN}🔄 Recarregando Nginx...${NC}"

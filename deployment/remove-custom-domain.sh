@@ -27,12 +27,11 @@ echo -e "${YELLOW}🗑️  Removendo domínio: $DOMAIN${NC}"
 if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
     echo -e "${YELLOW}🔒 Removendo certificado SSL...${NC}"
     
-    docker compose run --rm --entrypoint "\"
-certbot delete \\
-    --cert-name $DOMAIN \\
-    --non-interactive \\
-    --quiet
-\"" certbot || true
+    docker compose run --rm --entrypoint certbot certbot \
+        delete \
+        --cert-name "$DOMAIN" \
+        --non-interactive \
+        --quiet || true
     
     # Remover arquivos manualmente se ainda existirem
     if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then

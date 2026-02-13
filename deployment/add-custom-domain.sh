@@ -65,17 +65,16 @@ fi
 # Gerar certificado usando Certbot
 echo -e "${GREEN}🔒 Gerando certificado SSL para $DOMAIN...${NC}"
 
-docker compose run --rm --entrypoint "\"
-certbot certonly \\
-    --webroot \\
-    -w /var/www/certbot \\
-    -d $DOMAIN \\
-    --email $EMAIL \\
-    --agree-tos \\
-    --non-interactive \\
-    --rsa-key-size $RSA_KEY_SIZE \\
+docker compose run --rm --entrypoint certbot certbot \
+    certonly \
+    --webroot \
+    -w /var/www/certbot \
+    -d "$DOMAIN" \
+    --email "$EMAIL" \
+    --agree-tos \
+    --non-interactive \
+    --rsa-key-size "$RSA_KEY_SIZE" \
     --force-renewal || true
-\"" certbot
 
 # Verificar se o certificado foi gerado
 if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
@@ -90,17 +89,16 @@ else
     
     # Tentar com modo verbose
     echo -e "${YELLOW}Tentando novamente com mais detalhes...${NC}"
-    docker compose run --rm --entrypoint "\"
-certbot certonly \\
-    --webroot \\
-    -w /var/www/certbot \\
-    -d $DOMAIN \\
-    --email $EMAIL \\
-    --agree-tos \\
-    --non-interactive \\
-    --rsa-key-size $RSA_KEY_SIZE \\
-    -v
-\"" certbot || true
+    docker compose run --rm --entrypoint certbot certbot \
+        certonly \
+        --webroot \
+        -w /var/www/certbot \
+        -d "$DOMAIN" \
+        --email "$EMAIL" \
+        --agree-tos \
+        --non-interactive \
+        --rsa-key-size "$RSA_KEY_SIZE" \
+        -v || true
     
     exit 1
 fi
