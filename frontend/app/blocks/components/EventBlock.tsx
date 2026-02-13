@@ -26,17 +26,27 @@ const calcTimeLeft = (targetDate: string): TimeLeft => {
 };
 
 export const EventBlock: React.FC<BlockComponentProps> = ({ block }) => {
-    const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => 
-        block.eventDate ? calcTimeLeft(block.eventDate) : { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true }
-    );
+    const [isMounted, setIsMounted] = useState(false);
+    const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        expired: !block.eventDate,
+    });
 
     useEffect(() => {
-        if (!block.eventDate) return;
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isMounted || !block.eventDate) return;
+        setTimeLeft(calcTimeLeft(block.eventDate));
         const timer = setInterval(() => {
             setTimeLeft(calcTimeLeft(block.eventDate!));
         }, 1000);
         return () => clearInterval(timer);
-    }, [block.eventDate]);
+    }, [block.eventDate, isMounted]);
 
     const bgColor = block.eventColor || '#111827';
     const textColor = block.eventTextColor || '#ffffff';
@@ -87,7 +97,7 @@ export const EventBlock: React.FC<BlockComponentProps> = ({ block }) => {
                 {block.eventDate && (
                     <p style={{ fontSize: '13px', opacity: 0.8, margin: '0 0 16px 0' }}>
                         {new Date(block.eventDate).toLocaleDateString('en-US', {
-                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
                         })}
                     </p>
                 )}

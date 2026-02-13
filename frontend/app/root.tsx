@@ -222,10 +222,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const fallbackLang = isLocalhost ? "en" : "en";
   const activeLang = (langMatch?.[1] || initialLang || fallbackLang) as (typeof SUPPORTED_LANGUAGES)[number];
-
-  if (typeof document === "undefined" && i18n.language !== activeLang) {
-    i18n.changeLanguage(activeLang);
-  }
+  const skipToContentLabel = i18n.t("meta.root.skipToContent", { lng: activeLang });
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -387,7 +384,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[70] focus:px-4 focus:py-2 focus:bg-primary focus:text-background focus:rounded-lg"
             >
-              {i18n.t("meta.root.skipToContent", { lng: activeLang })}
+              {skipToContentLabel}
             </a>
 
             {/* Announcement Bar */}
@@ -461,7 +458,7 @@ export function HydrateFallback() {
     <div className="flex items-center justify-center h-screen w-screen bg-background">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-muted-foreground text-sm font-medium">{i18n.t("meta.root.loading")}</p>
+        <p className="text-muted-foreground text-sm font-medium">Loading...</p>
       </div>
     </div>
   );

@@ -22,6 +22,33 @@ export const CalendarBlock: React.FC<BlockComponentProps> = ({ block, bioId }) =
     const useBooking = block.calendarUseBooking === true;
 
     const [availability, setAvailability] = useState<BookingAvailability | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return (
+            <BlockWrapper block={block}>
+                <div style={{
+                    background: bgColor,
+                    borderRadius: '16px',
+                    padding: '20px',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                }}>
+                    {block.calendarTitle && (
+                        <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 12px 0', textAlign: 'center', color: textColor }}>
+                            {block.calendarTitle}
+                        </h3>
+                    )}
+                    <p style={{ textAlign: 'center', fontWeight: 600, fontSize: '14px', color: textColor, margin: 0 }}>
+                        Loading calendar...
+                    </p>
+                </div>
+            </BlockWrapper>
+        );
+    }
 
     const now = new Date();
     const year = now.getFullYear();
