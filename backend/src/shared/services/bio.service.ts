@@ -218,11 +218,48 @@ export const updateBioById = async (id: string, options: UpdateBioOptions): Prom
         throw new ApiError(APIErrors.forbiddenError, `Email Collection is available on Standard and Pro plans.`, 403);
     }
 
+    // Custom domain orchestration (automatic flow for legacy updateBio path)
+    if (customDomain !== undefined) {
+        const requestedRaw = typeof customDomain === "string" ? customDomain.trim() : "";
+        const requestedDomain = requestedRaw ? CustomDomainService.extractDomain(requestedRaw) : null;
+
+        const domainsForBio = await CustomDomainService.findDomainsByBioId(bio.id);
+
+        if (!requestedDomain) {
+            for (const existing of domainsForBio) {
+                await CustomDomainService.removeDomain(existing.id, bio.user.id);
+            }
+            bio.customDomain = null;
+        } else {
+            const currentDomainEntry = domainsForBio.find(
+                (entry) => CustomDomainService.extractDomain(entry.domain) === requestedDomain
+            );
+
+            for (const existing of domainsForBio) {
+                if (CustomDomainService.extractDomain(existing.domain) !== requestedDomain) {
+                    await CustomDomainService.removeDomain(existing.id, bio.user.id);
+                }
+            }
+
+            if (!currentDomainEntry) {
+                const addResult = await CustomDomainService.addDomain(requestedDomain, bio.id, bio.user.id);
+                if (!addResult.success) {
+                    throw new ApiError(APIErrors.badRequestError, addResult.message, 400);
+                }
+            } else if (!currentDomainEntry.sslActive || currentDomainEntry.status !== "active") {
+                CustomDomainService.processDomainVerification(currentDomainEntry.id).catch((error) => {
+                    console.error(`Custom domain auto-verification failed for ${requestedDomain}:`, error);
+                });
+            }
+
+            // Keep field in sync for legacy UI while activation finalizes in CustomDomainService
+            bio.customDomain = requestedDomain;
+        }
+    }
+
     // Core fields
     if (html !== undefined) bio.html = html;
     if (blocks !== undefined) bio.blocks = blocks;
-    // Convert empty string to null for unique constraint
-    if (customDomain !== undefined) bio.customDomain = customDomain === "" ? null : customDomain;
     if (enableSubscribeButton !== undefined) bio.enableSubscribeButton = enableSubscribeButton;
     if (removeBranding !== undefined) bio.removeBranding = removeBranding;
     if (profileImage !== undefined) bio.profileImage = profileImage;
