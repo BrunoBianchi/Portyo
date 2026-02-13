@@ -215,8 +215,10 @@ import { CronService } from "./services/cron.service";
 
 export const InitializateServer = () => {
   const port = env.PORT;
-  const server = app.listen(port, () => {
+  const host = "0.0.0.0";
+  const server = app.listen(port, host, () => {
     logger.info(`Server is running on port ${port}`);
+    logger.info(`Server host: ${host}`);
     logger.info(`Environment: ${env.NODE_ENV}`);
     
     // Initialize Cron Jobs
@@ -244,6 +246,10 @@ export const InitializateServer = () => {
 
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);
+
+  server.on("error", (error) => {
+    logger.error("Server startup/runtime error", error as any);
+  });
 };
 
 // Export auth limiter for use in auth routes
