@@ -28,20 +28,47 @@ fi
 echo -e "${GREEN}🔧 Configurando domínio personalizado: $DOMAIN${NC}"
 
 # Verificar se o Docker Compose está rodando
-if ! docker compose ps | grep -q "nginx"; then
+if ! docker compose ps --services --filter "status=running" | grep -q "^nginx$"; then
     echo -e "${YELLOW}⚠️  Aviso: Containers Docker não estão rodando${NC}"
     echo "Iniciando containers..."
     docker compose up -d nginx certbot
     sleep 5
 fi
 
+# Garantir Nginx recarregado com config atual
+docker compose exec nginx nginx -s reload >/dev/null 2>&1 || true
+
 # Verificar se o diretório do certbot existe
 if [ ! -d "$DATA_PATH/conf/live" ]; then
     echo -e "${YELLOW}📁 Criando diretórios do certbot...${NC}"
     mkdir -p "$DATA_PATH/conf/live"
     mkdir -p "$DATA_PATH/www"
+    mkdir -p "$DATA_PATH/www/.well-known/acme-challenge"
     chmod 777 "$DATA_PATH/www"
 fi
+
+mkdir -p "$DATA_PATH/www/.well-known/acme-challenge"
+
+# Validação prévia do challenge HTTP
+echo -e "${GREEN}🧪 Validando endpoint ACME challenge...${NC}"
+PROBE_TOKEN="portyo-probe-$(date +%s)"
+PROBE_FILE="$DATA_PATH/www/.well-known/acme-challenge/$PROBE_TOKEN"
+echo "$PROBE_TOKEN" > "$PROBE_FILE"
+
+HTTP_PROBE_URL="http://$DOMAIN/.well-known/acme-challenge/$PROBE_TOKEN"
+HTTP_PROBE_RESPONSE=$(curl -sL --max-time 12 "$HTTP_PROBE_URL" || true)
+
+if [ "$HTTP_PROBE_RESPONSE" != "$PROBE_TOKEN" ]; then
+    echo -e "${RED}❌ Falha no challenge HTTP antes de solicitar certificado${NC}"
+    echo "URL testada: $HTTP_PROBE_URL"
+    echo "Resposta obtida: ${HTTP_PROBE_RESPONSE:-<vazia>}"
+    echo "Confira se o domínio aponta para este servidor e se o Nginx está expondo /var/www/certbot/.well-known/acme-challenge/."
+    rm -f "$PROBE_FILE"
+    exit 1
+fi
+
+rm -f "$PROBE_FILE"
+echo -e "${GREEN}✅ Endpoint ACME acessível${NC}"
 
 # Verificar se o certificado já existe
 if [ -d "$DATA_PATH/conf/live/$DOMAIN" ]; then
