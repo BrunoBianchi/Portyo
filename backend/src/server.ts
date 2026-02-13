@@ -214,7 +214,7 @@ import { CronService } from "./services/cron.service";
 // ...
 
 export const InitializateServer = () => {
-  const port = env.PORT;
+  const port = Number(env.PORT);
   const host = "0.0.0.0";
   const server = app.listen(port, host, () => {
     logger.info(`Server is running on port ${port}`);
