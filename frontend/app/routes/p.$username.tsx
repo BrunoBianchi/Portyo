@@ -4,6 +4,44 @@ import { BioLayout } from "~/components/bio/bio-layout";
 import { BioNotFound } from "~/components/public-bio/not-found";
 import { BioLoading } from "~/components/public-bio/loading";
 
+const asTrimmedString = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+};
+
+const stripAt = (value: string): string => value.replace(/^@+/, "");
+
+const buildSameAs = (socials: any): string[] => {
+    if (!socials || typeof socials !== "object") return [];
+
+    const instagram = asTrimmedString(socials.instagram);
+    const twitter = asTrimmedString(socials.twitter);
+    const x = asTrimmedString(socials.x);
+    const linkedin = asTrimmedString(socials.linkedin);
+    const github = asTrimmedString(socials.github);
+    const youtube = asTrimmedString(socials.youtube);
+    const tiktok = asTrimmedString(socials.tiktok);
+    const website = asTrimmedString(socials.website);
+    const facebook = asTrimmedString(socials.facebook);
+    const pinterest = asTrimmedString(socials.pinterest);
+    const snapchat = asTrimmedString(socials.snapchat);
+
+    return [
+        instagram ? `https://instagram.com/${stripAt(instagram)}` : null,
+        twitter ? `https://twitter.com/${stripAt(twitter)}` : null,
+        x ? `https://x.com/${stripAt(x)}` : null,
+        linkedin,
+        github ? `https://github.com/${stripAt(github)}` : null,
+        youtube,
+        tiktok ? `https://tiktok.com/@${stripAt(tiktok)}` : null,
+        website,
+        facebook,
+        pinterest,
+        snapchat,
+    ].filter(Boolean) as string[];
+};
+
 // Helper to decode HTML (copied from root.tsx)
 const encodeHtmlToBase64 = (html: string) => {
     try {
@@ -60,7 +98,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // but React Router usually prioritizes static files. 
     // e.g. "dashboard", "login" are static. "assets" etc.
 
-    if (!username) return { bio: null, username: null, origin };
+    const generatedAt = new Date().toISOString();
+
+    if (!username) return { bio: null, username: null, origin, generatedAt };
 
     try {
         const fetchUrl = `${apiUrl}/public/bio/${username}`;
@@ -73,13 +113,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
             // The original code tracked "Page View" in useEffect. 
             // We can do that in a client component or useEffect here.
 
-            return { bio, username, origin };
+            return { bio, username, origin, generatedAt };
         }
     } catch (e) {
         console.error("Bio Fetch Error", e);
     }
 
-    return { bio: null, username, origin };
+    return { bio: null, username, origin, generatedAt };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -90,7 +130,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
             { name: "robots", content: "noindex, nofollow" }
         ];
     }
-    const { bio, username, origin } = data as typeof data & { origin?: string };
+    const { bio, username, origin, generatedAt } = data as typeof data & { origin?: string; generatedAt?: string };
     const title = bio.seoTitle || bio.fullName || username;
     const description = bio.seoDescription || bio.description || `Check out ${bio.fullName || username}'s bio page on Portyo.`;
     const keywords = bio.seoKeywords || `${username}, bio, portfolio, links`;
@@ -99,22 +139,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     const url = `${safeOrigin}/p/${username}`;
     const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
     const fullName = bio.fullName || username;
-    const now = new Date().toISOString();
+    const now = generatedAt || new Date().toISOString();
 
     // Build sameAs array from social links
-    const sameAs = [
-        bio.socials?.instagram ? `https://instagram.com/${bio.socials.instagram.replace('@', '')}` : null,
-        bio.socials?.twitter ? `https://twitter.com/${bio.socials.twitter.replace('@', '')}` : null,
-        bio.socials?.x ? `https://x.com/${bio.socials.x.replace('@', '')}` : null,
-        bio.socials?.linkedin ? bio.socials.linkedin : null,
-        bio.socials?.github ? `https://github.com/${bio.socials.github}` : null,
-        bio.socials?.youtube ? bio.socials.youtube : null,
-        bio.socials?.tiktok ? `https://tiktok.com/@${bio.socials.tiktok.replace('@', '')}` : null,
-        bio.socials?.website ? bio.socials.website : null,
-        bio.socials?.facebook ? bio.socials.facebook : null,
-        bio.socials?.pinterest ? bio.socials.pinterest : null,
-        bio.socials?.snapchat ? bio.socials.snapchat : null
-    ].filter(Boolean) as string[];
+    const sameAs = buildSameAs(bio.socials);
 
     // Build structured data
     const structuredData = {
@@ -343,7 +371,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function PublicBioRoute() {
-    const { bio, username, origin } = useLoaderData<typeof loader>();
+    const { bio, username, origin, generatedAt } = useLoaderData<typeof loader>();
 
     if (!username) return <BioNotFound username="" />;
     if (!bio) return <BioNotFound username={username} />;
@@ -354,22 +382,10 @@ export default function PublicBioRoute() {
     const url = `${safeOrigin}/p/${username}`;
     const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
     const fullName = bio.fullName || username;
-    const now = new Date().toISOString();
+    const now = generatedAt || new Date().toISOString();
 
     // Build sameAs array from social links
-    const sameAs = [
-        bio.socials?.instagram ? `https://instagram.com/${bio.socials.instagram.replace('@', '')}` : null,
-        bio.socials?.twitter ? `https://twitter.com/${bio.socials.twitter.replace('@', '')}` : null,
-        bio.socials?.x ? `https://x.com/${bio.socials.x.replace('@', '')}` : null,
-        bio.socials?.linkedin ? bio.socials.linkedin : null,
-        bio.socials?.github ? `https://github.com/${bio.socials.github}` : null,
-        bio.socials?.youtube ? bio.socials.youtube : null,
-        bio.socials?.tiktok ? `https://tiktok.com/@${bio.socials.tiktok.replace('@', '')}` : null,
-        bio.socials?.website ? bio.socials.website : null,
-        bio.socials?.facebook ? bio.socials.facebook : null,
-        bio.socials?.pinterest ? bio.socials.pinterest : null,
-        bio.socials?.snapchat ? bio.socials.snapchat : null
-    ].filter(Boolean) as string[];
+    const sameAs = buildSameAs(bio.socials);
 
     // Build structured data
     const structuredData = {
