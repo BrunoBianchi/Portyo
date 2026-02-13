@@ -520,7 +520,7 @@ export class CustomDomainService {
             }
 
             const { stdout, stderr } = await this.runPrivilegedWithOptions(
-                `${this.shellEscape(scriptPath)} ${this.shellEscape(domain.domain)} ${this.shellEscape(env.CUSTOM_DOMAIN_CERTBOT_EMAIL)}`,
+                `bash ${this.shellEscape(scriptPath)} ${this.shellEscape(domain.domain)} ${this.shellEscape(env.CUSTOM_DOMAIN_CERTBOT_EMAIL)}`,
                 120000,
                 deploymentDir
             );
@@ -601,7 +601,7 @@ export class CustomDomainService {
 
                     if (deploymentDir && removeScriptPath) {
                         await this.runPrivilegedWithOptions(
-                            `${this.shellEscape(removeScriptPath)} ${this.shellEscape(domain.domain)}`,
+                            `bash ${this.shellEscape(removeScriptPath)} ${this.shellEscape(domain.domain)}`,
                             120000,
                             deploymentDir
                         );
@@ -763,7 +763,7 @@ export class CustomDomainService {
                 : null;
 
             if (deploymentDir && renewScriptPath) {
-                await this.runPrivilegedWithOptions(this.shellEscape(renewScriptPath), 300000, deploymentDir);
+                await this.runPrivilegedWithOptions(`bash ${this.shellEscape(renewScriptPath)}`, 300000, deploymentDir);
             } else {
                 await this.runPrivileged('certbot renew --quiet', 300000);
             }
