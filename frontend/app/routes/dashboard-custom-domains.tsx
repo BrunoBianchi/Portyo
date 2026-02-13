@@ -33,6 +33,8 @@ interface CustomDomain {
     isHealthy: boolean;
 }
 
+const TRANSITIONAL_STATUSES: CustomDomain["status"][] = ["pending", "verifying_dns", "dns_verified", "generating_ssl"];
+
 export default function DashboardCustomDomains() {
     const { t } = useTranslation("dashboard");
     const { bio } = useContext(BioContext);
@@ -123,9 +125,33 @@ export default function DashboardCustomDomains() {
         }
     };
 
+    const fetchDomainsSilently = async (): Promise<CustomDomain[]> => {
+        const response = await api.get("/custom-domains");
+        const nextDomains = response?.data?.domains || [];
+        setDomains(nextDomains);
+        return nextDomains;
+    };
+
     useEffect(() => {
         fetchDomains();
     }, []);
+
+    useEffect(() => {
+        const hasTransitionalDomains = domains.some((domain) =>
+            TRANSITIONAL_STATUSES.includes(domain.status)
+        );
+
+        if (!hasTransitionalDomains) return;
+
+        const intervalId = window.setInterval(() => {
+            if (checkingDomain) return;
+            fetchDomainsSilently().catch((error) => {
+                console.error("Auto refresh domains failed:", error);
+            });
+        }, 10000);
+
+        return () => window.clearInterval(intervalId);
+    }, [domains, checkingDomain]);
 
     // Add domain
     const handleAddDomain = async (e: React.FormEvent) => {
@@ -159,14 +185,52 @@ export default function DashboardCustomDomains() {
         if (!confirm(t("customDomains.confirmRemove"))) return;
 
         try {
-            const response = await api.delete(`/custom-domains/${domainId}`);
-            if (response.data.success) {
-                toast.success(t("customDomains.success.removed"));
-                fetchDomains();
+            if (!response.data?.success) {
+                toast.error(response.data?.message || t("customDomains.errors.verifyFailed"));
+                return;
             }
+
+            const alreadyActive = Boolean(response.data?.alreadyActive);
+            toast.success(
+                alreadyActive
+                    ? (response.data?.message || t("customDomains.status.active"))
+                    : (response.data?.message || t("customDomains.success.verificationStarted"))
+            );
+
+            if (alreadyActive) {
+                await fetchDomains();
+                return;
+            }
+
+            // Polling robusto: aguarda backend finalizar verificação e evita "rodando infinito"
+            const startedAt = Date.now();
+            const timeoutMs = 120000;
+            const intervalMs = 2500;
+
+            while (Date.now() - startedAt < timeoutMs) {
+                await new Promise((resolve) => setTimeout(resolve, intervalMs));
+                const latestDomains = await fetchDomainsSilently();
+                const latest = latestDomains.find((d) => d.id === domainId);
+
+                if (!latest) break;
+
+                if (latest.status === "active" && latest.sslActive) {
+                    toast.success(t("customDomains.status.active"));
+                    return;
+                }
+
+                if (!TRANSITIONAL_STATUSES.includes(latest.status)) {
+                    if (latest.errorMessage) {
+                        toast.error(latest.errorMessage);
+                    }
+                    return;
+                }
+            }
+
+            toast.error(t("customDomains.errors.verifyFailed"));
         } catch (error) {
             console.error("Failed to remove domain:", error);
-            toast.error(t("customDomains.errors.removeFailed"));
+            toast.error(error?.response?.data?.message || t("customDomains.errors.verifyFailed"));
         }
     };
 
@@ -205,13 +269,21 @@ export default function DashboardCustomDomains() {
                 label: t("customDomains.status.active")
             };
         }
-        if (status === "pending" || status === "verifying_dns" || status === "generating_ssl") {
+        if (status === "verifying_dns" || status === "generating_ssl") {
             return {
                 icon: Loader2,
                 color: "text-amber-500",
                 bg: "bg-amber-50",
                 label: t("customDomains.status.pending"),
                 spin: true
+            };
+        }
+        if (status === "pending") {
+            return {
+                icon: AlertCircle,
+                color: "text-amber-500",
+                bg: "bg-amber-50",
+                label: t("customDomains.status.pending")
             };
         }
         if (status === "dns_verified") {

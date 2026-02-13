@@ -416,9 +416,25 @@ export const getPublicBio = async (identifier: string, type: 'sufix' | 'domain')
             bio = await findBioBySufixWithUser(sufix);
         } else {
             isCustomDomainRequest = true;
-            const activeDomain = await CustomDomainService.findActiveByDomain(cleanDomain);
-            if (activeDomain?.bioId) {
-                bio = await findBioById(activeDomain.bioId, ['user']);
+            const domainCandidates = cleanDomain.startsWith('www.')
+                ? [cleanDomain, cleanDomain.replace(/^www\./, '')]
+                : [cleanDomain, `www.${cleanDomain}`];
+
+            let matchedDomain: Awaited<ReturnType<typeof CustomDomainService.findByDomain>> = null;
+            for (const candidate of domainCandidates) {
+                matchedDomain = await CustomDomainService.findActiveByDomain(candidate);
+                if (matchedDomain) break;
+            }
+
+            if (!matchedDomain) {
+                for (const candidate of domainCandidates) {
+                    matchedDomain = await CustomDomainService.findByDomain(candidate);
+                    if (matchedDomain) break;
+                }
+            }
+
+            if (matchedDomain?.bioId) {
+                bio = await findBioById(matchedDomain.bioId, ['user']);
             }
         }
     } else {

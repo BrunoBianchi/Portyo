@@ -648,6 +648,67 @@ export class CustomDomainService {
     }
 
     /**
+     * Sincroniza status de domínio quando certificado já existe em disco,
+     * evitando estado pendente/failed inconsistente no banco.
+     */
+    static async syncStatusFromCertificate(domain: CustomDomainEntity): Promise<boolean> {
+        const certPath = `/etc/letsencrypt/live/${domain.domain}/fullchain.pem`;
+        const keyPath = `/etc/letsencrypt/live/${domain.domain}/privkey.pem`;
+
+        if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+            return false;
+        }
+
+        let updated = false;
+
+        if (domain.status !== CustomDomainStatus.ACTIVE) {
+            domain.status = CustomDomainStatus.ACTIVE;
+            updated = true;
+        }
+
+        if (!domain.sslActive) {
+            domain.sslActive = true;
+            updated = true;
+        }
+
+        if (!domain.activatedAt) {
+            domain.activatedAt = new Date();
+            updated = true;
+        }
+
+        if (!domain.sslExpiresAt) {
+            domain.sslExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+            updated = true;
+        }
+
+        if (domain.sslCertificatePath !== certPath) {
+            domain.sslCertificatePath = certPath;
+            updated = true;
+        }
+
+        if (domain.sslPrivateKeyPath !== keyPath) {
+            domain.sslPrivateKeyPath = keyPath;
+            updated = true;
+        }
+
+        if (domain.errorMessage) {
+            domain.errorMessage = undefined;
+            updated = true;
+        }
+
+        if (updated) {
+            await this.repository.save(domain);
+            await this.bioRepository.update(
+                { id: domain.bioId },
+                { customDomain: domain.domain }
+            );
+            logger.info(`[CustomDomain] Status sincronizado por certificado existente para ${domain.domain}`);
+        }
+
+        return updated;
+    }
+
+    /**
      * Verifica a saúde de todos os domínios ativos
      */
     static async checkAllDomainsHealth(): Promise<void> {

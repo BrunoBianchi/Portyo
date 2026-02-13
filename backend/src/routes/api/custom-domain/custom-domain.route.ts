@@ -203,11 +203,22 @@ router.post("/:id/verify", requireAuth, async (req, res) => {
             return res.status(404).json({ message: "Domínio não encontrado" });
         }
 
+        // Se o certificado já existe no servidor, sincroniza estado imediatamente
+        const syncedByCertificate = await CustomDomainService.syncStatusFromCertificate(domain);
+        if (syncedByCertificate || (domain.status === CustomDomainStatus.ACTIVE && domain.sslActive)) {
+            return res.json({
+                success: true,
+                dnsConfigured: true,
+                alreadyActive: true,
+                message: "Domínio já está ativo com SSL válido."
+            });
+        }
+
         const dnsCheck = await CustomDomainService.checkDnsConfiguration(domain.domain);
 
         if (!dnsCheck.configured) {
-            return res.json({
-                success: true,
+            return res.status(400).json({
+                success: false,
                 dnsConfigured: false,
                 message: `DNS ainda não configurado. Crie um registro CNAME apontando para ${customDomainCnameTarget}.`
             });
