@@ -2,6 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Required to execute deployment scripts from backend (custom domains SSL)
+RUN apk add --no-cache docker-cli docker-cli-compose bash
+
 # Install pnpm
 RUN npm install -g pnpm
 

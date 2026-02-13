@@ -16,12 +16,17 @@ services:
       - REDIS_PORT=6379
       - REDIS_USERNAME=
       - REDIS_PASSWORD=
+      - CUSTOM_DOMAIN_DEPLOYMENT_DIR=/deployment
+      - CUSTOM_DOMAIN_ADD_SCRIPT_PATH=/deployment/add-custom-domain.sh
       - MAILGUN_API_SECRET=${MAILGUN_API_SECRET}
       - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
       - MAILGUN_FROM_EMAIL=${MAILGUN_FROM_EMAIL}
       - FRONTEND_URL=${FRONTEND_URL:-https://portyo.me}
       - BACKEND_URL=${BACKEND_URL:-https://api.portyo.me}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    volumes:
+      - ./:/deployment
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - postgres
       - redis
