@@ -170,6 +170,24 @@ const AUTOREPLY_TEMPLATE_KEY = "instagram_auto_reply";
 
 type PlanTier = "free" | "standard" | "pro";
 
+type InstagramWebhookEventDiagnostics = {
+  receivedAt: string;
+  status: "processed" | "ignored_no_bio";
+  eventType: string;
+  accountId: string;
+  resolvedBioId: string | null;
+  senderId?: string;
+  recipientId?: string;
+  messagePreview?: string;
+  triggerCounts?: {
+    eventExecutions: number;
+    webhookExecutions: number;
+  };
+};
+
+const LAST_WEBHOOK_EVENT_BY_BIO = new Map<string, InstagramWebhookEventDiagnostics>();
+let LAST_WEBHOOK_EVENT_GLOBAL: InstagramWebhookEventDiagnostics | null = null;
+
 type InstagramAutoReplyConfigInput = {
   automationId?: string;
   ruleName?: string;
@@ -1041,8 +1059,32 @@ export const getWebhookConfig = async (req: Request, res: Response) => {
   });
 };
 
+export const getLastWebhookEvent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user?.id) {
+      throw new ApiError(APIErrors.unauthorizedError, "Not Authenticated", 401);
+    }
+
+    const bioId = String(req.query.bioId || "").trim();
+    if (!bioId) {
+      throw new ApiError(APIErrors.badRequestError, "bioId query parameter is required", 400);
+    }
+
+    await ensureBioOwnership(bioId, req.user.id);
+
+    const lastEvent = LAST_WEBHOOK_EVENT_BY_BIO.get(bioId) || null;
+
+    return res.status(200).json({
+      hasEvent: Boolean(lastEvent),
+      event: lastEvent,
+      globalFallbackEvent: LAST_WEBHOOK_EVENT_GLOBAL,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const receiveWebhook = async (req: Request, res: Response) => {
-  console.log(req)
   try {
     const payload = req.body;
 
@@ -1087,6 +1129,19 @@ export const receiveWebhook = async (req: Request, res: Response) => {
         resolvedBioId,
       });
 
+      const eventDiagnosticsBase: InstagramWebhookEventDiagnostics = {
+        receivedAt: new Date().toISOString(),
+        status: resolvedBioId ? "processed" : "ignored_no_bio",
+        eventType: event.eventType,
+        accountId: String(event.accountId || ""),
+        resolvedBioId,
+        senderId: event.eventData?.senderId ? String(event.eventData.senderId) : undefined,
+        recipientId: event.eventData?.recipientId ? String(event.eventData.recipientId) : undefined,
+        messagePreview: maskValue(String(event.eventData?.messageText || event.eventData?.commentText || ""), 12),
+      };
+
+      LAST_WEBHOOK_EVENT_GLOBAL = eventDiagnosticsBase;
+
       if (!resolvedBioId) {
         logger.warn(`[Instagram Webhook] No integration found for account ${event.accountId}`);
         continue;
@@ -1119,6 +1174,14 @@ export const receiveWebhook = async (req: Request, res: Response) => {
         eventType: event.eventType,
         eventExecutions: eventExecutions.length,
         webhookExecutions: webhookExecutions.length,
+      });
+
+      LAST_WEBHOOK_EVENT_BY_BIO.set(resolvedBioId, {
+        ...eventDiagnosticsBase,
+        triggerCounts: {
+          eventExecutions: eventExecutions.length,
+          webhookExecutions: webhookExecutions.length,
+        },
       });
 
       processed += 1;

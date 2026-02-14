@@ -444,6 +444,7 @@ export class CustomDomainService {
             // Atualiza status
             domain.status = CustomDomainStatus.VERIFYING_DNS;
             domain.lastCheckedAt = new Date();
+            domain.errorMessage = undefined;
             await this.repository.save(domain);
 
             // Verifica DNS
@@ -461,6 +462,7 @@ export class CustomDomainService {
             // DNS OK, prossegue para SSL
             domain.status = CustomDomainStatus.DNS_VERIFIED;
             domain.dnsVerifiedAt = new Date();
+            domain.errorMessage = undefined;
             await this.repository.save(domain);
 
             // Gera certificado SSL
@@ -498,6 +500,7 @@ export class CustomDomainService {
             }
 
             domain.status = CustomDomainStatus.GENERATING_SSL;
+            domain.errorMessage = undefined;
             await this.repository.save(domain);
 
             const deploymentDir = this.resolveDeploymentDir();
