@@ -10,6 +10,28 @@ import { generateToken, decryptToken, generateRefreshToken } from "../shared/ser
 import { createUser, findUserByEmail } from "../shared/services/user.service";
 import { BillingService } from "../services/billing.service";
 
+const PROCESSED_INSTAGRAM_CODES = new Map<string, number>();
+const INSTAGRAM_CODE_TTL_MS = 5 * 60 * 1000;
+
+const cleanupProcessedInstagramCodes = () => {
+  const now = Date.now();
+  for (const [processedCode, processedAt] of PROCESSED_INSTAGRAM_CODES.entries()) {
+    if (now - processedAt > INSTAGRAM_CODE_TTL_MS) {
+      PROCESSED_INSTAGRAM_CODES.delete(processedCode);
+    }
+  }
+};
+
+const hasProcessedInstagramCode = (code: string): boolean => {
+  cleanupProcessedInstagramCodes();
+  return PROCESSED_INSTAGRAM_CODES.has(code);
+};
+
+const markProcessedInstagramCode = (code: string) => {
+  cleanupProcessedInstagramCodes();
+  PROCESSED_INSTAGRAM_CODES.set(code, Date.now());
+};
+
 const getRequestBaseUrl = (req: Request): string => {
   const forwardedProto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0]?.trim();
   const forwardedHost = (req.headers["x-forwarded-host"] as string | undefined)?.split(",")[0]?.trim();
@@ -276,6 +298,13 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         throw new ApiError(APIErrors.badRequestError, "Authorization code missing", 400);
       }
 
+      if (mode === "integration" && hasProcessedInstagramCode(code)) {
+        logger.info("Instagram callback duplicate detected, skipping code reprocessing", {
+          mode,
+        });
+        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
+      }
+
       const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
 
       if (mode === "login") {
@@ -371,6 +400,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       integration.refreshToken = tokenData.userToken;
       
       await integrationRepository.save(integration);
+      markProcessedInstagramCode(code);
 
       res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
     } catch (error) {
