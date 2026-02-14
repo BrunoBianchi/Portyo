@@ -4,6 +4,8 @@ import {
     Calendar,
     ChevronLeft,
     ChevronRight,
+    ArrowUp,
+    ArrowDown,
     Clock,
     Loader2,
     Plus,
@@ -87,7 +89,7 @@ export default function DashboardSocialPlanner() {
         title: "",
         content: "",
         hashtags: "",
-        mediaUrls: "",
+        mediaUrls: [] as string[],
         scheduledAt: "",
     });
 
@@ -238,7 +240,7 @@ export default function DashboardSocialPlanner() {
             title: "",
             content: "",
             hashtags: "",
-            mediaUrls: "",
+            mediaUrls: [],
             scheduledAt: "",
         });
     };
@@ -255,7 +257,7 @@ export default function DashboardSocialPlanner() {
             title: post.title || "",
             content: post.content,
             hashtags: (post.hashtags || []).join(", "),
-            mediaUrls: (post.mediaUrls || []).join("\n"),
+            mediaUrls: post.mediaUrls || [],
             scheduledAt: post.scheduledAt ? format(new Date(post.scheduledAt), "yyyy-MM-dd'T'HH:mm") : "",
         });
         setComposerOpen(true);
@@ -285,10 +287,7 @@ export default function DashboardSocialPlanner() {
                     .split(",")
                     .map((hashtag) => hashtag.trim())
                     .filter(Boolean),
-                mediaUrls: formData.mediaUrls
-                    .split("\n")
-                    .map((url) => url.trim())
-                    .filter(Boolean),
+                mediaUrls: formData.mediaUrls,
                 scheduledAt: scheduledDate.toISOString(),
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
             };
@@ -340,15 +339,10 @@ export default function DashboardSocialPlanner() {
 
             if (uploadedUrls.length > 0) {
                 setFormData((prev) => {
-                    const currentUrls = prev.mediaUrls
-                        .split("\n")
-                        .map((url) => url.trim())
-                        .filter(Boolean);
-
-                    const merged = [...currentUrls, ...uploadedUrls];
+                    const merged = [...prev.mediaUrls, ...uploadedUrls];
                     return {
                         ...prev,
-                        mediaUrls: merged.join("\n"),
+                        mediaUrls: merged,
                     };
                 });
             }
@@ -395,6 +389,32 @@ export default function DashboardSocialPlanner() {
         } catch (error) {
             console.error("Failed to delete post", error);
         }
+    };
+
+    const moveMediaItem = (index: number, direction: "up" | "down") => {
+        setFormData((prev) => {
+            const next = [...prev.mediaUrls];
+            const targetIndex = direction === "up" ? index - 1 : index + 1;
+            if (targetIndex < 0 || targetIndex >= next.length) {
+                return prev;
+            }
+
+            const temp = next[index];
+            next[index] = next[targetIndex];
+            next[targetIndex] = temp;
+
+            return {
+                ...prev,
+                mediaUrls: next,
+            };
+        });
+    };
+
+    const removeMediaItem = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            mediaUrls: prev.mediaUrls.filter((_, currentIndex) => currentIndex !== index),
+        }));
     };
 
     return (
@@ -462,14 +482,14 @@ export default function DashboardSocialPlanner() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
-                            <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 md:p-6">
-                                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-4">
+                            <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 md:p-6">
+                                <div className="flex flex-col gap-3 mb-4">
                                     <h2 className="text-lg font-black text-[#1A1A1A] flex items-center gap-2">
                                         <Calendar className="w-5 h-5" />
                                         {t("dashboard.socialPlanner.calendar", { defaultValue: "Calendar" })}
                                     </h2>
 
-                                    <div className="flex items-center justify-between gap-2 w-full lg:w-auto">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 w-full">
                                         <div className="inline-flex items-center border-2 border-black rounded-xl overflow-hidden">
                                             <button
                                                 onClick={() => setCalendarViewMode("weekly")}
@@ -485,47 +505,49 @@ export default function DashboardSocialPlanner() {
                                             </button>
                                         </div>
 
-                                        <button
-                                            onClick={() => {
-                                                if (calendarViewMode === "weekly") {
-                                                    const nextDate = subWeeks(selectedDate, 1);
-                                                    setSelectedDate(nextDate);
-                                                    setCurrentMonth(nextDate);
-                                                } else {
-                                                    setCurrentMonth(subMonths(currentMonth, 1));
-                                                }
-                                            }}
-                                            className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
-                                        >
-                                            <ChevronLeft className="w-4 h-4" />
-                                        </button>
+                                        <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    if (calendarViewMode === "weekly") {
+                                                        const nextDate = subWeeks(selectedDate, 1);
+                                                        setSelectedDate(nextDate);
+                                                        setCurrentMonth(nextDate);
+                                                    } else {
+                                                        setCurrentMonth(subMonths(currentMonth, 1));
+                                                    }
+                                                }}
+                                                className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
+                                            >
+                                                <ChevronLeft className="w-4 h-4" />
+                                            </button>
 
-                                        <span className="font-black text-xs sm:text-sm min-w-[132px] sm:min-w-[180px] text-center">
-                                            {calendarViewMode === "weekly"
-                                                ? `${format(weeklyStart, "dd MMM")} - ${format(weeklyEnd, "dd MMM yyyy")}`
-                                                : format(currentMonth, "MMMM yyyy")}
-                                        </span>
+                                            <span className="font-black text-xs sm:text-sm min-w-[148px] sm:min-w-[210px] text-center px-1">
+                                                {calendarViewMode === "weekly"
+                                                    ? `${format(weeklyStart, "dd MMM")} - ${format(weeklyEnd, "dd MMM yyyy")}`
+                                                    : format(currentMonth, "MMMM yyyy")}
+                                            </span>
 
-                                        <button
-                                            onClick={() => {
-                                                if (calendarViewMode === "weekly") {
-                                                    const nextDate = addWeeks(selectedDate, 1);
-                                                    setSelectedDate(nextDate);
-                                                    setCurrentMonth(nextDate);
-                                                } else {
-                                                    setCurrentMonth(addMonths(currentMonth, 1));
-                                                }
-                                            }}
-                                            className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
-                                        >
-                                            <ChevronRight className="w-4 h-4" />
-                                        </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (calendarViewMode === "weekly") {
+                                                        const nextDate = addWeeks(selectedDate, 1);
+                                                        setSelectedDate(nextDate);
+                                                        setCurrentMonth(nextDate);
+                                                    } else {
+                                                        setCurrentMonth(addMonths(currentMonth, 1));
+                                                    }
+                                                }}
+                                                className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
+                                            >
+                                                <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {calendarViewMode === "weekly" ? (
-                                    <div className="overflow-x-auto pb-1">
-                                        <div className="grid grid-cols-7 gap-3 min-w-[980px]">
+                                    <div className="overflow-x-auto pb-2">
+                                        <div className="grid grid-cols-7 gap-3 min-w-[1220px] xl:min-w-0">
                                             {weeklyDays.map((day) => {
                                                 const key = format(day, "yyyy-MM-dd");
                                                 const dayPosts = postsGroupedByDay.get(key) || [];
@@ -534,7 +556,7 @@ export default function DashboardSocialPlanner() {
                                                 return (
                                                     <div
                                                         key={key}
-                                                        className={`rounded-2xl border-2 min-h-[240px] md:min-h-[340px] p-2.5 ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"}`}
+                                                        className={`rounded-2xl border-2 min-h-[240px] md:min-h-[340px] p-3 transition-colors ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"}`}
                                                     >
                                                         <button
                                                             onClick={() => setSelectedDate(day)}
@@ -551,16 +573,16 @@ export default function DashboardSocialPlanner() {
                                                         ) : (
                                                             <div className="space-y-2 max-h-[170px] md:max-h-[260px] overflow-y-auto pr-1">
                                                                 {dayPosts.map((post) => (
-                                                                    <div key={post.id} className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm">
-                                                                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                                                                            <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase ${getChannelBadgeClass(post.channel)}`}>
-                                                                                {post.channel}
+                                                                    <div key={post.id} className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm overflow-hidden">
+                                                                        <div className="flex flex-wrap items-center gap-1.5 mb-1.5 min-w-0">
+                                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase max-w-full truncate ${getChannelBadgeClass(post.channel)}`}>
+                                                                                {t(`dashboard.socialPlanner.channels.${post.channel}`, { defaultValue: post.channel })}
                                                                             </span>
-                                                                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
+                                                                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-black border capitalize max-w-full truncate ${statusClassMap[post.status]}`}>
                                                                                 {t(`dashboard.socialPlanner.status.${post.status}`, { defaultValue: post.status })}
                                                                             </span>
                                                                         </div>
-                                                                        <p className="text-xs font-bold text-[#1A1A1A] line-clamp-2">{post.title || post.content}</p>
+                                                                        <p className="text-xs font-bold text-[#1A1A1A] line-clamp-2 break-words">{post.title || post.content}</p>
                                                                         <p className="text-[11px] text-gray-500 mt-1 inline-flex items-center gap-1">
                                                                             <Clock className="w-3 h-3" />
                                                                             {post.scheduledAt ? format(parseISO(post.scheduledAt), "HH:mm") : "--:--"}
@@ -726,9 +748,9 @@ export default function DashboardSocialPlanner() {
 
                                 <div>
                                     <label className="text-xs font-black uppercase tracking-wider text-gray-500 mb-2 block">
-                                        {t("dashboard.socialPlanner.fields.media", { defaultValue: "Media URLs (one per line)" })}
+                                        {t("dashboard.socialPlanner.fields.media", { defaultValue: "Images" })}
                                     </label>
-                                    <div className="mb-2.5 flex items-center gap-2">
+                                    <div className="mb-2.5 flex flex-col sm:flex-row sm:items-center gap-2">
                                         <label className="inline-flex items-center gap-2 px-3 py-2 border-2 border-black rounded-xl text-sm font-bold cursor-pointer hover:bg-gray-50 transition-colors">
                                             {uploadingMedia ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -752,13 +774,51 @@ export default function DashboardSocialPlanner() {
                                             {t("dashboard.socialPlanner.mediaHint", { defaultValue: "Supported: JPG, PNG, WEBP, GIF" })}
                                         </span>
                                     </div>
-                                    <textarea
-                                        rows={3}
-                                        value={formData.mediaUrls}
-                                        onChange={(e) => setFormData((prev) => ({ ...prev, mediaUrls: e.target.value }))}
-                                        className="w-full border-2 border-black rounded-xl px-3 py-2.5 font-medium resize-none"
-                                        placeholder="https://..."
-                                    />
+
+                                    {formData.mediaUrls.length === 0 ? (
+                                        <div className="w-full border-2 border-dashed border-gray-300 rounded-xl px-3 py-4 text-sm text-gray-500 font-medium">
+                                            {t("dashboard.socialPlanner.emptyMedia", { defaultValue: "No images uploaded yet." })}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {formData.mediaUrls.map((url, index) => (
+                                                <div key={`${url}-${index}`} className="w-full border-2 border-black rounded-xl p-2.5 bg-white flex items-center gap-2">
+                                                    <img src={url} alt={`media-${index + 1}`} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
+
+                                                    <p className="text-xs text-gray-600 font-medium truncate flex-1 min-w-0">{url}</p>
+
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => moveMediaItem(index, "up")}
+                                                            disabled={index === 0}
+                                                            className="p-1.5 border border-black rounded-md hover:bg-gray-50 disabled:opacity-40"
+                                                            aria-label={t("dashboard.socialPlanner.actions.moveUp", { defaultValue: "Move up" })}
+                                                        >
+                                                            <ArrowUp className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => moveMediaItem(index, "down")}
+                                                            disabled={index === formData.mediaUrls.length - 1}
+                                                            className="p-1.5 border border-black rounded-md hover:bg-gray-50 disabled:opacity-40"
+                                                            aria-label={t("dashboard.socialPlanner.actions.moveDown", { defaultValue: "Move down" })}
+                                                        >
+                                                            <ArrowDown className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeMediaItem(index)}
+                                                            className="p-1.5 border border-black rounded-md hover:bg-red-50 text-red-600"
+                                                            aria-label={t("dashboard.socialPlanner.actions.removeImage", { defaultValue: "Remove image" })}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

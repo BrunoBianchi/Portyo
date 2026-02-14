@@ -1,6 +1,6 @@
 import {
   Eye, X, ChevronLeftIcon, ExternalLinkIcon,
-  Sparkles, Undo2, Share2, Smartphone
+  Undo2, Share2, Smartphone
 } from 'lucide-react';
 import { useContext, useEffect, useState, useCallback, memo, useRef } from "react";
 import type { MetaFunction } from "react-router";
@@ -21,7 +21,6 @@ import { useHtmlGenerator } from "~/hooks/use-html-generator";
 import { EditorNav } from "~/components/dashboard/editor/editor-nav";
 import { BlockEditorDrawer } from "~/components/dashboard/editor/block-editor-drawer";
 import { LinksTab, SettingsTab } from "~/components/dashboard/editor/tabs";
-import { PortyoAI } from "~/components/dashboard/portyo-ai";
 import type { BioBlock } from "~/contexts/bio.context";
 
 export const meta: MetaFunction = () => {
@@ -41,7 +40,6 @@ const EditorHeader = memo(function EditorHeader({
   bioSuffix,
   showMobilePreview,
   onToggleMobilePreview,
-  onAIClick,
 }: {
   activeTab: "links" | "settings";
   onTabChange: (tab: "links" | "settings") => void;
@@ -51,7 +49,6 @@ const EditorHeader = memo(function EditorHeader({
   bioSuffix?: string;
   showMobilePreview: boolean;
   onToggleMobilePreview: () => void;
-  onAIClick: () => void;
 }) {
   const { t } = useTranslation("dashboard");
 
@@ -63,9 +60,9 @@ const EditorHeader = memo(function EditorHeader({
   return (
     <header className="bg-white border-b border-gray-200 z-30 relative shrink-0">
       {/* Row 1: Main Header - Desktop & Tablet */}
-      <div className="hidden md:flex h-16 px-4 items-center justify-between">
+      <div className="hidden md:flex h-16 px-3 lg:px-4 items-center justify-between gap-2 lg:gap-3">
         {/* Left: Back button + Title */}
-        <div className="flex items-center gap-4 shrink-0 min-w-0 w-[140px] lg:w-[180px]">
+        <div className="flex items-center gap-3 lg:gap-4 shrink-0 min-w-0 max-w-[210px] lg:max-w-[240px]">
           <Link
             to="/dashboard"
             className="p-2 -ml-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0"
@@ -86,15 +83,12 @@ const EditorHeader = memo(function EditorHeader({
         </div>
 
         {/* Center: EditorNav - Flex grow para ocupar espaço disponível */}
-        <div className="flex-1 flex justify-start px-2 lg:px-4 min-w-0 overflow-hidden">
+        <div className="flex-1 flex justify-start px-1 lg:px-3 min-w-0 overflow-hidden">
           <EditorNav activeTab={activeTab} onChangeTab={onTabChange} />
         </div>
 
-        {/* Right: Actions - Fixed width */}
-        <div className="flex items-center gap-1 lg:gap-2 shrink-0 w-[140px] lg:w-[180px] justify-end">
-          <AIButton onClick={onAIClick} />
-
-          <div className="h-6 w-px bg-gray-200 mx-1" />
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1 lg:gap-2 shrink-0 min-w-0 justify-end">
 
           <UndoButton onClick={onUndo} disabled={history.length === 0} />
           <ShareButton onClick={onShare} />
@@ -104,7 +98,7 @@ const EditorHeader = memo(function EditorHeader({
               href={`https://portyo.me/p/${bioSuffix}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-2 py-2 text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+              className="hidden lg:flex items-center gap-1.5 px-2 py-2 text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0"
             >
               <span className="hidden xl:inline">{t("top.openPage")}</span>
               <ExternalLinkIcon className="w-4 h-4" />
@@ -114,7 +108,7 @@ const EditorHeader = memo(function EditorHeader({
       </div>
 
       {/* Row 1: Mobile Header - Improved spacing */}
-      <div className="md:hidden px-3 pt-2 pb-3">
+      <div className="md:hidden px-2.5 pt-2 pb-3">
         <div className="h-10 flex items-center">
           <Link
             to="/dashboard"
@@ -145,27 +139,11 @@ const EditorHeader = memo(function EditorHeader({
           </div>
         </div>
 
-        <div className="mt-2">
+        <div className="mt-2.5">
           <EditorNav activeTab={activeTab} onChangeTab={onTabChange} />
         </div>
       </div>
     </header>
-  );
-});
-
-const AIButton = memo(function AIButton({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation("dashboard");
-
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-black text-xs sm:text-sm font-bold rounded-full transition-all shadow-sm group shrink-0">
-      <div className="relative">
-        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8129D9]" />
-        <span className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-[#FFC107] text-[8px] sm:text-[9px] font-black px-0.5 sm:px-1 rounded text-black shadow-sm transform scale-75 origin-bottom-left">
-          {t("editorBadges.beta")}
-        </span>
-      </div>
-      <span className="hidden lg:inline">{t("editor.askAI")}</span>
-    </button>
   );
 });
 
@@ -301,7 +279,6 @@ export default function DashboardEditor() {
 
   const [activeTab, setActiveTab] = useState<"links" | "settings">("links");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [showAI, setShowAI] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const lastSavedBlocksRef = useRef<string>("");
@@ -533,31 +510,6 @@ export default function DashboardEditor() {
     setSeoState(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  // AI Handlers
-  const handleAIToggle = useCallback(() => {
-    setShowAI(prev => !prev);
-  }, []);
-
-  const handleAIBlocksGenerated = useCallback((newBlocks: BioBlock[], replace: boolean) => {
-    if (replace) {
-      setBlocks(newBlocks);
-    } else {
-      setBlocks([...blocks, ...newBlocks]);
-    }
-    toast.success(t("editor.ai.successGenerate", "Content generated!"));
-  }, [setBlocks, blocks, t]);
-
-  const handleAISettingsChange = useCallback((settings: Record<string, any>) => {
-    if (!bio) return;
-    handleDesignUpdate(settings);
-  }, [bio, handleDesignUpdate]);
-
-  const handleAIGlobalStylesChange = useCallback((styles: Partial<BioBlock>) => {
-    if (!blocks.length) return;
-    const updated = blocks.map(block => ({ ...block, ...styles }));
-    setBlocks(updated);
-  }, [blocks, setBlocks]);
-
   return (
     <AuthorizationGuard>
       <div className="h-screen flex flex-col bg-[#F3F3F1] overflow-hidden font-sans">
@@ -570,7 +522,6 @@ export default function DashboardEditor() {
           bioSuffix={bio?.sufix}
           showMobilePreview={showMobilePreview}
           onToggleMobilePreview={() => setShowMobilePreview(!showMobilePreview)}
-          onAIClick={handleAIToggle}
         />
 
         <div className="flex-1 flex overflow-hidden relative">
@@ -638,25 +589,6 @@ export default function DashboardEditor() {
         />
       </div>
 
-      {/* AI Panel - Rendered outside overflow-hidden container */}
-      {showAI && bio && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/20 z-[45]"
-            onClick={() => setShowAI(false)}
-          />
-          <div className="fixed top-20 right-4 md:right-8 z-50 w-[calc(100%-2rem)] max-w-md">
-            <PortyoAI
-              bioId={bio.id}
-              isOpen={showAI}
-              onClose={() => setShowAI(false)}
-              onBlocksGenerated={handleAIBlocksGenerated}
-              onSettingsChange={handleAISettingsChange}
-              onGlobalStylesChange={handleAIGlobalStylesChange}
-            />
-          </div>
-        </>
-      )}
     </AuthorizationGuard>
   );
 }

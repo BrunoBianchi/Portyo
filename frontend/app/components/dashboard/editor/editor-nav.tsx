@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, Settings, Sparkles, Globe, Bot, Palette } from "lucide-react";
+import { LayoutGrid, Settings, Globe, Bot, Palette } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 interface EditorNavProps {
@@ -9,8 +9,9 @@ interface EditorNavProps {
 }
 
 export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
-    const { t } = useTranslation("dashboard");
+    const { t, i18n } = useTranslation("dashboard");
     const location = useLocation();
+    const isPt = (i18n.resolvedLanguage || i18n.language || "en").startsWith("pt");
     const scrollRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
@@ -35,25 +36,40 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
         {
             id: "design" as const,
             to: "/dashboard/design",
-            label: t("nav.design"),
-            shortLabel: t("nav.design"),
+            label: t("nav.design", { defaultValue: isPt ? "Design" : "Design" }),
+            shortLabel: "Design",
             icon: Palette,
         },
         {
             id: "custom-domains" as const,
             to: "/dashboard/custom-domains",
-            label: t("nav.customDomains"),
-            shortLabel: t("nav.customDomains"),
+            label: t("nav.customDomains", { defaultValue: isPt ? "Domínios Personalizados" : "Custom Domains" }),
+            shortLabel: isPt ? "Domínios" : "Domains",
             icon: Globe,
         },
         {
             id: "automation" as const,
             to: "/dashboard/automation",
-            label: t("nav.automation"),
-            shortLabel: t("nav.automation"),
+            label: t("nav.automation", { defaultValue: isPt ? "Automação" : "Automation" }),
+            shortLabel: isPt ? "Automação" : "Auto",
             icon: Bot,
         },
     ];
+
+    const itemBaseClass = `
+        snap-start relative flex items-center justify-center gap-1.5
+        px-2.5 sm:px-3 md:px-3 lg:px-3.5
+        py-2 sm:py-2.5
+        rounded-lg sm:rounded-full
+        font-bold text-[11px] sm:text-xs
+        transition-all duration-200 ease-out
+        whitespace-nowrap flex-shrink-0
+        min-w-[78px] sm:min-w-[92px]
+        touch-manipulation
+    `;
+
+    const activeClass = 'bg-[#1A1A1A] text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]';
+    const inactiveClass = 'text-gray-500 hover:text-gray-900 hover:bg-black/5 active:bg-black/10';
 
     // Verificar se pode scrollar
     const checkScroll = () => {
@@ -101,7 +117,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             {/* Container principal com scroll */}
             <nav
                 ref={scrollRef}
-                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full md:w-full lg:w-fit max-w-full overflow-x-auto scrollbar-hide scroll-smooth"
+                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full max-w-full overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {tabs.map((tab) => {
@@ -113,32 +129,17 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                             key={tab.id}
                             data-tab={tab.id}
                             onClick={() => onChangeTab(tab.id)}
-                            className={`
-                                relative flex items-center justify-center gap-1 sm:gap-1.5 
-                                px-2.5 sm:px-3 md:px-2 lg:px-4 
-                                py-2 sm:py-2.5
-                                rounded-lg sm:rounded-full 
-                                font-bold text-[11px] sm:text-xs
-                                transition-all duration-200 ease-out
-                                whitespace-nowrap flex-shrink-0
-                                min-w-[72px] sm:min-w-[auto]
-                                touch-manipulation
-                                ${isActive
-                                    ? 'bg-[#1A1A1A] text-white shadow-lg shadow-black/20 transform scale-[1.02]'
-                                    : 'text-gray-500 hover:text-gray-900 hover:bg-black/5 active:bg-black/10'
-                                }
-                            `}
+                            className={`${itemBaseClass} ${isActive ? activeClass : inactiveClass}`}
                         >
                             <Icon
                                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? "text-[#C6F035]" : ""}`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
 
-                            {/* Label - muda conforme o tamanho da tela */}
-                            <span className="inline lg:hidden">
+                            <span className="inline xl:hidden max-w-[88px] truncate">
                                 {tab.shortLabel}
                             </span>
-                            <span className="hidden lg:inline">
+                            <span className="hidden xl:inline max-w-[140px] truncate">
                                 {tab.label}
                             </span>
 
@@ -163,6 +164,8 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                     );
                 })}
 
+                <div className="w-px h-7 bg-black/10 mx-0.5 shrink-0" />
+
                 {navLinks.map((navLink) => {
                     const Icon = navLink.icon;
                     const isActive = location.pathname.startsWith(navLink.to);
@@ -171,31 +174,17 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                         <Link
                             key={navLink.id}
                             to={navLink.to}
-                            className={`
-                                relative flex items-center justify-center gap-1 sm:gap-1.5 
-                                px-2.5 sm:px-3 md:px-2 lg:px-4 
-                                py-2 sm:py-2.5
-                                rounded-lg sm:rounded-full 
-                                font-bold text-[11px] sm:text-xs
-                                transition-all duration-200 ease-out
-                                whitespace-nowrap flex-shrink-0
-                                min-w-[72px] sm:min-w-[auto]
-                                touch-manipulation
-                                ${isActive
-                                    ? 'bg-[#1A1A1A] text-white shadow-lg shadow-black/20 transform scale-[1.02]'
-                                    : 'text-gray-500 hover:text-gray-900 hover:bg-black/5 active:bg-black/10'
-                                }
-                            `}
+                            className={`${itemBaseClass} ${isActive ? activeClass : inactiveClass}`}
                         >
                             <Icon
                                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? "text-[#C6F035]" : ""}`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
 
-                            <span className="inline lg:hidden">
+                            <span className="inline xl:hidden max-w-[92px] truncate">
                                 {navLink.shortLabel}
                             </span>
-                            <span className="hidden lg:inline">
+                            <span className="hidden xl:inline max-w-[160px] truncate">
                                 {navLink.label}
                             </span>
                         </Link>
