@@ -465,6 +465,12 @@ export class InstagramService {
         redirectUriUsed: resolvedRedirectUri,
       });
 
+      // --- MODIFICAÇÃO TEMPORÁRIA (BYPASS LONG-LIVED TOKEN) ---
+      // Como a Meta está barrando a geração do token longo devido à falta de verificação do App,
+      // as linhas abaixo foram comentadas para usarmos o short-lived token diretamente no banco.
+      // Quando a verificação/MEI for aprovada, basta descomentar esse bloco e apagar o console.log substituto.
+      
+      /*
       const longLivedToken = await this.exchangeForLongLivedToken(userAccessToken);
       userAccessToken = longLivedToken.accessToken;
       expiresIn = longLivedToken.expiresIn ?? expiresIn;
@@ -474,6 +480,16 @@ export class InstagramService {
         accessTokenPreview: this.maskValue(userAccessToken, 12),
         expiresIn,
       });
+      */
+
+      // Console.log substituto para o ambiente de testes atual:
+      console.log("[Instagram OAuth][service][integration] Utilizando Short-Lived Token (Bypass temporário)", {
+        accessTokenLength: userAccessToken?.length || 0,
+        accessTokenPreview: this.maskValue(userAccessToken, 12),
+        expiresIn,
+        note: "O token expirará em 1 hora. Renovações automáticas não funcionarão."
+      });
+      // ---------------------------------------------------------
 
       const profileResponse = await axios.get(`${this.graphBaseUrl}/${userId || "me"}`, {
         params: {
@@ -684,47 +700,18 @@ export class InstagramService {
             edges = data?.data?.user?.edge_owner_to_timeline_media?.edges || [];
           } else {
              logger.warn("Instagram API failed, trying HTML fallback...");
-             // logic moved to helper or kept inline if simple, but here we reuse the existing scraping logic which returns formatted items.
-             // Wait, the existing scraping returns formatted items, but the API returns raw edges. 
-             // We need to standardize. 
-             // Let's call the internal methods that return RAW data or standardize immediately.
-             // For simplicity, let's assume the existing scrapeHtml returns formatted items, so we need to match that.
-             // ACTUALLY, to avoid duplication, I will refactor `scrapeHtml` to return the `edges` array (raw-ish) or just handle the formatting centrally.
-             // The implementation below assumes we get a list of items and then process them.
-             
-             // Let's use the scraping fallback directly if API fails
              const scrapedItems = await this.scrapeHtml(username, baseUrl); 
-             // scrapedItems are already formatted. We need to process THEIR images.
-             // This structure is: { id, url, imageUrl, thumbnailUrl, caption }
-             // We can map them back to a structure we can process.
              edges = scrapedItems.map(item => ({
                  node: {
                      id: item.id,
-                     shortcode: item.id, // scrapedItems uses shortcode as ID
-                     display_url: item.imageUrl.replace(`${baseUrl}/api/public/instagram/proxy?url=`, '').replace(/%26/g, '&').replace(/%3D/g, '=').replace(/%2F/g, '/').replace(/%3A/g, ':').replace(/%3F/g, '?'), // Hacky reverse of the proxy URL if it was encoded. 
-                     // Actually, inside scrapeHtml, we construct the proxy URL. Ideally scrapeHtml shouldn't presume the proxy URL format if we want to change it.
-                     // But since I can't easily change scrapeHtml's return type without changing the method signature in the interface (which is implicit here), 
-                     // I will assume `scrapeHtml` returns the objects with `imageUrl` pointing to the external URL (before proxying) OR I modify `scrapeHtml` too.
-                     // The previous `scrapeHtml` code constructed the proxy URL.
-                     // I will modify `scrapeHtml` in a subsequent edit or assume I can extract the original URL.
-                     // Let's try to get RAW info first. 
-                     // Since I am replacing the WHOLE method, I can rewrite the flow.
+                     shortcode: item.id,
+                     display_url: item.imageUrl.replace(`${baseUrl}/api/public/instagram/proxy?url=`, '').replace(/%26/g, '&').replace(/%3D/g, '=').replace(/%2F/g, '/').replace(/%3A/g, ':').replace(/%3F/g, '?'), 
                   }
              }));
           }
       } catch (e) {
             logger.warn("Instagram API failed fully, trying HTML scraping");
-             // Fallback to scraping
-             // We will modify scrapeHtml to return raw-ish data or standard objects
              const scraped = await this.scrapeHtml(username, baseUrl);
-             // Verify if scrapeHtml returned what we expect. 
-             // The previous implementation of scrapeHtml returned:
-             // { id, url, imageUrl (proxied), thumbnailUrl, caption }
-             // We need the ORIGINAL url to download it.
-             // I will modify scrapeHtml below to return the original URL in a specific field or decode it.
-             // For now, let's trust we can process the list.
-             
-             // To properly handle this, I'll assume we process the "formatted" list.
              const processedPosts = await this.processAndCachePosts(scraped, username, baseUrl);
              return processedPosts;
       }
@@ -759,8 +746,6 @@ export class InstagramService {
 
       const processed = await Promise.all(posts.map(async (post) => {
           try {
-             // If the post is coming from scrapeHtml (which I need to check), it might have 'imageUrl' instead of 'originalImageUrl'.
-             // Let's normalize.
              let targetUrl = post.originalImageUrl || post.imageUrl;
              
              // If it's a proxy URL, try to extract original. 
@@ -777,12 +762,8 @@ export class InstagramService {
                  const response = await axios.get(targetUrl, { responseType: 'arraybuffer' });
                  const buffer = Buffer.from(response.data);
                  
-                 // Process image (Resize/Convert to PNG)
-                 // Keeping it 500x500 square-ish or original aspect ratio but optimized?
-                 // Instagram usually is square or 4:5. Let's strict resize to 600 width, maintain aspect ratio?
-                 // The frontend grid expects squares usually.
                  const processedBuffer = await sharp(buffer)
-                    .resize(600, 600, { fit: 'cover' }) // Force square for grid consistency? Or 'inside'? Button grid usually square.
+                    .resize(600, 600, { fit: 'cover' }) 
                     .jpeg({ quality: 80 })
                     .toBuffer();
 
@@ -792,17 +773,14 @@ export class InstagramService {
              return {
                  ...post,
                  imageUrl: `${baseUrl}/api/instagram/image/${post.id}`, // New local route
-                 // Remove internal fields if any
                  originalImageUrl: undefined
              };
 
           } catch (e) {
               logger.error(`Failed to process image for post ${post.id}`, e);
-              // Fallback to original URL or placeholder?
-              // If we can't download, maybe the URL is dead. 
               return {
                   ...post,
-                  imageUrl: post.originalImageUrl || post.imageUrl // Fallback to sticking with original if download fails
+                  imageUrl: post.originalImageUrl || post.imageUrl 
               };
           }
       }));
@@ -814,7 +792,6 @@ export class InstagramService {
       return processed;
   }
 
-  // Refactored ScrapeHtml to return consistent clean objects
   private async scrapeHtml(username: string, baseUrl: string) {
     const htmlResponse = await fetch(`https://www.instagram.com/${username}/`, {
       headers: {
@@ -903,7 +880,6 @@ export class InstagramService {
   }
 
   public async getProxyImage(url: string) {
-    // Legacy support or direct valid proxying
     try {
       const response = await fetch(url, {
         headers: {
