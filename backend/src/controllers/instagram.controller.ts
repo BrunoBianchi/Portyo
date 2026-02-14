@@ -14,6 +14,12 @@ const PROCESSED_INSTAGRAM_CODES = new Map<string, number>();
 const PROCESSING_INSTAGRAM_CODES = new Map<string, number>();
 const INSTAGRAM_CODE_TTL_MS = 5 * 60 * 1000;
 
+const maskValue = (value?: string | null, visible = 8) => {
+  if (!value) return "<empty>";
+  if (value.length <= visible * 2) return `${value.slice(0, 2)}***${value.slice(-2)}`;
+  return `${value.slice(0, visible)}...${value.slice(-visible)}`;
+};
+
 const cleanupProcessedInstagramCodes = () => {
   const now = Date.now();
   for (const [processedCode, processedAt] of PROCESSED_INSTAGRAM_CODES.entries()) {
@@ -221,6 +227,15 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
       const frontendBaseUrl = normalizeFrontendBaseUrl(typeof req.query.returnTo === "string" ? req.query.returnTo : undefined)
         || getFrontendBaseUrl(req, undefined, redirectUri);
 
+      console.log("[Instagram OAuth][initiateAuth] Incoming request", {
+        mode,
+        bioId: req.query.bioId,
+        returnTo: req.query.returnTo,
+        redirectUri,
+        frontendBaseUrl,
+        host: req.get("host"),
+      });
+
       if (mode === "login") {
         const state = await generateToken({
           provider: "instagram",
@@ -230,8 +245,14 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
           frontendBaseUrl,
         });
 
-        const authUrl = instagramService.getAuthUrl(redirectUri);
+        const authUrl = instagramService.getLoginAuthUrl(redirectUri);
         const authUrlWithState = `${authUrl}&state=${encodeURIComponent(state)}`;
+
+        console.log("[Instagram OAuth][initiateAuth][login] Generated auth URL", {
+          authUrl,
+          stateLength: state.length,
+          statePreview: maskValue(state, 12),
+        });
 
         if (req.xhr || req.headers.accept?.indexOf('json')! > -1) {
           return res.json({ url: authUrlWithState });
@@ -274,6 +295,14 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
       
       const authUrl = instagramService.getAuthUrl(redirectUri);
       const authUrlWithState = `${authUrl}&state=${encodeURIComponent(state)}`;
+
+      console.log("[Instagram OAuth][initiateAuth][integration] Generated auth URL", {
+        userId: req.user.id,
+        bioId: bio.id,
+        authUrl,
+        stateLength: state.length,
+        statePreview: maskValue(state, 12),
+      });
       
       if (req.xhr || req.headers.accept?.indexOf('json')! > -1) {
          return res.json({ url: authUrlWithState });
@@ -289,6 +318,16 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
     try {
       const { code, error, error_reason, error_description, state } = req.query;
 
+      console.log("[Instagram OAuth][callback] Raw query received", {
+        hasCode: typeof code === "string",
+        codePreview: typeof code === "string" ? maskValue(code, 12) : "<none>",
+        error,
+        error_reason,
+        error_description,
+        hasState: typeof state === "string",
+        statePreview: typeof state === "string" ? maskValue(state, 12) : "<none>",
+      });
+
       if (!state || typeof state !== "string") {
         throw new ApiError(APIErrors.badRequestError, "State missing", 400);
       }
@@ -303,6 +342,13 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         ? (statePayload as any).frontendBaseUrl
         : undefined;
       const frontendBaseUrl = getFrontendBaseUrl(req, frontendBaseUrlFromState, redirectUri);
+
+      console.log("[Instagram OAuth][callback] State decoded", {
+        mode,
+        provider,
+        redirectUri,
+        frontendBaseUrl,
+      });
 
       if (provider !== "instagram" || !mode) {
         throw new ApiError(APIErrors.badRequestError, "Invalid state", 400);
@@ -338,17 +384,36 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         markProcessingInstagramCode(code);
       }
 
-      const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
+      console.log("[Instagram OAuth][callback] Processing mode", {
+        mode,
+        codePreview: maskValue(code, 12),
+      });
 
       if (mode === "login") {
-        const preferredIdentity = tokenData.instagramUsername || tokenData.pageName || tokenData.userId || tokenData.pageId || String(Date.now());
+        const loginTokenData = await instagramService.exchangeLoginCodeForToken(code, redirectUri);
+        const loginProfile = await instagramService.getLoginUserProfile(loginTokenData.accessToken);
+
+        console.log("[Instagram OAuth][callback][login] Token/profile fetched", {
+          userId: loginTokenData.userId,
+          accessTokenLength: loginTokenData.accessToken?.length || 0,
+          accessTokenPreview: maskValue(loginTokenData.accessToken, 12),
+          profileId: loginProfile?.id,
+          profileUsername: loginProfile?.username,
+        });
+
+        const preferredIdentity = loginProfile?.username || loginTokenData.userId || loginProfile?.id || String(Date.now());
         const identitySeed = String(preferredIdentity).toLowerCase();
         const generatedEmail = `${identitySeed.replace(/[^a-z0-9._-]/g, "") || "instagram"}@instagram.portyo.local`;
-        const fallbackName = tokenData.instagramUsername
-          ? `@${tokenData.instagramUsername}`
-          : (tokenData.pageName || "Instagram User");
+        const fallbackName = loginProfile?.username
+          ? `@${loginProfile.username}`
+          : "Instagram User";
 
         let user = await findUserByEmail(generatedEmail);
+        console.log("[Instagram OAuth][callback][login] Lookup user", {
+          generatedEmail,
+          found: Boolean(user),
+        });
+
         if (!user) {
           user = await createUser({
             email: generatedEmail,
@@ -374,6 +439,14 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
 
         const appAccessToken = await generateToken(payload);
         const appRefreshToken = await generateRefreshToken(user.id);
+
+        console.log("[Instagram OAuth][callback][login] App tokens generated", {
+          userId: user.id,
+          appAccessTokenLength: appAccessToken.length,
+          appAccessTokenPreview: maskValue(appAccessToken, 12),
+          appRefreshTokenLength: appRefreshToken.length,
+          appRefreshTokenPreview: maskValue(appRefreshToken, 12),
+        });
 
         res.cookie('refreshToken', appRefreshToken, {
           httpOnly: true,
@@ -401,6 +474,17 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
 
         return res.redirect(`${frontendBaseUrl}/login?${params.toString()}`);
       }
+
+      const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
+
+      console.log("[Instagram OAuth][callback][integration] Token data received", {
+        userId: tokenData.userId,
+        instagramBusinessAccountId: tokenData.instagramBusinessAccountId,
+        instagramUsername: tokenData.instagramUsername,
+        accessTokenLength: tokenData.accessToken?.length || 0,
+        accessTokenPreview: maskValue(tokenData.accessToken, 12),
+        expiresIn: tokenData.expiresIn,
+      });
 
       const bioId = (statePayload as any).bioId as string | undefined;
       const userId = (statePayload as any).id as string | undefined;
@@ -446,6 +530,14 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       
       await integrationRepository.save(integration);
       markProcessedInstagramCode(code);
+
+      console.log("[Instagram OAuth][callback][integration] Integration saved", {
+        bioId: bio.id,
+        provider: integration.provider,
+        accountId: integration.account_id,
+        integrationName: integration.name,
+        tokenExpiresAt: integration.accessTokenExpiresAt,
+      });
 
       res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
     } catch (error) {

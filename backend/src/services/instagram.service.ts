@@ -13,6 +13,12 @@ export class InstagramService {
   private readonly graphVersion = "v21.0";
   private readonly tokenExchangeBaseUrl = "https://graph.instagram.com";
 
+  private maskValue(value?: string | null, visible = 8) {
+    if (!value) return "<empty>";
+    if (value.length <= visible * 2) return `${value.slice(0, 2)}***${value.slice(-2)}`;
+    return `${value.slice(0, visible)}...${value.slice(-visible)}`;
+  }
+
   private normalizeBaseUrl(value?: string) {
     if (!value) return undefined;
     return value.replace(/\/$/, "");
@@ -245,7 +251,135 @@ export class InstagramService {
       scope: scopes.join(","),
     });
     const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+    console.log("[Instagram OAuth][service][integration] Built auth URL", {
+      redirectUri: resolvedRedirectUri,
+      clientIdPreview: this.maskValue(this.clientId, 6),
+      scopes,
+      url,
+    });
     return url;
+  }
+
+  public getLoginAuthUrl(redirectUri?: string) {
+    if (!this.clientId) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
+    }
+
+    const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: resolvedRedirectUri,
+      response_type: "code",
+      scope: "user_profile,user_media",
+    });
+
+    const url = `https://api.instagram.com/oauth/authorize?${params.toString()}`;
+    console.log("[Instagram OAuth][service][login] Built auth URL", {
+      redirectUri: resolvedRedirectUri,
+      clientIdPreview: this.maskValue(this.clientId, 6),
+      scope: "user_profile,user_media",
+      url,
+    });
+
+    return url;
+  }
+
+  public async exchangeLoginCodeForToken(code: string, redirectUri?: string) {
+    if (!this.clientId || !this.clientSecret) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram credentials not configured", 500);
+    }
+
+    const cleanCode = code.replace(/#_$/, "").replace(/#$/, "").trim();
+    const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
+
+    console.log("[Instagram OAuth][service][login] Starting code exchange", {
+      redirectUri: resolvedRedirectUri,
+      codeLength: cleanCode.length,
+      codePreview: this.maskValue(cleanCode, 12),
+      hasClientId: Boolean(this.clientId),
+      hasClientSecret: Boolean(this.clientSecret),
+    });
+
+    try {
+      const tokenBody = new URLSearchParams({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: "authorization_code",
+        redirect_uri: resolvedRedirectUri,
+        code: cleanCode,
+      });
+
+      const tokenResponse = await axios.post(
+        "https://api.instagram.com/oauth/access_token",
+        tokenBody.toString(),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      const tokenPayload = Array.isArray(tokenResponse.data?.data)
+        ? tokenResponse.data.data[0]
+        : tokenResponse.data;
+
+      const accessToken = tokenPayload?.access_token as string | undefined;
+      const userId = tokenPayload?.user_id ? String(tokenPayload.user_id) : undefined;
+
+      console.log("[Instagram OAuth][service][login] Code exchange response", {
+        userId,
+        accessTokenLength: accessToken?.length || 0,
+        accessTokenPreview: this.maskValue(accessToken, 12),
+        expiresIn: tokenPayload?.expires_in,
+      });
+
+      if (!accessToken) {
+        throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
+      }
+
+      return {
+        accessToken,
+        userId,
+        expiresIn: tokenPayload?.expires_in as number | undefined,
+      };
+    } catch (error: any) {
+      logger.error("Instagram login OAuth exchange failed", {
+        error: error?.response?.data || error?.message,
+      });
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
+    }
+  }
+
+  public async getLoginUserProfile(accessToken: string) {
+    try {
+      const normalizedAccessToken = (accessToken || "").trim();
+      console.log("[Instagram OAuth][service][login] Fetching profile", {
+        accessTokenLength: normalizedAccessToken.length,
+        accessTokenPreview: this.maskValue(normalizedAccessToken, 12),
+      });
+
+      const response = await axios.get(`${this.tokenExchangeBaseUrl}/me`, {
+        params: {
+          fields: "id,username",
+          access_token: normalizedAccessToken,
+        },
+      });
+
+      console.log("[Instagram OAuth][service][login] Profile fetched", {
+        id: response.data?.id,
+        username: response.data?.username,
+      });
+
+      return response.data as { id?: string; username?: string };
+    } catch (error: any) {
+      logger.error(`Instagram login profile fetch failed | status=${error?.response?.status} error=${this.buildErrorMessage(error)}`);
+      throw new ApiError(APIErrors.badRequestError, "Failed to fetch Instagram profile", 400);
+    }
   }
 
   public async exchangeCodeForToken(code: string, redirectUri?: string) {
@@ -259,6 +393,13 @@ export class InstagramService {
     const redirectUriCandidates = this.buildRedirectUriCandidates(redirectUri || this.getDefaultRedirectUri());
     const exchangeErrors: Array<{ redirectUri: string; error: any }> = [];
 
+    console.log("[Instagram OAuth][service][integration] Starting code exchange", {
+      codeLength: cleanCode.length,
+      codePreview: this.maskValue(cleanCode, 12),
+      providedRedirectUri: redirectUri,
+      redirectUriCandidates,
+    });
+
     try {
       let userAccessToken: string | null = null;
       let userId: string | null = null;
@@ -267,6 +408,10 @@ export class InstagramService {
 
       for (const candidateRedirectUri of redirectUriCandidates) {
         try {
+          console.log("[Instagram OAuth][service][integration] Trying redirect URI", {
+            candidateRedirectUri,
+          });
+
           const tokenBody = new URLSearchParams({
             client_id: this.clientId,
             client_secret: this.clientSecret,
@@ -297,9 +442,22 @@ export class InstagramService {
             throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
           }
 
+          console.log("[Instagram OAuth][service][integration] User token obtained", {
+            candidateRedirectUri,
+            userId,
+            userAccessTokenLength: userAccessToken.length,
+            userAccessTokenPreview: this.maskValue(userAccessToken, 12),
+            expiresIn,
+          });
+
           resolvedRedirectUri = candidateRedirectUri;
           break;
         } catch (error: any) {
+          console.log("[Instagram OAuth][service][integration] Redirect URI failed", {
+            candidateRedirectUri,
+            error: error?.response?.data || error?.message,
+          });
+
           exchangeErrors.push({
             redirectUri: candidateRedirectUri,
             error: error?.response?.data || error?.message,
@@ -323,6 +481,12 @@ export class InstagramService {
       userAccessToken = longLivedToken.accessToken;
       expiresIn = longLivedToken.expiresIn ?? expiresIn;
 
+      console.log("[Instagram OAuth][service][integration] Long-lived token exchanged", {
+        accessTokenLength: userAccessToken?.length || 0,
+        accessTokenPreview: this.maskValue(userAccessToken, 12),
+        expiresIn,
+      });
+
       const profileResponse = await axios.get(`${this.graphBaseUrl}/${userId || "me"}`, {
         params: {
           fields: "id,username,account_type,media_count",
@@ -334,6 +498,13 @@ export class InstagramService {
         ? String(profileResponse.data.id)
         : (userId ? String(userId) : null);
       const instagramUsername = profileResponse.data?.username || null;
+
+      console.log("[Instagram OAuth][service][integration] Profile resolved", {
+        profileId: instagramUserId,
+        profileUsername: instagramUsername,
+        accountType: profileResponse.data?.account_type,
+        mediaCount: profileResponse.data?.media_count,
+      });
 
       if (!instagramUserId) {
         throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
