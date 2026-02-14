@@ -10,6 +10,32 @@ export class InstagramService {
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
   private readonly graphVersion = "v21.0";
 
+  private normalizeBaseUrl(value?: string) {
+    if (!value) return undefined;
+    return value.replace(/\/$/, "");
+  }
+
+  private buildRedirectUriCandidates(redirectUri?: string): string[] {
+    const candidates = new Set<string>();
+
+    const push = (value?: string) => {
+      if (!value) return;
+      candidates.add(value);
+    };
+
+    const frontendBase = this.normalizeBaseUrl(env.FRONTEND_URL);
+    const backendBase = this.normalizeBaseUrl(env.BACKEND_URL);
+
+    push(redirectUri);
+    push(env.INSTAGRAM_REDIRECT_URI);
+    push(frontendBase ? `${frontendBase}/api/instagram/auth` : undefined);
+    push(frontendBase ? `${frontendBase}/api/instagram/auth/callback` : undefined);
+    push(backendBase ? `${backendBase}/api/instagram/auth` : undefined);
+    push(backendBase ? `${backendBase}/api/instagram/auth/callback` : undefined);
+
+    return Array.from(candidates);
+  }
+
   private getDefaultRedirectUri() {
     return `${env.FRONTEND_URL || env.BACKEND_URL}/api/instagram/auth`;
   }
@@ -45,26 +71,54 @@ export class InstagramService {
       throw new ApiError(APIErrors.internalServerError, "Instagram credentials not configured", 500);
     }
 
-    const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
+    const redirectUriCandidates = this.buildRedirectUriCandidates(redirectUri || this.getDefaultRedirectUri());
+    const exchangeErrors: Array<{ redirectUri: string; error: any }> = [];
 
     try {
-      const tokenBody = new URLSearchParams({
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        grant_type: "authorization_code",
-        redirect_uri: resolvedRedirectUri,
-        code,
-      });
+      let shortLivedTokenResponse: any = null;
+      let resolvedRedirectUri: string | null = null;
 
-      const shortLivedTokenResponse = await axios.post(
-        "https://api.instagram.com/oauth/access_token",
-        tokenBody.toString(),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+      for (const candidateRedirectUri of redirectUriCandidates) {
+        try {
+          const tokenBody = new URLSearchParams({
+            client_id: this.clientId,
+            client_secret: this.clientSecret,
+            grant_type: "authorization_code",
+            redirect_uri: candidateRedirectUri,
+            code,
+          });
+
+          shortLivedTokenResponse = await axios.post(
+            "https://api.instagram.com/oauth/access_token",
+            tokenBody.toString(),
+            {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            }
+          );
+
+          resolvedRedirectUri = candidateRedirectUri;
+          break;
+        } catch (error: any) {
+          exchangeErrors.push({
+            redirectUri: candidateRedirectUri,
+            error: error?.response?.data || error?.message,
+          });
         }
-      );
+      }
+
+      if (!shortLivedTokenResponse) {
+        logger.error("Instagram OAuth exchange failed for all redirect URIs", {
+          candidatesTried: redirectUriCandidates,
+          exchangeErrors,
+        });
+        throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
+      }
+
+      logger.info("Instagram OAuth exchange succeeded", {
+        redirectUriUsed: resolvedRedirectUri,
+      });
 
       const shortLivedUserToken = shortLivedTokenResponse.data?.access_token;
       if (!shortLivedUserToken) {
@@ -82,29 +136,25 @@ export class InstagramService {
       const longLivedUserToken = longLivedResponse.data?.access_token || shortLivedUserToken;
       const expiresIn = longLivedResponse.data?.expires_in;
 
-      let instagramUserId: string | null = null;
+      let instagramUserId: string | null = shortLivedTokenResponse.data?.user_id
+        ? String(shortLivedTokenResponse.data.user_id)
+        : null;
       let instagramUsername: string | null = null;
 
       try {
         const meResponse = await axios.get("https://graph.instagram.com/me", {
           params: {
-            fields: "user_id,username",
+            fields: "id,username,account_type",
             access_token: longLivedUserToken,
           },
         });
 
-        instagramUserId = meResponse.data?.user_id ? String(meResponse.data.user_id) : null;
+        instagramUserId = meResponse.data?.id
+          ? String(meResponse.data.id)
+          : (meResponse.data?.user_id ? String(meResponse.data.user_id) : instagramUserId);
         instagramUsername = meResponse.data?.username || null;
       } catch {
-        const meFallbackResponse = await axios.get(`${this.graphBaseUrl}/me`, {
-          params: {
-            fields: "id,username",
-            access_token: longLivedUserToken,
-          },
-        });
-
-        instagramUserId = meFallbackResponse.data?.id ? String(meFallbackResponse.data.id) : null;
-        instagramUsername = meFallbackResponse.data?.username || null;
+        logger.warn("Instagram /me profile lookup failed, continuing with token user_id fallback");
       }
 
       if (!instagramUserId) {
@@ -122,7 +172,10 @@ export class InstagramService {
         expiresIn,
       };
     } catch (error: any) {
-      logger.error("Instagram OAuth exchange failed", { error: error.response?.data || error.message });
+      logger.error("Instagram OAuth exchange failed", {
+        error: error.response?.data || error.message,
+        redirectUriCandidates,
+      });
       if (error instanceof ApiError) {
         throw error;
       }
