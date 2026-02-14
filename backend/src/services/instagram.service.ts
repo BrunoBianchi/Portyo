@@ -139,12 +139,14 @@ export class InstagramService {
 
       for (const longLivedUrl of longLivedUrls) {
         try {
-          const longLivedResponse = await axios.get(longLivedUrl, {
-            params: {
-              grant_type: "ig_exchange_token",
-              client_secret: this.clientSecret,
-              access_token: shortLivedUserToken,
-            },
+          const longLivedBody = new URLSearchParams({
+            grant_type: "ig_exchange_token",
+            client_secret: this.clientSecret,
+            access_token: shortLivedUserToken,
+          });
+
+          const longLivedResponse = await axios.post(longLivedUrl, longLivedBody.toString(), {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
 
           if (longLivedResponse.data?.access_token) {
@@ -177,11 +179,13 @@ export class InstagramService {
 
       for (const endpoint of meEndpoints) {
         try {
-          const meResponse = await axios.get(endpoint.url, {
-            params: {
-              fields: endpoint.fields,
-              access_token: longLivedUserToken,
-            },
+          const meBody = new URLSearchParams({
+            fields: endpoint.fields,
+            access_token: longLivedUserToken,
+          });
+
+          const meResponse = await axios.post(endpoint.url, meBody.toString(), {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
 
           const data = meResponse.data;
@@ -237,11 +241,13 @@ export class InstagramService {
 
   public async getUserProfile(accessToken: string) {
     try {
-      const response = await axios.get(`${this.graphBaseUrl}/me`, {
-        params: {
-          fields: "user_id,username,name,account_type,profile_picture_url",
-          access_token: accessToken,
-        },
+      const profileBody = new URLSearchParams({
+        fields: "user_id,username,name,account_type,profile_picture_url",
+        access_token: accessToken,
+      });
+
+      const response = await axios.post(`${this.graphBaseUrl}/me`, profileBody.toString(), {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
       return response.data;
     } catch (error: any) {
@@ -279,11 +285,13 @@ export class InstagramService {
       }
 
       for (let attempt = 0; attempt < 3; attempt++) {
-        const statusResponse = await axios.get(`${this.graphBaseUrl}/${creationId}`, {
-          params: {
-            fields: "status_code",
-            access_token: accessToken,
-          },
+        const statusBody = new URLSearchParams({
+          fields: "status_code",
+          access_token: accessToken,
+        });
+
+        const statusResponse = await axios.post(`${this.graphBaseUrl}/${creationId}`, statusBody.toString(), {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
 
         const statusCode = statusResponse.data?.status_code;
