@@ -11,6 +11,7 @@ import { createUser, findUserByEmail } from "../shared/services/user.service";
 import { BillingService } from "../services/billing.service";
 
 const PROCESSED_INSTAGRAM_CODES = new Map<string, number>();
+const PROCESSING_INSTAGRAM_CODES = new Map<string, number>();
 const INSTAGRAM_CODE_TTL_MS = 5 * 60 * 1000;
 
 const cleanupProcessedInstagramCodes = () => {
@@ -18,6 +19,12 @@ const cleanupProcessedInstagramCodes = () => {
   for (const [processedCode, processedAt] of PROCESSED_INSTAGRAM_CODES.entries()) {
     if (now - processedAt > INSTAGRAM_CODE_TTL_MS) {
       PROCESSED_INSTAGRAM_CODES.delete(processedCode);
+    }
+  }
+
+  for (const [processingCode, processingAt] of PROCESSING_INSTAGRAM_CODES.entries()) {
+    if (now - processingAt > INSTAGRAM_CODE_TTL_MS) {
+      PROCESSING_INSTAGRAM_CODES.delete(processingCode);
     }
   }
 };
@@ -29,7 +36,22 @@ const hasProcessedInstagramCode = (code: string): boolean => {
 
 const markProcessedInstagramCode = (code: string) => {
   cleanupProcessedInstagramCodes();
+  PROCESSING_INSTAGRAM_CODES.delete(code);
   PROCESSED_INSTAGRAM_CODES.set(code, Date.now());
+};
+
+const isProcessingInstagramCode = (code: string): boolean => {
+  cleanupProcessedInstagramCodes();
+  return PROCESSING_INSTAGRAM_CODES.has(code);
+};
+
+const markProcessingInstagramCode = (code: string) => {
+  cleanupProcessedInstagramCodes();
+  PROCESSING_INSTAGRAM_CODES.set(code, Date.now());
+};
+
+const unmarkProcessingInstagramCode = (code: string) => {
+  PROCESSING_INSTAGRAM_CODES.delete(code);
 };
 
 const getRequestBaseUrl = (req: Request): string => {
@@ -305,6 +327,17 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
       }
 
+      if (mode === "integration" && isProcessingInstagramCode(code)) {
+        logger.info("Instagram callback duplicate in-flight detected, skipping code reprocessing", {
+          mode,
+        });
+        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
+      }
+
+      if (mode === "integration") {
+        markProcessingInstagramCode(code);
+      }
+
       const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
 
       if (mode === "login") {
@@ -404,6 +437,9 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
 
       res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
     } catch (error) {
+      if (typeof req.query.code === "string") {
+        unmarkProcessingInstagramCode(req.query.code);
+      }
       logger.error("Instagram callback failed", error);
       let callbackMode: "login" | "integration" = "integration";
       let frontendBaseUrl = getFrontendBaseUrl(req);
