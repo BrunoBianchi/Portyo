@@ -491,24 +491,35 @@ export class InstagramService {
       });
       // ---------------------------------------------------------
 
-      const profileResponse = await axios.get(`${this.graphBaseUrl}/${userId || "me"}`, {
-        params: {
-          fields: "id,username,account_type,media_count",
-          access_token: userAccessToken,
-        },
-      });
+      let instagramUserId = userId;
+      let instagramUsername = null;
 
-      const instagramUserId = profileResponse.data?.id
-        ? String(profileResponse.data.id)
-        : (userId ? String(userId) : null);
-      const instagramUsername = profileResponse.data?.username || null;
+      try {
+        console.log("[Instagram OAuth][service][integration] Buscando perfil do usuário...");
 
-      console.log("[Instagram OAuth][service][integration] Profile resolved", {
-        profileId: instagramUserId,
-        profileUsername: instagramUsername,
-        accountType: profileResponse.data?.account_type,
-        mediaCount: profileResponse.data?.media_count,
-      });
+        const profileResponse = await axios.get("https://graph.instagram.com/me", {
+          params: {
+            fields: "id,username",
+            access_token: userAccessToken,
+          },
+        });
+
+        instagramUserId = profileResponse.data?.id ? String(profileResponse.data.id) : userId;
+        instagramUsername = profileResponse.data?.username || null;
+
+        console.log("[Instagram OAuth][service][integration] Profile resolved", {
+          profileId: instagramUserId,
+          profileUsername: instagramUsername,
+        });
+      } catch (profileError: any) {
+        const errorDetails = profileError?.response?.data
+          ? JSON.stringify(profileError.response.data)
+          : profileError?.message;
+        console.warn(
+          "[Instagram OAuth][service][integration] Aviso: Falha ao buscar username do perfil. Ignorando erro e salvando token.",
+          errorDetails
+        );
+      }
 
       if (!instagramUserId) {
         throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
@@ -518,7 +529,7 @@ export class InstagramService {
         redirectUriUsed: resolvedRedirectUri,
         instagramUserId,
         instagramUsername,
-        usedLongLivedToken: Boolean(expiresIn),
+        usedLongLivedToken: false,
       });
 
       return {
