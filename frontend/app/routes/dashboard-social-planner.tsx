@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, eachDayOfInterval } from "date-fns";
+import { addMonths, addWeeks, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks, eachDayOfInterval } from "date-fns";
 import {
     Calendar,
     ChevronLeft,
@@ -24,6 +24,7 @@ import { api } from "~/services/api";
 
 type PlannerChannel = "instagram" | "facebook" | "linkedin" | "twitter";
 type PlannerStatus = "draft" | "scheduled" | "published" | "failed" | "cancelled";
+type CalendarViewMode = "weekly" | "monthly";
 
 interface SocialPlannerPost {
     id: string;
@@ -69,6 +70,7 @@ export default function DashboardSocialPlanner() {
 
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>("weekly");
     const [selectedChannel, setSelectedChannel] = useState<PlannerChannel | "all">("all");
     const [posts, setPosts] = useState<SocialPlannerPost[]>([]);
     const [summary, setSummary] = useState<PlannerSummary | null>(null);
@@ -99,6 +101,21 @@ export default function DashboardSocialPlanner() {
     const calendarDays = useMemo(
         () => eachDayOfInterval({ start: calendarStart, end: calendarEnd }),
         [calendarStart, calendarEnd]
+    );
+
+    const weeklyStart = useMemo(
+        () => startOfWeek(selectedDate, { weekStartsOn: 0 }),
+        [selectedDate]
+    );
+
+    const weeklyEnd = useMemo(
+        () => endOfWeek(selectedDate, { weekStartsOn: 0 }),
+        [selectedDate]
+    );
+
+    const weeklyDays = useMemo(
+        () => eachDayOfInterval({ start: weeklyStart, end: weeklyEnd }),
+        [weeklyStart, weeklyEnd]
     );
 
     const loadData = useCallback(async () => {
@@ -164,6 +181,43 @@ export default function DashboardSocialPlanner() {
         }
         return map;
     }, [posts]);
+
+    const postsGroupedByDay = useMemo(() => {
+        const map = new Map<string, SocialPlannerPost[]>();
+        for (const post of posts) {
+            if (!post.scheduledAt) continue;
+            const key = format(new Date(post.scheduledAt), "yyyy-MM-dd");
+            const current = map.get(key) || [];
+            current.push(post);
+            map.set(key, current);
+        }
+
+        for (const [key, value] of map.entries()) {
+            value.sort((a, b) => {
+                const aTime = a.scheduledAt ? new Date(a.scheduledAt).getTime() : 0;
+                const bTime = b.scheduledAt ? new Date(b.scheduledAt).getTime() : 0;
+                return aTime - bTime;
+            });
+            map.set(key, value);
+        }
+
+        return map;
+    }, [posts]);
+
+    const getChannelBadgeClass = (channel: PlannerChannel) => {
+        switch (channel) {
+            case "instagram":
+                return "bg-pink-50 text-pink-700 border-pink-200";
+            case "facebook":
+                return "bg-blue-50 text-blue-700 border-blue-200";
+            case "linkedin":
+                return "bg-cyan-50 text-cyan-700 border-cyan-200";
+            case "twitter":
+                return "bg-slate-50 text-slate-700 border-slate-200";
+            default:
+                return "bg-gray-50 text-gray-700 border-gray-200";
+        }
+    };
 
     const resetComposer = () => {
         setEditingPostId(null);
@@ -404,46 +458,142 @@ export default function DashboardSocialPlanner() {
                                     </h2>
 
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 border-2 border-black rounded-lg hover:bg-gray-50">
+                                        <div className="inline-flex items-center border-2 border-black rounded-xl overflow-hidden">
+                                            <button
+                                                onClick={() => setCalendarViewMode("weekly")}
+                                                className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider ${calendarViewMode === "weekly" ? "bg-black text-white" : "bg-white text-black"}`}
+                                            >
+                                                {t("dashboard.socialPlanner.views.weekly", { defaultValue: "Weekly" })}
+                                            </button>
+                                            <button
+                                                onClick={() => setCalendarViewMode("monthly")}
+                                                className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider ${calendarViewMode === "monthly" ? "bg-black text-white" : "bg-white text-black"}`}
+                                            >
+                                                {t("dashboard.socialPlanner.views.monthly", { defaultValue: "Monthly" })}
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                if (calendarViewMode === "weekly") {
+                                                    const nextDate = subWeeks(selectedDate, 1);
+                                                    setSelectedDate(nextDate);
+                                                    setCurrentMonth(nextDate);
+                                                } else {
+                                                    setCurrentMonth(subMonths(currentMonth, 1));
+                                                }
+                                            }}
+                                            className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
+                                        >
                                             <ChevronLeft className="w-4 h-4" />
                                         </button>
-                                        <span className="font-black text-sm min-w-[120px] text-center">{format(currentMonth, "MMMM yyyy")}</span>
-                                        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 border-2 border-black rounded-lg hover:bg-gray-50">
+
+                                        <span className="font-black text-sm min-w-[180px] text-center">
+                                            {calendarViewMode === "weekly"
+                                                ? `${format(weeklyStart, "dd MMM")} - ${format(weeklyEnd, "dd MMM yyyy")}`
+                                                : format(currentMonth, "MMMM yyyy")}
+                                        </span>
+
+                                        <button
+                                            onClick={() => {
+                                                if (calendarViewMode === "weekly") {
+                                                    const nextDate = addWeeks(selectedDate, 1);
+                                                    setSelectedDate(nextDate);
+                                                    setCurrentMonth(nextDate);
+                                                } else {
+                                                    setCurrentMonth(addMonths(currentMonth, 1));
+                                                }
+                                            }}
+                                            className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
+                                        >
                                             <ChevronRight className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-7 mb-2">
-                                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
-                                        <div key={label} className="text-center text-xs font-black text-gray-400 uppercase py-2">
-                                            {label}
+                                {calendarViewMode === "weekly" ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                                        {weeklyDays.map((day) => {
+                                            const key = format(day, "yyyy-MM-dd");
+                                            const dayPosts = postsGroupedByDay.get(key) || [];
+                                            const isTodaySelected = isSameDay(day, selectedDate);
+
+                                            return (
+                                                <div
+                                                    key={key}
+                                                    className={`rounded-2xl border-2 min-h-[330px] p-2.5 ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"}`}
+                                                >
+                                                    <button
+                                                        onClick={() => setSelectedDate(day)}
+                                                        className="w-full text-left mb-2"
+                                                    >
+                                                        <p className="text-[11px] uppercase tracking-wider font-black text-gray-500">{format(day, "EEE")}</p>
+                                                        <p className="text-lg font-black text-[#1A1A1A]">{format(day, "d")}</p>
+                                                    </button>
+
+                                                    {dayPosts.length === 0 ? (
+                                                        <div className="mt-8 text-center text-[11px] text-gray-400 font-semibold">
+                                                            {t("dashboard.socialPlanner.emptyDay", { defaultValue: "No posts" })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                                                            {dayPosts.map((post) => (
+                                                                <div key={post.id} className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm">
+                                                                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                                                                        <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase ${getChannelBadgeClass(post.channel)}`}>
+                                                                            {post.channel}
+                                                                        </span>
+                                                                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
+                                                                            {post.status}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-xs font-bold text-[#1A1A1A] line-clamp-2">{post.title || post.content}</p>
+                                                                    <p className="text-[11px] text-gray-500 mt-1 inline-flex items-center gap-1">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        {post.scheduledAt ? format(parseISO(post.scheduledAt), "HH:mm") : "--:--"}
+                                                                    </p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="grid grid-cols-7 mb-2">
+                                            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
+                                                <div key={label} className="text-center text-xs font-black text-gray-400 uppercase py-2">
+                                                    {label}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
 
-                                <div className="grid grid-cols-7 gap-1.5">
-                                    {calendarDays.map((day) => {
-                                        const key = format(day, "yyyy-MM-dd");
-                                        const count = postsByDay.get(key) || 0;
-                                        const isSelected = isSameDay(day, selectedDate);
+                                        <div className="grid grid-cols-7 gap-1.5">
+                                            {calendarDays.map((day) => {
+                                                const key = format(day, "yyyy-MM-dd");
+                                                const count = postsByDay.get(key) || 0;
+                                                const isSelected = isSameDay(day, selectedDate);
 
-                                        return (
-                                            <button
-                                                key={key}
-                                                onClick={() => setSelectedDate(day)}
-                                                className={`h-20 rounded-xl border-2 p-2 text-left transition-all ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${!isSameMonth(day, currentMonth) ? "opacity-40" : ""}`}
-                                            >
-                                                <div className="text-xs font-black text-[#1A1A1A]">{format(day, "d")}</div>
-                                                {count > 0 && (
-                                                    <div className="mt-2 inline-flex px-1.5 py-0.5 rounded-md bg-black text-white text-[10px] font-black">
-                                                        {count}
-                                                    </div>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                                return (
+                                                    <button
+                                                        key={key}
+                                                        onClick={() => setSelectedDate(day)}
+                                                        className={`h-20 rounded-xl border-2 p-2 text-left transition-all ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${!isSameMonth(day, currentMonth) ? "opacity-40" : ""}`}
+                                                    >
+                                                        <div className="text-xs font-black text-[#1A1A1A]">{format(day, "d")}</div>
+                                                        {count > 0 && (
+                                                            <div className="mt-2 inline-flex px-1.5 py-0.5 rounded-md bg-black text-white text-[10px] font-black">
+                                                                {count}
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
 
                                 <div className="mt-5">
                                     <h3 className="text-sm font-black text-[#1A1A1A] mb-2">

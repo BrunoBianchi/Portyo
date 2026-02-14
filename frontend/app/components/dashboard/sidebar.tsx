@@ -93,6 +93,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     const [openToolSubgroups, setOpenToolSubgroups] = useState<Record<string, boolean>>({
         instagram: true,
+        blog: true,
     });
 
     const toggleToolSubgroup = (subgroupKey: string) => {
@@ -361,7 +362,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
                 { name: t("dashboard.nav.design"), path: "/dashboard/design", icon: Palette },
                 { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
-                { name: t("dashboard.nav.blog"), path: "/dashboard/blog", icon: FileText },
             ]
         },
         {
@@ -388,9 +388,17 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             key: "tools",
             label: t("dashboard.sidebar.groupTools"),
             items: [
-                { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.socialPlanner", { defaultValue: "Social planner" }), path: "/dashboard/social-planner", icon: Calendar, isPro: true },
                 { name: t("dashboard.nav.linkShortener", { defaultValue: "Link shortener" }), path: "/dashboard/link-shortener", icon: Link2 },
+                {
+                    key: "blog",
+                    name: t("dashboard.nav.blog", { defaultValue: "Blog" }),
+                    icon: FileText,
+                    children: [
+                        { name: t("dashboard.nav.blog", { defaultValue: "Blog" }), path: "/dashboard/blog", icon: FileText },
+                        { name: t("dashboard.nav.autoPost", { defaultValue: "Postagem automática" }), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
+                    ],
+                },
                 {
                     key: "instagram",
                     name: t("dashboard.sidebar.groupInstagram", { defaultValue: "Instagram" }),

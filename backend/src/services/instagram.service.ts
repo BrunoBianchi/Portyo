@@ -587,29 +587,59 @@ export class InstagramService {
       throw new ApiError(APIErrors.badRequestError, "Missing instagram account ID or access token for webhook subscription", 400);
     }
 
-    const graphFacebookBaseUrl = `https://graph.facebook.com/${this.graphVersion}`;
+    const prefersInstagramGraph = normalizedAccessToken.startsWith("IG");
+    const graphCandidates = prefersInstagramGraph
+      ? [
+          `https://graph.instagram.com/${this.graphVersion}`,
+          `https://graph.facebook.com/${this.graphVersion}`,
+        ]
+      : [
+          `https://graph.facebook.com/${this.graphVersion}`,
+          `https://graph.instagram.com/${this.graphVersion}`,
+        ];
 
     try {
-      const response = await axios.post(
-        `${graphFacebookBaseUrl}/${instagramBusinessAccountId}/subscribed_apps`,
-        null,
-        {
-          params: {
-            access_token: normalizedAccessToken,
-            subscribed_fields: fields.join(","),
-          },
+      let response: any = null;
+      let usedGraphBase = graphCandidates[0];
+
+      for (const graphBase of graphCandidates) {
+        try {
+          response = await axios.post(
+            `${graphBase}/${instagramBusinessAccountId}/subscribed_apps`,
+            null,
+            {
+              params: {
+                access_token: normalizedAccessToken,
+                subscribed_fields: fields.join(","),
+              },
+            }
+          );
+          usedGraphBase = graphBase;
+          break;
+        } catch (candidateError: any) {
+          const candidateErr = candidateError?.response?.data;
+          const candidateErrMsg = typeof candidateErr === "object"
+            ? JSON.stringify(candidateErr)
+            : (candidateErr || candidateError?.message);
+          logger.warn(`Instagram subscribed_apps candidate failed | base=${graphBase} status=${candidateError?.response?.status} error=${candidateErrMsg}`);
         }
-      );
+      }
+
+      if (!response) {
+        throw new Error("All subscribed_apps endpoint candidates failed");
+      }
 
       logger.info("Instagram subscribed_apps success", {
         instagramBusinessAccountId,
         subscribedFields: fields,
+        usedGraphBase,
         response: response.data,
       });
 
       return {
         success: true,
         subscribedFields: fields,
+        usedGraphBase,
         response: response.data,
       };
     } catch (error: any) {

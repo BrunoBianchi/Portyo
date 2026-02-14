@@ -873,9 +873,17 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
     let activeIntegration: IntegrationEntity = integration;
     const instagramAccountId = activeIntegration.account_id;
 
-    const baseUrl = "https://graph.facebook.com/v21.0";
+    const buildGraphCandidates = (accessToken: string) => {
+        const token = String(accessToken || "").trim();
+        const prefersInstagramGraph = token.startsWith("IG");
+        return prefersInstagramGraph
+            ? ["https://graph.instagram.com/v21.0", "https://graph.facebook.com/v21.0"]
+            : ["https://graph.facebook.com/v21.0", "https://graph.instagram.com/v21.0"];
+    };
 
     const executeInstagramAction = async (accessToken: string): Promise<any> => {
+        const graphCandidates = buildGraphCandidates(accessToken);
+
         if (actionType === "reply_comment") {
             const commentId = replacePlaceholders(
                 String(node.data.commentId || context.commentId || context.comment_id || ""),
@@ -890,22 +898,40 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 };
             }
 
-            const response = await axios.post(
-                `${baseUrl}/${commentId}/replies`,
-                null,
-                {
-                    params: {
-                        message,
-                        access_token: accessToken,
-                    },
+            let response: any = null;
+            let usedEndpoint = "";
+
+            for (const graphBase of graphCandidates) {
+                try {
+                    response = await axios.post(
+                        `${graphBase}/${commentId}/replies`,
+                        null,
+                        {
+                            params: {
+                                message,
+                                access_token: accessToken,
+                            },
+                        }
+                    );
+                    usedEndpoint = `${graphBase}/${commentId}/replies`;
+                    break;
+                } catch (candidateError: any) {
+                    const candidateStatus = candidateError?.response?.status;
+                    const candidateMessage = candidateError?.response?.data?.error?.message || candidateError?.message;
+                    logger.warn(`[Automation] Instagram comment reply endpoint failed (${candidateStatus}) base=${graphBase}: ${candidateMessage}`);
                 }
-            );
+            }
+
+            if (!response) {
+                throw new Error("Failed to reply comment on all graph hosts");
+            }
 
             return {
                 ...context,
                 instagramAction: actionType,
                 instagramStatus: "completed",
                 instagramReplyId: response.data?.id || "",
+                instagramReplyEndpoint: usedEndpoint,
             };
         }
 
@@ -923,42 +949,39 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 };
             }
 
-            let response;
-            let usedEndpoint = `${baseUrl}/${instagramAccountId}/messages`;
+            let response: any = null;
+            let usedEndpoint = "";
+            const endpointCandidates = graphCandidates.flatMap((graphBase) => [
+                `${graphBase}/${instagramAccountId}/messages`,
+                `${graphBase}/me/messages`,
+            ]);
 
-            try {
-                response = await axios.post(
-                    `${baseUrl}/${instagramAccountId}/messages`,
-                    {
-                        recipient: { id: recipientId },
-                        message: { text: message },
-                        messaging_type: "RESPONSE",
-                    },
-                    {
-                        params: {
-                            access_token: accessToken,
+            for (const endpoint of endpointCandidates) {
+                try {
+                    response = await axios.post(
+                        endpoint,
+                        {
+                            recipient: { id: recipientId },
+                            message: { text: message },
+                            messaging_type: "RESPONSE",
                         },
-                    }
-                );
-            } catch (primaryError: any) {
-                const primaryStatus = primaryError?.response?.status;
-                const primaryMessage = primaryError?.response?.data?.error?.message || primaryError?.message;
-                logger.warn(`[Automation] Instagram DM primary endpoint failed (${primaryStatus}): ${primaryMessage}. Trying /me/messages fallback.`);
+                        {
+                            params: {
+                                access_token: accessToken,
+                            },
+                        }
+                    );
+                    usedEndpoint = endpoint;
+                    break;
+                } catch (candidateError: any) {
+                    const candidateStatus = candidateError?.response?.status;
+                    const candidateMessage = candidateError?.response?.data?.error?.message || candidateError?.message;
+                    logger.warn(`[Automation] Instagram DM endpoint failed (${candidateStatus}) endpoint=${endpoint}: ${candidateMessage}`);
+                }
+            }
 
-                usedEndpoint = `${baseUrl}/me/messages`;
-                response = await axios.post(
-                    `${baseUrl}/me/messages`,
-                    {
-                        recipient: { id: recipientId },
-                        message: { text: message },
-                        messaging_type: "RESPONSE",
-                    },
-                    {
-                        params: {
-                            access_token: accessToken,
-                        },
-                    }
-                );
+            if (!response) {
+                throw new Error("Failed to send Instagram DM on all endpoint candidates");
             }
 
             return {
@@ -984,21 +1007,51 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 };
             }
 
-            const containerResponse = await axios.post(
-                `${baseUrl}/${instagramAccountId}/media`,
-                null,
-                {
-                    params: {
-                        image_url: imageUrl,
-                        media_type: "STORIES",
-                        caption: message || undefined,
-                        access_token: accessToken,
-                    },
-                }
-            );
+            let containerResponse: any = null;
+            let publishResponse: any = null;
+            let usedGraphBase = "";
 
-            const creationId = containerResponse.data?.id;
-            if (!creationId) {
+            for (const graphBase of graphCandidates) {
+                try {
+                    containerResponse = await axios.post(
+                        `${graphBase}/${instagramAccountId}/media`,
+                        null,
+                        {
+                            params: {
+                                image_url: imageUrl,
+                                media_type: "STORIES",
+                                caption: message || undefined,
+                                access_token: accessToken,
+                            },
+                        }
+                    );
+
+                    const creationId = containerResponse.data?.id;
+                    if (!creationId) {
+                        continue;
+                    }
+
+                    publishResponse = await axios.post(
+                        `${graphBase}/${instagramAccountId}/media_publish`,
+                        null,
+                        {
+                            params: {
+                                creation_id: creationId,
+                                access_token: accessToken,
+                            },
+                        }
+                    );
+
+                    usedGraphBase = graphBase;
+                    break;
+                } catch (candidateError: any) {
+                    const candidateStatus = candidateError?.response?.status;
+                    const candidateMessage = candidateError?.response?.data?.error?.message || candidateError?.message;
+                    logger.warn(`[Automation] Instagram story endpoint failed (${candidateStatus}) base=${graphBase}: ${candidateMessage}`);
+                }
+            }
+
+            if (!containerResponse?.data?.id || !publishResponse) {
                 return {
                     ...context,
                     instagramAction: actionType,
@@ -1006,22 +1059,12 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 };
             }
 
-            const publishResponse = await axios.post(
-                `${baseUrl}/${instagramAccountId}/media_publish`,
-                null,
-                {
-                    params: {
-                        creation_id: creationId,
-                        access_token: accessToken,
-                    },
-                }
-            );
-
             return {
                 ...context,
                 instagramAction: actionType,
                 instagramStatus: "completed",
                 instagramStoryId: publishResponse.data?.id || "",
+                instagramStoryEndpoint: usedGraphBase,
             };
         }
 
