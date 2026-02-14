@@ -212,6 +212,15 @@ export class InstagramService {
     caption: string;
   }) {
     const { instagramBusinessAccountId, accessToken, imageUrl, caption } = params;
+    const normalizedAccessToken = (accessToken || "").trim();
+
+    if (!normalizedAccessToken || normalizedAccessToken.length < 50) {
+      throw new ApiError(
+        APIErrors.badRequestError,
+        "Instagram access token invalid or truncated. Reconnect Instagram integration and try again.",
+        400
+      );
+    }
 
     try {
       const containerResponse = await axios.post(
@@ -221,7 +230,7 @@ export class InstagramService {
           params: {
             image_url: imageUrl,
             caption,
-            access_token: accessToken,
+            access_token: normalizedAccessToken,
           },
         }
       );
@@ -234,7 +243,7 @@ export class InstagramService {
       for (let attempt = 0; attempt < 3; attempt++) {
         const statusBody = new URLSearchParams({
           fields: "status_code",
-          access_token: accessToken,
+          access_token: normalizedAccessToken,
         });
 
         const statusResponse = await axios.post(`${this.graphBaseUrl}/${creationId}`, statusBody.toString(), {
@@ -259,7 +268,7 @@ export class InstagramService {
         {
           params: {
             creation_id: creationId,
-            access_token: accessToken,
+            access_token: normalizedAccessToken,
           },
         }
       );

@@ -14,10 +14,10 @@ export class IntegrationEntity extends BaseEntity {
     @Column({ type: "varchar", nullable: true })
     provider?: string;
 
-    @Column({ type: "varchar", nullable: true })
+    @Column({ type: "text", nullable: true })
     accessToken?: string;
 
-    @Column({ type: "varchar", nullable: true })
+    @Column({ type: "text", nullable: true })
     refreshToken?: string;
 
     @ManyToOne(() =>BioEntity, (bio) => bio.integrations)
