@@ -41,7 +41,7 @@ export class InstagramService {
   }
 
   private get graphBaseUrl() {
-    return `https://graph.facebook.com/${this.graphVersion}`;
+    return `https://graph.instagram.com/${this.graphVersion}`;
   }
 
   public getAuthUrl(redirectUri?: string) {
@@ -154,11 +154,9 @@ export class InstagramService {
             break;
           }
         } catch (longLivedError: any) {
-          logger.warn("Instagram long-lived token exchange attempt failed", {
-            url: longLivedUrl,
-            status: longLivedError?.response?.status,
-            error: longLivedError?.response?.data || longLivedError?.message,
-          });
+          const errData = longLivedError?.response?.data;
+          const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || longLivedError?.message);
+          logger.warn(`Instagram long-lived token exchange attempt failed | url=${longLivedUrl} status=${longLivedError?.response?.status} error=${errMsg}`);
         }
       }
 
@@ -194,11 +192,9 @@ export class InstagramService {
           logger.debug("Instagram /me profile obtained", { url: endpoint.url, instagramUserId, instagramUsername });
           break;
         } catch (meError: any) {
-          logger.warn("Instagram /me profile lookup attempt failed", {
-            url: endpoint.url,
-            status: meError?.response?.status,
-            error: meError?.response?.data || meError?.message,
-          });
+          const errData = meError?.response?.data;
+          const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || meError?.message);
+          logger.warn(`Instagram /me profile lookup attempt failed | url=${endpoint.url} status=${meError?.response?.status} error=${errMsg}`);
         }
       }
 
@@ -243,13 +239,15 @@ export class InstagramService {
     try {
       const response = await axios.get(`${this.graphBaseUrl}/me`, {
         params: {
-          fields: "id,name",
+          fields: "user_id,username,name,account_type,profile_picture_url",
           access_token: accessToken,
         },
       });
       return response.data;
     } catch (error: any) {
-       logger.error("Instagram profile fetch failed", { error: error.response?.data || error.message });
+       const errData = error?.response?.data;
+       const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || error?.message);
+       logger.error(`Instagram profile fetch failed | status=${error?.response?.status} error=${errMsg}`);
        throw new ApiError(APIErrors.badRequestError, "Failed to fetch Instagram profile", 400);
     }
   }
@@ -321,10 +319,9 @@ export class InstagramService {
         creationId,
       };
     } catch (error: any) {
-      logger.error("Instagram publish failed", {
-        error: error.response?.data || error.message,
-        instagramBusinessAccountId,
-      });
+      const errData = error?.response?.data;
+      const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || error?.message);
+      logger.error(`Instagram publish failed | accountId=${instagramBusinessAccountId} status=${error?.response?.status} error=${errMsg}`);
       if (error instanceof ApiError) {
         throw error;
       }
