@@ -3186,6 +3186,33 @@
       "save": "Não foi possível salvar o post.",
       "upload": "Falha ao enviar imagem(ns).",
       "publish": "Não foi possível publicar agora."
+    },
+    "aiQueue": {
+      "title": "Planejamento inteligente da fila",
+      "subtitle": "Gere automaticamente uma fila de posts com melhores janelas de dia/horário e ajuste tudo como quiser.",
+      "generating": "Gerando...",
+      "preview": "Gerar prévia",
+      "apply": "Gerar e adicionar à fila",
+      "postsCount": "Posts",
+      "horizonDays": "Horizonte (dias)",
+      "objective": "Objetivo",
+      "hourStart": "Hora inicial",
+      "hourEnd": "Hora final",
+      "minGap": "Intervalo mín. (h)",
+      "avoidWeekends": "Evitar fins de semana",
+      "previewList": "Sugestões de fila",
+      "confidence": "Confiança",
+      "objectives": {
+        "reach": "Alcance",
+        "engagement": "Engajamento",
+        "traffic": "Tráfego",
+        "conversions": "Conversões"
+      },
+      "helper": {
+        "window": "Janela: {{start}}h–{{end}}h",
+        "gap": "Intervalo mínimo: {{hours}}h",
+        "timezone": "Fuso: {{timezone}}"
+      }
     }
   },
   "polls": {

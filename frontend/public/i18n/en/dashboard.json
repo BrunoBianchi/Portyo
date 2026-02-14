@@ -2927,6 +2927,33 @@
       "save": "Could not save post.",
       "upload": "Failed to upload image(s).",
       "publish": "Could not publish now."
+    },
+    "aiQueue": {
+      "title": "Smart queue planning",
+      "subtitle": "Generate an automatic post queue using best day/time windows and fine-tune every setting.",
+      "generating": "Generating...",
+      "preview": "Generate preview",
+      "apply": "Generate and add to queue",
+      "postsCount": "Posts",
+      "horizonDays": "Horizon (days)",
+      "objective": "Objective",
+      "hourStart": "Start hour",
+      "hourEnd": "End hour",
+      "minGap": "Min gap (h)",
+      "avoidWeekends": "Avoid weekends",
+      "previewList": "Suggested queue",
+      "confidence": "Confidence",
+      "objectives": {
+        "reach": "Reach",
+        "engagement": "Engagement",
+        "traffic": "Traffic",
+        "conversions": "Conversions"
+      },
+      "helper": {
+        "window": "Window: {{start}}h–{{end}}h",
+        "gap": "Minimum gap: {{hours}}h",
+        "timezone": "Timezone: {{timezone}}"
+      }
     }
   },
   "polls": {

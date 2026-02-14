@@ -184,7 +184,6 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                         </button>
                     );
                 })}
-                            className="hidden sm:block absolute left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
                 <div className="w-px h-7 bg-black/10 mx-0.5 shrink-0" />
 
                 {navLinks.map((navLink) => {
@@ -226,7 +225,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                 <button
                     type="button"
                     onClick={() => scrollNav("right")}
-                    className="hidden sm:block absolute right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
                     aria-label={t("editor.tabs.scrollRight", { defaultValue: "Scroll tabs right" })}
                 >
                     <ChevronRight className="w-3.5 h-3.5" />

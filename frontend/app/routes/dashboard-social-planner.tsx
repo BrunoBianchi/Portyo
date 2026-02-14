@@ -118,6 +118,37 @@ export default function DashboardSocialPlanner() {
         scheduledAt: "",
     });
 
+    const plannerTimezone = useMemo(
+        () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        []
+    );
+
+    const objectiveOptions = useMemo(
+        () => [
+            {
+                value: "reach" as const,
+                label: t("dashboard.socialPlanner.aiQueue.objectives.reach", { defaultValue: "Reach" }),
+            },
+            {
+                value: "engagement" as const,
+                label: t("dashboard.socialPlanner.aiQueue.objectives.engagement", { defaultValue: "Engagement" }),
+            },
+            {
+                value: "traffic" as const,
+                label: t("dashboard.socialPlanner.aiQueue.objectives.traffic", { defaultValue: "Traffic" }),
+            },
+            {
+                value: "conversions" as const,
+                label: t("dashboard.socialPlanner.aiQueue.objectives.conversions", { defaultValue: "Conversions" }),
+            },
+        ],
+        [t]
+    );
+
+    const selectedObjectiveLabel = useMemo(() => {
+        return objectiveOptions.find((option) => option.value === aiPlanOptions.objective)?.label || aiPlanOptions.objective;
+    }, [objectiveOptions, aiPlanOptions.objective]);
+
     const calendarStart = useMemo(
         () => startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }),
         [currentMonth]
@@ -429,11 +460,10 @@ export default function DashboardSocialPlanner() {
 
         setAiPlanning(true);
         try {
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
             const response = await api.post(`/social-planner/${bio.id}/queue/auto-plan`, {
                 apply,
                 options: {
-                    timezone,
+                    timezone: plannerTimezone,
                     channels: selectedChannel === "all" ? CHANNELS : [selectedChannel],
                     postsCount: aiPlanOptions.postsCount,
                     horizonDays: aiPlanOptions.horizonDays,
@@ -624,12 +654,27 @@ export default function DashboardSocialPlanner() {
                         <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-5 space-y-4">
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                                 <div>
-                                    <h2 className="text-lg font-black text-[#1A1A1A]">
+                                    <div className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-1 rounded-full border border-black/15 bg-[#F8F8F8] text-gray-700">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#C6F035]" />
+                                        BAML + TOON
+                                    </div>
+                                    <h2 className="text-lg font-black text-[#1A1A1A] mt-2">
                                         {t("dashboard.socialPlanner.aiQueue.title", { defaultValue: "AI Queue Planner (BAML + TOON)" })}
                                     </h2>
                                     <p className="text-xs sm:text-sm text-gray-600 font-medium mt-1">
                                         {t("dashboard.socialPlanner.aiQueue.subtitle", { defaultValue: "Generate an automatic posting queue optimized for best day/time windows and keep everything customizable." })}
                                     </p>
+                                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
+                                            {aiPlanOptions.postsCount} {t("dashboard.socialPlanner.aiQueue.postsCount", { defaultValue: "Posts" })}
+                                        </span>
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
+                                            {aiPlanOptions.horizonDays}d
+                                        </span>
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
+                                            {selectedObjectiveLabel}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-wrap gap-2">
@@ -686,10 +731,9 @@ export default function DashboardSocialPlanner() {
                                         onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, objective: e.target.value as typeof prev.objective }))}
                                         className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
                                     >
-                                        <option value="reach">Reach</option>
-                                        <option value="engagement">Engagement</option>
-                                        <option value="traffic">Traffic</option>
-                                        <option value="conversions">Conversions</option>
+                                        {objectiveOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
                                     </select>
                                 </div>
 
@@ -739,6 +783,28 @@ export default function DashboardSocialPlanner() {
                                 </label>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2">
+                                    {t("dashboard.socialPlanner.aiQueue.helper.window", {
+                                        defaultValue: "Time window: {{start}}h–{{end}}h",
+                                        start: aiPlanOptions.preferredHourStart,
+                                        end: aiPlanOptions.preferredHourEnd,
+                                    })}
+                                </div>
+                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2">
+                                    {t("dashboard.socialPlanner.aiQueue.helper.gap", {
+                                        defaultValue: "Minimum gap: {{hours}}h",
+                                        hours: aiPlanOptions.minGapHours,
+                                    })}
+                                </div>
+                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2 truncate">
+                                    {t("dashboard.socialPlanner.aiQueue.helper.timezone", {
+                                        defaultValue: "Timezone: {{timezone}}",
+                                        timezone: plannerTimezone,
+                                    })}
+                                </div>
+                            </div>
+
                             {aiSuggestions.length > 0 && (
                                 <div className="space-y-2 pt-1">
                                     <p className="text-xs font-black uppercase tracking-wider text-gray-500">{t("dashboard.socialPlanner.aiQueue.previewList", { defaultValue: "Suggested queue" })}</p>
@@ -752,7 +818,10 @@ export default function DashboardSocialPlanner() {
                                                         </span>
                                                         <span className="text-xs font-bold text-gray-600">{format(new Date(item.scheduledAt), "dd/MM/yyyy HH:mm")}</span>
                                                     </div>
-                                                    <span className="text-[10px] font-black uppercase tracking-wide text-gray-500">confidence {Math.round(item.confidence)}%</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-wide text-gray-500">{t("dashboard.socialPlanner.aiQueue.confidence", { defaultValue: "Confidence" })} {Math.round(item.confidence)}%</span>
+                                                </div>
+                                                <div className="mt-2 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                                                    <div className="h-full bg-[#C6F035] transition-all" style={{ width: `${Math.max(0, Math.min(100, Math.round(item.confidence)))}%` }} />
                                                 </div>
                                                 <p className="text-sm font-bold text-[#1A1A1A] mt-1 line-clamp-2">{item.title || item.content}</p>
                                                 <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.reason}</p>
