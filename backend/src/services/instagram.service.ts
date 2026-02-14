@@ -110,19 +110,13 @@ export class InstagramService {
     }
 
     try {
-      const response = await axios.post(
-        `${this.tokenExchangeBaseUrl}/access_token`,
-        this.buildFormPayload({
+      const response = await axios.get(`${this.tokenExchangeBaseUrl}/access_token`, {
+        params: {
           grant_type: "ig_exchange_token",
           client_secret: this.clientSecret,
           access_token: shortLivedToken,
-        }),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+        },
+      });
 
       if (!response.data?.access_token) {
         throw new ApiError(APIErrors.badRequestError, "Instagram did not return a long-lived token", 400);
@@ -144,18 +138,12 @@ export class InstagramService {
 
   public async refreshLongLivedToken(accessToken: string) {
     try {
-      const response = await axios.post(
-        `${this.tokenExchangeBaseUrl}/refresh_access_token`,
-        this.buildFormPayload({
+      const response = await axios.get(`${this.tokenExchangeBaseUrl}/refresh_access_token`, {
+        params: {
           grant_type: "ig_refresh_token",
           access_token: accessToken,
-        }),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+        },
+      });
 
       if (!response.data?.access_token) {
         throw new ApiError(APIErrors.badRequestError, "Instagram did not return refreshed token", 400);
