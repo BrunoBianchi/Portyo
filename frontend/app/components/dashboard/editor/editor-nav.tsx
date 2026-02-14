@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, Settings, Globe, Bot, Palette } from "lucide-react";
+import { LayoutGrid, Settings, Globe, Bot, Palette, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 interface EditorNavProps {
-    activeTab: "links" | "settings";
-    onChangeTab: (tab: "links" | "settings") => void;
+    activeTab: "links" | "settings" | "customDomains";
+    onChangeTab: (tab: "links" | "settings" | "customDomains") => void;
 }
 
 export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
@@ -30,6 +30,12 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             icon: Settings,
             badge: "BETA"
         },
+        {
+            id: "customDomains" as const,
+            label: t("nav.customDomains", { defaultValue: isPt ? "Domínios Personalizados" : "Custom Domains" }),
+            shortLabel: isPt ? "Domínios" : "Domains",
+            icon: Globe,
+        },
     ];
 
     const navLinks = [
@@ -39,13 +45,6 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             label: t("nav.design", { defaultValue: isPt ? "Design" : "Design" }),
             shortLabel: "Design",
             icon: Palette,
-        },
-        {
-            id: "custom-domains" as const,
-            to: "/dashboard/custom-domains",
-            label: t("nav.customDomains", { defaultValue: isPt ? "Domínios Personalizados" : "Custom Domains" }),
-            shortLabel: isPt ? "Domínios" : "Domains",
-            icon: Globe,
         },
         {
             id: "automation" as const,
@@ -70,6 +69,13 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
 
     const activeClass = 'bg-[#1A1A1A] text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]';
     const inactiveClass = 'text-gray-500 hover:text-gray-900 hover:bg-black/5 active:bg-black/10';
+
+    const scrollNav = (direction: "left" | "right") => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const amount = Math.max(140, Math.round(el.clientWidth * 0.45));
+        el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+    };
 
     // Verificar se pode scrollar
     const checkScroll = () => {
@@ -111,13 +117,24 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
         <div className="relative w-full max-w-full">
             {/* Gradiente esquerdo - aparece quando pode scrollar */}
             {canScrollLeft && (
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none md:hidden" />
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+            )}
+
+            {canScrollLeft && (
+                <button
+                    type="button"
+                    onClick={() => scrollNav("left")}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
+                    aria-label={t("editor.tabs.scrollLeft", { defaultValue: "Scroll tabs left" })}
+                >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
             )}
 
             {/* Container principal com scroll */}
             <nav
                 ref={scrollRef}
-                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full max-w-full overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
+                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full max-w-full overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pl-2 pr-2 sm:pl-8 sm:pr-8"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {tabs.map((tab) => {
@@ -130,13 +147,17 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                             data-tab={tab.id}
                             onClick={() => onChangeTab(tab.id)}
                             className={`${itemBaseClass} ${isActive ? activeClass : inactiveClass}`}
+                            title={tab.label}
                         >
                             <Icon
                                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? "text-[#C6F035]" : ""}`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
 
-                            <span className="inline xl:hidden max-w-[88px] truncate">
+                            <span className="inline md:hidden max-w-[72px] truncate">
+                                {tab.shortLabel}
+                            </span>
+                            <span className="hidden md:inline xl:hidden max-w-[80px] truncate">
                                 {tab.shortLabel}
                             </span>
                             <span className="hidden xl:inline max-w-[140px] truncate">
@@ -163,7 +184,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                         </button>
                     );
                 })}
-
+                            className="hidden sm:block absolute left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
                 <div className="w-px h-7 bg-black/10 mx-0.5 shrink-0" />
 
                 {navLinks.map((navLink) => {
@@ -175,13 +196,17 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                             key={navLink.id}
                             to={navLink.to}
                             className={`${itemBaseClass} ${isActive ? activeClass : inactiveClass}`}
+                            title={navLink.label}
                         >
                             <Icon
                                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? "text-[#C6F035]" : ""}`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
 
-                            <span className="inline xl:hidden max-w-[92px] truncate">
+                            <span className="inline md:hidden max-w-[72px] truncate">
+                                {navLink.shortLabel}
+                            </span>
+                            <span className="hidden md:inline xl:hidden max-w-[82px] truncate">
                                 {navLink.shortLabel}
                             </span>
                             <span className="hidden xl:inline max-w-[160px] truncate">
@@ -194,7 +219,18 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
 
             {/* Gradiente direito - aparece quando pode scrollar */}
             {canScrollRight && (
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none md:hidden" />
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+            )}
+
+            {canScrollRight && (
+                <button
+                    type="button"
+                    onClick={() => scrollNav("right")}
+                    className="hidden sm:block absolute right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
+                    aria-label={t("editor.tabs.scrollRight", { defaultValue: "Scroll tabs right" })}
+                >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                </button>
             )}
         </div>
     );

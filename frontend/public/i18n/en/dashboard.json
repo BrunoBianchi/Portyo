@@ -821,6 +821,45 @@
     "export": "Export",
     "delete": "Delete"
   },
+  "linkShortener": {
+    "title": "Link shortener",
+    "subtitle": "Create short links like {{exampleA}}{{domainSuffix}}.",
+    "createTitle": "New short URL",
+    "createButton": "Create short URL",
+    "listTitle": "Your short URLs",
+    "loading": "Loading links...",
+    "empty": "No short URLs yet.",
+    "clicks": "clicks",
+    "delete": "Delete",
+    "copyPortyo": "Copy Portyo URL",
+    "copyCustom": "Copy custom domain URL",
+    "fields": {
+      "title": "Title",
+      "slug": "Slug",
+      "destinationUrl": "Destination URL"
+    },
+    "placeholders": {
+      "title": "Curriculum",
+      "slug": "curriculum",
+      "destinationUrl": "https://example.com/cv"
+    },
+    "stats": {
+      "total": "Total links",
+      "active": "Active links",
+      "clicks": "Total clicks"
+    },
+    "success": {
+      "created": "Short URL created.",
+      "removed": "Short URL removed.",
+      "copied": "Copied to clipboard."
+    },
+    "errors": {
+      "load": "Failed to load short links.",
+      "create": "Failed to create short URL.",
+      "remove": "Failed to remove short URL.",
+      "invalidSlug": "Provide a valid title or slug."
+    }
+  },
   "qrcode": {
     "share": "Share",
     "title": "QR Codes",
@@ -843,7 +882,9 @@
     "colorPresets": "Color Presets",
     "foreground": "Foreground Color",
     "background": "Background Color",
-    "downloadPng": "Download PNG"
+    "downloadPng": "Download PNG",
+    "shortLinkSource": "Use a short link",
+    "shortLinkSelect": "Select a short link"
   },
   "seo": {
     "upgradeTitle": "Upgrade to Pro",
@@ -1218,16 +1259,39 @@
     "title": "Forms",
     "subtitle": "Create forms to collect leads and messages.",
     "create": "Create form",
+    "creating": "Creating...",
+    "createFirst": "Create first form",
+    "noDescription": "No description",
+    "answersCount": "answers",
+    "edit": "Edit",
     "emptyTitle": "No forms yet",
     "emptySubtitle": "Start by creating a form to capture leads.",
     "emptyCta": "Create form",
+    "empty": {
+      "title": "No forms yet",
+      "subtitle": "Start by creating a form to capture leads."
+    },
     "defaultName": "Untitled form",
     "lastUpdated": "Last updated {{date}}",
     "fieldsCount": "{{count}} fields",
     "submissionsCount": "{{count}} submissions",
     "viewAnswers": "View answers",
     "createError": "Failed to create form. Please try again.",
-    "deleteError": "Failed to delete form. Please try again."
+    "deleteError": "Failed to delete form. Please try again.",
+    "deleteTitle": "Delete form",
+    "deleteDesc": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+    "locked": {
+      "title": "Forms are a Pro feature",
+      "subtitle": "Upgrade your plan to create and manage forms.",
+      "cta": "Upgrade plan"
+    },
+    "upgrade": {
+      "title": "Upgrade required",
+      "subtitle": "Your current plan has reached the forms limit.",
+      "cta": "See plans"
+    },
+    "newFormTitle": "Contact form",
+    "newFormDesc": "Use this form to collect messages and leads."
   },
   "formsAnswers": {
     "submission": "submission",
@@ -1662,6 +1726,29 @@
       "experienceDescription": "Led product design initiatives across web and mobile experiences.",
       "whatsappTitle": "Chat on WhatsApp",
       "whatsappMessage": "Hi! I'd like to get in touch."
+    },
+    "blockIntegration": {
+      "shortLinks": {
+        "title": "Short links",
+        "manual": "Manual URL",
+        "saved": "Saved short links",
+        "select": "Select short link",
+        "selectMany": "Select short links",
+        "empty": "No short links created yet",
+        "create": "Create short link",
+        "manage": "Manage",
+        "selected": "selected",
+        "clicks": "clicks",
+        "error": "Failed to load short links",
+        "qrHint": "Selected short links become QR destinations automatically."
+      },
+      "qr": {
+        "saved": "Saved QR codes",
+        "selectOne": "Select one QR Code",
+        "selectMany": "Select QR Codes",
+        "savedHint": "Use existing QR codes with integrated analytics.",
+        "designHint": "QR Code colors and layout can be adjusted in the Design tab."
+      }
     },
     "event": {
       "defaultTitle": "Live Webinar",
@@ -2841,6 +2928,74 @@
       "upload": "Failed to upload image(s).",
       "publish": "Could not publish now."
     }
+  },
+  "polls": {
+    "title": "Polls",
+    "subtitle": "Create and manage your audience polls",
+    "editorSubtitle": "Customize details, options and visibility settings for your poll.",
+    "newTitle": "New poll",
+    "create": "Create poll",
+    "createFirst": "Create first poll",
+    "createError": "Failed to create poll",
+    "saveError": "Failed to save poll",
+    "deleteConfirm": "Delete this poll?",
+    "empty": "No polls yet",
+    "emptyHint": "Create your first poll to collect quick feedback from your audience.",
+    "statsTotal": "Total polls",
+    "statsActive": "Active polls",
+    "statsVotes": "Total votes",
+    "options": "options",
+    "votes": "votes",
+    "createdAt": "Created",
+    "active": "Active",
+    "inactive": "Paused",
+    "pause": "Pause",
+    "activate": "Activate",
+    "edit": "Edit",
+    "results": "Results",
+    "resultsSubtitle": "Live vote distribution and recent participant activity.",
+    "delete": "Delete",
+    "back": "Back",
+    "copyLink": "Copy public link",
+    "preview": "Preview",
+    "save": "Save",
+    "basic": "Basic info",
+    "titleField": "Title",
+    "descriptionField": "Description",
+    "optionsField": "Options",
+    "addOption": "Add option",
+    "optionLabel": "Option",
+    "optionA": "Option 1",
+    "optionB": "Option 2",
+    "duplicate": "Duplicate",
+    "minOptions": "Add at least 2 options.",
+    "duplicateOptions": "Options cannot be duplicated.",
+    "settings": "Settings",
+    "multi": "Allow multiple choices",
+    "requireName": "Require name",
+    "requireEmail": "Require email",
+    "showResults": "Show public results",
+    "chartType": "Result chart type",
+    "chartBar": "Bar",
+    "chartPie": "Pie",
+    "chartDonut": "Donut",
+    "chartColors": "Chart colors",
+    "addColor": "Add color",
+    "colorLabel": "Color",
+    "removeColor": "Remove",
+    "startsAt": "Start date",
+    "endsAt": "End date",
+    "invalidDateRange": "End date must be after start date.",
+    "saveHint": "To save: add title, keep at least 2 valid options, and fix validation issues.",
+    "statusEnded": "Ended",
+    "statusScheduled": "Scheduled",
+    "statusLive": "Live",
+    "latestVotes": "Latest votes",
+    "name": "Name",
+    "email": "Email",
+    "choice": "Choice",
+    "date": "Date",
+    "noVotesYet": "No votes yet."
   },
   "instagramAutoReply": {
     "title": "Auto-reply studio",

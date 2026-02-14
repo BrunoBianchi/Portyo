@@ -10,13 +10,107 @@ import { generateToken, decryptToken, generateRefreshToken } from "../shared/ser
 import { createUser, findUserByEmail } from "../shared/services/user.service";
 import { BillingService } from "../services/billing.service";
 import { triggerAutomation } from "../shared/services/automation.service";
-import { AutomationEntity, AutomationNode, AutomationEdge } from "../database/entity/automation-entity";
+import { AutomationEntity, AutomationNode, AutomationEdge, AutomationExecutionEntity } from "../database/entity/automation-entity";
 import { generateBioSummary, generatePostIdeas, type BioSummary } from "../services/auto-post-ai.service";
 import { AutoPostScheduleEntity } from "../database/entity/auto-post-schedule-entity";
+import { In, MoreThan } from "typeorm";
+import axios from "axios";
 
 const PROCESSED_INSTAGRAM_CODES = new Map<string, number>();
 const PROCESSING_INSTAGRAM_CODES = new Map<string, number>();
 const INSTAGRAM_CODE_TTL_MS = 5 * 60 * 1000;
+
+const IG_USERNAME_EXCLUDE = new Set([
+  "p",
+  "reel",
+  "reels",
+  "tv",
+  "stories",
+  "explore",
+  "accounts",
+  "developer",
+  "about",
+  "legal",
+  "press",
+  "api",
+  "directory",
+]);
+
+const WORDS_EXCLUDE = new Set([
+  "the", "and", "for", "with", "from", "that", "this", "your", "you", "are", "our", "out", "about", "into",
+  "para", "com", "sem", "uma", "uns", "umas", "que", "isso", "essa", "este", "você", "voce", "como", "mais",
+  "de", "do", "da", "dos", "das", "em", "por", "se", "na", "no", "nas", "nos", "ao", "aos", "até", "ate",
+]);
+
+const normalizeTerm = (value: string) =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9à-ÿ\s]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const extractWords = (text: string) =>
+  normalizeTerm(text)
+    .split(" ")
+    .filter((word) => word.length >= 3 && !WORDS_EXCLUDE.has(word));
+
+const topItems = (items: string[], maxItems = 5): string[] => {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    counts.set(item, (counts.get(item) || 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxItems)
+    .map(([item]) => item);
+};
+
+const extractInstagramUsernamesFromHtml = (html: string): string[] => {
+  const usernames = new Set<string>();
+  const regex = /instagram\.com\/(?!p\/|reel\/|reels\/|explore\/|accounts\/|tv\/)([a-zA-Z0-9._]{2,30})\/?/gi;
+
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const username = String(match[1] || "").toLowerCase();
+    if (!username || IG_USERNAME_EXCLUDE.has(username)) {
+      continue;
+    }
+    usernames.add(username);
+    if (usernames.size >= 30) break;
+  }
+
+  return Array.from(usernames);
+};
+
+const discoverSimilarInstagramProfiles = async (searchTerms: string[], maxProfiles = 5): Promise<string[]> => {
+  const candidates = new Set<string>();
+
+  for (const term of searchTerms.slice(0, 5)) {
+    if (candidates.size >= maxProfiles) break;
+
+    try {
+      const response = await axios.get("https://duckduckgo.com/html/", {
+        params: { q: `site:instagram.com ${term}` },
+        timeout: 10000,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+
+      const usernames = extractInstagramUsernamesFromHtml(String(response.data || ""));
+      for (const username of usernames) {
+        candidates.add(username);
+        if (candidates.size >= maxProfiles) break;
+      }
+    } catch {
+      // Best effort only
+    }
+  }
+
+  return Array.from(candidates).slice(0, maxProfiles);
+};
 
 const maskValue = (value?: string | null, visible = 8) => {
   if (!value) return "<empty>";
@@ -1394,13 +1488,176 @@ export const getInstagramPostIdeas = async (req: Request, res: Response, next: N
       summaryData = await generateBioSummary(bio);
     }
 
-    const ideas = await generatePostIdeas(summaryData, count);
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    const searchTerms = topItems([
+      ...extractWords(summaryData.industry || ""),
+      ...summaryData.expertise.flatMap((item) => extractWords(item)),
+      ...summaryData.contentPillars.flatMap((item) => extractWords(item)),
+      ...extractWords(summaryData.targetAudience || ""),
+    ], 6);
+
+    const similarUsernames = await discoverSimilarInstagramProfiles(searchTerms, 5);
+
+    const similarProfiles: Array<{
+      username: string;
+      sampleSize: number;
+      topKeywords: string[];
+      postingSignals: string[];
+    }> = [];
+
+    const aggregateSignals: string[] = [];
+
+    for (const username of similarUsernames) {
+      try {
+        const posts = await instagramService.getLatestPosts(username, baseUrl);
+        const sample = Array.isArray(posts) ? posts.slice(0, 3) : [];
+        const captions = sample.map((post: any) => String(post?.caption || "")).filter(Boolean);
+
+        const hashtags = captions
+          .flatMap((caption) => (caption.match(/#[a-zA-Z0-9_À-ÿ]+/g) || []).map((tag) => tag.replace(/^#/, "").toLowerCase()));
+
+        const words = captions.flatMap((caption) => extractWords(caption));
+
+        const questionPosts = captions.filter((caption) => caption.includes("?")).length;
+        const numberedPosts = captions.filter((caption) => /\b\d{1,2}\b/.test(caption)).length;
+
+        const postingSignals: string[] = [];
+        if (questionPosts > 0) postingSignals.push("uses_questions");
+        if (numberedPosts > 0) postingSignals.push("uses_numbered_hooks");
+        if (hashtags.length > 0) postingSignals.push("uses_hashtags");
+
+        aggregateSignals.push(...postingSignals);
+
+        similarProfiles.push({
+          username,
+          sampleSize: sample.length,
+          topKeywords: topItems([...hashtags, ...words], 6),
+          postingSignals,
+        });
+      } catch {
+        // Ignore unreachable profile and continue.
+      }
+    }
+
+    const benchmarkInsights: string[] = [];
+    const topSignals = topItems(aggregateSignals, 3);
+    if (topSignals.includes("uses_questions")) {
+      benchmarkInsights.push("Perfis semelhantes usam perguntas no início da legenda para aumentar comentários.");
+    }
+    if (topSignals.includes("uses_numbered_hooks")) {
+      benchmarkInsights.push("Listas numeradas aparecem com frequência e funcionam bem como gancho rápido.");
+    }
+    if (topSignals.includes("uses_hashtags")) {
+      benchmarkInsights.push("Hashtags de nicho são recorrentes; priorize 3-8 tags específicas por publicação.");
+    }
+
+    const ideas = await generatePostIdeas(summaryData, count, {
+      similarProfiles,
+      benchmarkInsights,
+    });
 
     return res.status(200).json({
       plan,
       count,
       maxCount,
       ideas,
+      marketResearch: {
+        searchedTerms: searchTerms,
+        similarProfiles,
+        benchmarkInsights,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getInstagramAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user?.id) {
+      throw new ApiError(APIErrors.unauthorizedError, "Not Authenticated", 401);
+    }
+
+    const bioId = String(req.params.bioId || "").trim();
+    if (!bioId) {
+      throw new ApiError(APIErrors.badRequestError, "Bio ID is required", 400);
+    }
+
+    await ensureBioOwnership(bioId, req.user.id);
+
+    const plan = await getPlanTier(req.user.id);
+    const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
+    const executionRepository = AppDataSource.getRepository(AutomationExecutionEntity);
+
+    const instagramIntegration = await integrationRepository.findOne({
+      where: { bio: { id: bioId }, provider: "instagram" },
+    });
+
+    const automations = await findInstagramAutoReplyAutomations(bioId);
+    const automationIds = automations.map((automation) => automation.id);
+
+    const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const executions = automationIds.length
+      ? await executionRepository.find({
+          where: {
+            automationId: In(automationIds),
+            createdAt: MoreThan(fromDate),
+          },
+          order: { createdAt: "DESC" },
+          take: 150,
+        })
+      : [];
+
+    const statusTotals = {
+      completed: executions.filter((execution) => execution.status === "completed").length,
+      failed: executions.filter((execution) => execution.status === "failed").length,
+      running: executions.filter((execution) => execution.status === "running").length,
+    };
+
+    const totalExecutions = executions.length;
+    const completionRate = totalExecutions > 0
+      ? Math.round((statusTotals.completed / totalExecutions) * 100)
+      : 0;
+
+    const triggerCountsMap = new Map<string, number>();
+    for (const execution of executions) {
+      const triggerType = String(execution.triggerData?.triggerType || "unknown");
+      triggerCountsMap.set(triggerType, (triggerCountsMap.get(triggerType) || 0) + 1);
+    }
+
+    const topTriggers = Array.from(triggerCountsMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([trigger, total]) => ({ trigger, total }));
+
+    const lastExecutionAt = executions[0]?.createdAt || null;
+    const lastWebhook = LAST_WEBHOOK_EVENT_BY_BIO.get(bioId) || null;
+
+    return res.status(200).json({
+      plan,
+      integration: {
+        connected: Boolean(instagramIntegration),
+        accountName: instagramIntegration?.name || null,
+        accountId: instagramIntegration?.account_id || null,
+        tokenLastRefreshedAt: instagramIntegration?.tokenLastRefreshedAt || null,
+      },
+      autoReply: {
+        totalRules: automations.length,
+        activeRules: automations.filter((automation) => automation.isActive).length,
+      },
+      performance30d: {
+        totalExecutions,
+        completed: statusTotals.completed,
+        failed: statusTotals.failed,
+        running: statusTotals.running,
+        completionRate,
+        lastExecutionAt,
+        topTriggers,
+      },
+      webhook: {
+        lastEvent: lastWebhook,
+      },
     });
   } catch (error) {
     next(error);

@@ -15,6 +15,8 @@ COPY . .
 # Build arguments for Vite environment variables
 ARG VITE_API_URL=https://api.portyo.me
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_ONBOARDING_VIDEO_URL=
+ENV VITE_ONBOARDING_VIDEO_URL=$VITE_ONBOARDING_VIDEO_URL
 
 # Build the application
 RUN pnpm run build

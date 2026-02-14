@@ -8,5 +8,6 @@ export { ProductCollectionSelector } from "./product-collection-selector";
 export { PortfolioGallerySelector } from "./portfolio-gallery-selector";
 export { BookingSettingsSelector } from "./booking-settings-selector";
 export { QRCodeSelector } from "./qrcode-selector";
+export { ShortLinkSelector } from "./short-link-selector";
 export { InstagramPreview } from "./instagram-preview";
 export { YouTubePreview } from "./youtube-preview";

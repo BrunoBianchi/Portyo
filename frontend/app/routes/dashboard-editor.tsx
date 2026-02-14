@@ -22,6 +22,7 @@ import { EditorNav } from "~/components/dashboard/editor/editor-nav";
 import { BlockEditorDrawer } from "~/components/dashboard/editor/block-editor-drawer";
 import { LinksTab, SettingsTab } from "~/components/dashboard/editor/tabs";
 import type { BioBlock } from "~/contexts/bio.context";
+import DashboardCustomDomains from "~/routes/dashboard-custom-domains";
 
 export const meta: MetaFunction = () => {
   return [
@@ -41,8 +42,8 @@ const EditorHeader = memo(function EditorHeader({
   showMobilePreview,
   onToggleMobilePreview,
 }: {
-  activeTab: "links" | "settings";
-  onTabChange: (tab: "links" | "settings") => void;
+  activeTab: "links" | "settings" | "customDomains";
+  onTabChange: (tab: "links" | "settings" | "customDomains") => void;
   history: BioBlock[][];
   onUndo: () => void;
   onShare: () => void;
@@ -55,6 +56,7 @@ const EditorHeader = memo(function EditorHeader({
   const tabLabels = {
     links: t("editor.tabs.links"),
     settings: t("editor.tabs.settings"),
+    customDomains: t("nav.customDomains", { defaultValue: "Custom Domains" }),
   };
 
   return (
@@ -277,7 +279,7 @@ export default function DashboardEditor() {
   const { user } = useContext(AuthContext);
   const { t } = useTranslation("dashboard");
 
-  const [activeTab, setActiveTab] = useState<"links" | "settings">("links");
+  const [activeTab, setActiveTab] = useState<"links" | "settings" | "customDomains">("links");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -510,6 +512,8 @@ export default function DashboardEditor() {
     setSeoState(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  const isEditorContentTab = activeTab === 'links' || activeTab === 'settings';
+
   return (
     <AuthorizationGuard>
       <div className="h-screen flex flex-col bg-[#F3F3F1] overflow-hidden font-sans">
@@ -528,7 +532,7 @@ export default function DashboardEditor() {
           {/* Main Content Area */}
           <main className="flex-1 flex flex-col min-w-0 bg-[#F3F3F1]">
             <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 lg:p-8 custom-scrollbar">
-              <div className="max-w-xl lg:max-w-2xl mx-auto w-full pb-20 sm:pb-24">
+              <div className={`${isEditorContentTab ? 'max-w-xl lg:max-w-2xl' : 'max-w-6xl'} mx-auto w-full pb-20 sm:pb-24`}>
                 {activeTab === 'links' && (
                   <LinksTab
                     bio={bio}
@@ -564,20 +568,26 @@ export default function DashboardEditor() {
                     onSaveSeo={handleSaveSeo}
                   />
                 )}
+
+                {activeTab === 'customDomains' && (
+                  <DashboardCustomDomains />
+                )}
               </div>
             </div>
           </main>
 
           {/* Desktop Preview */}
-          <PreviewPanel html={html} isGenerating={isGenerating} />
+          {isEditorContentTab && <PreviewPanel html={html} isGenerating={isGenerating} />}
 
           {/* Mobile Preview */}
-          <MobilePreviewOverlay
-            isOpen={showMobilePreview}
-            onClose={() => setShowMobilePreview(false)}
-            html={html}
-            isGenerating={isGenerating}
-          />
+          {isEditorContentTab && (
+            <MobilePreviewOverlay
+              isOpen={showMobilePreview}
+              onClose={() => setShowMobilePreview(false)}
+              html={html}
+              isGenerating={isGenerating}
+            />
+          )}
         </div>
 
         {/* Block Editor Drawer */}

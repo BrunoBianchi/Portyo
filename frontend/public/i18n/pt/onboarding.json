@@ -9,6 +9,13 @@
     "cta": "Garantir e Continuar",
     "claimContinue": "Garantir e Continuar"
   },
+  "stepVideo": {
+    "title": "Veja como o Portyo funciona.",
+    "subtitle": "Um vídeo rápido antes de configurar os detalhes do seu perfil.",
+    "iframeTitle": "Vídeo de onboarding do Portyo",
+    "skip": "Pular vídeo",
+    "unavailable": "Vídeo ainda não configurado. Adicione VITE_ONBOARDING_VIDEO_URL no .env do Docker Compose."
+  },
   "step2": {
     "title": "O que melhor descreve você?",
     "subtitle": "Isso nos ajuda a personalizar sua experiência."

@@ -5,6 +5,7 @@ import { QrCode as QrCodeIcon, Download, Plus, Link as LinkIcon, Loader2, Copy, 
 import type { MetaFunction } from "react-router";
 import QRCode from "react-qr-code";
 import { createQrCode, getQrCodes, type QrCode } from "~/services/qrcode.service";
+import { getShortLinks, type ShortLink } from "~/services/short-link.service";
 import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
@@ -33,6 +34,8 @@ export default function DashboardQrCode() {
     const [newValue, setNewValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [shortLinks, setShortLinks] = useState<ShortLink[]>([]);
+    const [selectedShortLinkId, setSelectedShortLinkId] = useState("");
     const [copied, setCopied] = useState(false);
     const [fgColor, setFgColor] = useState("#000000");
     const [bgColor, setBgColor] = useState("#FFFFFF");
@@ -43,6 +46,7 @@ export default function DashboardQrCode() {
     useEffect(() => {
         if (bio?.id) {
             loadQrCodes();
+            loadShortLinks();
         }
     }, [bio?.id]);
 
@@ -112,6 +116,17 @@ export default function DashboardQrCode() {
             console.error("Failed to load QR codes", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const loadShortLinks = async () => {
+        if (!bio?.id) return;
+        try {
+            const data = await getShortLinks(bio.id);
+            setShortLinks((Array.isArray(data) ? data : []).filter((item) => item.isActive));
+        } catch (error) {
+            console.error("Failed to load short links", error);
+            setShortLinks([]);
         }
     };
 
@@ -192,6 +207,40 @@ export default function DashboardQrCode() {
                                         />
                                     </div>
                                 </div>
+
+                                {shortLinks.length > 0 && (
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">
+                                            {t("dashboard.qrcode.shortLinkSource", { defaultValue: "Use a short link" })}
+                                        </label>
+                                        <select
+                                            value={selectedShortLinkId}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setSelectedShortLinkId(value);
+                                                if (!value) return;
+
+                                                const selected = shortLinks.find((item) => item.id === value);
+                                                if (!selected) return;
+
+                                                const baseUrl = bio?.customDomain
+                                                    ? `https://${bio.customDomain}`
+                                                    : `https://portyo.me/p/${bio?.sufix}`;
+
+                                                setNewValue(`${baseUrl}/${selected.slug}`);
+                                            }}
+                                            className="w-full px-3 py-2.5 rounded-xl border-2 border-black bg-white text-sm font-semibold"
+                                        >
+                                            <option value="">{t("dashboard.qrcode.shortLinkSelect", { defaultValue: "Select a short link" })}</option>
+                                            {shortLinks.map((item) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.title} • /{item.slug}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
                                 <button
                                     type="submit"
                                     disabled={isCreating || !newValue}

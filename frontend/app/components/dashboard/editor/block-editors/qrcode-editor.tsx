@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { BioBlock } from "~/contexts/bio.context";
 import { EditorInput } from "./shared/editor-fields";
 import { QRCodeSelector } from "../integration-selectors/qrcode-selector";
-import type { QRCodeItem } from "~/services/block-integration.service";
+import { ShortLinkSelector } from "../integration-selectors/short-link-selector";
+import type { QRCodeItem, ShortLinkItem } from "~/services/block-integration.service";
+import { useContext } from "react";
+import BioContext from "~/contexts/bio.context";
 
 interface Props {
   block: BioBlock;
@@ -12,11 +15,18 @@ interface Props {
 
 export function QRCodeBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
-  const [useExisting, setUseExisting] = useState(
-    (block.qrCodeSourceIds?.length ?? 0) > 0
+  const { bio } = useContext(BioContext);
+  const [mode, setMode] = useState<"manual" | "savedQr" | "shortLink">(
+    (block.qrCodeSourceIds?.length ?? 0) > 0 ? "savedQr" : "manual"
   );
   const layout = block.qrCodeLayout || "single";
   const isMulti = layout === "multiple" || layout === "grid";
+
+  const baseShortUrl = bio?.customDomain
+    ? `https://${bio.customDomain}`
+    : bio?.sufix
+      ? `https://portyo.me/p/${bio.sufix}`
+      : "https://portyo.me/p/username";
 
   const handleSelectQRCodes = (items: QRCodeItem[]) => {
     const ids = items.map((i) => i.id);
@@ -34,36 +44,75 @@ export function QRCodeBlockEditor({ block, onChange }: Props) {
     }
   };
 
+  const handleSelectShortLinks = (items: ShortLinkItem[]) => {
+    if (!items.length) {
+      onChange({ qrCodeValue: "", qrCodeItems: [], qrCodeSourceIds: [] });
+      return;
+    }
+
+    const mappedItems = items.map((item) => ({
+      id: item.id,
+      value: `${baseShortUrl}/${item.slug}`,
+      label: item.title,
+    }));
+
+    if (!isMulti) {
+      onChange({
+        qrCodeValue: mappedItems[0].value,
+        qrCodeItems: [],
+        qrCodeSourceIds: [],
+      });
+      return;
+    }
+
+    onChange({
+      qrCodeItems: mappedItems,
+      qrCodeValue: mappedItems[0].value,
+      qrCodeSourceIds: [],
+    });
+  };
+
   return (
     <div className="space-y-4">
       {/* Mode Toggle */}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => setUseExisting(false)}
+          onClick={() => setMode("manual")}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-            !useExisting
+            mode === "manual"
               ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200"
           }`}
         >
-          URL Manual
+          {t("editor.blockIntegration.shortLinks.manual", { defaultValue: "Manual URL" })}
         </button>
         <button
           type="button"
-          onClick={() => setUseExisting(true)}
+          onClick={() => setMode("savedQr")}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-            useExisting
+            mode === "savedQr"
               ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200"
           }`}
         >
-          QR Codes Salvos
+          {t("editor.blockIntegration.qr.saved", { defaultValue: "Saved QR codes" })}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("shortLink")}
+          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            mode === "shortLink"
+              ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+          }`}
+        >
+          {t("editor.blockIntegration.shortLinks.saved", { defaultValue: "Saved short links" })}
         </button>
       </div>
 
       {/* Manual input */}
-      {!useExisting && (
+      {mode === "manual" && (
         <>
           <EditorInput
             label={t("editor.editDrawer.fields.qrValueLabel")}
@@ -73,16 +122,18 @@ export function QRCodeBlockEditor({ block, onChange }: Props) {
             prefix="URL"
           />
           <p className="text-[10px] text-gray-400 -mt-2">
-            Cores e layout do QR Code podem ser ajustados na aba Design.
+            {t("editor.blockIntegration.qr.designHint", { defaultValue: "QR Code colors and layout can be adjusted in the Design tab." })}
           </p>
         </>
       )}
 
       {/* Selector from backend */}
-      {useExisting && (
+      {mode === "savedQr" && (
         <div>
           <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5 ml-0.5 text-black/40">
-            {isMulti ? "Selecione os QR Codes" : "Selecione um QR Code"}
+            {isMulti
+              ? t("editor.blockIntegration.qr.selectMany", { defaultValue: "Select QR Codes" })
+              : t("editor.blockIntegration.qr.selectOne", { defaultValue: "Select one QR Code" })}
           </label>
           <QRCodeSelector
             bioId={block.bioId || null}
@@ -91,7 +142,26 @@ export function QRCodeBlockEditor({ block, onChange }: Props) {
             multiSelect={isMulti}
           />
           <p className="text-[10px] text-gray-400 mt-2">
-            Selecione QR codes já criados para exibir com analytics integrados.
+            {t("editor.blockIntegration.qr.savedHint", { defaultValue: "Use existing QR codes with integrated analytics." })}
+          </p>
+        </div>
+      )}
+
+      {mode === "shortLink" && (
+        <div>
+          <label className="block text-[10px] font-black uppercase tracking-wider mb-1.5 ml-0.5 text-black/40">
+            {isMulti
+              ? t("editor.blockIntegration.shortLinks.selectMany", { defaultValue: "Select short links" })
+              : t("editor.blockIntegration.shortLinks.select", { defaultValue: "Select short link" })}
+          </label>
+          <ShortLinkSelector
+            bioId={block.bioId || null}
+            selectedIds={[]}
+            onSelect={handleSelectShortLinks}
+            multiSelect={isMulti}
+          />
+          <p className="text-[10px] text-gray-400 mt-2">
+            {t("editor.blockIntegration.shortLinks.qrHint", { defaultValue: "Selected short links become QR destinations automatically." })}
           </p>
         </div>
       )}

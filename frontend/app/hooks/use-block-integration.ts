@@ -10,6 +10,7 @@ import {
   type BlogPost,
   type BookingSettings,
   type QRCodeItem,
+  type ShortLinkItem,
   type InstagramPost,
   type YouTubeVideo,
 } from "~/services/block-integration.service";
@@ -372,6 +373,50 @@ export function useQRCodes({
   };
 }
 
+export function useShortLinks({
+  bioId,
+  enabled = true,
+}: UseBlockIntegrationOptions) {
+  const [shortLinks, setShortLinks] = useState<ShortLinkItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchShortLinks = useCallback(async () => {
+    if (!bioId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await BlockIntegrationService.getShortLinks(bioId);
+      setShortLinks(data);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [bioId]);
+
+  useEffect(() => {
+    if (enabled && bioId) {
+      fetchShortLinks();
+    }
+  }, [enabled, bioId, fetchShortLinks]);
+
+  const getShortLinkById = useCallback(
+    (id: string) => {
+      return shortLinks.find((item) => item.id === id) || null;
+    },
+    [shortLinks]
+  );
+
+  return {
+    shortLinks,
+    isLoading,
+    error,
+    refetch: fetchShortLinks,
+    getShortLinkById,
+  };
+}
+
 // Hook for Instagram Preview (debounced)
 export function useInstagramPreview(username: string, enabled = true) {
   const [posts, setPosts] = useState<InstagramPost[]>([]);
@@ -461,6 +506,7 @@ export function useBlockIntegrations(bioId: string | null) {
   const blog = useBlogPosts({ bioId });
   const bookingSettings = useBookingSettings({ bioId });
   const qrcodes = useQRCodes({ bioId });
+  const shortLinks = useShortLinks({ bioId });
 
   const isLoadingAny =
     forms.isLoading ||
@@ -470,7 +516,8 @@ export function useBlockIntegrations(bioId: string | null) {
     marketing.isLoading ||
     blog.isLoading ||
     bookingSettings.isLoading ||
-    qrcodes.isLoading;
+    qrcodes.isLoading ||
+    shortLinks.isLoading;
 
   const refreshAll = useCallback(() => {
     forms.refetch();
@@ -481,7 +528,8 @@ export function useBlockIntegrations(bioId: string | null) {
     blog.refetch();
     bookingSettings.refetch();
     qrcodes.refetch();
-  }, [forms, polls, portfolio, products, marketing, blog, bookingSettings, qrcodes]);
+    shortLinks.refetch();
+  }, [forms, polls, portfolio, products, marketing, blog, bookingSettings, qrcodes, shortLinks]);
 
   return {
     forms,
@@ -492,6 +540,7 @@ export function useBlockIntegrations(bioId: string | null) {
     blog,
     bookingSettings,
     qrcodes,
+    shortLinks,
     isLoadingAny,
     refreshAll,
   };

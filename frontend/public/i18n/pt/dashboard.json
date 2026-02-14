@@ -200,6 +200,27 @@
       "design": "Design"
     },
     "blockIntegration": {
+      "shortLinks": {
+        "title": "Links curtos",
+        "manual": "URL manual",
+        "saved": "Links curtos salvos",
+        "select": "Selecionar link curto",
+        "selectMany": "Selecionar links curtos",
+        "empty": "Nenhum link curto criado",
+        "create": "Criar link curto",
+        "manage": "Gerenciar",
+        "selected": "selecionado(s)",
+        "clicks": "cliques",
+        "error": "Erro ao carregar links curtos",
+        "qrHint": "Links curtos selecionados viram destinos do QR automaticamente."
+      },
+      "qr": {
+        "saved": "QR codes salvos",
+        "selectOne": "Selecione um QR Code",
+        "selectMany": "Selecione QR Codes",
+        "savedHint": "Use QR codes já criados com analytics integrados.",
+        "designHint": "As cores e o layout do QR podem ser ajustados na aba Design."
+      },
       "forms": {
         "title": "Formulário",
         "select": "Selecionar formulário",
@@ -2125,6 +2146,45 @@
     "export": "Exportar",
     "delete": "Excluir"
   },
+  "linkShortener": {
+    "title": "Encurtador de links",
+    "subtitle": "Crie links curtos como {{exampleA}}{{domainSuffix}}.",
+    "createTitle": "Novo link curto",
+    "createButton": "Criar link curto",
+    "listTitle": "Seus links curtos",
+    "loading": "Carregando links...",
+    "empty": "Nenhum link curto ainda.",
+    "clicks": "cliques",
+    "delete": "Excluir",
+    "copyPortyo": "Copiar URL Portyo",
+    "copyCustom": "Copiar URL do domínio personalizado",
+    "fields": {
+      "title": "Título",
+      "slug": "Slug",
+      "destinationUrl": "URL de destino"
+    },
+    "placeholders": {
+      "title": "Currículo",
+      "slug": "curriculo",
+      "destinationUrl": "https://exemplo.com/cv"
+    },
+    "stats": {
+      "total": "Total de links",
+      "active": "Links ativos",
+      "clicks": "Total de cliques"
+    },
+    "success": {
+      "created": "Link curto criado.",
+      "removed": "Link curto removido.",
+      "copied": "Copiado para a área de transferência."
+    },
+    "errors": {
+      "load": "Falha ao carregar links curtos.",
+      "create": "Falha ao criar link curto.",
+      "remove": "Falha ao remover link curto.",
+      "invalidSlug": "Informe um título ou slug válido."
+    }
+  },
   "qrcode": {
     "share": "Compartilhar",
     "title": "Códigos QR",
@@ -2147,7 +2207,9 @@
     "colorPresets": "Paletas de cores",
     "foreground": "Cor do primeiro plano",
     "background": "Cor do fundo",
-    "downloadPng": "Baixar PNG"
+    "downloadPng": "Baixar PNG",
+    "shortLinkSource": "Usar um link curto",
+    "shortLinkSelect": "Selecione um link curto"
   },
   "seo": {
     "upgradeTitle": "Faça upgrade para Pro",
@@ -2480,16 +2542,39 @@
     "title": "Formulários",
     "subtitle": "Crie formulários para capturar leads e mensagens.",
     "create": "Criar formulário",
+    "creating": "Criando...",
+    "createFirst": "Criar primeiro formulário",
+    "noDescription": "Sem descrição",
+    "answersCount": "respostas",
+    "edit": "Editar",
     "emptyTitle": "Nenhum formulário ainda",
     "emptySubtitle": "Crie um formulário para começar a coletar leads.",
     "emptyCta": "Criar formulário",
+    "empty": {
+      "title": "Nenhum formulário ainda",
+      "subtitle": "Crie um formulário para começar a coletar leads."
+    },
     "defaultName": "Formulário sem título",
     "lastUpdated": "Atualizado em {{date}}",
     "fieldsCount": "{{count}} campos",
     "submissionsCount": "{{count}} respostas",
     "viewAnswers": "Ver respostas",
     "createError": "Falha ao criar formulário. Tente novamente.",
-    "deleteError": "Falha ao excluir formulário. Tente novamente."
+    "deleteError": "Falha ao excluir formulário. Tente novamente.",
+    "deleteTitle": "Excluir formulário",
+    "deleteDesc": "Tem certeza que deseja excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
+    "locked": {
+      "title": "Formulários são um recurso Pro",
+      "subtitle": "Faça upgrade para criar e gerenciar formulários.",
+      "cta": "Fazer upgrade"
+    },
+    "upgrade": {
+      "title": "Upgrade necessário",
+      "subtitle": "Seu plano atual atingiu o limite de formulários.",
+      "cta": "Ver planos"
+    },
+    "newFormTitle": "Formulário para contato",
+    "newFormDesc": "Use este formulário para capturar mensagens e leads."
   },
   "autoPost": {
     "confirmDelete": "Tem certeza que deseja excluir este agendamento de auto post?",
@@ -3102,6 +3187,74 @@
       "upload": "Falha ao enviar imagem(ns).",
       "publish": "Não foi possível publicar agora."
     }
+  },
+  "polls": {
+    "title": "Enquetes",
+    "subtitle": "Crie e gerencie enquetes para sua audiência",
+    "editorSubtitle": "Personalize detalhes, opções e configurações de visibilidade da enquete.",
+    "newTitle": "Nova enquete",
+    "create": "Criar enquete",
+    "createFirst": "Criar primeira enquete",
+    "createError": "Falha ao criar enquete",
+    "saveError": "Falha ao salvar enquete",
+    "deleteConfirm": "Excluir esta enquete?",
+    "empty": "Nenhuma enquete ainda",
+    "emptyHint": "Crie sua primeira enquete para coletar feedback rápido da sua audiência.",
+    "statsTotal": "Total de enquetes",
+    "statsActive": "Enquetes ativas",
+    "statsVotes": "Total de votos",
+    "options": "opções",
+    "votes": "votos",
+    "createdAt": "Criada em",
+    "active": "Ativa",
+    "inactive": "Pausada",
+    "pause": "Pausar",
+    "activate": "Ativar",
+    "edit": "Editar",
+    "results": "Resultados",
+    "resultsSubtitle": "Distribuição de votos em tempo real e atividade recente dos participantes.",
+    "delete": "Excluir",
+    "back": "Voltar",
+    "copyLink": "Copiar link público",
+    "preview": "Prévia",
+    "save": "Salvar",
+    "basic": "Informações básicas",
+    "titleField": "Título",
+    "descriptionField": "Descrição",
+    "optionsField": "Opções",
+    "addOption": "Adicionar opção",
+    "optionLabel": "Opção",
+    "optionA": "Opção 1",
+    "optionB": "Opção 2",
+    "duplicate": "Duplicar",
+    "minOptions": "Adicione pelo menos 2 opções.",
+    "duplicateOptions": "As opções não podem ser duplicadas.",
+    "settings": "Configurações",
+    "multi": "Permitir múltiplas escolhas",
+    "requireName": "Exigir nome",
+    "requireEmail": "Exigir email",
+    "showResults": "Mostrar resultados publicamente",
+    "chartType": "Tipo de gráfico dos resultados",
+    "chartBar": "Barras",
+    "chartPie": "Pizza",
+    "chartDonut": "Rosca",
+    "chartColors": "Cores do gráfico",
+    "addColor": "Adicionar cor",
+    "colorLabel": "Cor",
+    "removeColor": "Remover",
+    "startsAt": "Data de início",
+    "endsAt": "Data de término",
+    "invalidDateRange": "A data de término deve ser depois da data de início.",
+    "saveHint": "Para salvar: adicione título, mantenha pelo menos 2 opções válidas e corrija as validações.",
+    "statusEnded": "Encerrada",
+    "statusScheduled": "Agendada",
+    "statusLive": "Ao vivo",
+    "latestVotes": "Votos mais recentes",
+    "name": "Nome",
+    "email": "Email",
+    "choice": "Escolha",
+    "date": "Data",
+    "noVotesYet": "Ainda não há votos."
   },
   "instagramAutoReply": {
     "title": "Studio de auto-reply",

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { api } from "~/services/api";
 import { useTranslation } from "react-i18next";
@@ -103,7 +103,10 @@ function ResultsChart({
 export default function DashboardPollResults() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation("dashboard");
+  const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+  const withLang = (to: string) => (currentLang ? `/${currentLang}${to}` : to);
 
   const [loading, setLoading] = useState(true);
   const [poll, setPoll] = useState<Poll | null>(null);
@@ -123,10 +126,10 @@ export default function DashboardPollResults() {
       })
       .catch((error) => {
         console.error("Failed to load poll results", error);
-        navigate("/dashboard/polls");
+        navigate(withLang("/dashboard/polls"));
       })
       .finally(() => setLoading(false));
-  }, [id, navigate]);
+  }, [id, navigate, currentLang]);
 
   const optionMap = useMemo(() => new Map((poll?.options || []).map((option) => [option.id, option.label])), [poll?.options]);
 
@@ -136,17 +139,32 @@ export default function DashboardPollResults() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen space-y-6">
-      <button onClick={() => navigate("/dashboard/polls")} className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+      <button onClick={() => navigate(withLang("/dashboard/polls"))} className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black transition-colors">
         <ArrowLeft className="w-4 h-4" /> {t("dashboard.polls.back", { defaultValue: "Back" })}
       </button>
 
-      <div className="bg-white border-2 border-black rounded-2xl p-5">
-        <h1 className="text-2xl font-black mb-1">{poll?.title || t("dashboard.polls.results", { defaultValue: "Results" })}</h1>
-        <p className="text-sm text-gray-500">{results?.totalVotes || 0} {t("dashboard.polls.votes", { defaultValue: "votes" })}</p>
+      <div className="bg-white border-2 border-black rounded-3xl p-5 md:p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black mb-1">{poll?.title || t("dashboard.polls.results", { defaultValue: "Results" })}</h1>
+            <p className="text-sm text-gray-500">{t("dashboard.polls.resultsSubtitle", { defaultValue: "Live vote distribution and recent participant activity." })}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+              <p className="text-[11px] uppercase text-gray-500 font-semibold tracking-wide">{t("dashboard.polls.statsVotes", { defaultValue: "Total votes" })}</p>
+              <p className="text-xl font-black text-[#1A1A1A]">{results?.totalVotes || 0}</p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+              <p className="text-[11px] uppercase text-gray-500 font-semibold tracking-wide">{t("dashboard.polls.options", { defaultValue: "options" })}</p>
+              <p className="text-xl font-black text-[#1A1A1A]">{results?.options?.length || 0}</p>
+            </div>
+          </div>
+        </div>
+
         <ResultsChart type={poll?.chartType || "bar"} options={results?.options || []} colors={poll?.chartColors} />
       </div>
 
-      <div className="bg-white border-2 border-black rounded-2xl p-5">
+      <div className="bg-white border-2 border-black rounded-3xl p-5 md:p-6">
         <h2 className="text-lg font-black mb-3">{t("dashboard.polls.latestVotes", { defaultValue: "Latest votes" })}</h2>
         <div className="overflow-auto">
           <table className="w-full text-sm">
@@ -167,6 +185,13 @@ export default function DashboardPollResults() {
                   <td className="py-2">{new Date(vote.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
+              {(poll?.pollVotes || []).length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-gray-500">
+                    {t("dashboard.polls.noVotesYet", { defaultValue: "No votes yet." })}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

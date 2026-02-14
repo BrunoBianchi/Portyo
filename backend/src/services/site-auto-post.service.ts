@@ -10,7 +10,7 @@ import {
     generateSitePostPreviewWithTOON,
 } from "./site-auto-post-ai-zai.service";
 import { logger } from "../shared/utils/logger";
-import { LessThan, IsNull, In } from "typeorm";
+import { LessThan, IsNull, In, MoreThan } from "typeorm";
 import { notificationService } from "./notification.service";
 import { NotificationType } from "../database/entity/notification-entity";
 import redisClient from "../config/redis.client";
@@ -397,8 +397,13 @@ export const processSiteSchedule = async (schedule: SiteAutoPostScheduleEntity):
         });
         await logRepository.save(log);
 
-        // Retry tomorrow
-        schedule.nextPostDate = calculateNextSitePostDate("daily", new Date(), schedule.preferredTime, schedule.lastPostDate);
+        // Keep retry cadence aligned with the configured schedule frequency
+        schedule.nextPostDate = calculateNextSitePostDate(
+            schedule.frequency || "5hours",
+            new Date(),
+            schedule.preferredTime,
+            schedule.lastPostDate
+        );
         await scheduleRepository.save(schedule);
     }
 };
@@ -425,6 +430,37 @@ export const runSiteAutoPostJob = async (): Promise<void> => {
 
     try {
         const now = new Date();
+
+        const staleCutoff = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+        const staleFiveHourSchedules = await scheduleRepository.find({
+            where: [
+                {
+                    isActive: true,
+                    frequency: "5hours",
+                    startDate: IsNull(),
+                    nextPostDate: MoreThan(staleCutoff),
+                },
+                {
+                    isActive: true,
+                    frequency: "5hours",
+                    startDate: LessThan(now),
+                    nextPostDate: MoreThan(staleCutoff),
+                },
+            ],
+        });
+
+        if (staleFiveHourSchedules.length > 0) {
+            logger.warn(`[SiteAutoPost] Repairing ${staleFiveHourSchedules.length} stale 5-hour schedule(s)`);
+            for (const schedule of staleFiveHourSchedules) {
+                schedule.nextPostDate = calculateNextSitePostDate(
+                    "5hours",
+                    now,
+                    schedule.preferredTime,
+                    schedule.lastPostDate
+                );
+                await scheduleRepository.save(schedule);
+            }
+        }
         
         const schedules = await scheduleRepository.find({
             where: [

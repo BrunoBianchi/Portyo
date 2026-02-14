@@ -5,6 +5,7 @@ import BioContext from "~/contexts/bio.context";
 import { createShortLink, deleteShortLink, getShortLinks, type ShortLink } from "~/services/short-link.service";
 import { toast } from "react-hot-toast";
 import { Copy, Link as LinkIcon, Loader2, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => {
     return [
@@ -24,6 +25,7 @@ const normalizeSlug = (value: string) =>
 
 export default function DashboardLinkShortener() {
     const { bio } = useContext(BioContext);
+    const { t } = useTranslation("dashboard");
     const [links, setLinks] = useState<ShortLink[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -50,7 +52,7 @@ export default function DashboardLinkShortener() {
             const data = await getShortLinks(bio.id);
             setLinks(data);
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to load short links.");
+            toast.error(error?.response?.data?.message || t("dashboard.linkShortener.errors.load", { defaultValue: "Failed to load short links." }));
         } finally {
             setLoading(false);
         }
@@ -66,7 +68,7 @@ export default function DashboardLinkShortener() {
 
         const slug = normalizeSlug(form.slug || form.title);
         if (!slug) {
-            toast.error("Provide a valid title or slug.");
+            toast.error(t("dashboard.linkShortener.errors.invalidSlug", { defaultValue: "Provide a valid title or slug." }));
             return;
         }
 
@@ -81,9 +83,9 @@ export default function DashboardLinkShortener() {
 
             setLinks((prev) => [created, ...prev]);
             setForm({ title: "", slug: "", destinationUrl: "" });
-            toast.success("Short URL created.");
+            toast.success(t("dashboard.linkShortener.success.created", { defaultValue: "Short URL created." }));
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to create short URL.");
+            toast.error(error?.response?.data?.message || t("dashboard.linkShortener.errors.create", { defaultValue: "Failed to create short URL." }));
         } finally {
             setSaving(false);
         }
@@ -93,39 +95,60 @@ export default function DashboardLinkShortener() {
         try {
             await deleteShortLink(id);
             setLinks((prev) => prev.filter((item) => item.id !== id));
-            toast.success("Short URL removed.");
+            toast.success(t("dashboard.linkShortener.success.removed", { defaultValue: "Short URL removed." }));
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to remove short URL.");
+            toast.error(error?.response?.data?.message || t("dashboard.linkShortener.errors.remove", { defaultValue: "Failed to remove short URL." }));
         }
     };
 
     const copy = async (value: string) => {
         await navigator.clipboard.writeText(value);
-        toast.success("Copied to clipboard.");
+        toast.success(t("dashboard.linkShortener.success.copied", { defaultValue: "Copied to clipboard." }));
     };
+
+    const totalClicks = links.reduce((sum, item) => sum + (item.clicks || 0), 0);
+    const activeLinks = links.filter((item) => item.isActive).length;
 
     return (
         <AuthorizationGuard>
             <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
-                <header>
+                <header className="bg-white rounded-3xl border-2 border-black p-5 sm:p-7">
                     <h1 className="text-2xl sm:text-4xl font-black text-[#1A1A1A] tracking-tighter uppercase" style={{ fontFamily: "var(--font-display)" }}>
-                        Link shortener
+                        {t("dashboard.linkShortener.title", { defaultValue: "Link shortener" })}
                     </h1>
                     <p className="text-sm sm:text-base text-gray-600 font-medium mt-2">
-                        Create short links like {bioBaseUrl ? `${bioBaseUrl}/curriculum` : "portyo.me/p/username/curriculum"}
-                        {customDomainBaseUrl ? ` and ${customDomainBaseUrl}/curriculum` : ""}.
+                        {t("dashboard.linkShortener.subtitle", {
+                            defaultValue: "Create short links like {{exampleA}}{{domainSuffix}}.",
+                            exampleA: bioBaseUrl ? `${bioBaseUrl}/curriculum` : "portyo.me/p/username/curriculum",
+                            domainSuffix: customDomainBaseUrl ? ` and ${customDomainBaseUrl}/curriculum` : "",
+                        })}
                     </p>
+
+                    <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">{t("dashboard.linkShortener.stats.total", { defaultValue: "Total links" })}</p>
+                            <p className="text-2xl font-black text-[#1A1A1A]">{links.length}</p>
+                        </div>
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">{t("dashboard.linkShortener.stats.active", { defaultValue: "Active links" })}</p>
+                            <p className="text-2xl font-black text-[#1A1A1A]">{activeLinks}</p>
+                        </div>
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">{t("dashboard.linkShortener.stats.clicks", { defaultValue: "Total clicks" })}</p>
+                            <p className="text-2xl font-black text-[#1A1A1A]">{totalClicks}</p>
+                        </div>
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     <section className="lg:col-span-1 bg-white rounded-[20px] border-4 border-black p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         <h2 className="text-lg font-black uppercase tracking-wide mb-4" style={{ fontFamily: "var(--font-display)" }}>
-                            New short URL
+                            {t("dashboard.linkShortener.createTitle", { defaultValue: "New short URL" })}
                         </h2>
 
                         <form onSubmit={handleCreate} className="space-y-3">
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.linkShortener.fields.title", { defaultValue: "Title" })}</label>
                                 <input
                                     value={form.title}
                                     onChange={(e) => {
@@ -137,29 +160,29 @@ export default function DashboardLinkShortener() {
                                         }));
                                     }}
                                     className="mt-1 w-full px-3 py-2.5 border-2 border-black rounded-xl font-medium"
-                                    placeholder="Curriculum"
+                                    placeholder={t("dashboard.linkShortener.placeholders.title", { defaultValue: "Curriculum" })}
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.linkShortener.fields.slug", { defaultValue: "Slug" })}</label>
                                 <input
                                     value={form.slug}
                                     onChange={(e) => setForm((prev) => ({ ...prev, slug: normalizeSlug(e.target.value) }))}
                                     className="mt-1 w-full px-3 py-2.5 border-2 border-black rounded-xl font-medium"
-                                    placeholder="curriculum"
+                                    placeholder={t("dashboard.linkShortener.placeholders.slug", { defaultValue: "curriculum" })}
                                 />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Destination URL</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t("dashboard.linkShortener.fields.destinationUrl", { defaultValue: "Destination URL" })}</label>
                                 <input
                                     type="url"
                                     value={form.destinationUrl}
                                     onChange={(e) => setForm((prev) => ({ ...prev, destinationUrl: e.target.value }))}
                                     className="mt-1 w-full px-3 py-2.5 border-2 border-black rounded-xl font-medium"
-                                    placeholder="https://example.com/cv"
+                                    placeholder={t("dashboard.linkShortener.placeholders.destinationUrl", { defaultValue: "https://example.com/cv" })}
                                     required
                                 />
                             </div>
@@ -171,7 +194,7 @@ export default function DashboardLinkShortener() {
                             >
                                 <span className="inline-flex items-center justify-center gap-2">
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                    Create short URL
+                                    {t("dashboard.linkShortener.createButton", { defaultValue: "Create short URL" })}
                                 </span>
                             </button>
                         </form>
@@ -179,18 +202,18 @@ export default function DashboardLinkShortener() {
 
                     <section className="lg:col-span-2 bg-white rounded-[20px] border-4 border-black p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         <h2 className="text-lg font-black uppercase tracking-wide mb-4" style={{ fontFamily: "var(--font-display)" }}>
-                            Your short URLs
+                            {t("dashboard.linkShortener.listTitle", { defaultValue: "Your short URLs" })}
                         </h2>
 
                         {loading ? (
                             <div className="py-12 text-center text-gray-500">
                                 <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                                Loading links...
+                                {t("dashboard.linkShortener.loading", { defaultValue: "Loading links..." })}
                             </div>
                         ) : links.length === 0 ? (
                             <div className="py-12 text-center text-gray-500 border-2 border-dashed border-gray-300 rounded-2xl">
                                 <LinkIcon className="w-8 h-8 mx-auto mb-2" />
-                                No short URLs yet.
+                                {t("dashboard.linkShortener.empty", { defaultValue: "No short URLs yet." })}
                             </div>
                         ) : (
                             <div className="space-y-3">
@@ -203,12 +226,12 @@ export default function DashboardLinkShortener() {
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="min-w-0">
                                                     <p className="font-black text-[#1A1A1A] truncate">{item.title}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{item.clicks} clicks</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{item.clicks} {t("dashboard.linkShortener.clicks", { defaultValue: "clicks" })}</p>
                                                 </div>
                                                 <button
                                                     onClick={() => handleDelete(item.id)}
                                                     className="p-2 border-2 border-black rounded-lg hover:bg-red-50"
-                                                    title="Delete"
+                                                    title={t("dashboard.linkShortener.delete", { defaultValue: "Delete" })}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -217,7 +240,7 @@ export default function DashboardLinkShortener() {
                                             <div className="mt-3 space-y-2">
                                                 <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
                                                     <span className="text-xs font-mono truncate flex-1">{portyoUrl}</span>
-                                                    <button onClick={() => copy(portyoUrl)} className="p-1.5 rounded hover:bg-gray-200" title="Copy Portyo URL">
+                                                    <button onClick={() => copy(portyoUrl)} className="p-1.5 rounded hover:bg-gray-200" title={t("dashboard.linkShortener.copyPortyo", { defaultValue: "Copy Portyo URL" })}>
                                                         <Copy className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
@@ -225,7 +248,7 @@ export default function DashboardLinkShortener() {
                                                 {customUrl && (
                                                     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
                                                         <span className="text-xs font-mono truncate flex-1">{customUrl}</span>
-                                                        <button onClick={() => copy(customUrl)} className="p-1.5 rounded hover:bg-gray-200" title="Copy custom domain URL">
+                                                        <button onClick={() => copy(customUrl)} className="p-1.5 rounded hover:bg-gray-200" title={t("dashboard.linkShortener.copyCustom", { defaultValue: "Copy custom domain URL" })}>
                                                             <Copy className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>

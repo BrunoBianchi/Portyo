@@ -3,7 +3,7 @@ import { useContext, useState, useEffect, useMemo, useCallback, useRef } from "r
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
 import THEME_PRESETS, { type ThemePreset } from "~/constants/theme-presets";
-import { Check, Sparkles, Wand2, ArrowRight, Target, User, Zap, Loader2 } from "lucide-react";
+import { Check, Sparkles, Wand2, ArrowRight, Target, User, Zap, Loader2, PlayCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import i18n from "~/i18n";
 import toast from "react-hot-toast";
@@ -26,7 +26,41 @@ interface OnboardingAnswers {
     courseName: string;
 }
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
+
+const toYouTubeEmbedUrl = (inputUrl: string): string | null => {
+    if (!inputUrl) return null;
+
+    try {
+        const url = new URL(inputUrl);
+        const hostname = url.hostname.replace(/^www\./, "");
+
+        if (hostname === "youtu.be") {
+            const videoId = url.pathname.split("/").filter(Boolean)[0];
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        }
+
+        if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+            if (url.pathname === "/watch") {
+                const videoId = url.searchParams.get("v");
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+            }
+
+            if (url.pathname.startsWith("/embed/")) {
+                return inputUrl;
+            }
+
+            if (url.pathname.startsWith("/shorts/")) {
+                const videoId = url.pathname.split("/").filter(Boolean)[1];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+            }
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+};
 
 const SKILL_OPTIONS: Record<string, string[]> = {
     creator: [
@@ -108,6 +142,10 @@ export default function Onboarding() {
     const location = useLocation();
     const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
+    const onboardingVideoEmbedUrl = useMemo(
+        () => toYouTubeEmbedUrl(import.meta.env.VITE_ONBOARDING_VIDEO_URL || ""),
+        []
+    );
 
     const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
     const withLang = useCallback((to: string) => (currentLang ? `/${currentLang}${to}` : to), [currentLang]);
@@ -367,6 +405,56 @@ export default function Onboarding() {
     );
 
     const renderStep2_Category = () => (
+        <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 w-full max-w-4xl mx-auto">
+            <div className="space-y-3 md:space-y-4">
+                <div className="w-16 h-16 bg-[#D2E823] border-2 border-[#1A1A1A] rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <PlayCircle className="w-8 h-8 text-[#1A1A1A]" />
+                </div>
+                <h1 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
+                    {t("onboarding.stepVideo.title")}
+                </h1>
+                <p className="text-base md:text-lg text-[#1A1A1A]/60 font-medium max-w-2xl mx-auto">
+                    {t("onboarding.stepVideo.subtitle")}
+                </p>
+            </div>
+
+            <div className="w-full max-w-3xl bg-white border-2 border-[#1A1A1A] rounded-2xl p-3 md:p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                {onboardingVideoEmbedUrl ? (
+                    <div className="relative w-full overflow-hidden rounded-xl border-2 border-[#1A1A1A] bg-black" style={{ paddingTop: "56.25%" }}>
+                        <iframe
+                            src={onboardingVideoEmbedUrl}
+                            title={t("onboarding.stepVideo.iframeTitle")}
+                            className="absolute inset-0 h-full w-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
+                        />
+                    </div>
+                ) : (
+                    <div className="rounded-xl border-2 border-dashed border-[#1A1A1A]/30 bg-[#F9F9F9] p-8 text-center">
+                        <p className="text-sm md:text-base font-bold text-[#1A1A1A]/70">{t("onboarding.stepVideo.unavailable")}</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex gap-4 w-full max-w-md">
+                <button
+                    onClick={handleBack}
+                    className="flex-1 py-4 bg-white border-2 border-[#1A1A1A] text-[#1A1A1A] rounded-xl font-bold uppercase tracking-wider hover:bg-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                    {t("onboarding.back")}
+                </button>
+                <button
+                    onClick={handleNext}
+                    className="flex-1 py-4 bg-[#1A1A1A] text-white rounded-xl font-bold uppercase tracking-wider hover:bg-[#D2E823] hover:text-[#1A1A1A] hover:border-2 hover:border-[#1A1A1A] hover:shadow-[4px_4px_0px_0px_rgba(210,232,35,1)] transition-all"
+                >
+                    {t("onboarding.stepVideo.skip")}
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderStep3_Category = () => (
         <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-4xl mx-auto px-2">
             <div className="space-y-3 md:space-y-4">
                 <h1 className="text-3xl md:text-6xl font-black text-[#1A1A1A] tracking-tighter" style={{ fontFamily: 'var(--font-display)' }}>
@@ -422,7 +510,7 @@ export default function Onboarding() {
         </div>
     );
 
-    const renderStep3_Theme = () => (
+    const renderStep4_Theme = () => (
         <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-6xl mx-auto h-auto md:h-[calc(100vh-140px)] animate-in fade-in slide-in-from-right-8 duration-500">
             {/* Left Panel: Selection */}
             <div className="w-full md:w-1/3 flex flex-col space-y-4 md:space-y-6 overflow-y-auto pr-0 md:pr-2 custom-scrollbar">
@@ -566,7 +654,7 @@ export default function Onboarding() {
         </div>
     );
 
-    const renderStep4_AboutYou = () => (
+    const renderStep5_AboutYou = () => (
         <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 w-full max-w-2xl mx-auto">
             <div className="space-y-3 md:space-y-4">
                 <div className="w-16 h-16 bg-[#D2E823] border-2 border-[#1A1A1A] rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -657,7 +745,7 @@ export default function Onboarding() {
         </div>
     );
 
-    const renderStep5_Skills = () => {
+    const renderStep6_Skills = () => {
         const availableSkills = SKILL_OPTIONS[answers.category] || SKILL_OPTIONS.other;
         return (
             <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 w-full max-w-3xl mx-auto">
@@ -712,7 +800,7 @@ export default function Onboarding() {
         );
     };
 
-    const renderStep6_Goals = () => (
+    const renderStep7_Goals = () => (
         <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 px-2 w-full max-w-3xl mx-auto">
             <div className="space-y-3 md:space-y-4">
                 <div className="w-16 h-16 bg-[#D2E823] border-2 border-[#1A1A1A] rounded-2xl flex items-center justify-center mx-auto shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -811,10 +899,11 @@ export default function Onboarding() {
                 <div className="flex-1 flex items-center justify-center w-full">
                     {step === 1 && renderStep1_Username()}
                     {step === 2 && renderStep2_Category()}
-                    {step === 3 && renderStep3_Theme()}
-                    {step === 4 && renderStep4_AboutYou()}
-                    {step === 5 && renderStep5_Skills()}
-                    {step === 6 && renderStep6_Goals()}
+                    {step === 3 && renderStep3_Category()}
+                    {step === 4 && renderStep4_Theme()}
+                    {step === 5 && renderStep5_AboutYou()}
+                    {step === 6 && renderStep6_Skills()}
+                    {step === 7 && renderStep7_Goals()}
                 </div>
             </main>
 

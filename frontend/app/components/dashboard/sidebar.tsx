@@ -516,7 +516,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <aside
                 data-tour="dashboard-sidebar"
                 className={`
-                    w-[17rem] sm:w-[18rem] xl:w-72 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
+                    w-[16.5rem] sm:w-[17rem] xl:w-[17.5rem] h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
                     transition-transform duration-300 ease-out border-r border-[#E5E5E5]
                     ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
                     md:translate-x-0 md:shadow-none font-sans

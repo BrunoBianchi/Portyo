@@ -191,47 +191,54 @@ export default function DashboardPollEditor() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <button onClick={() => navigate(withLang("/dashboard/polls"))} className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black transition-colors">
-            <ArrowLeft className="w-4 h-4" /> {t("dashboard.polls.back", { defaultValue: "Back" })}
-          </button>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-black text-xs font-bold bg-white">
-              <Vote className="w-3.5 h-3.5" />
-              {state.isActive
-                ? t("dashboard.polls.active", { defaultValue: "Active" })
-                : t("dashboard.polls.inactive", { defaultValue: "Paused" })}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-black text-xs font-bold bg-white">
-              <CalendarClock className="w-3.5 h-3.5" />
-              {pollTimingStatus}
-            </span>
+      <div className="bg-white border-2 border-black rounded-3xl p-4 md:p-6 space-y-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-2">
+            <button onClick={() => navigate(withLang("/dashboard/polls"))} className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-black transition-colors">
+              <ArrowLeft className="w-4 h-4" /> {t("dashboard.polls.back", { defaultValue: "Back" })}
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-[#1A1A1A]">{state.title || t("dashboard.polls.newTitle", { defaultValue: "New poll" })}</h1>
+              <p className="text-sm text-gray-500">{t("dashboard.polls.editorSubtitle", { defaultValue: "Customize details, options and visibility settings for your poll." })}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-black text-xs font-bold bg-white">
+                <Vote className="w-3.5 h-3.5" />
+                {state.isActive
+                  ? t("dashboard.polls.active", { defaultValue: "Active" })
+                  : t("dashboard.polls.inactive", { defaultValue: "Paused" })}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-black text-xs font-bold bg-white">
+                <CalendarClock className="w-3.5 h-3.5" />
+                {pollTimingStatus}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={copyPublicLink}
-            className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-black rounded-xl bg-white font-semibold"
-          >
-            <Copy className="w-4 h-4" /> {t("dashboard.polls.copyLink", { defaultValue: "Copy public link" })}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.open(withLang(`/poll/${id}`), "_blank", "noopener,noreferrer")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-black rounded-xl bg-white font-semibold"
-          >
-            <Eye className="w-4 h-4" /> {t("dashboard.polls.preview", { defaultValue: "Preview" })}
-          </button>
-          <button onClick={savePoll} disabled={!canSave || saving} className="inline-flex items-center gap-2 px-5 py-3 bg-[#C6F035] border-2 border-black rounded-xl font-black disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {t("dashboard.polls.save", { defaultValue: "Save" })}
-          </button>
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            <button
+              type="button"
+              onClick={copyPublicLink}
+              className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-black rounded-xl bg-white font-semibold"
+            >
+              <Copy className="w-4 h-4" /> {t("dashboard.polls.copyLink", { defaultValue: "Copy public link" })}
+            </button>
+            <button
+              type="button"
+              onClick={() => window.open(withLang(`/poll/${id}`), "_blank", "noopener,noreferrer")}
+              className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-black rounded-xl bg-white font-semibold"
+            >
+              <Eye className="w-4 h-4" /> {t("dashboard.polls.preview", { defaultValue: "Preview" })}
+            </button>
+            <button onClick={savePoll} disabled={!canSave || saving} className="inline-flex items-center gap-2 px-5 py-3 bg-[#C6F035] border-2 border-black rounded-xl font-black disabled:opacity-50">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {t("dashboard.polls.save", { defaultValue: "Save" })}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-5 bg-white border-2 border-black rounded-2xl p-5 md:p-6">
+      <div className="space-y-5 bg-white border-2 border-black rounded-3xl p-5 md:p-6">
+        <div className="space-y-2">
         <div className="flex items-center gap-2 mb-1">
           <Settings2 className="w-4 h-4 text-gray-600" />
           <h2 className="text-base font-black text-[#1A1A1A]">{t("dashboard.polls.basic", { defaultValue: "Basic info" })}</h2>
@@ -249,24 +256,25 @@ export default function DashboardPollEditor() {
           <p className="text-xs text-gray-500 mt-1">{state.description.length}/400</p>
         </div>
 
-        <div className="pt-3 border-t">
+        <div className="pt-3 border-t space-y-2">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-semibold">{t("dashboard.polls.optionsField", { defaultValue: "Options" })}</label>
-            <button onClick={addOption} className="text-sm font-semibold inline-flex items-center gap-1"><Plus className="w-4 h-4" /> {t("dashboard.polls.addOption", { defaultValue: "Add option" })}</button>
+            <button onClick={addOption} className="text-sm font-semibold inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white"><Plus className="w-4 h-4" /> {t("dashboard.polls.addOption", { defaultValue: "Add option" })}</button>
           </div>
           <div className="space-y-2">
             {state.options.map((option, index) => (
-              <div key={option.id} className="flex items-center gap-2">
+              <div key={option.id} className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 bg-gray-50">
+                <span className="w-7 h-7 rounded-full bg-white border border-gray-300 text-xs font-bold flex items-center justify-center text-gray-600 shrink-0">{index + 1}</span>
                 <input
-                  className="flex-1 px-3 py-2 border rounded-lg"
+                  className="flex-1 px-3 py-2 border bg-white rounded-lg"
                   value={option.label}
                   placeholder={`${t("dashboard.polls.optionLabel", { defaultValue: "Option" })} ${index + 1}`}
                   onChange={(e) => updateOption(option.id, e.target.value)}
                 />
-                <button type="button" onClick={() => duplicateOption(option.id)} className="p-2 text-gray-600" title={t("dashboard.polls.duplicate", { defaultValue: "Duplicate" })}>
+                <button type="button" onClick={() => duplicateOption(option.id)} className="p-2 text-gray-600 rounded-lg hover:bg-white" title={t("dashboard.polls.duplicate", { defaultValue: "Duplicate" })}>
                   <Copy className="w-4 h-4" />
                 </button>
-                <button onClick={() => removeOption(option.id)} className="p-2 text-red-600"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => removeOption(option.id)} className="p-2 text-red-600 rounded-lg hover:bg-white"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -282,11 +290,11 @@ export default function DashboardPollEditor() {
           <h2 className="text-base font-black text-[#1A1A1A] mb-3">{t("dashboard.polls.settings", { defaultValue: "Settings" })}</h2>
 
           <div className="grid md:grid-cols-2 gap-3">
-            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-lg px-3 py-2"><input type="checkbox" checked={state.isActive} onChange={(e) => setState((p) => ({ ...p, isActive: e.target.checked }))} /> {t("dashboard.polls.active", { defaultValue: "Active" })}</label>
-            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-lg px-3 py-2"><input type="checkbox" checked={state.allowMultipleChoices} onChange={(e) => setState((p) => ({ ...p, allowMultipleChoices: e.target.checked }))} /> {t("dashboard.polls.multi", { defaultValue: "Allow multiple choices" })}</label>
-            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-lg px-3 py-2"><input type="checkbox" checked={state.requireName} onChange={(e) => setState((p) => ({ ...p, requireName: e.target.checked }))} /> {t("dashboard.polls.requireName", { defaultValue: "Require name" })}</label>
-            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-lg px-3 py-2"><input type="checkbox" checked={state.requireEmail} onChange={(e) => setState((p) => ({ ...p, requireEmail: e.target.checked }))} /> {t("dashboard.polls.requireEmail", { defaultValue: "Require email" })}</label>
-            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-lg px-3 py-2 md:col-span-2"><input type="checkbox" checked={state.showResultsPublic} onChange={(e) => setState((p) => ({ ...p, showResultsPublic: e.target.checked }))} /> {t("dashboard.polls.showResults", { defaultValue: "Show public results" })}</label>
+            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-xl px-3 py-2"><input type="checkbox" checked={state.isActive} onChange={(e) => setState((p) => ({ ...p, isActive: e.target.checked }))} /> {t("dashboard.polls.active", { defaultValue: "Active" })}</label>
+            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-xl px-3 py-2"><input type="checkbox" checked={state.allowMultipleChoices} onChange={(e) => setState((p) => ({ ...p, allowMultipleChoices: e.target.checked }))} /> {t("dashboard.polls.multi", { defaultValue: "Allow multiple choices" })}</label>
+            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-xl px-3 py-2"><input type="checkbox" checked={state.requireName} onChange={(e) => setState((p) => ({ ...p, requireName: e.target.checked }))} /> {t("dashboard.polls.requireName", { defaultValue: "Require name" })}</label>
+            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-xl px-3 py-2"><input type="checkbox" checked={state.requireEmail} onChange={(e) => setState((p) => ({ ...p, requireEmail: e.target.checked }))} /> {t("dashboard.polls.requireEmail", { defaultValue: "Require email" })}</label>
+            <label className="flex items-center gap-2 text-sm bg-gray-50 border rounded-xl px-3 py-2 md:col-span-2"><input type="checkbox" checked={state.showResultsPublic} onChange={(e) => setState((p) => ({ ...p, showResultsPublic: e.target.checked }))} /> {t("dashboard.polls.showResults", { defaultValue: "Show public results" })}</label>
           </div>
 
           <div className="pt-3">
@@ -301,7 +309,7 @@ export default function DashboardPollEditor() {
                   key={item.value}
                   type="button"
                   onClick={() => setState((p) => ({ ...p, chartType: item.value as "bar" | "pie" | "donut" }))}
-                  className={`px-3 py-2 rounded-lg border text-sm font-semibold ${state.chartType === item.value ? "bg-black text-white border-black" : "bg-white text-gray-700 border-gray-300"}`}
+                  className={`px-3 py-2 rounded-xl border text-sm font-semibold ${state.chartType === item.value ? "bg-black text-white border-black" : "bg-white text-gray-700 border-gray-300"}`}
                 >
                   {item.label}
                 </button>
@@ -374,7 +382,7 @@ export default function DashboardPollEditor() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-3 pt-1">
+        <div className="grid md:grid-cols-2 gap-3 pt-1 border-t border-gray-200">
           <div>
             <label className="text-sm font-semibold">{t("dashboard.polls.startsAt", { defaultValue: "Start date" })}</label>
             <input type="datetime-local" className="w-full mt-1 px-3 py-2 border rounded-lg" value={state.startsAt} onChange={(e) => setState((p) => ({ ...p, startsAt: e.target.value }))} />

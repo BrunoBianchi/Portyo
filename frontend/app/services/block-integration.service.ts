@@ -34,6 +34,16 @@ export interface Poll {
   showResultsPublic?: boolean;
 }
 
+export interface ShortLinkItem {
+  id: string;
+  title: string;
+  slug: string;
+  destinationUrl: string;
+  clicks: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
 // Portfolio types
 export interface PortfolioItem {
   id: string;
@@ -373,6 +383,26 @@ export const BlockIntegrationService = {
       }));
     } catch (error) {
       console.error("Failed to fetch QR codes:", error);
+      return [];
+    }
+  },
+
+  // Short Links
+  async getShortLinks(bioId: string): Promise<ShortLinkItem[]> {
+    try {
+      const response = await api.get(`/short-links`, { params: { bioId } });
+      const items = Array.isArray(response.data) ? response.data : [];
+      return items.map((item: any) => ({
+        id: item.id,
+        title: item.title || "Untitled link",
+        slug: item.slug,
+        destinationUrl: item.destinationUrl,
+        clicks: Number(item.clicks || 0),
+        isActive: Boolean(item.isActive),
+        createdAt: item.createdAt,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch short links:", error);
       return [];
     }
   },

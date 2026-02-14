@@ -47,8 +47,8 @@ export class CronService {
             enqueueDueSocialPlannerPosts();
         });
 
-        // Process queued social planner posts every minute
-        schedule.scheduleJob("* * * * *", () => {
+        // Process queued social planner posts every hour
+        schedule.scheduleJob("0 */1 * * *", () => {
             processSocialPlannerQueue();
         });
 

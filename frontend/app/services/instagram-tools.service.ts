@@ -54,6 +54,42 @@ export interface InstagramPostIdeasResponse {
   count: number;
   maxCount: number;
   ideas: InstagramPostIdea[];
+  marketResearch?: {
+    searchedTerms: string[];
+    similarProfiles: Array<{
+      username: string;
+      sampleSize: number;
+      topKeywords: string[];
+      postingSignals: string[];
+    }>;
+    benchmarkInsights: string[];
+  };
+}
+
+export interface InstagramAnalyticsResponse {
+  plan: InstagramAutoReplyPlan;
+  integration: {
+    connected: boolean;
+    accountName: string | null;
+    accountId: string | null;
+    tokenLastRefreshedAt: string | null;
+  };
+  autoReply: {
+    totalRules: number;
+    activeRules: number;
+  };
+  performance30d: {
+    totalExecutions: number;
+    completed: number;
+    failed: number;
+    running: number;
+    completionRate: number;
+    lastExecutionAt: string | null;
+    topTriggers: Array<{ trigger: string; total: number }>;
+  };
+  webhook: {
+    lastEvent: InstagramLastWebhookEvent | null;
+  };
 }
 
 export interface InstagramWebhookConfigResponse {
@@ -116,6 +152,11 @@ export const getInstagramPostIdeas = async (
   count = 5
 ): Promise<InstagramPostIdeasResponse> => {
   const response = await api.get(`/instagram/post-ideas/${bioId}`, { params: { count } });
+  return response.data;
+};
+
+export const getInstagramAnalytics = async (bioId: string): Promise<InstagramAnalyticsResponse> => {
+  const response = await api.get(`/instagram/analytics/${bioId}`);
   return response.data;
 };
 

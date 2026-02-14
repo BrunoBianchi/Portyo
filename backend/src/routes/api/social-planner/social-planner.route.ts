@@ -7,6 +7,7 @@ import { AppDataSource } from "../../../database/datasource";
 import { BioEntity } from "../../../database/entity/bio-entity";
 import { SocialPlannerPostEntity } from "../../../database/entity/social-planner-post-entity";
 import { publishSocialPlannerPost } from "../../../services/social-planner.service";
+import { generateSocialPlannerQueuePlan } from "../../../services/social-planner-ai.service";
 
 const router = Router();
 
@@ -41,6 +42,23 @@ const QuerySchema = z.object({
     endDate: z.string().datetime({ offset: true }).optional(),
     channel: z.enum(CHANNELS).or(z.literal("all")).optional(),
     status: z.enum(STATUSES).or(z.literal("all")).optional(),
+});
+
+const AutoQueuePlanSchema = z.object({
+    apply: z.boolean().optional().default(false),
+    options: z.object({
+        timezone: z.string().optional(),
+        channels: z.array(z.enum(CHANNELS)).min(1).max(4).optional(),
+        postsCount: z.number().int().min(1).max(60).optional(),
+        horizonDays: z.number().int().min(3).max(120).optional(),
+        preferredWeekdays: z.array(z.number().int().min(0).max(6)).optional(),
+        preferredHourStart: z.number().int().min(0).max(23).optional(),
+        preferredHourEnd: z.number().int().min(0).max(23).optional(),
+        minGapHours: z.number().int().min(1).max(72).optional(),
+        objective: z.enum(["reach", "engagement", "traffic", "conversions"]).optional(),
+        tone: z.string().min(1).max(80).optional(),
+        avoidWeekends: z.boolean().optional(),
+    }).optional(),
 });
 
 const hasAtLeastOneMediaUrl = (mediaUrls: string[] | null | undefined) =>
@@ -194,6 +212,66 @@ router.post("/:bioId/posts", async (req, res) => {
         }
 
         return res.status(500).json({ message: "Failed to create social planner post" });
+    }
+});
+
+router.post("/:bioId/queue/auto-plan", async (req, res) => {
+    try {
+        const { bioId } = req.params;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const bio = await getOwnedBio(bioId, userId);
+        if (!bio) {
+            return res.status(404).json({ message: "Bio not found" });
+        }
+
+        const payload = AutoQueuePlanSchema.parse(req.body || {});
+        const plan = await generateSocialPlannerQueuePlan(bio, payload.options || {});
+
+        let created: SocialPlannerPostEntity[] = [];
+
+        if (payload.apply) {
+            const repository = AppDataSource.getRepository(SocialPlannerPostEntity);
+
+            const postEntities = plan.queue.map((item) => repository.create({
+                bioId,
+                userId,
+                channel: item.channel,
+                title: item.title || null,
+                content: item.content,
+                hashtags: item.hashtags,
+                mediaUrls: [],
+                timezone: plan.options.timezone || "UTC",
+                scheduledAt: new Date(item.scheduledAt),
+                status: "scheduled",
+                errorMessage: null,
+                publishedAt: null,
+                externalPostId: null,
+            }));
+
+            if (postEntities.length) {
+                created = await repository.save(postEntities);
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            applied: payload.apply,
+            options: plan.options,
+            tokenSavings: plan.tokenSavings,
+            queue: plan.queue,
+            createdCount: created.length,
+            created,
+        });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({ message: "Invalid payload", issues: error.issues });
+        }
+
+        return res.status(500).json({ message: "Failed to generate AI queue plan" });
     }
 });
 

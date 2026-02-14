@@ -134,8 +134,8 @@ export default function DashboardFormsList() {
 
         try {
             const response = await api.post(`/form/bios/${bio.id}/forms`, {
-                title: t("dashboard.forms.newFormTitle"),
-                description: t("dashboard.forms.newFormDesc"),
+                title: t("forms.newFormTitle"),
+                description: t("forms.newFormDesc"),
                 fields: []
             });
             navigate(withLang(`/dashboard/forms/${response.data.id}`));
@@ -144,7 +144,7 @@ export default function DashboardFormsList() {
             if (error.response?.status === 403) {
                 setShowUpgradePopup(true);
             } else {
-                setCreateError(t("dashboard.forms.createError"));
+                setCreateError(t("forms.createError"));
             }
         } finally {
             setIsCreating(false);
@@ -167,7 +167,7 @@ export default function DashboardFormsList() {
             setDeleteModal(prev => ({ ...prev, isOpen: false }));
         } catch (error) {
             console.error("Failed to delete form:", error);
-            alert(t("dashboard.forms.deleteError"));
+            alert(t("forms.deleteError"));
         } finally {
             setIsDeleting(false);
         }
@@ -179,10 +179,10 @@ export default function DashboardFormsList() {
                 <div className="w-20 h-20 bg-[#C6F035] rounded-full flex items-center justify-center mb-6 mx-auto border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <Sparkles className="w-10 h-10 text-black" />
                 </div>
-                <h1 className="text-3xl font-black text-[#1A1A1A] mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.locked.title")}</h1>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto text-base font-medium">{t("dashboard.forms.locked.subtitle")}</p>
+                <h1 className="text-3xl font-black text-[#1A1A1A] mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{t("forms.locked.title")}</h1>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto text-base font-medium">{t("forms.locked.subtitle")}</p>
                 <button className="px-8 py-3 bg-[#C6F035] text-black rounded-[14px] font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
-                    {t("dashboard.forms.locked.cta")}
+                    {t("forms.locked.cta")}
                 </button>
             </div>
         }>
@@ -190,8 +190,8 @@ export default function DashboardFormsList() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12" data-tour="forms-header">
                     <div>
-                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("dashboard.forms.title")}</h1>
-                        <p className="text-gray-600 text-lg font-medium">{t("dashboard.forms.subtitle")}</p>
+                        <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tight mb-2" style={{ fontFamily: 'var(--font-display)' }}>{t("forms.title")}</h1>
+                        <p className="text-gray-600 text-lg font-medium">{t("forms.subtitle")}</p>
                     </div>
                     <button
                         data-tour="forms-create"
@@ -204,7 +204,7 @@ export default function DashboardFormsList() {
                         ) : (
                             <Plus className="w-6 h-6 stroke-[3px]" />
                         )}
-                        {isCreating ? t("dashboard.forms.creating") : t("dashboard.forms.create")}
+                        {isCreating ? t("forms.creating") : t("forms.create")}
                     </button>
                 </div>
 
@@ -217,10 +217,10 @@ export default function DashboardFormsList() {
                                 <Sparkles className="w-8 h-8 text-black" />
                             </div>
                             <h3 className="text-2xl font-black text-center text-[#1A1A1A] mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                                {t("dashboard.forms.upgrade.title")}
+                                {t("forms.upgrade.title")}
                             </h3>
                             <p className="text-center text-gray-600 font-medium mb-8">
-                                {t("dashboard.forms.upgrade.subtitle")}
+                                {t("forms.upgrade.subtitle")}
                             </p>
 
                             <div className="flex flex-col gap-3">
@@ -228,7 +228,7 @@ export default function DashboardFormsList() {
                                     to={withLang("/pricing")}
                                     className="w-full py-4 bg-[#1A1A1A] text-white rounded-[14px] font-black text-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-none hover:translate-y-[2px] transition-all"
                                 >
-                                    {t("dashboard.forms.upgrade.cta")}
+                                    {t("forms.upgrade.cta")}
                                 </Link>
                                 <button
                                     onClick={() => setShowUpgradePopup(false)}
@@ -259,14 +259,14 @@ export default function DashboardFormsList() {
                         <div className="w-24 h-24 bg-[#F3F3F1] rounded-full flex items-center justify-center mb-6 border-4 border-black border-dashed">
                             <FileText className="w-10 h-10 text-gray-400" />
                         </div>
-                        <h3 className="text-2xl font-black text-[#1A1A1A] mb-2">{t("dashboard.forms.empty.title")}</h3>
-                        <p className="text-gray-500 max-w-md mx-auto mb-8 font-medium">{t("dashboard.forms.empty.subtitle")}</p>
+                        <h3 className="text-2xl font-black text-[#1A1A1A] mb-2">{t("forms.empty.title")}</h3>
+                        <p className="text-gray-500 max-w-md mx-auto mb-8 font-medium">{t("forms.empty.subtitle")}</p>
                         <button
                             onClick={createNewForm}
                             className="bg-[#C6F035] text-black px-8 py-4 rounded-[16px] font-black text-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
                         >
                             <Plus className="w-5 h-5 stroke-[3px]" />
-                            {t("dashboard.forms.createFirst")}
+                            {t("forms.createFirst")}
                         </button>
                     </div>
                 ) : (
@@ -295,7 +295,7 @@ export default function DashboardFormsList() {
                                 </div>
 
                                 <p className="text-gray-500 text-sm line-clamp-2 mb-8 font-medium flex-1">
-                                    {form.description || t("dashboard.forms.noDescription")}
+                                    {form.description || t("forms.noDescription")}
                                 </p>
 
                                 <div className="flex items-center justify-between pt-4 border-t-2 border-gray-100">
@@ -303,7 +303,7 @@ export default function DashboardFormsList() {
                                         <div className="w-8 h-8 rounded-lg bg-[#E0EAFF] border-2 border-black flex items-center justify-center text-blue-600">
                                             <FileText className="w-4 h-4" />
                                         </div>
-                                        {form._count?.answers ?? form.submissions ?? 0} {t("dashboard.forms.answersCount")}
+                                        {form._count?.answers ?? form.submissions ?? 0} {t("forms.answersCount")}
                                     </div>
                                     <span className="text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
                                         {new Date(form.updatedAt).toLocaleDateString(dateLocale)}
@@ -315,13 +315,13 @@ export default function DashboardFormsList() {
                                         to={withLang(`/dashboard/forms/${form.id}`)}
                                         className="flex-1 py-2.5 px-3 rounded-[12px] border-2 border-black text-center font-black text-sm bg-[#C6F035] text-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                                     >
-                                        {t("common.edit")}
+                                        {t("forms.edit")}
                                     </Link>
                                     <Link
                                         to={withLang(`/dashboard/forms/${form.id}/answers`)}
                                         className="flex-1 py-2.5 px-3 rounded-[12px] border-2 border-black text-center font-black text-sm bg-white text-[#1A1A1A] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                                     >
-                                        {t("dashboard.forms.viewAnswers")}
+                                        {t("forms.viewAnswers")}
                                     </Link>
                                 </div>
                             </div>
@@ -333,8 +333,8 @@ export default function DashboardFormsList() {
                     isOpen={deleteModal.isOpen}
                     onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
                     onConfirm={handleConfirmDelete}
-                    title={t("dashboard.forms.deleteTitle")}
-                    description={t("dashboard.forms.deleteDesc", { title: deleteModal.title })}
+                    title={t("forms.deleteTitle")}
+                    description={t("forms.deleteDesc", { title: deleteModal.title })}
                     isDeleting={isDeleting}
                 />
             </div>

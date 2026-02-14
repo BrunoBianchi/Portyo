@@ -1250,8 +1250,21 @@ export const generatePostPreview = async (
 
 export const generatePostIdeas = async (
     bioSummary: BioSummary,
-    count: number = 5
+    count: number = 5,
+    marketResearch?: {
+        similarProfiles?: Array<{
+            username: string;
+            sampleSize: number;
+            topKeywords: string[];
+            postingSignals: string[];
+        }>;
+        benchmarkInsights?: string[];
+    }
 ): Promise<Array<{ title: string; angle: string; keywords: string[] }>> => {
+    const hasMarketResearch = Boolean(
+        marketResearch?.similarProfiles?.length || marketResearch?.benchmarkInsights?.length
+    );
+
     const prompt = `Generate ${count} strategic blog post ideas for a ${bioSummary.industry} professional.
 
 PROFILE:
@@ -1261,6 +1274,12 @@ PROFILE:
 - Content Pillars: ${bioSummary.contentPillars.join(", ")}
 - USPs: ${bioSummary.uniqueSellingPoints.join(", ")}
 
+${hasMarketResearch ? `MARKET BENCHMARK (public similar profiles):
+${(marketResearch?.similarProfiles || [])
+    .map((profile) => `- @${profile.username}: sample=${profile.sampleSize}, topKeywords=${profile.topKeywords.join(", ")}, signals=${profile.postingSignals.join(", ")}`)
+    .join("\n")}
+- Insights: ${(marketResearch?.benchmarkInsights || []).join(" | ")}` : ""}
+
 Generate ideas that:
 1. Target specific SEO keywords
 2. Answer real user questions (AEO optimized)
@@ -1268,6 +1287,7 @@ Generate ideas that:
 4. Have viral/share potential
 5. Align with their content pillars
 6. Target voice search and featured snippets
+7. Consider what is working on similar profiles while keeping originality
 
 Return as JSON array:
 [

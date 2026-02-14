@@ -22,6 +22,16 @@ export default function DashboardInstagramPostIdeas() {
   const [ideas, setIdeas] = useState<InstagramPostIdea[]>([]);
   const [count, setCount] = useState(5);
   const [maxCount, setMaxCount] = useState(5);
+  const [marketResearch, setMarketResearch] = useState<{
+    searchedTerms: string[];
+    similarProfiles: Array<{
+      username: string;
+      sampleSize: number;
+      topKeywords: string[];
+      postingSignals: string[];
+    }>;
+    benchmarkInsights: string[];
+  } | null>(null);
 
   const loadIdeas = async () => {
     if (!bio?.id) return;
@@ -31,6 +41,7 @@ export default function DashboardInstagramPostIdeas() {
       setIdeas(response.ideas || []);
       setCount(response.count);
       setMaxCount(response.maxCount);
+      setMarketResearch(response.marketResearch || null);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to generate post ideas.");
     } finally {
@@ -89,7 +100,7 @@ export default function DashboardInstagramPostIdeas() {
           {loading ? (
             <div className="py-16 text-center text-gray-500">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-              Generating ideas...
+              Generating ideas and checking similar profiles on the internet...
             </div>
           ) : ideas.length === 0 ? (
             <div className="py-12 text-center border-2 border-dashed rounded-2xl text-gray-500">
@@ -114,6 +125,46 @@ export default function DashboardInstagramPostIdeas() {
                 </article>
               ))}
             </div>
+          )}
+
+          {marketResearch && (
+            <section className="pt-2 space-y-4">
+              <h2 className="text-lg font-black text-[#1A1A1A]">Benchmark from similar profiles</h2>
+
+              {marketResearch.similarProfiles.length === 0 ? (
+                <p className="text-sm text-gray-500">No similar public profiles were identified in this run.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {marketResearch.similarProfiles.map((profile) => (
+                    <article key={profile.username} className="rounded-2xl border-2 border-black p-4 bg-white">
+                      <div className="flex items-center justify-between">
+                        <p className="font-black text-[#1A1A1A]">@{profile.username}</p>
+                        <span className="text-xs font-bold border border-black rounded-full px-2 py-0.5">sample: {profile.sampleSize}</span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {profile.topKeywords.slice(0, 6).map((keyword) => (
+                          <span key={`${profile.username}-${keyword}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-black bg-gray-50">
+                            <Hash className="w-3 h-3" />
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {marketResearch.benchmarkInsights.length > 0 && (
+                <div className="rounded-2xl border-2 border-black p-4 bg-[#F7FCEC]">
+                  <p className="text-sm font-black mb-2">What seems to be working:</p>
+                  <ul className="space-y-1 text-sm text-[#1A1A1A] list-disc list-inside">
+                    {marketResearch.benchmarkInsights.map((insight) => (
+                      <li key={insight}>{insight}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
           )}
         </section>
       </div>
