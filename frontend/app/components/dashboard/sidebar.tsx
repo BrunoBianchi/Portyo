@@ -43,7 +43,8 @@ import {
     ExternalLinkIcon,
     Palette,
     DollarSign,
-    Link2
+    Link2,
+    Instagram
 } from "lucide-react";
 import { PLAN_LIMITS } from "~/constants/plan-limits";
 import type { PlanType } from "~/constants/plan-limits";
@@ -88,6 +89,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     const toggleGroup = (groupKey: string) => {
         setOpenGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
+    };
+
+    const [openToolSubgroups, setOpenToolSubgroups] = useState<Record<string, boolean>>({
+        instagram: true,
+    });
+
+    const toggleToolSubgroup = (subgroupKey: string) => {
+        setOpenToolSubgroups(prev => ({ ...prev, [subgroupKey]: !prev[subgroupKey] }));
     };
 
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -382,6 +391,16 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 { name: t("dashboard.nav.autoPost"), path: "/dashboard/auto-post", icon: Bot, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.socialPlanner", { defaultValue: "Social planner" }), path: "/dashboard/social-planner", icon: Calendar, isPro: true },
                 { name: t("dashboard.nav.linkShortener", { defaultValue: "Link shortener" }), path: "/dashboard/link-shortener", icon: Link2 },
+                {
+                    key: "instagram",
+                    name: t("dashboard.sidebar.groupInstagram", { defaultValue: "Instagram" }),
+                    icon: Instagram,
+                    children: [
+                        { name: t("dashboard.nav.instagramAutoReply", { defaultValue: "Instagram auto-reply" }), path: "/dashboard/instagram/auto-reply", icon: Instagram },
+                        { name: t("dashboard.nav.instagramPostIdeas", { defaultValue: "Instagram post ideas" }), path: "/dashboard/instagram/post-ideas", icon: Sparkles },
+                        { name: t("dashboard.nav.instagramAnalytics", { defaultValue: "Instagram analytics" }), path: "/dashboard/instagram/analytics", icon: BarChart3 },
+                    ],
+                },
                 { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
@@ -614,7 +633,71 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                             className="overflow-hidden"
                                         >
                                             <div className="space-y-1">
-                                                {group.items.map((item) => {
+                                                {group.items.map((item: any) => {
+                                                    if (item.children && Array.isArray(item.children)) {
+                                                        const isSubgroupOpen = Boolean(openToolSubgroups[item.key]);
+                                                        return (
+                                                            <div key={`${group.key}-${item.key}`} className="space-y-1">
+                                                                <button
+                                                                    onClick={() => toggleToolSubgroup(item.key)}
+                                                                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-transparent hover:border-gray-200 bg-[#F8F9FA] hover:bg-[#F1F5F9] text-gray-700"
+                                                                >
+                                                                    <span className="flex items-center gap-3 min-w-0">
+                                                                        <item.icon className="w-4 h-4 shrink-0 text-gray-500" />
+                                                                        <span className="text-sm font-bold truncate">{item.name}</span>
+                                                                    </span>
+                                                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isSubgroupOpen ? '' : '-rotate-90'}`} />
+                                                                </button>
+
+                                                                <AnimatePresence initial={false}>
+                                                                    {isSubgroupOpen && (
+                                                                        <motion.div
+                                                                            initial={{ height: 0, opacity: 0 }}
+                                                                            animate={{ height: "auto", opacity: 1 }}
+                                                                            exit={{ height: 0, opacity: 0 }}
+                                                                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                                            className="overflow-hidden"
+                                                                        >
+                                                                            <div className="space-y-1 pl-3 border-l-2 border-[#E5E7EB] ml-3">
+                                                                                {item.children.map((child: any) => {
+                                                                                    // @ts-ignore
+                                                                                    const childLocked = child.isProOnly ? userPlan !== 'pro' : (child.isPro && userPlan === 'free');
+                                                                                    const childActive = isActive(child.path);
+
+                                                                                    return (
+                                                                                        <Link
+                                                                                            key={child.path}
+                                                                                            to={withLang(child.path)}
+                                                                                            onClick={(e) => {
+                                                                                                if (childLocked) {
+                                                                                                    e.preventDefault();
+                                                                                                    if (child.isProOnly) { setForcedPlan('pro'); } else { setForcedPlan(undefined); }
+                                                                                                    setIsUpgradePopupOpen(true);
+                                                                                                }
+                                                                                                if (onClose) onClose();
+                                                                                            }}
+                                                                                            className={`
+                                                                                                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
+                                                                                                ${childActive
+                                                                                                    ? "bg-[#C6F035]/20 text-black font-bold"
+                                                                                                    : "text-gray-500 hover:bg-black/5 hover:text-black font-medium"
+                                                                                                }
+                                                                                            `}
+                                                                                        >
+                                                                                            <child.icon className={`w-4 h-4 shrink-0 stroke-[2px] ${childActive ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
+                                                                                            <span className="flex-1 text-sm">{child.name}</span>
+                                                                                            {childLocked && <Lock className="w-3 h-3 text-gray-300" />}
+                                                                                        </Link>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                        </motion.div>
+                                                                    )}
+                                                                </AnimatePresence>
+                                                            </div>
+                                                        );
+                                                    }
+
                                                     // @ts-ignore
                                                     const isLocked = item.isProOnly ? userPlan !== 'pro' : (item.isPro && userPlan === 'free');
                                                     const isActiveItem = isActive(item.path);

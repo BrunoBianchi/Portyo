@@ -184,8 +184,8 @@ export default function DashboardAutomationList() {
                 instagram_auto_reply: {
                     name: "Instagram Auto Reply",
                     nodes: [
-                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'Webhook Trigger', eventType: 'webhook_received' } },
-                        { id: '2', type: 'instagram', position: { x: 250, y: 250 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Thanks for your comment! 💜', commentId: '{{commentId}}' } }
+                        { id: '1', type: 'trigger', position: { x: 250, y: 50 }, data: { label: 'Instagram Comment Received', eventType: 'instagram_comment_received' } },
+                        { id: '2', type: 'instagram', position: { x: 250, y: 250 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Valeu pelo comentário, {{senderUsername}}! 💜', commentId: '{{commentId}}' } }
                     ],
                     edges: [{ id: 'e1-2', source: '1', target: '2' }]
                 }

@@ -923,25 +923,50 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 };
             }
 
-            const response = await axios.post(
-                `${baseUrl}/${instagramAccountId}/messages`,
-                {
-                    recipient: { id: recipientId },
-                    message: { text: message },
-                    messaging_type: "RESPONSE",
-                },
-                {
-                    params: {
-                        access_token: accessToken,
+            let response;
+            let usedEndpoint = `${baseUrl}/${instagramAccountId}/messages`;
+
+            try {
+                response = await axios.post(
+                    `${baseUrl}/${instagramAccountId}/messages`,
+                    {
+                        recipient: { id: recipientId },
+                        message: { text: message },
+                        messaging_type: "RESPONSE",
                     },
-                }
-            );
+                    {
+                        params: {
+                            access_token: accessToken,
+                        },
+                    }
+                );
+            } catch (primaryError: any) {
+                const primaryStatus = primaryError?.response?.status;
+                const primaryMessage = primaryError?.response?.data?.error?.message || primaryError?.message;
+                logger.warn(`[Automation] Instagram DM primary endpoint failed (${primaryStatus}): ${primaryMessage}. Trying /me/messages fallback.`);
+
+                usedEndpoint = `${baseUrl}/me/messages`;
+                response = await axios.post(
+                    `${baseUrl}/me/messages`,
+                    {
+                        recipient: { id: recipientId },
+                        message: { text: message },
+                        messaging_type: "RESPONSE",
+                    },
+                    {
+                        params: {
+                            access_token: accessToken,
+                        },
+                    }
+                );
+            }
 
             return {
                 ...context,
                 instagramAction: actionType,
                 instagramStatus: "completed",
                 instagramMessageId: response.data?.message_id || "",
+                instagramMessageEndpoint: usedEndpoint,
             };
         }
 

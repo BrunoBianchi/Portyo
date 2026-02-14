@@ -2,8 +2,15 @@ import { z } from "zod";
 import * as dotenv from "@dotenvx/dotenvx";
 import * as path from "path";
 
-// Load .env from src directory
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+const envPathCandidates = [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(__dirname, "../../.env"),
+  path.resolve(__dirname, "../.env"),
+];
+
+for (const envPath of envPathCandidates) {
+  dotenv.config({ path: envPath });
+}
 
 const envSchema = z.object({
   PORT: z.string().default("3000"),

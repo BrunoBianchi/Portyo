@@ -430,27 +430,63 @@ const normalizeInstagramWebhookPayload = (payload: any) => {
       }
 
       if (field === "messages") {
-        const senderId = String(value?.from?.id || value?.sender?.id || value?.sender || "").trim();
-        const recipientId = String(value?.to?.id || value?.recipient?.id || value?.recipient || accountId).trim();
-        const messageText = String(value?.message?.text || value?.text || "").trim();
-        const messageId = String(value?.message?.mid || value?.mid || value?.id || "").trim();
+        const valueMessages = Array.isArray(value?.messages) ? value.messages : [];
 
-        events.push({
-          accountId: recipientId || accountId,
-          eventType: "instagram_dm_received",
-          eventData: {
-            source: "instagram_webhook",
-            provider: "instagram",
-            eventKind: "dm",
-            instagramAccountId: recipientId || accountId,
-            senderId,
-            recipientId,
-            messageText,
-            messageId,
-            eventTimestamp: value?.timestamp || Date.now(),
-            rawWebhookValue: value,
-          },
-        });
+        if (valueMessages.length > 0) {
+          for (const messageItem of valueMessages) {
+            const senderId = String(
+              messageItem?.from?.id || value?.from?.id || value?.sender?.id || value?.sender || ""
+            ).trim();
+            const recipientId = String(
+              messageItem?.to?.id || value?.to?.id || value?.recipient?.id || value?.recipient || accountId
+            ).trim();
+            const messageText = String(
+              messageItem?.text?.body || messageItem?.text || value?.message?.text || value?.text || ""
+            ).trim();
+            const messageId = String(
+              messageItem?.id || messageItem?.mid || value?.message?.mid || value?.mid || value?.id || ""
+            ).trim();
+
+            events.push({
+              accountId: recipientId || accountId,
+              eventType: "instagram_dm_received",
+              eventData: {
+                source: "instagram_webhook",
+                provider: "instagram",
+                eventKind: "dm",
+                instagramAccountId: recipientId || accountId,
+                senderId,
+                recipientId,
+                messageText,
+                messageId,
+                eventTimestamp: messageItem?.timestamp || value?.timestamp || Date.now(),
+                rawWebhookValue: value,
+              },
+            });
+          }
+        } else {
+          const senderId = String(value?.from?.id || value?.sender?.id || value?.sender || "").trim();
+          const recipientId = String(value?.to?.id || value?.recipient?.id || value?.recipient || accountId).trim();
+          const messageText = String(value?.message?.text || value?.text || "").trim();
+          const messageId = String(value?.message?.mid || value?.mid || value?.id || "").trim();
+
+          events.push({
+            accountId: recipientId || accountId,
+            eventType: "instagram_dm_received",
+            eventData: {
+              source: "instagram_webhook",
+              provider: "instagram",
+              eventKind: "dm",
+              instagramAccountId: recipientId || accountId,
+              senderId,
+              recipientId,
+              messageText,
+              messageId,
+              eventTimestamp: value?.timestamp || Date.now(),
+              rawWebhookValue: value,
+            },
+          });
+        }
       }
     }
 
@@ -458,7 +494,9 @@ const normalizeInstagramWebhookPayload = (payload: any) => {
     for (const messageEvent of messagingEvents) {
       const senderId = String(messageEvent?.sender?.id || "").trim();
       const recipientId = String(messageEvent?.recipient?.id || accountId).trim();
-      const messageText = String(messageEvent?.message?.text || "").trim();
+      const messageText = String(
+        messageEvent?.message?.text || messageEvent?.message?.body || messageEvent?.postback?.payload || ""
+      ).trim();
       const messageId = String(messageEvent?.message?.mid || "").trim();
 
       events.push({

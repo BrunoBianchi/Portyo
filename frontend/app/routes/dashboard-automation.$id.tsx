@@ -737,8 +737,8 @@ export default function DashboardAutomation() {
       instagram_auto_reply: {
         name: 'Instagram Auto Reply',
         nodes: [
-          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'Webhook Trigger', eventType: 'webhook_received' } }),
-          normalizeNodeData({ id: 't2', type: 'instagram', position: { x: 220, y: 280 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Thanks for your comment! 💜', commentId: '{{commentId}}' } }),
+          normalizeNodeData({ id: 't1', type: 'trigger', position: { x: 220, y: 80 }, data: { label: 'Instagram Comment Received', eventType: 'instagram_comment_received' } }),
+          normalizeNodeData({ id: 't2', type: 'instagram', position: { x: 220, y: 280 }, data: { label: 'Reply Comment', actionType: 'reply_comment', message: 'Valeu pelo comentário, {{senderUsername}}! 💜', commentId: '{{commentId}}' } }),
         ],
         edges: [{ id: 'te1-2', source: 't1', target: 't2' }],
       },
@@ -984,6 +984,8 @@ export default function DashboardAutomation() {
                             <option value="blog_post_published">{t("dashboard.automationBuilder.trigger.events.blogPostPublished")}</option>
                           </optgroup>
                           <optgroup label={t("dashboard.automationBuilder.trigger.groups.other")}>
+                            <option value="instagram_comment_received">Instagram comment received</option>
+                            <option value="instagram_dm_received">Instagram DM received</option>
                             <option value="webhook_received">{t("dashboard.automationBuilder.trigger.events.webhookReceived")}</option>
                             <option value="custom_event">{t("dashboard.automationBuilder.trigger.events.customEvent")}</option>
                           </optgroup>
@@ -1601,6 +1603,9 @@ export default function DashboardAutomation() {
                         value={selectedNode.data.message || ''}
                         onChange={(e) => updateNodeData('message', e.target.value)}
                       ></textarea>
+                      <p className="text-xs text-muted-foreground">
+                        Variáveis úteis: <strong>{'{{senderUsername}}'}</strong>, <strong>{'{{senderId}}'}</strong>, <strong>{'{{commentText}}'}</strong>, <strong>{'{{messageText}}'}</strong>.
+                      </p>
                     </div>
                   </div>
                 )}

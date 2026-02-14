@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import BioContext from "~/contexts/bio.context";
 import { AuthorizationGuard } from "~/contexts/guard.context";
-import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, ExternalLink, PenTool, ShoppingBag, Mail, Eye, DollarSign, ShoppingCart, Package, Receipt, CreditCard } from "lucide-react";
+import { BarChart3, MousePointer2, TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, ExternalLink, PenTool, ShoppingBag, Mail, Eye, DollarSign, ShoppingCart, Package, Receipt, CreditCard, Instagram, MessageCircle } from "lucide-react";
 import { api } from "~/services/api";
 import { Link } from "react-router";
 import { AnalyticsService, type SalesData, type AnalyticsData } from "~/services/analytics.service";
@@ -17,6 +17,13 @@ interface Activity {
     description: string;
     createdAt: string;
     metadata?: any;
+}
+
+interface IntegrationRecord {
+    id: string;
+    provider?: string;
+    name?: string;
+    account_id?: string;
 }
 
 export default function DashboardHome() {
@@ -42,6 +49,9 @@ function UserDashboardHome() {
     const [loadingSales, setLoadingSales] = useState(true);
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+    const [loadingInstagramIntegration, setLoadingInstagramIntegration] = useState(true);
+    const [isInstagramConnected, setIsInstagramConnected] = useState(false);
+    const [instagramAccountLabel, setInstagramAccountLabel] = useState<string>("");
 
     useEffect(() => {
         if (bio?.id) {
@@ -75,6 +85,45 @@ function UserDashboardHome() {
                 .finally(() => setLoadingSales(false));
         }
     }, [bio?.id, page, filterType]);
+
+    useEffect(() => {
+        if (!bio?.id) {
+            setLoadingInstagramIntegration(false);
+            setIsInstagramConnected(false);
+            setInstagramAccountLabel("");
+            return;
+        }
+
+        setLoadingInstagramIntegration(true);
+
+        api.get(`/integration?bioId=${bio.id}`)
+            .then((res) => {
+                const integrations = Array.isArray(res.data) ? (res.data as IntegrationRecord[]) : [];
+                const instagramIntegration = integrations.find((integration) => {
+                    const provider = String(integration?.provider || "").toLowerCase().trim();
+                    const name = String(integration?.name || "").toLowerCase().trim();
+                    return provider === "instagram" || name === "instagram";
+                });
+
+                setIsInstagramConnected(Boolean(instagramIntegration));
+
+                if (instagramIntegration) {
+                    setInstagramAccountLabel(
+                        String(instagramIntegration.name || "").trim() ||
+                        String(instagramIntegration.account_id || "").trim() ||
+                        "Instagram"
+                    );
+                } else {
+                    setInstagramAccountLabel("");
+                }
+            })
+            .catch((error) => {
+                console.error("Failed to fetch integrations for Instagram insights", error);
+                setIsInstagramConnected(false);
+                setInstagramAccountLabel("");
+            })
+            .finally(() => setLoadingInstagramIntegration(false));
+    }, [bio?.id]);
 
     const getActivityIcon = (type: string) => {
         switch (type) {
@@ -194,6 +243,103 @@ function UserDashboardHome() {
                         {!loadingAnalytics && analytics && analytics.views && analytics.views.total > 0 && renderTrend(analytics.ctr.change)}
                     </div>
                 </div>
+
+                {isInstagramConnected && (
+                    <section className="bg-white border-2 border-black p-5 sm:p-7 rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-5">
+                            <div>
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F3F1] border border-black text-[11px] font-black uppercase tracking-wider mb-3">
+                                    <Instagram className="w-3.5 h-3.5" />
+                                    Instagram Insights
+                                </div>
+                                <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+                                    Visão geral do Instagram conectado
+                                </h2>
+                                <p className="text-sm font-medium text-[#1A1A1A]/60 mt-1">
+                                    Conta: <span className="font-black text-[#1A1A1A]">{instagramAccountLabel}</span>
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Link
+                                    to="/dashboard/instagram/auto-reply"
+                                    className="px-4 py-2 rounded-lg border-2 border-black bg-white font-black text-xs uppercase tracking-wider hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                                >
+                                    Auto-reply
+                                </Link>
+                                <Link
+                                    to="/dashboard/instagram/post-ideas"
+                                    className="px-4 py-2 rounded-lg border-2 border-black bg-[#D2E823] font-black text-xs uppercase tracking-wider hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                                >
+                                    Post ideas
+                                </Link>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                            <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
+                                <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#1A1A1A]/60 mb-2">
+                                    <BarChart3 className="w-3.5 h-3.5" />
+                                    Visualizações
+                                </div>
+                                <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+                                    {analytics?.views?.total || bio?.views || 0}
+                                </p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Total acumulado</p>
+                            </div>
+
+                            <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
+                                <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#1A1A1A]/60 mb-2">
+                                    <MousePointer2 className="w-3.5 h-3.5" />
+                                    Cliques
+                                </div>
+                                <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+                                    {analytics?.clicks?.total || bio?.clicks || 0}
+                                </p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Total acumulado</p>
+                            </div>
+
+                            <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
+                                <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#1A1A1A]/60 mb-2">
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                    CTR
+                                </div>
+                                <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+                                    {analytics?.views?.total ? `${analytics?.ctr?.average || 0}%` : "-"}
+                                </p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Taxa média de clique</p>
+                            </div>
+
+                            <div className="bg-[#111827] border border-black rounded-2xl p-4 text-white">
+                                <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-white/80 mb-2">
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    Automação
+                                </div>
+                                <p className="text-lg font-black">Instagram conectado</p>
+                                <p className="text-xs text-white/70 mt-1">
+                                    Ative auto-reply e ideias de post para acelerar engajamento.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {!loadingInstagramIntegration && !isInstagramConnected && (
+                    <section className="bg-white border-2 border-dashed border-gray-300 p-5 rounded-2xl">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-black text-[#1A1A1A]">Conecte seu Instagram para desbloquear insights no overview.</p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Assim que conectar, este painel mostra métricas rápidas no estilo Linktree.</p>
+                            </div>
+                            <Link
+                                to="/dashboard/integrations"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-black bg-[#D2E823] font-black text-xs uppercase tracking-wider"
+                            >
+                                <Instagram className="w-4 h-4" />
+                                Conectar Instagram
+                            </Link>
+                        </div>
+                    </section>
+                )}
 
                 {/* Sales & Revenue Analytics Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
