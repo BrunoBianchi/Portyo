@@ -993,12 +993,19 @@ export const verifyWebhook = async (req: Request, res: Response) => {
   console.log("[Instagram Webhook][verify] Incoming challenge", {
     mode,
     tokenPreview: maskValue(token, 6),
+    expectedTokenPreview: maskValue(verifyToken, 6),
     hasChallenge: typeof challenge !== "undefined",
   });
 
   if (mode === "subscribe" && token === verifyToken) {
+    console.log("[Instagram Webhook][verify] Verification success");
     return res.status(200).send(String(challenge || ""));
   }
+
+  console.log("[Instagram Webhook][verify] Verification failed", {
+    mode,
+    tokenMatched: token === verifyToken,
+  });
 
   return res.sendStatus(403);
 };
@@ -1031,30 +1038,74 @@ export const receiveWebhook = async (req: Request, res: Response) => {
 
     const events = normalizeInstagramWebhookPayload(payload);
 
+    console.log("[Instagram Webhook][receive] Normalized events", {
+      totalEvents: events.length,
+      eventTypes: events.map((event) => event.eventType),
+    });
+
     if (!events.length) {
       logger.info("[Instagram Webhook] No supported events found in payload");
       return res.status(200).json({ received: true, processed: 0 });
     }
 
     let processed = 0;
-    for (const event of events) {
+    for (const [index, event] of events.entries()) {
+      console.log("[Instagram Webhook][receive] Processing event", {
+        index,
+        eventType: event.eventType,
+        accountId: event.accountId,
+        instagramAccountId: event.eventData?.instagramAccountId,
+        senderId: event.eventData?.senderId,
+        recipientId: event.eventData?.recipientId,
+        messagePreview: maskValue(String(event.eventData?.messageText || event.eventData?.commentText || ""), 12),
+      });
+
       const resolvedBioId = await findBioIdByInstagramAccountIds([
         event.accountId,
         event.eventData?.instagramAccountId,
         event.eventData?.recipientId,
       ]);
+
+      console.log("[Instagram Webhook][receive] Bio resolution", {
+        eventType: event.eventType,
+        accountId: event.accountId,
+        resolvedBioId,
+      });
+
       if (!resolvedBioId) {
         logger.warn(`[Instagram Webhook] No integration found for account ${event.accountId}`);
         continue;
       }
+
+      const autoReplyAutomations = await findInstagramAutoReplyAutomations(resolvedBioId);
+      const autoReplySummary = autoReplyAutomations.map((automation) => ({
+        id: automation.id,
+        name: automation.name,
+        active: automation.isActive,
+      }));
+
+      console.log("[Instagram Webhook][receive] Auto-reply state", {
+        bioId: resolvedBioId,
+        totalRules: autoReplyAutomations.length,
+        activeRules: autoReplyAutomations.filter((automation) => automation.isActive).length,
+        rules: autoReplySummary,
+      });
 
       const eventData = {
         ...event.eventData,
         bioId: resolvedBioId,
       };
 
-      await triggerAutomation(resolvedBioId, event.eventType, eventData);
-      await triggerAutomation(resolvedBioId, "webhook_received", eventData);
+      const eventExecutions = await triggerAutomation(resolvedBioId, event.eventType, eventData);
+      const webhookExecutions = await triggerAutomation(resolvedBioId, "webhook_received", eventData);
+
+      console.log("[Instagram Webhook][receive] Trigger results", {
+        bioId: resolvedBioId,
+        eventType: event.eventType,
+        eventExecutions: eventExecutions.length,
+        webhookExecutions: webhookExecutions.length,
+      });
+
       processed += 1;
     }
 
