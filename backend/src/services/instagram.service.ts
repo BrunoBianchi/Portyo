@@ -41,7 +41,7 @@ export class InstagramService {
   }
 
   private get graphBaseUrl() {
-    return `https://graph.instagram.com/${this.graphVersion}`;
+    return `https://graph.facebook.com/${this.graphVersion}`;
   }
 
   public getAuthUrl(redirectUri?: string) {
@@ -128,82 +128,29 @@ export class InstagramService {
         throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
       }
 
-      let longLivedUserToken = shortLivedUserToken;
-      let expiresIn: number | undefined;
-
-      // Try versioned URL first (required for new instagram_business_* permissions), then unversioned as fallback
-      const longLivedUrls = [
-        `https://graph.instagram.com/${this.graphVersion}/access_token`,
-        "https://graph.instagram.com/access_token",
-      ];
-
-      for (const longLivedUrl of longLivedUrls) {
-        try {
-          const longLivedBody = new URLSearchParams({
-            grant_type: "ig_exchange_token",
-            client_secret: this.clientSecret,
-            access_token: shortLivedUserToken,
-          });
-
-          const longLivedResponse = await axios.post(longLivedUrl, longLivedBody.toString(), {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          });
-
-          if (longLivedResponse.data?.access_token) {
-            longLivedUserToken = longLivedResponse.data.access_token;
-            expiresIn = longLivedResponse.data.expires_in;
-            logger.debug("Instagram long-lived token obtained", { url: longLivedUrl, expiresIn });
-            break;
-          }
-        } catch (longLivedError: any) {
-          const errData = longLivedError?.response?.data;
-          const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || longLivedError?.message);
-          logger.warn(`Instagram long-lived token exchange attempt failed | url=${longLivedUrl} status=${longLivedError?.response?.status} error=${errMsg}`);
-        }
-      }
-
-      if (longLivedUserToken === shortLivedUserToken) {
-        logger.warn("Instagram long-lived token exchange failed on all URLs, using short-lived token (expires in ~1h)");
-      }
+      const longLivedUserToken = shortLivedUserToken;
+      const expiresIn = shortLivedTokenResponse.data?.expires_in;
 
       let instagramUserId: string | null = shortLivedTokenResponse.data?.user_id
         ? String(shortLivedTokenResponse.data.user_id)
         : null;
       let instagramUsername: string | null = null;
 
-      // Try versioned URL with correct fields for new API, then unversioned as fallback
-      const meEndpoints = [
-        { url: `https://graph.instagram.com/${this.graphVersion}/me`, fields: "user_id,username,account_type,profile_picture_url" },
-        { url: "https://graph.instagram.com/me", fields: "id,username,account_type" },
-      ];
-
-      for (const endpoint of meEndpoints) {
+      if (!instagramUsername && instagramUserId) {
         try {
-          const meBody = new URLSearchParams({
-            fields: endpoint.fields,
-            access_token: longLivedUserToken,
+          const userProfile = await axios.get(`${this.graphBaseUrl}/${instagramUserId}`, {
+            params: {
+              fields: "id,username,account_type",
+              access_token: longLivedUserToken,
+            },
           });
 
-          const meResponse = await axios.post(endpoint.url, meBody.toString(), {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          });
-
-          const data = meResponse.data;
-          instagramUserId = data?.user_id
-            ? String(data.user_id)
-            : (data?.id ? String(data.id) : instagramUserId);
-          instagramUsername = data?.username || null;
-          logger.debug("Instagram /me profile obtained", { url: endpoint.url, instagramUserId, instagramUsername });
-          break;
-        } catch (meError: any) {
-          const errData = meError?.response?.data;
-          const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : (errData || meError?.message);
-          logger.warn(`Instagram /me profile lookup attempt failed | url=${endpoint.url} status=${meError?.response?.status} error=${errMsg}`);
+          instagramUsername = userProfile.data?.username || null;
+        } catch (profileError: any) {
+          const errData = profileError?.response?.data;
+          const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || profileError?.message);
+          logger.debug(`Instagram username lookup skipped | status=${profileError?.response?.status} error=${errMsg}`);
         }
-      }
-
-      if (!instagramUsername) {
-        logger.warn("Instagram /me profile lookup failed on all URLs, continuing with token user_id fallback");
       }
 
       if (!instagramUserId) {
@@ -214,7 +161,7 @@ export class InstagramService {
         redirectUriUsed: resolvedRedirectUri,
         instagramUserId,
         instagramUsername,
-        usedLongLivedToken: longLivedUserToken !== shortLivedUserToken,
+        usedLongLivedToken: false,
       });
 
       return {
@@ -246,7 +193,7 @@ export class InstagramService {
         access_token: accessToken,
       });
 
-      const response = await axios.post(`${this.graphBaseUrl}/me`, profileBody.toString(), {
+      const response = await axios.post("https://graph.instagram.com/me", profileBody.toString(), {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
       return response.data;
