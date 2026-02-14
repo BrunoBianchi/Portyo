@@ -131,11 +131,18 @@ export const publishSocialPlannerPost = async (
                 { thresholdSeconds: 24 * 60 * 60 }
             );
 
+            if (!integration.account_id || !integration.accessToken) {
+                throw new Error("Instagram integration is missing token or account ID after refresh.");
+            }
+
+            const instagramBusinessAccountId = integration.account_id;
+            const instagramAccessToken = integration.accessToken;
+
             let publishResult;
             try {
                 publishResult = await instagramService.publishImagePost({
-                    instagramBusinessAccountId: integration.account_id,
-                    accessToken: integration.accessToken,
+                    instagramBusinessAccountId,
+                    accessToken: instagramAccessToken,
                     imageUrl: mediaUrl,
                     caption,
                 });
@@ -149,6 +156,10 @@ export const publishSocialPlannerPost = async (
                     integrationRepository,
                     { forceRefresh: true }
                 );
+
+                if (!integration.account_id || !integration.accessToken) {
+                    throw new Error("Instagram integration is missing token or account ID after retry refresh.");
+                }
 
                 publishResult = await instagramService.publishImagePost({
                     instagramBusinessAccountId: integration.account_id,
