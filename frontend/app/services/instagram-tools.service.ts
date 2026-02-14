@@ -69,6 +69,27 @@ export interface InstagramWebhookConfigResponse {
   };
 }
 
+export interface InstagramLastWebhookEvent {
+  receivedAt: string;
+  status: "processed" | "ignored_no_bio";
+  eventType: string;
+  accountId: string;
+  resolvedBioId: string | null;
+  senderId?: string;
+  recipientId?: string;
+  messagePreview?: string;
+  triggerCounts?: {
+    eventExecutions: number;
+    webhookExecutions: number;
+  };
+}
+
+export interface InstagramLastWebhookEventResponse {
+  hasEvent: boolean;
+  event: InstagramLastWebhookEvent | null;
+  globalFallbackEvent: InstagramLastWebhookEvent | null;
+}
+
 export const getInstagramAutoReplyConfig = async (bioId: string): Promise<InstagramAutoReplyResponse> => {
   const response = await api.get(`/instagram/auto-reply/${bioId}`);
   return response.data;
@@ -100,5 +121,10 @@ export const getInstagramPostIdeas = async (
 
 export const getInstagramWebhookConfig = async (): Promise<InstagramWebhookConfigResponse> => {
   const response = await api.get(`/instagram/webhook/config`);
+  return response.data;
+};
+
+export const getInstagramLastWebhookEvent = async (bioId: string): Promise<InstagramLastWebhookEventResponse> => {
+  const response = await api.get(`/instagram/webhook/last`, { params: { bioId } });
   return response.data;
 };

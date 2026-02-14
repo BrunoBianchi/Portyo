@@ -23,7 +23,11 @@
     "announcements": "Anúncios",
     "siteBlog": "Blog do site",
     "autoPost": "Postagem automática",
-    "socialPlanner": "Planejador social"
+    "socialPlanner": "Planejador social",
+    "linkShortener": "Link shortener",
+    "instagramAutoReply": "Instagram auto-reply",
+    "instagramPostIdeas": "Ideias de posts para Instagram",
+    "instagramAnalytics": "Analytics do Instagram"
   },
   "customDomains": {
     "title": "Domínios Personalizados",
@@ -1788,6 +1792,7 @@
     "groupEarn": "Ganhar",
     "groupAudience": "Audiência",
     "groupTools": "Ferramentas",
+    "groupInstagram": "Instagram",
     "newPage": "Nova página",
     "claimTitle": "Garanta seu link",
     "claimSubtitle": "Escolha um nome de usuário único para sua nova página.",
@@ -1869,7 +1874,29 @@
     "upgradeTitle": "Faça upgrade para Pro",
     "upgradeBody": "Tenha análises detalhadas, domínio personalizado e remova a marca Portyo da sua página.",
     "upgradeCta": "Fazer upgrade",
-    "vsLastMonth": "vs mês passado"
+    "vsLastMonth": "vs mês passado",
+    "instagramInsights": {
+      "badge": "Instagram Insights",
+      "title": "Visão geral do Instagram conectado",
+      "account": "Conta:",
+      "autoReply": "Auto-reply",
+      "postIdeas": "Ideias de post",
+      "views": "Visualizações",
+      "clicks": "Cliques",
+      "total": "Total acumulado",
+      "ctrAvg": "Taxa média de clique",
+      "userOverview": "Overview do usuário",
+      "accountId": "ID:",
+      "status": "Status:",
+      "webhookActive": "Webhook ativo",
+      "waitingEvent": "Aguardando evento",
+      "lastEvent": "Último evento:",
+      "receivedAt": "Recebido em:",
+      "none": "nenhum",
+      "connectTitle": "Conecte seu Instagram para desbloquear insights no overview.",
+      "connectSubtitle": "Assim que conectar, este painel mostra métricas rápidas no estilo Linktree.",
+      "connectCta": "Conectar Instagram"
+    }
   },
   "tours": {
     "common": {
@@ -3002,6 +3029,204 @@
     "previewCard": {
       "yourLinkHere": "Seu link aqui",
       "joinOn": "Junte-se a @{{username}} no Portyo"
+    }
+  },
+  "socialPlanner": {
+    "subtitle": "Planeje, organize e publique seu conteúdo social em um só lugar.",
+    "newPost": "Novo post",
+    "selectBio": "Selecione uma bio para começar a usar o Planejador Social.",
+    "calendar": "Calendário",
+    "dayPosts": "Posts do dia selecionado",
+    "emptyDay": "Nenhum post agendado para este dia.",
+    "editPost": "Editar post",
+    "confirmDelete": "Excluir este post?",
+    "metrics": {
+      "total": "Total",
+      "scheduled": "Agendados",
+      "upcoming": "Próximos",
+      "published": "Publicados",
+      "failed": "Falhos",
+      "draft": "Rascunho"
+    },
+    "channels": {
+      "all": "Todos os canais",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter"
+    },
+    "views": {
+      "weekly": "Semanal",
+      "monthly": "Mensal"
+    },
+    "fields": {
+      "channel": "Canal",
+      "title": "Título (opcional)",
+      "content": "Conteúdo do post",
+      "hashtags": "Hashtags",
+      "scheduledAt": "Data/hora do agendamento",
+      "media": "URLs de mídia (uma por linha)"
+    },
+    "placeholders": {
+      "title": "Título da campanha",
+      "content": "Escreva a copy do seu post..."
+    },
+    "actions": {
+      "uploading": "Enviando...",
+      "uploadImages": "Enviar imagem(ns)",
+      "close": "Fechar",
+      "update": "Atualizar",
+      "save": "Salvar"
+    },
+    "mediaHint": "Suportado: JPG, PNG, WEBP, GIF",
+    "weekdays": {
+      "sun": "Dom",
+      "mon": "Seg",
+      "tue": "Ter",
+      "wed": "Qua",
+      "thu": "Qui",
+      "fri": "Sex",
+      "sat": "Sáb"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "scheduled": "Agendado",
+      "published": "Publicado",
+      "failed": "Falhou",
+      "cancelled": "Cancelado"
+    },
+    "errors": {
+      "scheduleRequired": "Escolha uma data/hora para agendar este post.",
+      "schedulePast": "Você não pode agendar posts no passado.",
+      "save": "Não foi possível salvar o post.",
+      "upload": "Falha ao enviar imagem(ns).",
+      "publish": "Não foi possível publicar agora."
+    }
+  },
+  "instagramAutoReply": {
+    "title": "Studio de auto-reply",
+    "subtitle": "Configuração simples, rápida e visual para responder comentários e DMs automaticamente.",
+    "chips": {
+      "plan": "Plano",
+      "rules": "Regras",
+      "keywords": "Palavras-chave: até {{maxKeywords}}"
+    },
+    "loading": {
+      "rules": "Carregando regras...",
+      "webhookUrl": "Carregando URL do webhook...",
+      "editor": "Carregando editor..."
+    },
+    "defaults": {
+      "ruleName": "Instagram Auto Reply",
+      "ruleNameIndexed": "Instagram Auto Reply {{index}}",
+      "dmMessage": "Oi! Obrigado por entrar em contato 💜 Dá uma olhada nisso 👇",
+      "publicReplyMessage": "Te enviei uma DM ✨"
+    },
+    "steps": {
+      "trigger": "Gatilho",
+      "keywords": "Palavras-chave",
+      "message": "Mensagem",
+      "review": "Revisão"
+    },
+    "rules": {
+      "title": "Suas regras",
+      "ruleFallback": "Regra {{index}}"
+    },
+    "status": {
+      "active": "Ativa",
+      "draft": "Rascunho"
+    },
+    "trigger": {
+      "title": "O que deve acionar esta regra?",
+      "comment": "Gatilho: Comentário",
+      "dm": "Gatilho: DM",
+      "commentReceived": "Comentário no Instagram recebido",
+      "dmReceived": "DM no Instagram recebida"
+    },
+    "planLimits": {
+      "title": "Limites do plano",
+      "body": "Free: 1 regra • Standard: 3 regras • Pro: 5 regras"
+    },
+    "webhook": {
+      "title": "Configuração do webhook",
+      "subtitle": "Use esta URL de callback no Meta App Webhooks (objeto: instagram).",
+      "copied": "URL do webhook copiada.",
+      "copyError": "Não foi possível copiar a URL do webhook.",
+      "copiedShort": "Copiado",
+      "copyUrl": "Copiar URL",
+      "requiredFields": "Campos obrigatórios: {{fields}}"
+    },
+    "lastWebhook": {
+      "title": "Último evento de webhook",
+      "empty": "Nenhum evento recebido ainda para esta bio.",
+      "status": "Status",
+      "event": "Evento",
+      "received": "Recebido",
+      "account": "Conta",
+      "message": "Mensagem",
+      "triggers": "Disparos",
+      "ignoredNoBio": "Evento recebido, mas nenhuma integração vinculada foi resolvida para esta conta."
+    },
+    "fields": {
+      "ruleName": "Nome da regra"
+    },
+    "currentStatus": {
+      "title": "Status atual",
+      "hint": "Publique para começar a responder automaticamente."
+    },
+    "keywords": {
+      "title": "Segmentação por palavra-chave",
+      "all": "Responder a todos os comentários/mensagens recebidos",
+      "specific": "Responder apenas quando palavras-chave corresponderem",
+      "placeholder": "preço, detalhes, link",
+      "limit": "Limite do plano: {{maxKeywords}} palavra(s)-chave."
+    },
+    "messages": {
+      "dm": "Mensagem da DM",
+      "publicReplyToggle": "Ativar resposta pública no comentário (Standard+)",
+      "publicReplyPlaceholder": "Mensagem da resposta pública",
+      "fallbackTitle": "DM de fallback (Pro)",
+      "fallbackPlaceholder": "Mensagem de fallback opcional",
+      "fallbackProOnly": "Disponível no Pro"
+    },
+    "review": {
+      "title": "Revisar regra",
+      "ruleName": "Nome da regra",
+      "trigger": "Gatilho",
+      "keywordMode": "Modo de palavra-chave",
+      "publicReply": "Resposta pública",
+      "enabled": "Ativado",
+      "disabled": "Desativado",
+      "advancedPrefix": "Precisa de fluxos avançados? Use",
+      "automations": "Automações"
+    },
+    "actions": {
+      "new": "Nova",
+      "refresh": "Atualizar",
+      "back": "Voltar",
+      "next": "Próximo",
+      "saveDraft": "Salvar rascunho",
+      "publish": "Publicar"
+    },
+    "tiers": {
+      "free": "Free",
+      "freeDesc": "Crie até 1 regra de auto-reply.",
+      "standard": "Standard",
+      "standardDesc": "Crie até 3 regras + respostas públicas.",
+      "pro": "Pro",
+      "proDesc": "Crie até 5 regras + DM de fallback."
+    },
+    "success": {
+      "saved": "Regra de auto-reply salva.",
+      "published": "Regra de auto-reply publicada."
+    },
+    "errors": {
+      "load": "Falha ao carregar configurações de auto-reply.",
+      "loadWebhook": "Falha ao carregar último evento de webhook.",
+      "save": "Falha ao salvar regra de auto-reply.",
+      "publish": "Falha ao publicar regra de auto-reply.",
+      "planLimit": "Seu plano permite até {{maxRules}} regra(s) de auto-reply.",
+      "selectBio": "Selecione uma bio para configurar o auto-reply do Instagram."
     }
   }
 }

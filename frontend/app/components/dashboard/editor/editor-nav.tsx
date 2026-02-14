@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, Settings, Sparkles } from "lucide-react";
+import { LayoutGrid, Settings, Sparkles, Globe, Bot, Palette } from "lucide-react";
+import { Link, useLocation } from "react-router";
 
 interface EditorNavProps {
     activeTab: "links" | "settings";
@@ -9,6 +10,7 @@ interface EditorNavProps {
 
 export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
     const { t } = useTranslation("dashboard");
+    const location = useLocation();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
@@ -26,6 +28,30 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             shortLabel: t("editor.tabs.settingsShort", "Ajustes"),
             icon: Settings,
             badge: "BETA"
+        },
+    ];
+
+    const navLinks = [
+        {
+            id: "design" as const,
+            to: "/dashboard/design",
+            label: t("nav.design"),
+            shortLabel: t("nav.design"),
+            icon: Palette,
+        },
+        {
+            id: "custom-domains" as const,
+            to: "/dashboard/custom-domains",
+            label: t("nav.customDomains"),
+            shortLabel: t("nav.customDomains"),
+            icon: Globe,
+        },
+        {
+            id: "automation" as const,
+            to: "/dashboard/automation",
+            label: t("nav.automation"),
+            shortLabel: t("nav.automation"),
+            icon: Bot,
         },
     ];
 
@@ -134,6 +160,45 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
                                 <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#C6F035] rounded-full sm:hidden" />
                             )}
                         </button>
+                    );
+                })}
+
+                {navLinks.map((navLink) => {
+                    const Icon = navLink.icon;
+                    const isActive = location.pathname.startsWith(navLink.to);
+
+                    return (
+                        <Link
+                            key={navLink.id}
+                            to={navLink.to}
+                            className={`
+                                relative flex items-center justify-center gap-1 sm:gap-1.5 
+                                px-2.5 sm:px-3 md:px-2 lg:px-4 
+                                py-2 sm:py-2.5
+                                rounded-lg sm:rounded-full 
+                                font-bold text-[11px] sm:text-xs
+                                transition-all duration-200 ease-out
+                                whitespace-nowrap flex-shrink-0
+                                min-w-[72px] sm:min-w-[auto]
+                                touch-manipulation
+                                ${isActive
+                                    ? 'bg-[#1A1A1A] text-white shadow-lg shadow-black/20 transform scale-[1.02]'
+                                    : 'text-gray-500 hover:text-gray-900 hover:bg-black/5 active:bg-black/10'
+                                }
+                            `}
+                        >
+                            <Icon
+                                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? "text-[#C6F035]" : ""}`}
+                                strokeWidth={isActive ? 2.5 : 2}
+                            />
+
+                            <span className="inline lg:hidden">
+                                {navLink.shortLabel}
+                            </span>
+                            <span className="hidden lg:inline">
+                                {navLink.label}
+                            </span>
+                        </Link>
                     );
                 })}
             </nav>

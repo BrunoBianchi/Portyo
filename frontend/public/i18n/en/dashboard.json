@@ -23,7 +23,11 @@
     "announcements": "Announcements",
     "siteBlog": "Site Blog",
     "autoPost": "Auto Post",
-    "socialPlanner": "Social Planner"
+    "socialPlanner": "Social Planner",
+    "linkShortener": "Link shortener",
+    "instagramAutoReply": "Instagram auto-reply",
+    "instagramPostIdeas": "Instagram post ideas",
+    "instagramAnalytics": "Instagram analytics"
   },
   "customDomains": {
     "title": "Custom Domains",
@@ -169,6 +173,7 @@
     "groupEarn": "Earn",
     "groupAudience": "Audience",
     "groupTools": "Tools",
+    "groupInstagram": "Instagram",
     "newPage": "New Page",
     "claimTitle": "Claim your link",
     "claimSubtitle": "Choose a unique username for your new page.",
@@ -250,7 +255,29 @@
     "upgradeTitle": "Upgrade to Pro",
     "upgradeBody": "Get detailed analytics, custom domains, and remove Portyo branding from your page.",
     "upgradeCta": "Upgrade Plan",
-    "vsLastMonth": "vs last month"
+    "vsLastMonth": "vs last month",
+    "instagramInsights": {
+      "badge": "Instagram Insights",
+      "title": "Connected Instagram overview",
+      "account": "Account:",
+      "autoReply": "Auto-reply",
+      "postIdeas": "Post ideas",
+      "views": "Views",
+      "clicks": "Clicks",
+      "total": "Total accumulated",
+      "ctrAvg": "Average click-through rate",
+      "userOverview": "User overview",
+      "accountId": "ID:",
+      "status": "Status:",
+      "webhookActive": "Webhook active",
+      "waitingEvent": "Waiting for event",
+      "lastEvent": "Last event:",
+      "receivedAt": "Received at:",
+      "none": "none",
+      "connectTitle": "Connect your Instagram to unlock overview insights.",
+      "connectSubtitle": "Once connected, this panel shows quick metrics in a Linktree-style summary.",
+      "connectCta": "Connect Instagram"
+    }
   },
   "tours": {
     "common": {
@@ -2741,6 +2768,204 @@
     "previewCard": {
       "yourLinkHere": "Your link here",
       "joinOn": "Join @{{username}} on Portyo"
+    }
+  },
+  "socialPlanner": {
+    "subtitle": "Plan, queue and publish your social content in one place.",
+    "newPost": "New post",
+    "selectBio": "Select a bio to start using Social Planner.",
+    "calendar": "Calendar",
+    "dayPosts": "Posts on selected day",
+    "emptyDay": "No scheduled posts on this day.",
+    "editPost": "Edit post",
+    "confirmDelete": "Delete this post?",
+    "metrics": {
+      "total": "Total",
+      "scheduled": "Scheduled",
+      "upcoming": "Upcoming",
+      "published": "Published",
+      "failed": "Failed",
+      "draft": "Draft"
+    },
+    "channels": {
+      "all": "All channels",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter"
+    },
+    "views": {
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "fields": {
+      "channel": "Channel",
+      "title": "Title (optional)",
+      "content": "Post content",
+      "hashtags": "Hashtags",
+      "scheduledAt": "Schedule date/time",
+      "media": "Media URLs (one per line)"
+    },
+    "placeholders": {
+      "title": "Campaign title",
+      "content": "Write your post copy..."
+    },
+    "actions": {
+      "uploading": "Uploading...",
+      "uploadImages": "Upload image(s)",
+      "close": "Close",
+      "update": "Update",
+      "save": "Save"
+    },
+    "mediaHint": "Supported: JPG, PNG, WEBP, GIF",
+    "weekdays": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "published": "Published",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "scheduleRequired": "Choose a schedule date/time to create this post.",
+      "schedulePast": "You cannot schedule posts in the past.",
+      "save": "Could not save post.",
+      "upload": "Failed to upload image(s).",
+      "publish": "Could not publish now."
+    }
+  },
+  "instagramAutoReply": {
+    "title": "Auto-reply studio",
+    "subtitle": "Simple, fast and visual setup to respond to comments and DMs automatically.",
+    "chips": {
+      "plan": "Plan",
+      "rules": "Rules",
+      "keywords": "Keywords: up to {{maxKeywords}}"
+    },
+    "loading": {
+      "rules": "Loading rules...",
+      "webhookUrl": "Loading webhook URL...",
+      "editor": "Loading editor..."
+    },
+    "defaults": {
+      "ruleName": "Instagram Auto Reply",
+      "ruleNameIndexed": "Instagram Auto Reply {{index}}",
+      "dmMessage": "Hey, thanks for reaching out! 💜 Check this out 👇",
+      "publicReplyMessage": "I sent you a DM ✨"
+    },
+    "steps": {
+      "trigger": "Trigger",
+      "keywords": "Keywords",
+      "message": "Message",
+      "review": "Review"
+    },
+    "rules": {
+      "title": "Your rules",
+      "ruleFallback": "Rule {{index}}"
+    },
+    "status": {
+      "active": "Active",
+      "draft": "Draft"
+    },
+    "trigger": {
+      "title": "What should trigger this rule?",
+      "comment": "Trigger: Comment",
+      "dm": "Trigger: DM",
+      "commentReceived": "Instagram comment received",
+      "dmReceived": "Instagram DM received"
+    },
+    "planLimits": {
+      "title": "Plan limits",
+      "body": "Free: 1 rule • Standard: 3 rules • Pro: 5 rules"
+    },
+    "webhook": {
+      "title": "Webhook setup",
+      "subtitle": "Use this callback URL in Meta App Webhooks (object: instagram).",
+      "copied": "Webhook URL copied.",
+      "copyError": "Could not copy webhook URL.",
+      "copiedShort": "Copied",
+      "copyUrl": "Copy URL",
+      "requiredFields": "Required fields: {{fields}}"
+    },
+    "lastWebhook": {
+      "title": "Last webhook event",
+      "empty": "No event received yet for this bio.",
+      "status": "Status",
+      "event": "Event",
+      "received": "Received",
+      "account": "Account",
+      "message": "Message",
+      "triggers": "Triggers",
+      "ignoredNoBio": "Event received but no linked integration was resolved for this account."
+    },
+    "fields": {
+      "ruleName": "Rule name"
+    },
+    "currentStatus": {
+      "title": "Current status",
+      "hint": "Publish to start responding automatically."
+    },
+    "keywords": {
+      "title": "Keyword targeting",
+      "all": "Reply to all incoming comments/messages",
+      "specific": "Reply only when keywords match",
+      "placeholder": "price, details, link",
+      "limit": "Plan limit: {{maxKeywords}} keyword(s)."
+    },
+    "messages": {
+      "dm": "DM message",
+      "publicReplyToggle": "Enable public comment reply (Standard+)",
+      "publicReplyPlaceholder": "Public reply message",
+      "fallbackTitle": "Fallback DM (Pro)",
+      "fallbackPlaceholder": "Optional fallback message",
+      "fallbackProOnly": "Available on Pro"
+    },
+    "review": {
+      "title": "Review rule",
+      "ruleName": "Rule name",
+      "trigger": "Trigger",
+      "keywordMode": "Keyword mode",
+      "publicReply": "Public reply",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "advancedPrefix": "Need advanced flows? Use",
+      "automations": "Automations"
+    },
+    "actions": {
+      "new": "New",
+      "refresh": "Refresh",
+      "back": "Back",
+      "next": "Next",
+      "saveDraft": "Save draft",
+      "publish": "Publish"
+    },
+    "tiers": {
+      "free": "Free",
+      "freeDesc": "Create up to 1 auto-reply rule.",
+      "standard": "Standard",
+      "standardDesc": "Create up to 3 rules + public replies.",
+      "pro": "Pro",
+      "proDesc": "Create up to 5 rules + fallback DM."
+    },
+    "success": {
+      "saved": "Auto-reply rule saved.",
+      "published": "Auto-reply rule published."
+    },
+    "errors": {
+      "load": "Failed to load auto-reply settings.",
+      "loadWebhook": "Failed to load last webhook event.",
+      "save": "Failed to save auto-reply rule.",
+      "publish": "Failed to publish auto-reply rule.",
+      "planLimit": "Your plan allows up to {{maxRules}} auto-reply rule(s).",
+      "selectBio": "Select a bio first to configure Instagram auto-reply."
     }
   }
 }

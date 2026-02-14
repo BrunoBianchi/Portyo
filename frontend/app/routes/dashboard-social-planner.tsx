@@ -64,6 +64,8 @@ const statusClassMap: Record<PlannerStatus, string> = {
     cancelled: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+
 export default function DashboardSocialPlanner() {
     const { t } = useTranslation();
     const { bio } = useContext(BioContext);
@@ -118,6 +120,16 @@ export default function DashboardSocialPlanner() {
         [weeklyStart, weeklyEnd]
     );
 
+    const dataRangeStart = useMemo(
+        () => (calendarViewMode === "weekly" ? weeklyStart : calendarStart),
+        [calendarViewMode, weeklyStart, calendarStart]
+    );
+
+    const dataRangeEnd = useMemo(
+        () => (calendarViewMode === "weekly" ? weeklyEnd : calendarEnd),
+        [calendarViewMode, weeklyEnd, calendarEnd]
+    );
+
     const loadData = useCallback(async () => {
         if (!bio?.id) {
             setPosts([]);
@@ -131,8 +143,8 @@ export default function DashboardSocialPlanner() {
             const [postsRes, summaryRes] = await Promise.all([
                 api.get(`/social-planner/${bio.id}/posts`, {
                     params: {
-                        startDate: calendarStart.toISOString(),
-                        endDate: calendarEnd.toISOString(),
+                        startDate: dataRangeStart.toISOString(),
+                        endDate: dataRangeEnd.toISOString(),
                         channel: selectedChannel,
                         status: "all",
                     },
@@ -147,7 +159,7 @@ export default function DashboardSocialPlanner() {
         } finally {
             setLoading(false);
         }
-    }, [bio?.id, calendarStart, calendarEnd, selectedChannel]);
+    }, [bio?.id, dataRangeStart, dataRangeEnd, selectedChannel]);
 
     useEffect(() => {
         loadData();
@@ -387,20 +399,20 @@ export default function DashboardSocialPlanner() {
 
     return (
         <AuthorizationGuard minPlan="standard">
-            <div className="p-4 md:p-8 space-y-6">
+            <div className="p-3 sm:p-4 lg:p-8 space-y-5 sm:space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: "var(--font-display)" }}>
+                        <h1 className="text-2xl sm:text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: "var(--font-display)" }}>
                             {t("dashboard.nav.socialPlanner", { defaultValue: "Social planner" })}
                         </h1>
-                        <p className="text-gray-500 font-medium mt-1">
+                        <p className="text-sm sm:text-base text-gray-500 font-medium mt-1">
                             {t("dashboard.socialPlanner.subtitle", { defaultValue: "Plan, queue and publish your social content in one place." })}
                         </p>
                     </div>
 
                     <button
                         onClick={openCreateComposer}
-                        className="inline-flex items-center gap-2 px-4 py-3 bg-[#C6F035] border-2 border-black rounded-xl font-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                        className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#C6F035] border-2 border-black rounded-xl font-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
                         <Plus className="w-4 h-4" />
                         {t("dashboard.socialPlanner.newPost", { defaultValue: "New post" })}
@@ -413,7 +425,7 @@ export default function DashboardSocialPlanner() {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
                             {[
                                 { key: "total", value: summary?.total ?? 0 },
                                 { key: "scheduled", value: summary?.scheduled ?? 0 },
@@ -431,10 +443,10 @@ export default function DashboardSocialPlanner() {
                             ))}
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                             <button
                                 onClick={() => setSelectedChannel("all")}
-                                className={`px-3 py-2 rounded-xl border-2 font-bold text-sm transition-all ${selectedChannel === "all" ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
+                                className={`shrink-0 px-3 py-2 rounded-xl border-2 font-bold text-sm transition-all ${selectedChannel === "all" ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
                             >
                                 {t("dashboard.socialPlanner.channels.all", { defaultValue: "All channels" })}
                             </button>
@@ -442,22 +454,22 @@ export default function DashboardSocialPlanner() {
                                 <button
                                     key={channel}
                                     onClick={() => setSelectedChannel(channel)}
-                                    className={`px-3 py-2 rounded-xl border-2 font-bold text-sm transition-all capitalize ${selectedChannel === channel ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
+                                    className={`shrink-0 px-3 py-2 rounded-xl border-2 font-bold text-sm transition-all capitalize ${selectedChannel === channel ? "bg-black text-white border-black" : "bg-white text-black border-black"}`}
                                 >
                                     {t(`dashboard.socialPlanner.channels.${channel}`, { defaultValue: channel })}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                            <div className="xl:col-span-7 bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 md:p-6">
-                                <div className="flex items-center justify-between mb-4">
+                        <div className="grid grid-cols-1 gap-6">
+                            <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 md:p-6">
+                                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-4">
                                     <h2 className="text-lg font-black text-[#1A1A1A] flex items-center gap-2">
                                         <Calendar className="w-5 h-5" />
                                         {t("dashboard.socialPlanner.calendar", { defaultValue: "Calendar" })}
                                     </h2>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center justify-between gap-2 w-full lg:w-auto">
                                         <div className="inline-flex items-center border-2 border-black rounded-xl overflow-hidden">
                                             <button
                                                 onClick={() => setCalendarViewMode("weekly")}
@@ -488,7 +500,7 @@ export default function DashboardSocialPlanner() {
                                             <ChevronLeft className="w-4 h-4" />
                                         </button>
 
-                                        <span className="font-black text-sm min-w-[180px] text-center">
+                                        <span className="font-black text-xs sm:text-sm min-w-[132px] sm:min-w-[180px] text-center">
                                             {calendarViewMode === "weekly"
                                                 ? `${format(weeklyStart, "dd MMM")} - ${format(weeklyEnd, "dd MMM yyyy")}`
                                                 : format(currentMonth, "MMMM yyyy")}
@@ -512,87 +524,91 @@ export default function DashboardSocialPlanner() {
                                 </div>
 
                                 {calendarViewMode === "weekly" ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-                                        {weeklyDays.map((day) => {
-                                            const key = format(day, "yyyy-MM-dd");
-                                            const dayPosts = postsGroupedByDay.get(key) || [];
-                                            const isTodaySelected = isSameDay(day, selectedDate);
-
-                                            return (
-                                                <div
-                                                    key={key}
-                                                    className={`rounded-2xl border-2 min-h-[330px] p-2.5 ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"}`}
-                                                >
-                                                    <button
-                                                        onClick={() => setSelectedDate(day)}
-                                                        className="w-full text-left mb-2"
-                                                    >
-                                                        <p className="text-[11px] uppercase tracking-wider font-black text-gray-500">{format(day, "EEE")}</p>
-                                                        <p className="text-lg font-black text-[#1A1A1A]">{format(day, "d")}</p>
-                                                    </button>
-
-                                                    {dayPosts.length === 0 ? (
-                                                        <div className="mt-8 text-center text-[11px] text-gray-400 font-semibold">
-                                                            {t("dashboard.socialPlanner.emptyDay", { defaultValue: "No posts" })}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                                                            {dayPosts.map((post) => (
-                                                                <div key={post.id} className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm">
-                                                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                                                        <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase ${getChannelBadgeClass(post.channel)}`}>
-                                                                            {post.channel}
-                                                                        </span>
-                                                                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
-                                                                            {post.status}
-                                                                        </span>
-                                                                    </div>
-                                                                    <p className="text-xs font-bold text-[#1A1A1A] line-clamp-2">{post.title || post.content}</p>
-                                                                    <p className="text-[11px] text-gray-500 mt-1 inline-flex items-center gap-1">
-                                                                        <Clock className="w-3 h-3" />
-                                                                        {post.scheduledAt ? format(parseISO(post.scheduledAt), "HH:mm") : "--:--"}
-                                                                    </p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="grid grid-cols-7 mb-2">
-                                            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
-                                                <div key={label} className="text-center text-xs font-black text-gray-400 uppercase py-2">
-                                                    {label}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="grid grid-cols-7 gap-1.5">
-                                            {calendarDays.map((day) => {
+                                    <div className="overflow-x-auto pb-1">
+                                        <div className="grid grid-cols-7 gap-3 min-w-[980px]">
+                                            {weeklyDays.map((day) => {
                                                 const key = format(day, "yyyy-MM-dd");
-                                                const count = postsByDay.get(key) || 0;
-                                                const isSelected = isSameDay(day, selectedDate);
+                                                const dayPosts = postsGroupedByDay.get(key) || [];
+                                                const isTodaySelected = isSameDay(day, selectedDate);
 
                                                 return (
-                                                    <button
+                                                    <div
                                                         key={key}
-                                                        onClick={() => setSelectedDate(day)}
-                                                        className={`h-20 rounded-xl border-2 p-2 text-left transition-all ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${!isSameMonth(day, currentMonth) ? "opacity-40" : ""}`}
+                                                        className={`rounded-2xl border-2 min-h-[240px] md:min-h-[340px] p-2.5 ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"}`}
                                                     >
-                                                        <div className="text-xs font-black text-[#1A1A1A]">{format(day, "d")}</div>
-                                                        {count > 0 && (
-                                                            <div className="mt-2 inline-flex px-1.5 py-0.5 rounded-md bg-black text-white text-[10px] font-black">
-                                                                {count}
+                                                        <button
+                                                            onClick={() => setSelectedDate(day)}
+                                                            className="w-full text-left mb-2"
+                                                        >
+                                                            <p className="text-[11px] uppercase tracking-wider font-black text-gray-500">{t(`dashboard.socialPlanner.weekdays.${WEEKDAY_KEYS[day.getDay()]}`, { defaultValue: format(day, "EEE") })}</p>
+                                                            <p className="text-lg font-black text-[#1A1A1A]">{format(day, "d")}</p>
+                                                        </button>
+
+                                                        {dayPosts.length === 0 ? (
+                                                            <div className="mt-6 md:mt-8 text-center text-[11px] text-gray-400 font-semibold">
+                                                                {t("dashboard.socialPlanner.emptyDay", { defaultValue: "No posts" })}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-2 max-h-[170px] md:max-h-[260px] overflow-y-auto pr-1">
+                                                                {dayPosts.map((post) => (
+                                                                    <div key={post.id} className="rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm">
+                                                                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                                                                            <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase ${getChannelBadgeClass(post.channel)}`}>
+                                                                                {post.channel}
+                                                                            </span>
+                                                                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
+                                                                                {t(`dashboard.socialPlanner.status.${post.status}`, { defaultValue: post.status })}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-xs font-bold text-[#1A1A1A] line-clamp-2">{post.title || post.content}</p>
+                                                                        <p className="text-[11px] text-gray-500 mt-1 inline-flex items-center gap-1">
+                                                                            <Clock className="w-3 h-3" />
+                                                                            {post.scheduledAt ? format(parseISO(post.scheduledAt), "HH:mm") : "--:--"}
+                                                                        </p>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         )}
-                                                    </button>
+                                                    </div>
                                                 );
                                             })}
                                         </div>
-                                    </>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto pb-1">
+                                        <div className="min-w-[680px]">
+                                            <div className="grid grid-cols-7 mb-2">
+                                                {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((label) => (
+                                                    <div key={label} className="text-center text-xs font-black text-gray-400 uppercase py-2">
+                                                        {t(`dashboard.socialPlanner.weekdays.${label}`, { defaultValue: label })}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1.5">
+                                                {calendarDays.map((day) => {
+                                                    const key = format(day, "yyyy-MM-dd");
+                                                    const count = postsByDay.get(key) || 0;
+                                                    const isSelected = isSameDay(day, selectedDate);
+
+                                                    return (
+                                                        <button
+                                                            key={key}
+                                                            onClick={() => setSelectedDate(day)}
+                                                            className={`h-20 rounded-xl border-2 p-2 text-left transition-all ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${!isSameMonth(day, currentMonth) ? "opacity-40" : ""}`}
+                                                        >
+                                                            <div className="text-xs font-black text-[#1A1A1A]">{format(day, "d")}</div>
+                                                            {count > 0 && (
+                                                                <div className="mt-2 inline-flex px-1.5 py-0.5 rounded-md bg-black text-white text-[10px] font-black">
+                                                                    {count}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
 
                                 <div className="mt-5">
@@ -604,13 +620,13 @@ export default function DashboardSocialPlanner() {
                                     ) : (
                                         <div className="space-y-2">
                                             {selectedDatePosts.map((post) => (
-                                                <div key={post.id} className="p-3 border-2 border-black rounded-xl bg-white flex items-center justify-between gap-2">
+                                                <div key={post.id} className="p-3 border-2 border-black rounded-xl bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                                     <div>
                                                         <p className="font-bold text-sm text-[#1A1A1A] capitalize">{post.channel}</p>
                                                         <p className="text-xs text-gray-500 line-clamp-1">{post.content}</p>
                                                     </div>
                                                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
-                                                        {post.status}
+                                                        {t(`dashboard.socialPlanner.status.${post.status}`, { defaultValue: post.status })}
                                                     </span>
                                                 </div>
                                             ))}
@@ -619,84 +635,14 @@ export default function DashboardSocialPlanner() {
                                 </div>
                             </div>
 
-                            <div className="xl:col-span-5 bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 md:p-6">
-                                <h2 className="text-lg font-black text-[#1A1A1A] mb-4">
-                                    {t("dashboard.socialPlanner.queue", { defaultValue: "Queue" })}
-                                </h2>
-
-                                {loading ? (
-                                    <div className="h-52 flex items-center justify-center">
-                                        <Loader2 className="w-6 h-6 animate-spin text-black" />
-                                    </div>
-                                ) : queuePosts.length === 0 ? (
-                                    <div className="h-52 flex items-center justify-center text-center text-sm text-gray-500 font-medium px-6">
-                                        {t("dashboard.socialPlanner.emptyQueue", { defaultValue: "No posts in queue yet. Create your first post." })}
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
-                                        {queuePosts.map((post) => (
-                                            <div key={post.id} className="border-2 border-black rounded-xl p-3">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div>
-                                                        <p className="text-xs font-black uppercase tracking-wider text-gray-500">{post.channel}</p>
-                                                        <p className="font-bold text-[#1A1A1A] line-clamp-2">{post.title || post.content}</p>
-                                                    </div>
-                                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border capitalize ${statusClassMap[post.status]}`}>
-                                                        {post.status}
-                                                    </span>
-                                                </div>
-
-                                                <p className="text-xs text-gray-500 mt-2 line-clamp-2">{post.content}</p>
-
-                                                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <Clock className="w-3.5 h-3.5" />
-                                                        {post.scheduledAt ? format(parseISO(post.scheduledAt), "dd/MM/yyyy HH:mm") : t("dashboard.socialPlanner.unscheduled", { defaultValue: "Unscheduled" })}
-                                                    </span>
-                                                </div>
-
-                                                {post.errorMessage && (
-                                                    <div className="mt-2 p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
-                                                        {post.errorMessage}
-                                                    </div>
-                                                )}
-
-                                                <div className="mt-3 flex flex-wrap gap-2">
-                                                    <button onClick={() => openEditComposer(post)} className="px-2.5 py-1.5 border-2 border-black rounded-lg text-xs font-bold hover:bg-gray-50 inline-flex items-center gap-1">
-                                                        <Pencil className="w-3.5 h-3.5" />
-                                                        {t("dashboard.socialPlanner.actions.edit", { defaultValue: "Edit" })}
-                                                    </button>
-
-                                                    <button onClick={() => handlePublishNow(post.id)} className="px-2.5 py-1.5 border-2 border-black rounded-lg text-xs font-bold hover:bg-gray-50 inline-flex items-center gap-1">
-                                                        <Send className="w-3.5 h-3.5" />
-                                                        {t("dashboard.socialPlanner.actions.publishNow", { defaultValue: "Publish now" })}
-                                                    </button>
-
-                                                    {post.status === "scheduled" && (
-                                                        <button onClick={() => handleCancel(post.id)} className="px-2.5 py-1.5 border-2 border-black rounded-lg text-xs font-bold hover:bg-gray-50 inline-flex items-center gap-1">
-                                                            <Ban className="w-3.5 h-3.5" />
-                                                            {t("dashboard.socialPlanner.actions.cancel", { defaultValue: "Cancel" })}
-                                                        </button>
-                                                    )}
-
-                                                    <button onClick={() => handleDelete(post.id)} className="px-2.5 py-1.5 border-2 border-black rounded-lg text-xs font-bold hover:bg-gray-50 inline-flex items-center gap-1 text-red-600">
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                        {t("dashboard.socialPlanner.actions.delete", { defaultValue: "Delete" })}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </>
                 )}
 
                 {composerOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
                         <div className="absolute inset-0 bg-black/50" onClick={() => setComposerOpen(false)} />
-                        <div className="relative w-full max-w-2xl bg-white rounded-[24px] border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 md:p-6 max-h-[90vh] overflow-y-auto">
+                        <div className="relative w-full max-w-2xl bg-white rounded-t-[24px] sm:rounded-[24px] border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 md:p-6 max-h-[92vh] overflow-y-auto">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-xl font-black text-[#1A1A1A]">
                                     {editingPostId
@@ -816,7 +762,7 @@ export default function DashboardSocialPlanner() {
                                 </div>
                             </div>
 
-                            <div className="mt-6 flex items-center justify-end gap-2">
+                            <div className="mt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                                 <button onClick={() => setComposerOpen(false)} className="px-4 py-2.5 border-2 border-black rounded-xl font-bold hover:bg-gray-50">
                                     {t("dashboard.socialPlanner.actions.close", { defaultValue: "Close" })}
                                 </button>

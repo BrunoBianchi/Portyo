@@ -360,7 +360,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             items: [
                 { name: t("dashboard.nav.overview"), path: "/dashboard", icon: LayoutDashboard, tourId: "dashboard-nav-overview" },
                 { name: t("dashboard.nav.editor"), path: "/dashboard/editor", icon: PenTool, tourId: "dashboard-nav-editor" },
-                { name: t("dashboard.nav.design"), path: "/dashboard/design", icon: Palette },
                 { name: t("dashboard.nav.portfolio"), path: "/dashboard/portfolio", icon: Briefcase },
             ]
         },
@@ -411,10 +410,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 },
                 { name: t("dashboard.nav.emailTemplates"), path: "/dashboard/templates", icon: Mail, isPro: true, isProOnly: true },
                 { name: t("dashboard.nav.scheduler"), path: "/dashboard/scheduler", icon: Calendar, isPro: true, isProOnly: true },
-                { name: t("dashboard.nav.automation"), path: "/dashboard/automation", icon: Zap, isPro: true },
-                { name: t("dashboard.nav.integrations"), path: "/dashboard/integrations", icon: Puzzle, tourId: "dashboard-nav-integrations" },
                 { name: t("dashboard.nav.qrCode"), path: "/dashboard/qrcode", icon: QrCode },
-                { name: t("dashboard.nav.customDomains"), path: "/dashboard/custom-domains", icon: Globe2, isPro: true },
             ]
         }
     ];
@@ -520,27 +516,27 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <aside
                 data-tour="dashboard-sidebar"
                 className={`
-                    w-[14rem] xl:w-64 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
+                    w-[17rem] sm:w-[18rem] xl:w-72 h-screen flex flex-col fixed left-0 top-0 z-50 bg-[#F3F3F1] 
                     transition-transform duration-300 ease-out border-r border-[#E5E5E5]
                     ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
                     md:translate-x-0 md:shadow-none font-sans
                 `}
             >
                 {/* Header: Profile & Notifications */}
-                <div className="p-4 xl:p-5 flex items-center justify-between gap-2">
+                <div className="p-4 sm:p-5 xl:p-6 flex items-center justify-between gap-2.5">
                     <div className="relative min-w-0 flex-1" ref={dropdownRef}>
                         <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center gap-2 hover:bg-black/5 p-2 rounded-2xl transition-all group w-full"
+                            className="flex items-center gap-2.5 hover:bg-black/5 p-2.5 rounded-2xl transition-all group w-full"
                         >
-                            <div className="w-9 h-9 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-500 overflow-hidden shadow-sm group-hover:border-gray-300 transition-colors shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-gray-500 overflow-hidden shadow-sm group-hover:border-gray-300 transition-colors shrink-0">
                                 {user?.fullname?.[0]?.toUpperCase() || <Globe className="w-5 h-5" />}
                             </div>
                             <div className="flex flex-col items-start min-w-0 flex-1">
-                                <span className="text-xs font-bold truncate w-full text-left text-[#1a1a1a]">
+                                <span className="text-sm font-bold truncate w-full text-left text-[#1a1a1a] leading-tight">
                                     {user?.fullname || user?.email?.split('@')[0]}
                                 </span>
-                                <span className="text-[11px] text-gray-500 truncate w-full text-left font-medium">
+                                <span className="text-xs text-gray-500 truncate w-full text-left font-medium leading-tight mt-0.5">
                                     {bio?.sufix ? `@${bio.sufix}` : t("dashboard.sidebar.selectPage")}
                                 </span>
                             </div>
@@ -594,6 +590,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                         <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Settings className="w-3 h-3" /></div>
                                         <span className="font-medium text-sm">{t("dashboard.sidebar.settings")}</span>
                                     </Link>
+                                    <Link
+                                        to={withLang("/dashboard/integrations")}
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-left transition-colors text-gray-500 hover:text-black"
+                                    >
+                                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-gray-400"><Puzzle className="w-3 h-3" /></div>
+                                        <span className="font-medium text-sm">{t("dashboard.nav.integrations")}</span>
+                                    </Link>
                                     <button
                                         onClick={() => { setIsDropdownOpen(false); logout(); }}
                                         className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 text-left transition-colors text-gray-500 hover:text-red-600 mt-1"
@@ -612,13 +616,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex-1 overflow-y-auto px-3 xl:px-4 py-2 space-y-5 xl:space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                <div className="flex-1 overflow-y-auto px-3 sm:px-4 xl:px-5 py-2.5 space-y-6 xl:space-y-7 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     {bio ? (
                         navGroups.map((group) => (
-                            <div key={group.key} className="space-y-1">
+                            <div key={group.key} className="space-y-1.5">
                                 <button
                                     onClick={() => toggleGroup(group.key)}
-                                    className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-900 transition-colors py-2 px-3 group"
+                                    className="w-full flex items-center justify-between text-[13px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-900 transition-colors py-2.5 px-3 group"
                                 >
                                     <span className="flex items-center gap-2 min-w-0">
                                         <span>{group.label}</span>
@@ -648,11 +652,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                                             <div key={`${group.key}-${item.key}`} className="space-y-1">
                                                                 <button
                                                                     onClick={() => toggleToolSubgroup(item.key)}
-                                                                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-transparent hover:border-gray-200 bg-[#F8F9FA] hover:bg-[#F1F5F9] text-gray-700"
+                                                                    className="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-xl border border-transparent hover:border-gray-200 bg-[#F8F9FA] hover:bg-[#F1F5F9] text-gray-700"
                                                                 >
                                                                     <span className="flex items-center gap-3 min-w-0">
-                                                                        <item.icon className="w-4 h-4 shrink-0 text-gray-500" />
-                                                                        <span className="text-sm font-bold truncate">{item.name}</span>
+                                                                        <item.icon className="w-[18px] h-[18px] shrink-0 text-gray-500" />
+                                                                        <span className="text-base font-bold truncate leading-tight">{item.name}</span>
                                                                     </span>
                                                                     <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isSubgroupOpen ? '' : '-rotate-90'}`} />
                                                                 </button>
@@ -666,7 +670,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                                                             transition={{ duration: 0.2, ease: "easeInOut" }}
                                                                             className="overflow-hidden"
                                                                         >
-                                                                            <div className="space-y-1 pl-3 border-l-2 border-[#E5E7EB] ml-3">
+                                                                            <div className="space-y-1.5 pl-4 border-l-2 border-[#E5E7EB] ml-4">
                                                                                 {item.children.map((child: any) => {
                                                                                     // @ts-ignore
                                                                                     const childLocked = child.isProOnly ? userPlan !== 'pro' : (child.isPro && userPlan === 'free');
@@ -685,15 +689,15 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                                                                                 if (onClose) onClose();
                                                                                             }}
                                                                                             className={`
-                                                                                                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
+                                                                                                flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group relative
                                                                                                 ${childActive
                                                                                                     ? "bg-[#C6F035]/20 text-black font-bold"
                                                                                                     : "text-gray-500 hover:bg-black/5 hover:text-black font-medium"
                                                                                                 }
                                                                                             `}
                                                                                         >
-                                                                                            <child.icon className={`w-4 h-4 shrink-0 stroke-[2px] ${childActive ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
-                                                                                            <span className="flex-1 text-sm">{child.name}</span>
+                                                                                            <child.icon className={`w-[18px] h-[18px] shrink-0 stroke-[2px] ${childActive ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
+                                                                                            <span className="flex-1 text-[15px] leading-tight">{child.name}</span>
                                                                                             {childLocked && <Lock className="w-3 h-3 text-gray-300" />}
                                                                                         </Link>
                                                                                     );
@@ -726,15 +730,15 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                                                 if (onClose) onClose();
                                                             }}
                                                             className={`
-                                                                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
+                                                                flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-200 group relative
                                                                 ${isActiveItem
                                                                     ? "bg-[#C6F035]/20 text-black font-bold shadow-sm" // Light Lime bg for active
                                                                     : "text-gray-500 hover:bg-black/5 hover:text-black font-medium"
                                                                 }
                                                             `}
                                                         >
-                                                            <item.icon className={`w-4 h-4 shrink-0 stroke-[2px] ${isActiveItem ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
-                                                            <span className="flex-1 text-sm">{item.name}</span>
+                                                            <item.icon className={`w-[18px] h-[18px] shrink-0 stroke-[2px] ${isActiveItem ? "text-black" : "text-gray-400 group-hover:text-black"} transition-colors`} />
+                                                            <span className="flex-1 text-[15px] leading-tight">{item.name}</span>
                                                             {isLocked && <Lock className="w-3 h-3 text-gray-300" />}
                                                         </Link>
                                                     )

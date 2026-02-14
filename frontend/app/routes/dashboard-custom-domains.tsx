@@ -239,14 +239,53 @@ export default function DashboardCustomDomains() {
         setCheckingDomain(domainId);
         try {
             const response = await api.post(`/custom-domains/${domainId}/verify`);
-            if (response.data.success) {
-                toast.success(t("customDomains.success.verificationStarted"));
-                // Poll for updates
-                setTimeout(fetchDomains, 3000);
+            if (!response.data?.success) {
+                toast.error(response.data?.message || t("customDomains.errors.verifyFailed"));
+                return;
             }
+
+            const alreadyActive = Boolean(response.data?.alreadyActive);
+            toast.success(
+                alreadyActive
+                    ? (response.data?.message || t("customDomains.status.active"))
+                    : (response.data?.message || t("customDomains.success.verificationStarted"))
+            );
+
+            if (alreadyActive) {
+                await fetchDomains();
+                return;
+            }
+
+            const startedAt = Date.now();
+            const timeoutMs = 120000;
+            const intervalMs = 2500;
+
+            while (Date.now() - startedAt < timeoutMs) {
+                await new Promise((resolve) => setTimeout(resolve, intervalMs));
+                const latestDomains = await fetchDomainsSilently();
+                const latest = latestDomains.find((d) => d.id === domainId);
+
+                if (!latest) break;
+
+                if (latest.status === "active" && latest.sslActive) {
+                    toast.success(t("customDomains.status.active"));
+                    return;
+                }
+
+                if (!TRANSITIONAL_STATUSES.includes(latest.status)) {
+                    if (latest.errorMessage) {
+                        toast.error(latest.errorMessage);
+                    } else {
+                        toast.error(t("customDomains.errors.verifyFailed"));
+                    }
+                    return;
+                }
+            }
+
+            toast.error(t("customDomains.errors.verifyFailed"));
         } catch (error) {
             console.error("Failed to verify domain:", error);
-            toast.error(t("customDomains.errors.verifyFailed"));
+            toast.error((error as any)?.response?.data?.message || t("customDomains.errors.verifyFailed"));
         } finally {
             setCheckingDomain(null);
         }

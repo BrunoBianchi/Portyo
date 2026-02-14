@@ -26,6 +26,19 @@ interface IntegrationRecord {
     account_id?: string;
 }
 
+interface InstagramLastWebhookEvent {
+    receivedAt: string;
+    status: "processed" | "ignored_no_bio";
+    eventType: string;
+    accountId: string;
+    resolvedBioId: string | null;
+    messagePreview?: string;
+    triggerCounts?: {
+        eventExecutions: number;
+        webhookExecutions: number;
+    };
+}
+
 export default function DashboardHome() {
     const isCompany = isCompanySubdomain();
 
@@ -52,6 +65,8 @@ function UserDashboardHome() {
     const [loadingInstagramIntegration, setLoadingInstagramIntegration] = useState(true);
     const [isInstagramConnected, setIsInstagramConnected] = useState(false);
     const [instagramAccountLabel, setInstagramAccountLabel] = useState<string>("");
+    const [instagramAccountId, setInstagramAccountId] = useState<string>("");
+    const [lastInstagramWebhookEvent, setLastInstagramWebhookEvent] = useState<InstagramLastWebhookEvent | null>(null);
 
     useEffect(() => {
         if (bio?.id) {
@@ -91,36 +106,52 @@ function UserDashboardHome() {
             setLoadingInstagramIntegration(false);
             setIsInstagramConnected(false);
             setInstagramAccountLabel("");
+            setInstagramAccountId("");
+            setLastInstagramWebhookEvent(null);
             return;
         }
 
         setLoadingInstagramIntegration(true);
 
-        api.get(`/integration?bioId=${bio.id}`)
-            .then((res) => {
-                const integrations = Array.isArray(res.data) ? (res.data as IntegrationRecord[]) : [];
-                const instagramIntegration = integrations.find((integration) => {
-                    const provider = String(integration?.provider || "").toLowerCase().trim();
-                    const name = String(integration?.name || "").toLowerCase().trim();
-                    return provider === "instagram" || name === "instagram";
-                });
+        Promise.allSettled([
+            api.get(`/integration?bioId=${bio.id}`),
+            api.get(`/instagram/webhook/last`, { params: { bioId: bio.id } }),
+        ])
+            .then(([integrationResult, webhookResult]) => {
+                if (integrationResult.status === "fulfilled") {
+                    const integrations = Array.isArray(integrationResult.value.data) ? (integrationResult.value.data as IntegrationRecord[]) : [];
+                    const instagramIntegration = integrations.find((integration) => {
+                        const provider = String(integration?.provider || "").toLowerCase().trim();
+                        const name = String(integration?.name || "").toLowerCase().trim();
+                        return provider === "instagram" || name === "instagram";
+                    });
 
-                setIsInstagramConnected(Boolean(instagramIntegration));
+                    setIsInstagramConnected(Boolean(instagramIntegration));
 
-                if (instagramIntegration) {
-                    setInstagramAccountLabel(
-                        String(instagramIntegration.name || "").trim() ||
-                        String(instagramIntegration.account_id || "").trim() ||
-                        "Instagram"
-                    );
+                    if (instagramIntegration) {
+                        setInstagramAccountLabel(
+                            String(instagramIntegration.name || "").trim() ||
+                            String(instagramIntegration.account_id || "").trim() ||
+                            "Instagram"
+                        );
+                        setInstagramAccountId(String(instagramIntegration.account_id || "").trim());
+                    } else {
+                        setInstagramAccountLabel("");
+                        setInstagramAccountId("");
+                    }
                 } else {
+                    console.error("Failed to fetch integrations for Instagram insights", integrationResult.reason);
+                    setIsInstagramConnected(false);
                     setInstagramAccountLabel("");
+                    setInstagramAccountId("");
                 }
-            })
-            .catch((error) => {
-                console.error("Failed to fetch integrations for Instagram insights", error);
-                setIsInstagramConnected(false);
-                setInstagramAccountLabel("");
+
+                if (webhookResult.status === "fulfilled") {
+                    const payload = webhookResult.value.data as { event?: InstagramLastWebhookEvent | null };
+                    setLastInstagramWebhookEvent(payload?.event || null);
+                } else {
+                    setLastInstagramWebhookEvent(null);
+                }
             })
             .finally(() => setLoadingInstagramIntegration(false));
     }, [bio?.id]);
@@ -250,13 +281,13 @@ function UserDashboardHome() {
                             <div>
                                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F3F3F1] border border-black text-[11px] font-black uppercase tracking-wider mb-3">
                                     <Instagram className="w-3.5 h-3.5" />
-                                    Instagram Insights
+                                    {t("dashboard.overview.instagramInsights.badge")}
                                 </div>
                                 <h2 className="text-2xl sm:text-3xl font-black text-[#1A1A1A] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                                    Visão geral do Instagram conectado
+                                    {t("dashboard.overview.instagramInsights.title")}
                                 </h2>
                                 <p className="text-sm font-medium text-[#1A1A1A]/60 mt-1">
-                                    Conta: <span className="font-black text-[#1A1A1A]">{instagramAccountLabel}</span>
+                                    {t("dashboard.overview.instagramInsights.account")} <span className="font-black text-[#1A1A1A]">{instagramAccountLabel}</span>
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -264,13 +295,13 @@ function UserDashboardHome() {
                                     to="/dashboard/instagram/auto-reply"
                                     className="px-4 py-2 rounded-lg border-2 border-black bg-white font-black text-xs uppercase tracking-wider hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                                 >
-                                    Auto-reply
+                                    {t("dashboard.overview.instagramInsights.autoReply")}
                                 </Link>
                                 <Link
                                     to="/dashboard/instagram/post-ideas"
                                     className="px-4 py-2 rounded-lg border-2 border-black bg-[#D2E823] font-black text-xs uppercase tracking-wider hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                                 >
-                                    Post ideas
+                                    {t("dashboard.overview.instagramInsights.postIdeas")}
                                 </Link>
                             </div>
                         </div>
@@ -279,23 +310,23 @@ function UserDashboardHome() {
                             <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
                                 <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#1A1A1A]/60 mb-2">
                                     <BarChart3 className="w-3.5 h-3.5" />
-                                    Visualizações
+                                    {t("dashboard.overview.instagramInsights.views")}
                                 </div>
                                 <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
                                     {analytics?.views?.total || bio?.views || 0}
                                 </p>
-                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Total acumulado</p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">{t("dashboard.overview.instagramInsights.total")}</p>
                             </div>
 
                             <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
                                 <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#1A1A1A]/60 mb-2">
                                     <MousePointer2 className="w-3.5 h-3.5" />
-                                    Cliques
+                                    {t("dashboard.overview.instagramInsights.clicks")}
                                 </div>
                                 <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
                                     {analytics?.clicks?.total || bio?.clicks || 0}
                                 </p>
-                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Total acumulado</p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">{t("dashboard.overview.instagramInsights.total")}</p>
                             </div>
 
                             <div className="bg-[#F8F9FA] border border-gray-200 rounded-2xl p-4">
@@ -306,18 +337,31 @@ function UserDashboardHome() {
                                 <p className="text-3xl font-black text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
                                     {analytics?.views?.total ? `${analytics?.ctr?.average || 0}%` : "-"}
                                 </p>
-                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Taxa média de clique</p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">{t("dashboard.overview.instagramInsights.ctrAvg")}</p>
                             </div>
 
                             <div className="bg-[#111827] border border-black rounded-2xl p-4 text-white">
                                 <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-white/80 mb-2">
                                     <MessageCircle className="w-3.5 h-3.5" />
-                                    Automação
+                                    {t("dashboard.overview.instagramInsights.userOverview")}
                                 </div>
-                                <p className="text-lg font-black">Instagram conectado</p>
-                                <p className="text-xs text-white/70 mt-1">
-                                    Ative auto-reply e ideias de post para acelerar engajamento.
+                                <p className="text-base sm:text-lg font-black break-words">@{instagramAccountLabel || "instagram"}</p>
+                                <p className="text-xs text-white/70 mt-1 break-all">
+                                    {t("dashboard.overview.instagramInsights.accountId")} {instagramAccountId || "-"}
                                 </p>
+                                <div className="mt-3 space-y-1.5 text-xs">
+                                    <p className="text-white/85">
+                                        {t("dashboard.overview.instagramInsights.status")} <span className={`font-black ${lastInstagramWebhookEvent?.status === "processed" ? "text-[#C6F035]" : "text-amber-300"}`}>
+                                            {lastInstagramWebhookEvent?.status === "processed" ? t("dashboard.overview.instagramInsights.webhookActive") : t("dashboard.overview.instagramInsights.waitingEvent")}
+                                        </span>
+                                    </p>
+                                    <p className="text-white/70">
+                                        {t("dashboard.overview.instagramInsights.lastEvent")} {lastInstagramWebhookEvent?.eventType || t("dashboard.overview.instagramInsights.none")}
+                                    </p>
+                                    <p className="text-white/70">
+                                        {t("dashboard.overview.instagramInsights.receivedAt")} {lastInstagramWebhookEvent?.receivedAt ? new Date(lastInstagramWebhookEvent.receivedAt).toLocaleString() : "-"}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -327,15 +371,15 @@ function UserDashboardHome() {
                     <section className="bg-white border-2 border-dashed border-gray-300 p-5 rounded-2xl">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
-                                <p className="text-sm font-black text-[#1A1A1A]">Conecte seu Instagram para desbloquear insights no overview.</p>
-                                <p className="text-xs text-[#1A1A1A]/60 mt-1">Assim que conectar, este painel mostra métricas rápidas no estilo Linktree.</p>
+                                <p className="text-sm font-black text-[#1A1A1A]">{t("dashboard.overview.instagramInsights.connectTitle")}</p>
+                                <p className="text-xs text-[#1A1A1A]/60 mt-1">{t("dashboard.overview.instagramInsights.connectSubtitle")}</p>
                             </div>
                             <Link
                                 to="/dashboard/integrations"
                                 className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-black bg-[#D2E823] font-black text-xs uppercase tracking-wider"
                             >
                                 <Instagram className="w-4 h-4" />
-                                Conectar Instagram
+                                {t("dashboard.overview.instagramInsights.connectCta")}
                             </Link>
                         </div>
                     </section>
