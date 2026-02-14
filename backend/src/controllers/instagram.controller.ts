@@ -432,7 +432,9 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
 
       integration.account_id = tokenData.instagramBusinessAccountId;
       integration.name = tokenData.instagramUsername || tokenData.pageName || "Instagram";
-      integration.accessToken = typeof tokenData.accessToken === "string" ? tokenData.accessToken.trim() : tokenData.accessToken;
+      integration.accessToken = typeof tokenData.accessToken === "string"
+        ? tokenData.accessToken.trim()
+        : (tokenData.accessToken ?? undefined);
       integration.refreshToken = typeof tokenData.userToken === "string"
         ? tokenData.userToken.trim()
         : (tokenData.userToken ?? undefined);

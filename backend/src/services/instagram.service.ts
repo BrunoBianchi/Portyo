@@ -41,7 +41,7 @@ export class InstagramService {
   }
 
   private get graphBaseUrl() {
-    return `https://graph.facebook.com/${this.graphVersion}`;
+    return `https://graph.instagram.com/${this.graphVersion}`;
   }
 
   public getAuthUrl(redirectUri?: string) {
@@ -50,9 +50,6 @@ export class InstagramService {
     }
     const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
-      "pages_show_list",
-      "pages_read_engagement",
-      "business_management",
       "instagram_business_basic",
       "instagram_business_manage_comments",
       "instagram_business_manage_messages",
@@ -97,7 +94,7 @@ export class InstagramService {
           });
 
           const tokenResponse = await axios.post(
-            `${this.graphBaseUrl}/oauth/access_token`,
+            "https://api.instagram.com/oauth/access_token",
             tokenBody.toString(),
             {
               headers: {
@@ -106,12 +103,16 @@ export class InstagramService {
             }
           );
 
-          userAccessToken = tokenResponse.data?.access_token;
-          userId = tokenResponse.data?.user_id ? String(tokenResponse.data.user_id) : null;
-          expiresIn = tokenResponse.data?.expires_in;
+          const tokenPayload = Array.isArray(tokenResponse.data?.data)
+            ? tokenResponse.data.data[0]
+            : tokenResponse.data;
+
+          userAccessToken = tokenPayload?.access_token || null;
+          userId = tokenPayload?.user_id ? String(tokenPayload.user_id) : null;
+          expiresIn = tokenPayload?.expires_in;
 
           if (!userAccessToken) {
-            throw new ApiError(APIErrors.badRequestError, "Missing access token from Facebook OAuth", 400);
+            throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
           }
 
           resolvedRedirectUri = candidateRedirectUri;
@@ -137,22 +138,13 @@ export class InstagramService {
       });
 
       try {
-        const longLivedTokenBody = new URLSearchParams({
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          grant_type: "fb_exchange_token",
-          fb_exchange_token: userAccessToken,
+        const longLivedTokenResponse = await axios.get(`${this.graphBaseUrl}/access_token`, {
+          params: {
+            grant_type: "ig_exchange_token",
+            client_secret: this.clientSecret,
+            access_token: userAccessToken,
+          },
         });
-
-        const longLivedTokenResponse = await axios.post(
-          `${this.graphBaseUrl}/oauth/access_token`,
-          longLivedTokenBody.toString(),
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          }
-        );
 
         if (longLivedTokenResponse.data?.access_token) {
           userAccessToken = longLivedTokenResponse.data.access_token;
@@ -164,48 +156,37 @@ export class InstagramService {
         logger.warn(`Instagram long-lived token exchange skipped | status=${exchangeError?.response?.status} error=${errMsg}`);
       }
 
-      const pagesResponse = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
+      const profileResponse = await axios.get(`${this.graphBaseUrl}/${userId || "me"}`, {
         params: {
-          fields: "id,name,access_token,instagram_business_account{id,username}",
+          fields: "id,username,account_type,media_count",
           access_token: userAccessToken,
         },
       });
 
-      const pages = Array.isArray(pagesResponse.data?.data) ? pagesResponse.data.data : [];
-      const targetPage = pages.find((page: any) => page?.instagram_business_account?.id && page?.access_token)
-        || pages.find((page: any) => page?.instagram_business_account?.id);
+      const instagramUserId = profileResponse.data?.id
+        ? String(profileResponse.data.id)
+        : (userId ? String(userId) : null);
+      const instagramUsername = profileResponse.data?.username || null;
 
-      if (!targetPage?.instagram_business_account?.id) {
-        throw new ApiError(
-          APIErrors.badRequestError,
-          "No Instagram professional account linked to a Facebook Page was found. Connect an Instagram Business/Creator account to a Facebook Page and authorize again.",
-          400
-        );
+      if (!instagramUserId) {
+        throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
       }
-
-      const instagramUserId = String(targetPage.instagram_business_account.id);
-      const instagramUsername = targetPage.instagram_business_account.username || null;
-      const pageId = targetPage.id ? String(targetPage.id) : null;
-      const pageName = targetPage.name || null;
-      const pageAccessToken = targetPage.access_token || userAccessToken;
 
       logger.info("Instagram OAuth exchange succeeded", {
         redirectUriUsed: resolvedRedirectUri,
         instagramUserId,
         instagramUsername,
-        pageId,
-        pageName,
         usedLongLivedToken: Boolean(expiresIn),
       });
 
       return {
-        accessToken: pageAccessToken,
+        accessToken: userAccessToken,
         userToken: userAccessToken,
         userId: userId || instagramUserId,
         instagramBusinessAccountId: instagramUserId,
         instagramUsername,
-        pageId,
-        pageName,
+        pageId: null,
+        pageName: null,
         expiresIn,
       };
     } catch (error: any) {
@@ -223,9 +204,9 @@ export class InstagramService {
   public async getUserProfile(accessToken: string) {
     try {
       const normalizedAccessToken = (accessToken || "").trim();
-      const response = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
+      const response = await axios.get(`${this.graphBaseUrl}/me`, {
         params: {
-          fields: "id,name,instagram_business_account{id,username}",
+          fields: "id,username,account_type,media_count",
           access_token: normalizedAccessToken,
         },
       });
@@ -274,13 +255,11 @@ export class InstagramService {
       }
 
       for (let attempt = 0; attempt < 3; attempt++) {
-        const statusBody = new URLSearchParams({
-          fields: "status_code",
-          access_token: normalizedAccessToken,
-        });
-
-        const statusResponse = await axios.post(`${this.graphBaseUrl}/${creationId}`, statusBody.toString(), {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        const statusResponse = await axios.get(`${this.graphBaseUrl}/${creationId}`, {
+          params: {
+            fields: "status_code",
+            access_token: normalizedAccessToken,
+          },
         });
 
         const statusCode = statusResponse.data?.status_code;
