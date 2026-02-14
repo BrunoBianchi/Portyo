@@ -940,6 +940,20 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       integration.tokenRefreshLockUntil = null;
       
       await integrationRepository.save(integration);
+
+      const webhookSubscriptionResult = await instagramService.subscribeAppToInstagramWebhooks({
+        instagramBusinessAccountId: tokenData.instagramBusinessAccountId,
+        accessToken: integration.accessToken || "",
+      });
+
+      console.log("[Instagram OAuth][callback][integration] subscribed_apps result", {
+        bioId: bio.id,
+        accountId: tokenData.instagramBusinessAccountId,
+        success: webhookSubscriptionResult.success,
+        subscribedFields: webhookSubscriptionResult.subscribedFields,
+        error: webhookSubscriptionResult.success ? undefined : webhookSubscriptionResult.error,
+      });
+
       markProcessedInstagramCode(code);
 
       console.log("[Instagram OAuth][callback][integration] Integration saved", {
@@ -1028,6 +1042,7 @@ export const getWebhookConfig = async (req: Request, res: Response) => {
 };
 
 export const receiveWebhook = async (req: Request, res: Response) => {
+  console.log(req)
   try {
     const payload = req.body;
 

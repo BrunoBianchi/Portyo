@@ -572,6 +572,58 @@ export class InstagramService {
     }
   }
 
+  public async subscribeAppToInstagramWebhooks(params: {
+    instagramBusinessAccountId: string;
+    accessToken: string;
+    subscribedFields?: string[];
+  }) {
+    const { instagramBusinessAccountId, accessToken } = params;
+    const normalizedAccessToken = String(accessToken || "").trim();
+    const fields = (params.subscribedFields && params.subscribedFields.length > 0)
+      ? params.subscribedFields
+      : ["messages", "comments", "message_reactions", "messaging_postbacks"];
+
+    if (!instagramBusinessAccountId || !normalizedAccessToken) {
+      throw new ApiError(APIErrors.badRequestError, "Missing instagram account ID or access token for webhook subscription", 400);
+    }
+
+    const graphFacebookBaseUrl = `https://graph.facebook.com/${this.graphVersion}`;
+
+    try {
+      const response = await axios.post(
+        `${graphFacebookBaseUrl}/${instagramBusinessAccountId}/subscribed_apps`,
+        null,
+        {
+          params: {
+            access_token: normalizedAccessToken,
+            subscribed_fields: fields.join(","),
+          },
+        }
+      );
+
+      logger.info("Instagram subscribed_apps success", {
+        instagramBusinessAccountId,
+        subscribedFields: fields,
+        response: response.data,
+      });
+
+      return {
+        success: true,
+        subscribedFields: fields,
+        response: response.data,
+      };
+    } catch (error: any) {
+      const errData = error?.response?.data;
+      const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || error?.message);
+      logger.warn(`Instagram subscribed_apps failed | accountId=${instagramBusinessAccountId} status=${error?.response?.status} error=${errMsg}`);
+      return {
+        success: false,
+        subscribedFields: fields,
+        error: errMsg,
+      };
+    }
+  }
+
   public async publishImagePost(params: {
     instagramBusinessAccountId: string;
     accessToken: string;
