@@ -332,52 +332,54 @@ export default function DashboardPollEditor() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {state.chartColors.map((color, index) => {
                 const optionLabel = state.options[index]?.label?.trim();
+
                 return (
-                <div key={`chart-color-${index}`} className="border rounded-lg p-2 bg-white">
-                  <div className="mb-2 text-xs font-bold text-gray-600 uppercase tracking-wide">
-                    {t("dashboard.polls.colorLabel", { defaultValue: "Color" })} {index + 1}
-                    {optionLabel ? ` • ${optionLabel}` : ""}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                  <div key={`chart-color-${index}`} className="border rounded-lg p-2 bg-white">
+                    <div className="mb-2 text-xs font-bold text-gray-600 uppercase tracking-wide">
+                      {t("dashboard.polls.colorLabel", { defaultValue: "Color" })} {index + 1}
+                      {optionLabel ? ` • ${optionLabel}` : ""}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                        <input
+                          type="color"
+                          value={normalizeHexColor(color)}
+                          onChange={(e) => {
+                            const next = [...state.chartColors];
+                            next[index] = normalizeHexColor(e.target.value, color || "#000000");
+                            setState((p) => ({ ...p, chartColors: next }));
+                          }}
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 m-0 cursor-pointer"
+                        />
+                      </div>
                       <input
-                        type="color"
-                        value={normalizeHexColor(color)}
+                        type="text"
+                        value={normalizeHexColor(color).toUpperCase()}
                         onChange={(e) => {
                           const next = [...state.chartColors];
-                          next[index] = normalizeHexColor(e.target.value, color || "#000000");
+                          next[index] = e.target.value;
                           setState((p) => ({ ...p, chartColors: next }));
                         }}
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 m-0 cursor-pointer"
+                        onBlur={(e) => {
+                          const next = [...state.chartColors];
+                          next[index] = normalizeHexColor(e.target.value, "#000000");
+                          setState((p) => ({ ...p, chartColors: next }));
+                        }}
+                        className="flex-1 bg-gray-50 border-2 border-black rounded-lg pl-3 pr-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                        placeholder="#000000"
                       />
                     </div>
-                    <input
-                      type="text"
-                      value={normalizeHexColor(color).toUpperCase()}
-                      onChange={(e) => {
-                        const next = [...state.chartColors];
-                        next[index] = e.target.value;
-                        setState((p) => ({ ...p, chartColors: next }));
-                      }}
-                      onBlur={(e) => {
-                        const next = [...state.chartColors];
-                        next[index] = normalizeHexColor(e.target.value, "#000000");
-                        setState((p) => ({ ...p, chartColors: next }));
-                      }}
-                      className="flex-1 bg-gray-50 border-2 border-black rounded-lg pl-3 pr-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-                      placeholder="#000000"
-                    />
+                    <button
+                      type="button"
+                      disabled={state.chartColors.length <= 1}
+                      onClick={() => setState((p) => ({ ...p, chartColors: p.chartColors.filter((_, i) => i !== index) }))}
+                      className="text-xs mt-2 text-red-600 font-semibold"
+                    >
+                      {t("dashboard.polls.removeColor", { defaultValue: "Remove" })}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    disabled={state.chartColors.length <= 1}
-                    onClick={() => setState((p) => ({ ...p, chartColors: p.chartColors.filter((_, i) => i !== index) }))}
-                    className="text-xs mt-2 text-red-600 font-semibold"
-                  >
-                    {t("dashboard.polls.removeColor", { defaultValue: "Remove" })}
-                  </button>
-                </div>
-              )})}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -403,6 +405,7 @@ export default function DashboardPollEditor() {
           </p>
         )}
       </div>
+    </div>
     </div>
   );
 }
