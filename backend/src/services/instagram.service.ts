@@ -4,11 +4,14 @@ import { env } from "../config/env";
 import axios from "axios";
 import sharp from "sharp";
 import redisClient from "../config/redis.client";
+import { IntegrationEntity } from "../database/entity/integration-entity";
+import { Repository } from "typeorm";
 
 export class InstagramService {
   private readonly clientId = env.INSTAGRAM_CLIENT_ID;
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
   private readonly graphVersion = "v21.0";
+  private readonly tokenExchangeBaseUrl = "https://graph.instagram.com";
 
   private normalizeBaseUrl(value?: string) {
     if (!value) return undefined;
@@ -42,6 +45,185 @@ export class InstagramService {
 
   private get graphBaseUrl() {
     return `https://graph.instagram.com/${this.graphVersion}`;
+  }
+
+  private buildFormPayload(payload: Record<string, string>) {
+    const body = new URLSearchParams();
+    for (const [key, value] of Object.entries(payload)) {
+      body.append(key, value);
+    }
+    return body.toString();
+  }
+
+  private buildErrorMessage(error: any) {
+    const errData = error?.response?.data;
+    if (typeof errData === "object") {
+      return JSON.stringify(errData);
+    }
+    return errData || error?.message || "Unknown Instagram error";
+  }
+
+  public isAuthTokenError(error: any) {
+    const status = error?.response?.status;
+    const code = error?.response?.data?.error?.code;
+    const message = String(error?.response?.data?.error?.message || error?.message || "").toLowerCase();
+    const subcode = error?.response?.data?.error?.error_subcode;
+
+    if (code === 190 || subcode === 463 || subcode === 467) {
+      return true;
+    }
+
+    if (status === 401) {
+      return true;
+    }
+
+    return message.includes("access token") || message.includes("oauth") || message.includes("token expired");
+  }
+
+  public computeTokenExpiryDate(expiresIn?: number | null) {
+    if (!expiresIn || Number.isNaN(Number(expiresIn))) {
+      return null;
+    }
+
+    const expiresInMs = Number(expiresIn) * 1000;
+    return new Date(Date.now() + expiresInMs);
+  }
+
+  public shouldRefreshToken(expiresAt?: Date | null, thresholdSeconds = 24 * 60 * 60) {
+    if (!expiresAt) {
+      return false;
+    }
+
+    const remainingMs = new Date(expiresAt).getTime() - Date.now();
+    return remainingMs <= thresholdSeconds * 1000;
+  }
+
+  public async exchangeForLongLivedToken(shortLivedToken: string) {
+    if (!this.clientSecret) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram client secret not configured", 500);
+    }
+
+    try {
+      const response = await axios.post(
+        `${this.tokenExchangeBaseUrl}/access_token`,
+        this.buildFormPayload({
+          grant_type: "ig_exchange_token",
+          client_secret: this.clientSecret,
+          access_token: shortLivedToken,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      if (!response.data?.access_token) {
+        throw new ApiError(APIErrors.badRequestError, "Instagram did not return a long-lived token", 400);
+      }
+
+      return {
+        accessToken: response.data.access_token as string,
+        tokenType: response.data?.token_type as string | undefined,
+        expiresIn: response.data?.expires_in as number | undefined,
+      };
+    } catch (error: any) {
+      logger.error(`Instagram long-lived token exchange failed | status=${error?.response?.status} error=${this.buildErrorMessage(error)}`);
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(APIErrors.badRequestError, "Failed to exchange Instagram long-lived token", 400);
+    }
+  }
+
+  public async refreshLongLivedToken(accessToken: string) {
+    try {
+      const response = await axios.post(
+        `${this.tokenExchangeBaseUrl}/refresh_access_token`,
+        this.buildFormPayload({
+          grant_type: "ig_refresh_token",
+          access_token: accessToken,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      if (!response.data?.access_token) {
+        throw new ApiError(APIErrors.badRequestError, "Instagram did not return refreshed token", 400);
+      }
+
+      return {
+        accessToken: response.data.access_token as string,
+        tokenType: response.data?.token_type as string | undefined,
+        expiresIn: response.data?.expires_in as number | undefined,
+      };
+    } catch (error: any) {
+      logger.error(`Instagram token refresh failed | status=${error?.response?.status} error=${this.buildErrorMessage(error)}`);
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(APIErrors.badRequestError, "Failed to refresh Instagram access token", 400);
+    }
+  }
+
+  public async refreshIntegrationAccessToken(
+    integration: IntegrationEntity,
+    integrationRepository: Repository<IntegrationEntity>,
+    options?: { force?: boolean; lockMinutes?: number }
+  ) {
+    const force = Boolean(options?.force);
+    const lockMinutes = options?.lockMinutes ?? 2;
+    const now = new Date();
+
+    if (!integration.accessToken) {
+      throw new ApiError(APIErrors.badRequestError, "Instagram integration access token missing", 400);
+    }
+
+    if (!force && integration.tokenRefreshLockUntil && new Date(integration.tokenRefreshLockUntil) > now) {
+      return integration;
+    }
+
+    integration.tokenRefreshLockUntil = new Date(now.getTime() + lockMinutes * 60 * 1000);
+    integration.tokenLastRefreshAttemptAt = now;
+    await integrationRepository.save(integration);
+
+    try {
+      const refreshed = await this.refreshLongLivedToken(integration.accessToken);
+      integration.accessToken = refreshed.accessToken;
+      integration.refreshToken = refreshed.accessToken;
+      integration.accessTokenExpiresAt = this.computeTokenExpiryDate(refreshed.expiresIn);
+      integration.tokenLastRefreshedAt = new Date();
+      integration.tokenLastRefreshError = null;
+      integration.tokenRefreshLockUntil = null;
+
+      return await integrationRepository.save(integration);
+    } catch (error: any) {
+      integration.tokenRefreshLockUntil = null;
+      integration.tokenLastRefreshError = this.buildErrorMessage(error);
+      await integrationRepository.save(integration);
+      throw error;
+    }
+  }
+
+  public async ensureFreshIntegrationAccessToken(
+    integration: IntegrationEntity,
+    integrationRepository: Repository<IntegrationEntity>,
+    options?: { forceRefresh?: boolean; thresholdSeconds?: number }
+  ) {
+    const forceRefresh = Boolean(options?.forceRefresh);
+    const thresholdSeconds = options?.thresholdSeconds ?? 24 * 60 * 60;
+    const shouldRefresh = forceRefresh || this.shouldRefreshToken(integration.accessTokenExpiresAt, thresholdSeconds);
+
+    if (!shouldRefresh) {
+      return integration;
+    }
+
+    return this.refreshIntegrationAccessToken(integration, integrationRepository, {
+      force: forceRefresh,
+    });
   }
 
   public getAuthUrl(redirectUri?: string) {
@@ -137,24 +319,9 @@ export class InstagramService {
         redirectUriUsed: resolvedRedirectUri,
       });
 
-      try {
-        const longLivedTokenResponse = await axios.get(`${this.graphBaseUrl}/access_token`, {
-          params: {
-            grant_type: "ig_exchange_token",
-            client_secret: this.clientSecret,
-            access_token: userAccessToken,
-          },
-        });
-
-        if (longLivedTokenResponse.data?.access_token) {
-          userAccessToken = longLivedTokenResponse.data.access_token;
-          expiresIn = longLivedTokenResponse.data?.expires_in ?? expiresIn;
-        }
-      } catch (exchangeError: any) {
-        const errData = exchangeError?.response?.data;
-        const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || exchangeError?.message);
-        logger.warn(`Instagram long-lived token exchange skipped | status=${exchangeError?.response?.status} error=${errMsg}`);
-      }
+      const longLivedToken = await this.exchangeForLongLivedToken(userAccessToken);
+      userAccessToken = longLivedToken.accessToken;
+      expiresIn = longLivedToken.expiresIn ?? expiresIn;
 
       const profileResponse = await axios.get(`${this.graphBaseUrl}/${userId || "me"}`, {
         params: {

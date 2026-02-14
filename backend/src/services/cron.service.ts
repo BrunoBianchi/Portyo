@@ -11,6 +11,8 @@ import { runSocialPlannerJob } from "./social-planner.service";
 import { CustomDomainService } from "../shared/services/custom-domain.service";
 import { NewsletterService } from "./newsletter.service";
 import { logger } from "../shared/utils/logger";
+import { IntegrationEntity } from "../database/entity/integration-entity";
+import { instagramService } from "./instagram.service";
 
 export class CronService {
     
@@ -43,6 +45,11 @@ export class CronService {
         // Verify and publish due social planner posts every hour
         schedule.scheduleJob("0 */1 * * *", () => {
             runSocialPlannerJob();
+        });
+
+        // Refresh Instagram long-lived tokens every 6 hours
+        schedule.scheduleJob("0 */6 * * *", () => {
+            this.refreshInstagramTokens();
         });
 
         // Process queued site auto-posts every minute
@@ -220,6 +227,63 @@ export class CronService {
             logger.info("✅ SSL certificate renewal completed");
         } catch (error) {
             logger.error("❌ Error in renewSSLCertificates:", error);
+        }
+    }
+
+    static async refreshInstagramTokens() {
+        logger.info("🔄 Running Instagram token refresh job...");
+
+        try {
+            const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
+            const now = new Date();
+            const refreshBefore = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            const dueIntegrations = await integrationRepository
+                .createQueryBuilder("integration")
+                .where("integration.provider = :provider", { provider: "instagram" })
+                .andWhere("integration.accessToken IS NOT NULL")
+                .andWhere("(integration.tokenRefreshLockUntil IS NULL OR integration.tokenRefreshLockUntil <= :now)", { now })
+                .andWhere(
+                    "(integration.accessTokenExpiresAt IS NULL OR integration.accessTokenExpiresAt <= :refreshBefore)",
+                    { refreshBefore }
+                )
+                .orderBy("integration.accessTokenExpiresAt", "ASC", "NULLS FIRST")
+                .take(100)
+                .getMany();
+
+            if (dueIntegrations.length === 0) {
+                logger.info("✅ Instagram token refresh job finished: no due integrations");
+                return;
+            }
+
+            let refreshedCount = 0;
+            let failedCount = 0;
+
+            for (const integration of dueIntegrations) {
+                try {
+                    const forceRefresh = !integration.accessTokenExpiresAt;
+                    await instagramService.ensureFreshIntegrationAccessToken(
+                        integration,
+                        integrationRepository,
+                        {
+                            forceRefresh,
+                            thresholdSeconds: 7 * 24 * 60 * 60,
+                        }
+                    );
+                    refreshedCount += 1;
+                } catch (error: any) {
+                    failedCount += 1;
+                    logger.warn(
+                        `[InstagramTokenRefreshCron] Failed for integration ${integration.id}: ${error?.message || error}`
+                    );
+                }
+            }
+
+            logger.info(
+                `✅ Instagram token refresh job finished. Refreshed: ${refreshedCount}, Failed: ${failedCount}`
+            );
+        } catch (error: any) {
+            logger.error("❌ Error in refreshInstagramTokens:", error?.message || error);
         }
     }
 }

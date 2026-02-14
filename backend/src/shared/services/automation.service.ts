@@ -13,6 +13,7 @@ import { checkEmailLimit, incrementEmailCount } from "./email-limit.service";
 import { getEmailsFromBio } from "./email.service";
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
+import { instagramService } from "../../services/instagram.service";
 
 const automationRepository = AppDataSource.getRepository(AutomationEntity);
 const executionRepository = AppDataSource.getRepository(AutomationExecutionEntity);
@@ -843,7 +844,7 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
         return { ...context, instagramAction: actionType, instagramStatus: "missing_context" };
     }
 
-    const integration = await integrationRepository.findOne({
+    let integration = await integrationRepository.findOne({
         where: {
             bio: { id: bioId },
             provider: "instagram",
@@ -859,9 +860,12 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
         };
     }
 
+    let activeIntegration: IntegrationEntity = integration;
+    const instagramAccountId = activeIntegration.account_id;
+
     const baseUrl = "https://graph.facebook.com/v21.0";
 
-    try {
+    const executeInstagramAction = async (accessToken: string): Promise<any> => {
         if (actionType === "reply_comment") {
             const commentId = replacePlaceholders(
                 String(node.data.commentId || context.commentId || context.comment_id || ""),
@@ -882,7 +886,7 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 {
                     params: {
                         message,
-                        access_token: integration.accessToken,
+                        access_token: accessToken,
                     },
                 }
             );
@@ -910,7 +914,7 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
             }
 
             const response = await axios.post(
-                `${baseUrl}/${integration.account_id}/messages`,
+                `${baseUrl}/${instagramAccountId}/messages`,
                 {
                     recipient: { id: recipientId },
                     message: { text: message },
@@ -918,7 +922,7 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
                 },
                 {
                     params: {
-                        access_token: integration.accessToken,
+                        access_token: accessToken,
                     },
                 }
             );
@@ -946,14 +950,14 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
             }
 
             const containerResponse = await axios.post(
-                `${baseUrl}/${integration.account_id}/media`,
+                `${baseUrl}/${instagramAccountId}/media`,
                 null,
                 {
                     params: {
                         image_url: imageUrl,
                         media_type: "STORIES",
                         caption: message || undefined,
-                        access_token: integration.accessToken,
+                        access_token: accessToken,
                     },
                 }
             );
@@ -968,12 +972,12 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
             }
 
             const publishResponse = await axios.post(
-                `${baseUrl}/${integration.account_id}/media_publish`,
+                `${baseUrl}/${instagramAccountId}/media_publish`,
                 null,
                 {
                     params: {
                         creation_id: creationId,
-                        access_token: integration.accessToken,
+                        access_token: accessToken,
                     },
                 }
             );
@@ -992,7 +996,45 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
             instagramAction: actionType,
             instagramStatus: "unsupported_action",
         };
+    };
+
+    try {
+        activeIntegration = await instagramService.ensureFreshIntegrationAccessToken(
+            activeIntegration,
+            integrationRepository,
+            { thresholdSeconds: 24 * 60 * 60 }
+        );
+
+        if (!activeIntegration.accessToken) {
+            throw new ApiError(APIErrors.badRequestError, "Instagram integration token missing", 400);
+        }
+
+        return await executeInstagramAction(activeIntegration.accessToken);
     } catch (error: any) {
+        if (instagramService.isAuthTokenError(error)) {
+            try {
+                activeIntegration = await instagramService.ensureFreshIntegrationAccessToken(
+                    activeIntegration,
+                    integrationRepository,
+                    { forceRefresh: true }
+                );
+
+                if (!activeIntegration.accessToken) {
+                    throw new ApiError(APIErrors.badRequestError, "Instagram integration token missing", 400);
+                }
+
+                return await executeInstagramAction(activeIntegration.accessToken);
+            } catch (retryError: any) {
+                logger.error(`[Automation] Instagram action retry failed: ${retryError.message}`);
+                return {
+                    ...context,
+                    instagramAction: actionType,
+                    instagramStatus: "failed",
+                    instagramError: retryError.response?.data?.error?.message || retryError.message,
+                };
+            }
+        }
+
         logger.error(`[Automation] Instagram action failed: ${error.message}`);
         return {
             ...context,

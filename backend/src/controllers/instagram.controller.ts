@@ -438,6 +438,11 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       integration.refreshToken = typeof tokenData.userToken === "string"
         ? tokenData.userToken.trim()
         : (tokenData.userToken ?? undefined);
+      integration.accessTokenExpiresAt = instagramService.computeTokenExpiryDate(tokenData.expiresIn);
+      integration.tokenLastRefreshedAt = new Date();
+      integration.tokenLastRefreshAttemptAt = null;
+      integration.tokenLastRefreshError = null;
+      integration.tokenRefreshLockUntil = null;
       
       await integrationRepository.save(integration);
       markProcessedInstagramCode(code);

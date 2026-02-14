@@ -68,7 +68,7 @@ export const publishSocialPlannerPost = async (
         };
     }
 
-    const integration = await integrationRepository.findOne({
+    let integration = await integrationRepository.findOne({
         where: {
             bio: { id: bioId },
             provider,
@@ -124,12 +124,39 @@ export const publishSocialPlannerPost = async (
                 };
             }
 
-            const publishResult = await instagramService.publishImagePost({
-                instagramBusinessAccountId: integration.account_id,
-                accessToken: integration.accessToken,
-                imageUrl: mediaUrl,
-                caption: buildInstagramCaption(post),
-            });
+            const caption = buildInstagramCaption(post);
+            integration = await instagramService.ensureFreshIntegrationAccessToken(
+                integration,
+                integrationRepository,
+                { thresholdSeconds: 24 * 60 * 60 }
+            );
+
+            let publishResult;
+            try {
+                publishResult = await instagramService.publishImagePost({
+                    instagramBusinessAccountId: integration.account_id,
+                    accessToken: integration.accessToken,
+                    imageUrl: mediaUrl,
+                    caption,
+                });
+            } catch (error: any) {
+                if (!instagramService.isAuthTokenError(error)) {
+                    throw error;
+                }
+
+                integration = await instagramService.ensureFreshIntegrationAccessToken(
+                    integration,
+                    integrationRepository,
+                    { forceRefresh: true }
+                );
+
+                publishResult = await instagramService.publishImagePost({
+                    instagramBusinessAccountId: integration.account_id,
+                    accessToken: integration.accessToken,
+                    imageUrl: mediaUrl,
+                    caption,
+                });
+            }
 
             post.status = "published";
             post.publishedAt = new Date();

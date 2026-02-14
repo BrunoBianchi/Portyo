@@ -20,6 +20,21 @@ export class IntegrationEntity extends BaseEntity {
     @Column({ type: "text", nullable: true })
     refreshToken?: string;
 
+    @Column({ type: "timestamp", nullable: true })
+    accessTokenExpiresAt?: Date | null;
+
+    @Column({ type: "timestamp", nullable: true })
+    tokenLastRefreshedAt?: Date | null;
+
+    @Column({ type: "timestamp", nullable: true })
+    tokenLastRefreshAttemptAt?: Date | null;
+
+    @Column({ type: "text", nullable: true })
+    tokenLastRefreshError?: string | null;
+
+    @Column({ type: "timestamp", nullable: true })
+    tokenRefreshLockUntil?: Date | null;
+
     @ManyToOne(() =>BioEntity, (bio) => bio.integrations)
     bio!:BioEntity;
 }
