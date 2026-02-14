@@ -116,7 +116,7 @@ export class InstagramService {
         throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
       }
 
-      logger.info("Instagram OAuth exchange succeeded", {
+      logger.debug("Instagram short-lived token obtained", {
         redirectUriUsed: resolvedRedirectUri,
       });
 
@@ -125,16 +125,25 @@ export class InstagramService {
         throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
       }
 
-      const longLivedResponse = await axios.get("https://graph.instagram.com/access_token", {
-        params: {
-          grant_type: "ig_exchange_token",
-          client_secret: this.clientSecret,
-          access_token: shortLivedUserToken,
-        },
-      });
+      let longLivedUserToken = shortLivedUserToken;
+      let expiresIn: number | undefined;
 
-      const longLivedUserToken = longLivedResponse.data?.access_token || shortLivedUserToken;
-      const expiresIn = longLivedResponse.data?.expires_in;
+      try {
+        const longLivedResponse = await axios.get("https://graph.instagram.com/access_token", {
+          params: {
+            grant_type: "ig_exchange_token",
+            client_secret: this.clientSecret,
+            access_token: shortLivedUserToken,
+          },
+        });
+
+        longLivedUserToken = longLivedResponse.data?.access_token || shortLivedUserToken;
+        expiresIn = longLivedResponse.data?.expires_in;
+      } catch (longLivedError: any) {
+        logger.warn("Instagram long-lived token exchange failed, using short-lived token as fallback", {
+          error: longLivedError?.response?.data || longLivedError?.message,
+        });
+      }
 
       let instagramUserId: string | null = shortLivedTokenResponse.data?.user_id
         ? String(shortLivedTokenResponse.data.user_id)
@@ -161,6 +170,13 @@ export class InstagramService {
         throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
       }
 
+      logger.info("Instagram OAuth exchange succeeded", {
+        redirectUriUsed: resolvedRedirectUri,
+        instagramUserId,
+        instagramUsername,
+        usedLongLivedToken: longLivedUserToken !== shortLivedUserToken,
+      });
+
       return {
         accessToken: longLivedUserToken,
         userToken: longLivedUserToken,
@@ -172,13 +188,13 @@ export class InstagramService {
         expiresIn,
       };
     } catch (error: any) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       logger.error("Instagram OAuth exchange failed", {
         error: error.response?.data || error.message,
         redirectUriCandidates,
       });
-      if (error instanceof ApiError) {
-        throw error;
-      }
       throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
     }
   }
