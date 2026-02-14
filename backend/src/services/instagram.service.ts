@@ -50,6 +50,9 @@ export class InstagramService {
     }
     const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
+      "pages_show_list",
+      "pages_read_engagement",
+      "business_management",
       "instagram_business_basic",
       "instagram_business_manage_comments",
       "instagram_business_manage_messages",
@@ -78,7 +81,9 @@ export class InstagramService {
     const exchangeErrors: Array<{ redirectUri: string; error: any }> = [];
 
     try {
-      let shortLivedTokenResponse: any = null;
+      let userAccessToken: string | null = null;
+      let userId: string | null = null;
+      let expiresIn: number | undefined;
       let resolvedRedirectUri: string | null = null;
 
       for (const candidateRedirectUri of redirectUriCandidates) {
@@ -91,8 +96,8 @@ export class InstagramService {
             code: cleanCode,
           });
 
-          shortLivedTokenResponse = await axios.post(
-            "https://api.instagram.com/oauth/access_token",
+          const tokenResponse = await axios.post(
+            `${this.graphBaseUrl}/oauth/access_token`,
             tokenBody.toString(),
             {
               headers: {
@@ -100,6 +105,14 @@ export class InstagramService {
               },
             }
           );
+
+          userAccessToken = tokenResponse.data?.access_token;
+          userId = tokenResponse.data?.user_id ? String(tokenResponse.data.user_id) : null;
+          expiresIn = tokenResponse.data?.expires_in;
+
+          if (!userAccessToken) {
+            throw new ApiError(APIErrors.badRequestError, "Missing access token from Facebook OAuth", 400);
+          }
 
           resolvedRedirectUri = candidateRedirectUri;
           break;
@@ -111,7 +124,7 @@ export class InstagramService {
         }
       }
 
-      if (!shortLivedTokenResponse) {
+      if (!userAccessToken) {
         logger.error("Instagram OAuth exchange failed for all redirect URIs", {
           candidatesTried: redirectUriCandidates,
           exchangeErrors,
@@ -119,59 +132,80 @@ export class InstagramService {
         throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
       }
 
-      logger.debug("Instagram short-lived token obtained", {
+      logger.debug("Instagram OAuth user token obtained", {
         redirectUriUsed: resolvedRedirectUri,
       });
 
-      const shortLivedUserToken = shortLivedTokenResponse.data?.access_token;
-      if (!shortLivedUserToken) {
-        throw new ApiError(APIErrors.badRequestError, "Missing access token from Instagram OAuth", 400);
-      }
+      try {
+        const longLivedTokenBody = new URLSearchParams({
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          grant_type: "fb_exchange_token",
+          fb_exchange_token: userAccessToken,
+        });
 
-      const longLivedUserToken = shortLivedUserToken;
-      const expiresIn = shortLivedTokenResponse.data?.expires_in;
-
-      let instagramUserId: string | null = shortLivedTokenResponse.data?.user_id
-        ? String(shortLivedTokenResponse.data.user_id)
-        : null;
-      let instagramUsername: string | null = null;
-
-      if (!instagramUsername && instagramUserId) {
-        try {
-          const userProfile = await axios.get(`${this.graphBaseUrl}/${instagramUserId}`, {
-            params: {
-              fields: "id,username,account_type",
-              access_token: longLivedUserToken,
+        const longLivedTokenResponse = await axios.post(
+          `${this.graphBaseUrl}/oauth/access_token`,
+          longLivedTokenBody.toString(),
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
             },
-          });
+          }
+        );
 
-          instagramUsername = userProfile.data?.username || null;
-        } catch (profileError: any) {
-          const errData = profileError?.response?.data;
-          const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || profileError?.message);
-          logger.debug(`Instagram username lookup skipped | status=${profileError?.response?.status} error=${errMsg}`);
+        if (longLivedTokenResponse.data?.access_token) {
+          userAccessToken = longLivedTokenResponse.data.access_token;
+          expiresIn = longLivedTokenResponse.data?.expires_in ?? expiresIn;
         }
+      } catch (exchangeError: any) {
+        const errData = exchangeError?.response?.data;
+        const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || exchangeError?.message);
+        logger.warn(`Instagram long-lived token exchange skipped | status=${exchangeError?.response?.status} error=${errMsg}`);
       }
 
-      if (!instagramUserId) {
-        throw new ApiError(APIErrors.badRequestError, "Could not resolve Instagram account ID", 400);
+      const pagesResponse = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
+        params: {
+          fields: "id,name,access_token,instagram_business_account{id,username}",
+          access_token: userAccessToken,
+        },
+      });
+
+      const pages = Array.isArray(pagesResponse.data?.data) ? pagesResponse.data.data : [];
+      const targetPage = pages.find((page: any) => page?.instagram_business_account?.id && page?.access_token)
+        || pages.find((page: any) => page?.instagram_business_account?.id);
+
+      if (!targetPage?.instagram_business_account?.id) {
+        throw new ApiError(
+          APIErrors.badRequestError,
+          "No Instagram professional account linked to a Facebook Page was found. Connect an Instagram Business/Creator account to a Facebook Page and authorize again.",
+          400
+        );
       }
+
+      const instagramUserId = String(targetPage.instagram_business_account.id);
+      const instagramUsername = targetPage.instagram_business_account.username || null;
+      const pageId = targetPage.id ? String(targetPage.id) : null;
+      const pageName = targetPage.name || null;
+      const pageAccessToken = targetPage.access_token || userAccessToken;
 
       logger.info("Instagram OAuth exchange succeeded", {
         redirectUriUsed: resolvedRedirectUri,
         instagramUserId,
         instagramUsername,
-        usedLongLivedToken: false,
+        pageId,
+        pageName,
+        usedLongLivedToken: Boolean(expiresIn),
       });
 
       return {
-        accessToken: longLivedUserToken,
-        userToken: longLivedUserToken,
-        userId: shortLivedTokenResponse.data?.user_id || instagramUserId,
+        accessToken: pageAccessToken,
+        userToken: userAccessToken,
+        userId: userId || instagramUserId,
         instagramBusinessAccountId: instagramUserId,
         instagramUsername,
-        pageId: null,
-        pageName: null,
+        pageId,
+        pageName,
         expiresIn,
       };
     } catch (error: any) {
@@ -188,13 +222,12 @@ export class InstagramService {
 
   public async getUserProfile(accessToken: string) {
     try {
-      const profileBody = new URLSearchParams({
-        fields: "user_id,username,name,account_type,profile_picture_url",
-        access_token: accessToken,
-      });
-
-      const response = await axios.post("https://graph.instagram.com/me", profileBody.toString(), {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      const normalizedAccessToken = (accessToken || "").trim();
+      const response = await axios.get(`${this.graphBaseUrl}/me/accounts`, {
+        params: {
+          fields: "id,name,instagram_business_account{id,username}",
+          access_token: normalizedAccessToken,
+        },
       });
       return response.data;
     } catch (error: any) {

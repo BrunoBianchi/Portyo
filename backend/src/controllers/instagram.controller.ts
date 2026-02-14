@@ -341,9 +341,12 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
 
       if (mode === "login") {
-        const identitySeed = String(tokenData.userId || tokenData.instagramUsername || tokenData.pageId || Date.now()).toLowerCase();
+        const preferredIdentity = tokenData.instagramUsername || tokenData.pageName || tokenData.userId || tokenData.pageId || String(Date.now());
+        const identitySeed = String(preferredIdentity).toLowerCase();
         const generatedEmail = `${identitySeed.replace(/[^a-z0-9._-]/g, "") || "instagram"}@instagram.portyo.local`;
-        const fallbackName = tokenData.instagramUsername || tokenData.pageName || "Instagram User";
+        const fallbackName = tokenData.instagramUsername
+          ? `@${tokenData.instagramUsername}`
+          : (tokenData.pageName || "Instagram User");
 
         let user = await findUserByEmail(generatedEmail);
         if (!user) {
@@ -429,8 +432,10 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
 
       integration.account_id = tokenData.instagramBusinessAccountId;
       integration.name = tokenData.instagramUsername || tokenData.pageName || "Instagram";
-      integration.accessToken = tokenData.accessToken;
-      integration.refreshToken = tokenData.userToken;
+      integration.accessToken = typeof tokenData.accessToken === "string" ? tokenData.accessToken.trim() : tokenData.accessToken;
+      integration.refreshToken = typeof tokenData.userToken === "string"
+        ? tokenData.userToken.trim()
+        : (tokenData.userToken ?? undefined);
       
       await integrationRepository.save(integration);
       markProcessedInstagramCode(code);
