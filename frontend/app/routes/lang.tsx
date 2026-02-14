@@ -27,6 +27,21 @@ const COUNTRY_TO_LANG: Record<string, SupportedLang> = {
   GQ: "pt",
 };
 
+function isMetaCrawler(request: Request): boolean {
+  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
+  return (
+    userAgent.includes("facebookexternalhit") ||
+    userAgent.includes("facebot") ||
+    userAgent.includes("googlebot") ||
+    userAgent.includes("google-inspectiontool") ||
+    userAgent.includes("adsbot-google") ||
+    userAgent.includes("googleother") ||
+    userAgent.includes("storebot-google") ||
+    userAgent.includes("apis-google") ||
+    userAgent.includes("mediapartners-google")
+  );
+}
+
 function getGeoLang(request: Request): SupportedLang | null {
   for (const key of GEO_HEADER_KEYS) {
     const value = request.headers.get(key);
@@ -40,13 +55,17 @@ function getGeoLang(request: Request): SupportedLang | null {
 }
 
 function getPreferredLang(request: Request): SupportedLang {
+  if (isMetaCrawler(request)) {
+    return "pt";
+  }
+
   const geoLang = getGeoLang(request);
   if (geoLang) return geoLang;
 
   const header = request.headers.get("accept-language");
-  if (!header) return "en";
+  if (!header) return "pt";
   const primary = header.split(",")[0]?.split("-")[0]?.toLowerCase();
-  return SUPPORTED.includes(primary as SupportedLang) ? (primary as SupportedLang) : "en";
+  return SUPPORTED.includes(primary as SupportedLang) ? (primary as SupportedLang) : "pt";
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -69,6 +88,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   if (!langParam || !SUPPORTED.includes(langParam as SupportedLang)) {
     const preferred = getPreferredLang(request);
+    if (isMetaCrawler(request)) {
+      return { lang: preferred as SupportedLang };
+    }
     const nextPath = url.pathname === "/" ? `/${preferred}` : `/${preferred}${url.pathname}`;
     throw redirect(`${nextPath}${url.search}${url.hash}`);
   }

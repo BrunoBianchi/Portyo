@@ -29,7 +29,7 @@ export default function LandingPage() {
         <section className="w-full py-16 bg-[#F3F3F1] border-b-2 border-black/5">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <p className="font-bold text-[#1A1A1A] opacity-60 uppercase tracking-widest text-sm mb-8">
-              {t("home.landingBold.socialProof")}
+              {t("landingBold.socialProof")}
             </p>
             <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
               {/* Placeholder Logos */}
@@ -46,8 +46,8 @@ export default function LandingPage() {
         <FeatureSection
           backgroundColor="#0047FF" // Electric Blue
           textColor="#FFFFFF"
-          title={t("home.landingBold.featureA.title")}
-          description={t("home.landingBold.featureA.description")}
+          title={t("landingBold.featureA.title")}
+          description={t("landingBold.featureA.description")}
           align="left"
           mediaContent={
             <div className="relative w-full h-full flex items-center justify-center bg-white/10 backdrop-blur-sm p-12">
@@ -61,8 +61,8 @@ export default function LandingPage() {
         <FeatureSection
           backgroundColor="#E94E77" // Shock Pink
           textColor="#FFFFFF"
-          title={t("home.landingBold.featureB.title")}
-          description={t("home.landingBold.featureB.description")}
+          title={t("landingBold.featureB.title")}
+          description={t("landingBold.featureB.description")}
           align="right"
           mediaContent={
             <div className="relative w-full h-full flex items-center justify-center bg-white/10 backdrop-blur-sm p-12">

@@ -33,7 +33,7 @@ export default function Signup() {
     const [signupError, setSignupError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate()
-    const { register, socialLogin, logout, user } = useContext(AuthContext);
+    const { register } = useContext(AuthContext);
 
     const hasUppercase = /[A-Z]/.test(password);
     const hasMinLength = password.length >= 8;
@@ -74,34 +74,11 @@ export default function Signup() {
     };
 
     const handleGoogleLogin = () => {
-        const width = 500;
-        const height = 600;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
+        const apiUrl = typeof window !== 'undefined' && window.location.hostname.includes('localhost')
+            ? 'http://localhost:3000'
+            : 'https://portyo.me';
 
-        const popup = window.open(
-            "https://api.portyo.me/api/google/auth",
-            "Google Login",
-            `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        const handleMessage = async (event: MessageEvent) => {
-            if (event.origin !== "https://api.portyo.me" && event.origin !== "http://localhost:3000") return;
-
-            const data = event.data;
-            if (data.token && data.user) {
-                socialLogin(data.user, data.token);
-                if (!data.user.onboardingCompleted) {
-                    navigate(withLang("/onboarding"));
-                } else {
-                    navigate(withLang("/dashboard"));
-                }
-            }
-            popup?.close();
-            window.removeEventListener("message", handleMessage);
-        };
-
-        window.addEventListener("message", handleMessage);
+        window.open(`${apiUrl}/api/google/auth`, "_blank", "noopener,noreferrer");
     };
 
     return (

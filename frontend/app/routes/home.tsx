@@ -22,7 +22,8 @@ const META_FALLBACK = {
 const getMetaText = (lang: "en" | "pt", key: string, fallback: string) => {
   const tMeta = i18n.getFixedT(lang, "meta");
   const value = tMeta(key, { defaultValue: fallback }) as string;
-  return value || fallback;
+  if (!value || value === key) return fallback;
+  return value;
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -34,11 +35,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const isPortyoDomain = hostname.endsWith('portyo.me');
   const isLocalhost = hostname === 'localhost' || hostname.endsWith('.localhost');
   const isCompanySubdomain = hostname.startsWith('company.');
+  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
+  const isMetaCrawler = userAgent.includes("facebookexternalhit") || userAgent.includes("facebot");
 
   const isCustomDomain = !isPortyoDomain && !isOnRenderDomain && !isLocalhost && !isCompanySubdomain;
 
   if (isCompanySubdomain) {
-    return { type: 'company', isCompanySubdomain: true };
+    return { type: 'company', isCompanySubdomain: true, isMetaCrawler };
   }
 
   if (isCustomDomain) {
@@ -49,15 +52,15 @@ export async function loader({ request }: Route.LoaderArgs) {
       const res = await fetch(`${apiUrl}/public/bio/domain/${hostname}`);
       if (res.ok) {
         const bio = await res.json();
-        return { type: 'bio', bio, hostname, origin, generatedAt };
+        return { type: 'bio', bio, hostname, origin, generatedAt, isMetaCrawler };
       }
     } catch (e) {
       console.error("Failed to fetch bio for domain", hostname, e);
     }
-    return { type: 'bio', bio: null, hostname, origin, generatedAt }; // Bio not found
+    return { type: 'bio', bio: null, hostname, origin, generatedAt, isMetaCrawler }; // Bio not found
   }
 
-  return { type: 'marketing' };
+  return { type: 'marketing', isMetaCrawler };
 }
 
 export function meta({ data, params }: Route.MetaArgs) {

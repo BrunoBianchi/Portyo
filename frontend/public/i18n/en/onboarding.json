@@ -6,7 +6,8 @@
     "title": "Claim your link.",
     "subtitle": "Choose your unique username to get started. You can always change it later.",
     "placeholder": "yourname",
-    "cta": "Claim & Continue"
+    "cta": "Claim & Continue",
+    "claimContinue": "Claim & Continue"
   },
   "step2": {
     "title": "What best describes you?",
@@ -17,6 +18,7 @@
     "subtitle": "Start with a theme. Completely customizable later.",
     "designedFor": "Designed for {{category}}",
     "designedForEveryone": "Designed for everyone",
+    "everyone": "everyone",
     "linkPreview": "Link {{number}}",
     "selectTheme": "Select a theme",
     "tapTheme": "Tap a theme above",
@@ -29,6 +31,7 @@
     "professionPlaceholder": "e.g. Software Engineer, Designer, Photographer...",
     "aboutLabel": "About you",
     "aboutHint": "(AI will enhance this)",
+    "aiNote": "AI will enhance this",
     "aboutPlaceholder": "Briefly describe what you do, your experience, and what makes you unique...",
     "hasDegree": "I have a degree",
     "coursePlaceholder": "Course name",
@@ -44,7 +47,11 @@
     "subtitle": "Select up to 4 goals. This shapes your AI-generated bio.",
     "counter": "{{count}}/4",
     "generating": "Creating your bio...",
-    "cta": "Generate my bio"
+    "creating": "Creating your bio...",
+    "cta": "Generate my bio",
+    "generateBio": "Generate my bio",
+    "success": "Your bio has been created!",
+    "error": "Something went wrong. Please try again."
   },
   "back": "Back",
   "continue": "Continue",

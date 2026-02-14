@@ -6,7 +6,8 @@
     "title": "Garanta seu link.",
     "subtitle": "Escolha seu nome de usuário único para começar. Você pode alterá-lo depois.",
     "placeholder": "seunome",
-    "cta": "Garantir e Continuar"
+    "cta": "Garantir e Continuar",
+    "claimContinue": "Garantir e Continuar"
   },
   "step2": {
     "title": "O que melhor descreve você?",
@@ -17,6 +18,7 @@
     "subtitle": "Comece com um tema. Totalmente personalizável depois.",
     "designedFor": "Feito para {{category}}",
     "designedForEveryone": "Feito para todos",
+    "everyone": "todos",
     "linkPreview": "Link {{number}}",
     "selectTheme": "Selecione um tema",
     "tapTheme": "Toque em um tema acima",
@@ -29,6 +31,7 @@
     "professionPlaceholder": "ex: Engenheiro de Software, Designer, Fotógrafo...",
     "aboutLabel": "Sobre você",
     "aboutHint": "(A IA vai aprimorar isso)",
+    "aiNote": "A IA vai aprimorar isso",
     "aboutPlaceholder": "Descreva brevemente o que você faz, sua experiência e o que te torna único...",
     "hasDegree": "Tenho uma graduação",
     "coursePlaceholder": "Nome do curso",
@@ -44,7 +47,11 @@
     "subtitle": "Selecione até 4 objetivos. Isso molda sua bio gerada por IA.",
     "counter": "{{count}}/4",
     "generating": "Criando sua bio...",
-    "cta": "Gerar minha bio"
+    "creating": "Criando sua bio...",
+    "cta": "Gerar minha bio",
+    "generateBio": "Gerar minha bio",
+    "success": "Sua bio foi criada com sucesso!",
+    "error": "Algo deu errado. Tente novamente."
   },
   "back": "Voltar",
   "continue": "Continuar",

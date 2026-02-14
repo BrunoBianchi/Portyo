@@ -1,6 +1,8 @@
-import { redirect, useLocation, useNavigate } from "react-router";
+import { redirect, useLoaderData, useLocation, useNavigate } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
 import { useEffect } from "react";
+import LandingPage from "~/components/marketing/landing-page";
+import i18n from "~/i18n";
 
 const SUPPORTED = ["en", "pt"] as const;
 
@@ -17,8 +19,14 @@ const GEO_HEADER_KEYS = [
 function getPreferredLang(request: Request): SupportedLang {
   const url = new URL(request.url);
   const hostname = url.hostname;
+  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
+
+  if (userAgent.includes("facebookexternalhit") || userAgent.includes("facebot")) {
+    return "pt";
+  }
+
   if (hostname === "localhost" || hostname.endsWith(".localhost")) {
-    return "en";
+    return "pt";
   }
 
   for (const key of GEO_HEADER_KEYS) {
@@ -30,9 +38,24 @@ function getPreferredLang(request: Request): SupportedLang {
   }
 
   const header = request.headers.get("accept-language");
-  if (!header) return "en";
+  if (!header) return "pt";
   const primary = header.split(",")[0]?.split("-")[0]?.toLowerCase();
-  return SUPPORTED.includes(primary as SupportedLang) ? (primary as SupportedLang) : "en";
+  return SUPPORTED.includes(primary as SupportedLang) ? (primary as SupportedLang) : "pt";
+}
+
+function isMetaCrawler(request: Request): boolean {
+  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
+  return (
+    userAgent.includes("facebookexternalhit") ||
+    userAgent.includes("facebot") ||
+    userAgent.includes("googlebot") ||
+    userAgent.includes("google-inspectiontool") ||
+    userAgent.includes("adsbot-google") ||
+    userAgent.includes("googleother") ||
+    userAgent.includes("storebot-google") ||
+    userAgent.includes("apis-google") ||
+    userAgent.includes("mediapartners-google")
+  );
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -53,6 +76,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return null;
   }
 
+  if (isMetaCrawler(request)) {
+    return { renderFallback: true as const, lang: getPreferredLang(request) };
+  }
+
   const preferred = getPreferredLang(request);
 
   // On company subdomain, redirect root to company login
@@ -65,10 +92,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function RedirectLang() {
+  const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    if (!data || typeof data !== "object" || !("renderFallback" in data) || !data.renderFallback) return;
+    if (i18n.language !== data.lang) {
+      i18n.changeLanguage(data.lang);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (data && typeof data === "object" && "renderFallback" in data && data.renderFallback) {
+      return;
+    }
+
     const pathname = location.pathname;
     if (/^\/(en|pt)(\/|$)/.test(pathname)) return;
 
@@ -83,7 +122,17 @@ export default function RedirectLang() {
       navigate(`/`, { replace: true });
       return;
     }
-    const preferred = hostname === "localhost" || hostname.endsWith(".localhost") ? "en" : "en";
+    const preferred = (() => {
+      if (hostname === "localhost" || hostname.endsWith(".localhost")) {
+        return "pt" as const;
+      }
+
+      const browserLang = typeof navigator !== "undefined"
+        ? navigator.language?.split("-")[0]?.toLowerCase()
+        : "";
+
+      return browserLang === "pt" ? "pt" : "en";
+    })();
 
     // On company subdomain, redirect root to company login
     if (isCompany && (pathname === "/" || pathname === "")) {
@@ -93,7 +142,11 @@ export default function RedirectLang() {
 
     const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
     navigate(`${nextPath}${location.search}${location.hash}`, { replace: true });
-  }, [location.hash, location.pathname, location.search, navigate]);
+  }, [data, location.hash, location.pathname, location.search, navigate]);
+
+  if (data && typeof data === "object" && "renderFallback" in data && data.renderFallback) {
+    return <LandingPage />;
+  }
 
   return null;
 }

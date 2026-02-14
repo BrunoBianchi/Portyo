@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import AuthContext from "~/contexts/auth.context";
 import { api } from "~/services/api";
@@ -105,7 +105,12 @@ const GOAL_LABELS_API: Record<string, string> = {
 export default function Onboarding() {
     const { user, loading, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
     const { t } = useTranslation();
+    const [mounted, setMounted] = useState(false);
+
+    const currentLang = location.pathname.match(/^\/(en|pt)(?:\/|$)/)?.[1];
+    const withLang = useCallback((to: string) => (currentLang ? `/${currentLang}${to}` : to), [currentLang]);
 
     const CATEGORIES = useMemo(() => [
         { id: "creator", name: t("onboarding.categories.creator"), icon: "🎨" },
@@ -148,6 +153,10 @@ export default function Onboarding() {
     const [usernameChecking, setUsernameChecking] = useState(false);
     const usernameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Debounced username availability check
     const checkUsername = useCallback((username: string) => {
         if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
@@ -173,15 +182,15 @@ export default function Onboarding() {
 
     useEffect(() => {
         if (!loading && !user) {
-            navigate("/login");
+            navigate(withLang("/login"));
         }
         if (!loading && user && !user.verified && user.provider === "password") {
-            navigate("/verify-email");
+            navigate(withLang("/verify-email"));
         }
         if (!loading && user && user.onboardingCompleted) {
-            navigate("/dashboard");
+            navigate(withLang("/dashboard"));
         }
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, withLang]);
 
     useEffect(() => {
         if (user?.sufix && !answers.username) {
@@ -210,12 +219,45 @@ export default function Onboarding() {
         }));
     };
 
+    const getSkillTranslationKey = useCallback((skill: string): string => {
+        const manualMap: Record<string, string> = {
+            "UI/UX": "uiux",
+            "SEO/SEM": "seoSem",
+            "CI/CD": "cicd",
+            "MC / Hosting": "mcHosting",
+            "DIY / Crafts": "diyCrafts",
+            "AI / LLMs": "aiLlms",
+            "REST APIs": "restApis",
+            "Node.js": "nodejs",
+            "Next.js": "nextjs",
+            "Vue.js": "vuejs",
+            "C#": "csharp",
+        };
+
+        if (manualMap[skill]) {
+            return manualMap[skill];
+        }
+
+        const normalized = skill
+            .replace(/[^\w\s]/g, " ")
+            .trim()
+            .split(/\s+/)
+            .map((part, index) => {
+                const lower = part.toLowerCase();
+                return index === 0 ? lower : `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+            })
+            .join("");
+
+        return normalized;
+    }, []);
+
     const handleFinish = async () => {
         setIsGenerating(true);
         try {
             const selectedGoalLabels = answers.goals.map(g => GOAL_LABELS_API[g] || g);
 
             await api.post("/onboarding/generate-bio", {
+                username: answers.username,
                 theme: answers.theme ? {
                     name: answers.theme.name,
                     styles: answers.theme.styles,
@@ -250,7 +292,7 @@ export default function Onboarding() {
             toast.success(t("onboarding.step6.success", { defaultValue: "Your bio has been created!" }));
 
             setTimeout(() => {
-                navigate("/dashboard");
+                navigate(withLang("/dashboard"));
             }, 2000);
 
         } catch (err: any) {
@@ -413,7 +455,7 @@ export default function Onboarding() {
                                 />
                                 <div className="min-w-0 flex-1">
                                     <h3 className="font-bold text-[#1A1A1A] text-sm md:text-base">{theme.name}</h3>
-                                    <p className="text-xs text-[#1A1A1A]/50 font-medium line-clamp-1">{t("onboarding.step3.designedFor", { category: answers.category || t("onboarding.step3.everyone") })}</p>
+                                    <p className="text-xs text-[#1A1A1A]/50 font-medium line-clamp-1">{t("onboarding.step3.designedFor", { category: answers.category ? t(`onboarding.categories.${answers.category}`) : t("onboarding.step3.everyone") })}</p>
                                 </div>
                             </div>
 
@@ -646,7 +688,7 @@ export default function Onboarding() {
                             `}
                         >
                             {answers.skills.includes(skill) && <span className="mr-1.5">✓</span>}
-                            {skill}
+                            {t(`onboarding.skills.${answers.category || "other"}.${getSkillTranslationKey(skill)}`, { defaultValue: skill })}
                         </button>
                     ))}
                 </div>
@@ -740,6 +782,7 @@ export default function Onboarding() {
     );
 
     return (
+        mounted ? (
         <div className="min-h-screen w-full bg-[#F3F3F1] flex flex-col overflow-hidden font-sans text-[#1A1A1A] selection:bg-[#D2E823] selection:text-black">
 
             {/* Header / Nav */}
@@ -780,5 +823,6 @@ export default function Onboarding() {
                 © {new Date().getFullYear()} Portyo
             </footer>
         </div>
+        ) : null
     );
 }

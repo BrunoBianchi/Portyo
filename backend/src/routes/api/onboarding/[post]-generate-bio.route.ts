@@ -10,6 +10,7 @@ import { ApiError, APIErrors } from "../../../shared/errors/api-error";
 const router: Router = Router();
 
 const onboardingSchema = z.object({
+    username: z.string().min(3).max(40).optional(),
     theme: z.object({
         name: z.string().optional(),
         styles: z.object({
@@ -78,19 +79,52 @@ router.post("/generate-bio", authMiddleware, async (req, res, next) => {
         const userRepository = AppDataSource.getRepository(UserEntity);
         const bioRepository = AppDataSource.getRepository(BioEntity);
 
+        const normalizeSufix = (value: string): string =>
+            value
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9._-]/g, "")
+                .replace(/^[-._]+|[-._]+$/g, "")
+                .slice(0, 40);
+
+        const ensureUniqueSufix = async (baseValue: string): Promise<string> => {
+            const base = normalizeSufix(baseValue) || "portyo-user";
+
+            for (let attempt = 0; attempt < 50; attempt++) {
+                const candidate = attempt === 0 ? base : `${base}${attempt}`;
+                const exists = await bioRepository.findOne({ where: { sufix: candidate } });
+                if (!exists) {
+                    return candidate;
+                }
+            }
+
+            return `${base}${Date.now().toString().slice(-5)}`;
+        };
+
         const user = await userRepository.findOne({ where: { id: userId } });
         if (!user) {
             throw new ApiError(APIErrors.notFoundError, "User not found", 404);
         }
 
         // Get user's first bio
-        const bio = await bioRepository.findOne({ 
+        let bio = await bioRepository.findOne({ 
             where: { userId },
             order: { createdAt: 'ASC' }
         });
 
         if (!bio) {
-            throw new ApiError(APIErrors.notFoundError, "Bio not found. Please create a bio first.", 404);
+            const preferredSufix = rawAnswers.username || user.fullName || `user-${user.id.slice(0, 6)}`;
+            const uniqueSufix = await ensureUniqueSufix(preferredSufix);
+
+            bio = bioRepository.create({
+                sufix: uniqueSufix,
+                user,
+                blocks: [],
+                description: null,
+            });
+
+            bio = await bioRepository.save(bio);
         }
 
         // Generate blocks using AI

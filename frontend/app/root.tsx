@@ -205,8 +205,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
   const initialLang = (langMatch?.[1] || null) as (typeof SUPPORTED_LANGUAGES)[number] | null;
+  const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
+  const isCrawler =
+    userAgent.includes("facebookexternalhit") ||
+    userAgent.includes("facebot") ||
+    userAgent.includes("googlebot") ||
+    userAgent.includes("google-inspectiontool") ||
+    userAgent.includes("adsbot-google") ||
+    userAgent.includes("googleother") ||
+    userAgent.includes("storebot-google") ||
+    userAgent.includes("apis-google") ||
+    userAgent.includes("mediapartners-google");
 
-  return { isCustomDomain, origin: url.origin, isLocalhost, initialLang, isCompanySubdomain };
+  return { isCustomDomain, origin: url.origin, isLocalhost, initialLang, isCompanySubdomain, isCrawler };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -218,6 +229,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isLocalhost = loaderData?.isLocalhost;
   const initialLang = loaderData?.initialLang || null;
   const isCompanySubdomain = loaderData?.isCompanySubdomain || (typeof window !== "undefined" && window.location.hostname.startsWith("company."));
+  const isCrawler = loaderData?.isCrawler || false;
   const { i18n } = useTranslation();
 
   const langMatch = pathname.match(/^\/(en|pt)(?=\/|$)/);
@@ -235,6 +247,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [activeLang, i18n.language, i18n.resolvedLanguage]);
 
   useEffect(() => {
+    if (isCrawler) return;
     if (isCustomDomain) return;
     if (langMatch) return;
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
@@ -247,7 +260,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     } */
     const nextPath = pathname === "/" ? `/${preferred}` : `/${preferred}${pathname}`;
     navigate(`${nextPath}${search}${hash}`, { replace: true });
-  }, [hash, isCustomDomain, langMatch, navigate, pathname, search]);
+  }, [hash, isCrawler, isCustomDomain, langMatch, navigate, pathname, search]);
 
   const pathnameNoLang = pathname.replace(/^\/(en|pt)(?=\/|$)/, "");
   const isLoginPage = pathnameNoLang === "/login";

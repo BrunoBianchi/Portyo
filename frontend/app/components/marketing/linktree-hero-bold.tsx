@@ -18,25 +18,25 @@ export default function LinktreeHeroBold() {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
                     <span className="inline-block py-2 px-4 rounded-full border-2 border-[#1A1A1A] text-[#1A1A1A] font-bold text-sm mb-6 bg-white/20 backdrop-blur-sm">
-                        {t("home.landingBold.hero.badge")}
+                        {t("landingBold.hero.badge")}
                     </span>
 
                     <h1 className="font-display font-black text-5xl sm:text-7xl lg:text-[5.5rem] leading-[0.9] tracking-tighter mb-8 text-[#1A1A1A]">
-                        {t("home.landingBold.hero.line1")} <br />
-                        <span className="text-transparent stroke-text" style={{ WebkitTextStroke: "2px #1A1A1A" }}>{t("home.landingBold.hero.line2")}</span> <br />
-                        {t("home.landingBold.hero.line3")}
+                        {t("landingBold.hero.line1")} <br />
+                        <span className="text-transparent stroke-text" style={{ WebkitTextStroke: "2px #1A1A1A" }}>{t("landingBold.hero.line2")}</span> <br />
+                        {t("landingBold.hero.line3")}
                     </h1>
 
                     <p className="font-body font-medium text-lg sm:text-xl lg:text-2xl text-[#1A1A1A] opacity-90 mb-10 max-w-lg leading-relaxed">
-                        {t("home.landingBold.hero.subtitle")}
+                        {t("landingBold.hero.subtitle")}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
                         <Link
-                            to="/register"
+                            to="/sign-up"
                             className="inline-flex items-center justify-center bg-[#1A1A1A] text-white rounded-full px-10 py-5 font-display font-bold text-lg hover:scale-105 transition-transform duration-300 active:scale-95"
                         >
-                            {t("home.landingBold.hero.ctaPrimary")}
+                            {t("landingBold.hero.ctaPrimary")}
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
 
@@ -44,7 +44,7 @@ export default function LinktreeHeroBold() {
                             to="/pricing"
                             className="inline-flex items-center justify-center bg-transparent border-2 border-[#1A1A1A] text-[#1A1A1A] rounded-full px-10 py-5 font-display font-bold text-lg hover:bg-[#1A1A1A] hover:text-white transition-colors duration-300"
                         >
-                            {t("home.landingBold.hero.ctaSecondary")}
+                            {t("landingBold.hero.ctaSecondary")}
                         </Link>
                     </div>
                 </motion.div>
