@@ -7,7 +7,7 @@ import { MailService } from "../shared/services/mail.service";
 import { IsNull, Between, LessThan, MoreThan } from "typeorm";
 import { processAutoPostQueue, runAutoPostJob } from "./auto-post.service";
 import { processSiteAutoPostQueue, runSiteAutoPostJob } from "./site-auto-post.service";
-import { runSocialPlannerJob } from "./social-planner.service";
+import { enqueueDueSocialPlannerPosts, processSocialPlannerQueue } from "./social-planner.service";
 import { CustomDomainService } from "../shared/services/custom-domain.service";
 import { NewsletterService } from "./newsletter.service";
 import { logger } from "../shared/utils/logger";
@@ -42,9 +42,14 @@ export class CronService {
             runSiteAutoPostJob();
         });
 
-        // Verify and publish due social planner posts every hour
+        // Verify due social planner posts every hour and enqueue in Redis
         schedule.scheduleJob("0 */1 * * *", () => {
-            runSocialPlannerJob();
+            enqueueDueSocialPlannerPosts();
+        });
+
+        // Process queued social planner posts every minute
+        schedule.scheduleJob("* * * * *", () => {
+            processSocialPlannerQueue();
         });
 
         // Refresh Instagram long-lived tokens every 6 hours

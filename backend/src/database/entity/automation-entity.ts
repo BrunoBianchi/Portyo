@@ -8,7 +8,7 @@ export interface AutomationNode {
     position: { x: number; y: number };
     data: {
         label: string;
-        eventType?: 'email_signup' | 'newsletter_subscribe' | 'subscriber_unsubscribe' | 'form_submit' | 'booking_created' | 'qr_scanned' | 'visit_milestone' | 'view_milestone' | 'click_milestone' | 'form_submit_milestone' | 'lead_milestone' | 'bio_visit' | 'link_click' | 'blog_post_published' | 'custom_event' | 'webhook_received';
+        eventType?: 'email_signup' | 'newsletter_subscribe' | 'subscriber_unsubscribe' | 'form_submit' | 'booking_created' | 'qr_scanned' | 'visit_milestone' | 'view_milestone' | 'click_milestone' | 'form_submit_milestone' | 'lead_milestone' | 'bio_visit' | 'link_click' | 'blog_post_published' | 'custom_event' | 'webhook_received' | 'instagram_comment_received' | 'instagram_dm_received';
         subject?: string;
         content?: string;
         duration?: string;

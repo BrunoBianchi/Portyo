@@ -4,6 +4,7 @@ import { IntegrationEntity } from "../database/entity/integration-entity";
 import { SocialPlannerPostEntity } from "../database/entity/social-planner-post-entity";
 import { instagramService } from "./instagram.service";
 import { logger } from "../shared/utils/logger";
+import redisClient from "../config/redis.client";
 
 type PublishResult = {
     success: boolean;
@@ -18,6 +19,8 @@ const channelProviderMap: Record<string, string> = {
     linkedin: "linkedin",
     twitter: "twitter",
 };
+
+const SOCIAL_PLANNER_QUEUE_KEY = "social-planner:publish:queue";
 
 const buildInstagramCaption = (post: SocialPlannerPostEntity) => {
     const content = post.content?.trim() || "";
@@ -213,9 +216,10 @@ export const publishSocialPlannerPost = async (
     }
 };
 
-export const runSocialPlannerJob = async (): Promise<void> => {
+export const enqueueDueSocialPlannerPosts = async (): Promise<number> => {
     const repository = AppDataSource.getRepository(SocialPlannerPostEntity);
     const now = new Date();
+    const nowTs = now.getTime();
 
     const duePosts = await repository.find({
         where: {
@@ -229,29 +233,85 @@ export const runSocialPlannerJob = async (): Promise<void> => {
     });
 
     if (duePosts.length === 0) {
-        logger.info("[SocialPlannerCron] No scheduled posts due for publication.");
+        logger.info("[SocialPlannerCron] No due social planner posts to enqueue.");
+        return 0;
+    }
+
+    let enqueuedCount = 0;
+
+    for (const post of duePosts) {
+        try {
+            const added = await redisClient.zadd(SOCIAL_PLANNER_QUEUE_KEY, nowTs, post.id);
+            if (Number(added) > 0) {
+                enqueuedCount += 1;
+            }
+        } catch (error: any) {
+            logger.error(`[SocialPlannerCron] Failed to enqueue post ${post.id}: ${error?.message || error}`);
+        }
+    }
+
+    logger.info(`[SocialPlannerCron] Enqueued ${enqueuedCount}/${duePosts.length} due post(s) to Redis queue.`);
+
+    return enqueuedCount;
+};
+
+export const processSocialPlannerQueue = async (batchSize = 100): Promise<void> => {
+    const nowTs = Date.now();
+    const repository = AppDataSource.getRepository(SocialPlannerPostEntity);
+
+    const queuedPostIds = await redisClient.zrangebyscore(
+        SOCIAL_PLANNER_QUEUE_KEY,
+        "-inf",
+        String(nowTs),
+        "LIMIT",
+        0,
+        batchSize
+    );
+
+    if (!queuedPostIds.length) {
+        logger.info("[SocialPlannerQueue] No queued social planner posts to process.");
         return;
     }
 
-    logger.info(`[SocialPlannerCron] Found ${duePosts.length} scheduled post(s) due for publication.`);
+    logger.info(`[SocialPlannerQueue] Processing ${queuedPostIds.length} queued social planner post(s).`);
 
     let successCount = 0;
     let failureCount = 0;
 
-    for (const post of duePosts) {
+    for (const postId of queuedPostIds) {
         try {
+            const post = await repository.findOne({ where: { id: postId } });
+
+            if (!post || post.status !== "scheduled") {
+                await redisClient.zrem(SOCIAL_PLANNER_QUEUE_KEY, postId);
+                continue;
+            }
+
+            if (!post.scheduledAt || new Date(post.scheduledAt).getTime() > nowTs) {
+                continue;
+            }
+
             const result = await publishSocialPlannerPost(post.id, post.bioId, post.userId);
+
             if (result.success) {
                 successCount += 1;
             } else {
                 failureCount += 1;
-                logger.warn(`[SocialPlannerCron] Failed to publish post ${post.id}: ${result.message}`);
+                logger.warn(`[SocialPlannerQueue] Failed to publish post ${post.id}: ${result.message}`);
             }
+
+            await redisClient.zrem(SOCIAL_PLANNER_QUEUE_KEY, postId);
         } catch (error: any) {
             failureCount += 1;
-            logger.error(`[SocialPlannerCron] Unexpected error while publishing post ${post.id}:`, error?.message || error);
+            logger.error(`[SocialPlannerQueue] Unexpected error while processing queued post ${postId}: ${error?.message || error}`);
+            await redisClient.zrem(SOCIAL_PLANNER_QUEUE_KEY, postId);
         }
     }
 
-    logger.info(`[SocialPlannerCron] Completed. Success: ${successCount}, Failed: ${failureCount}.`);
+    logger.info(`[SocialPlannerQueue] Completed. Success: ${successCount}, Failed: ${failureCount}.`);
+};
+
+export const runSocialPlannerJob = async (): Promise<void> => {
+    await enqueueDueSocialPlannerPosts();
+    await processSocialPlannerQueue(500);
 };

@@ -845,10 +845,20 @@ const processInstagramAction = async (node: AutomationNode, context: any): Promi
     }
 
     let integration = await integrationRepository.findOne({
-        where: {
-            bio: { id: bioId },
-            provider: "instagram",
-        },
+        where: [
+            {
+                bio: { id: bioId },
+                provider: "instagram",
+            },
+            {
+                bio: { id: bioId },
+                name: "instagram",
+            },
+            {
+                bio: { id: bioId },
+                name: "Instagram",
+            },
+        ],
     });
 
     if (!integration?.accessToken || !integration?.account_id) {
