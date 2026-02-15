@@ -260,6 +260,7 @@ export default function DashboardEditor() {
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
   const lastSavedBlocksRef = useRef<string>("");
   const designSaveTimeoutRef = useRef<number | null>(null);
+  const oauthPopupPollRef = useRef<number | null>(null);
 
   // Block Editor Hook
   const {
@@ -375,19 +376,53 @@ export default function DashboardEditor() {
     setEditingBlock(newBlock);
   }, [addBlock]);
 
+  const openIntegrationPopup = useCallback((provider: "instagram" | "threads", authUrl: string) => {
+    if (typeof window === "undefined" || !bio?.id) return;
+
+    const popup = window.open(authUrl, `${provider}-connect`, "width=620,height=780,noopener,noreferrer");
+    if (!popup) {
+      toast.error("Popup blocked. Please allow popups and try again.");
+      return;
+    }
+
+    if (oauthPopupPollRef.current) {
+      window.clearInterval(oauthPopupPollRef.current);
+    }
+
+    oauthPopupPollRef.current = window.setInterval(async () => {
+      if (!popup || popup.closed) {
+        if (oauthPopupPollRef.current) {
+          window.clearInterval(oauthPopupPollRef.current);
+          oauthPopupPollRef.current = null;
+        }
+
+        try {
+          const response = await api.get(`/integration`, { params: { bioId: bio.id } });
+          const integrations = Array.isArray(response.data) ? response.data : [];
+          const isConnected = integrations.some((item: any) => String(item?.provider || "").toLowerCase() === provider);
+          if (isConnected) {
+            window.location.reload();
+          }
+        } catch {
+          // noop - message event is main path
+        }
+      }
+    }, 600);
+  }, [bio?.id]);
+
   const handleInstagramConnectRequired = useCallback(() => {
     if (!bio?.id || typeof window === "undefined") return;
     const returnTo = window.location.origin;
     const authUrl = `/api/instagram/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
-    window.open(authUrl, "instagram-connect", "width=620,height=780,noopener,noreferrer");
-  }, [bio?.id]);
+    openIntegrationPopup("instagram", authUrl);
+  }, [bio?.id, openIntegrationPopup]);
 
   const handleThreadsConnectRequired = useCallback(() => {
     if (!bio?.id || typeof window === "undefined") return;
     const returnTo = window.location.origin;
     const authUrl = `/api/threads/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
-    window.open(authUrl, "threads-connect", "width=620,height=780,noopener,noreferrer");
-  }, [bio?.id]);
+    openIntegrationPopup("threads", authUrl);
+  }, [bio?.id, openIntegrationPopup]);
 
   const handleUpdateBlocks = useCallback(async (newBlocks: BioBlock[]) => {
     reorderBlocks(newBlocks);
@@ -419,9 +454,42 @@ export default function DashboardEditor() {
   }, [bio, updateBio]);
 
   useEffect(() => {
+    const onOAuthMessage = (event: MessageEvent) => {
+      if (typeof window === "undefined") return;
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { type?: string; success?: string; error?: string };
+      if (!data || data.type !== "PORTYO_OAUTH_RESULT") return;
+
+      if (oauthPopupPollRef.current) {
+        window.clearInterval(oauthPopupPollRef.current);
+        oauthPopupPollRef.current = null;
+      }
+
+      if (data.success === "instagram_connected") {
+        toast.success("Instagram connected successfully.");
+        window.location.reload();
+        return;
+      }
+
+      if (data.success === "threads_connected") {
+        toast.success("Threads connected successfully.");
+        window.location.reload();
+        return;
+      }
+
+      if (data.error) {
+        toast.error("Connection failed. Please try again.");
+      }
+    };
+
+    window.addEventListener("message", onOAuthMessage);
     return () => {
+      window.removeEventListener("message", onOAuthMessage);
       if (designSaveTimeoutRef.current) {
         window.clearTimeout(designSaveTimeoutRef.current);
+      }
+      if (oauthPopupPollRef.current) {
+        window.clearInterval(oauthPopupPollRef.current);
       }
     };
   }, []);

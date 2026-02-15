@@ -2029,6 +2029,20 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             const imgSize = bio.profileImageSize === 'large' ? 150 : 120;
                             const handle = bio.sufix || subdomain || '';
                             const maxW = bio.maxWidth || 566;
+                            const classicCardStyleType = bio.cardStyle || 'none';
+                            const classicHasCard = classicCardStyleType !== 'none';
+                            const classicCardBgColor = bio.cardBackgroundColor || '#ffffff';
+                            const classicCardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
+                            const classicCardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
+                            const classicCardBorderRadius = bio.cardBorderRadius || 24;
+                            const classicCardBorderWidth = bio.cardBorderWidth || 1;
+                            const classicCardBorderColor = bio.cardBorderColor || 'rgba(0,0,0,0.08)';
+                            const classicCardPaddingBase = bio.cardPadding || 36;
+                            const classicCardPaddingX = bio.cardPadding ? Math.round(bio.cardPadding * 0.75) : 28;
+                            const classicCardR = parseInt(classicCardBgColor.replace('#', '').substr(0, 2), 16) || 255;
+                            const classicCardG = parseInt(classicCardBgColor.replace('#', '').substr(2, 2), 16) || 255;
+                            const classicCardB = parseInt(classicCardBgColor.replace('#', '').substr(4, 2), 16) || 255;
+                            const classicCardA = classicCardOpacity / 100;
 
                             if (imgLayout === 'hero') {
                                 // Compute card bg so the hero gradient can blend into it
@@ -2400,13 +2414,28 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 <div style={{
                                     width: '100%',
                                     maxWidth: `${maxW}px`,
-                                    margin: '0 auto 24px auto',
+                                    margin: '0 auto 0 auto',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     position: 'relative',
                                     zIndex: 10,
-                                    paddingTop: '48px',
+                                    paddingTop: classicHasCard ? '20px' : '32px',
+                                    paddingLeft: classicHasCard ? `${classicCardPaddingX}px` : undefined,
+                                    paddingRight: classicHasCard ? `${classicCardPaddingX}px` : undefined,
+                                    paddingBottom: classicHasCard ? '8px' : undefined,
+                                    backgroundColor: classicHasCard ? `rgba(${classicCardR}, ${classicCardG}, ${classicCardB}, ${classicCardA})` : undefined,
+                                    borderRadius: classicHasCard ? `${classicCardBorderRadius}px ${classicCardBorderRadius}px 0 0` : undefined,
+                                    boxShadow: classicHasCard ? (bio.cardShadow || '0 8px 32px rgba(0,0,0,0.12)') : undefined,
+                                    ...(classicHasCard && classicCardStyleType === 'frosted' ? {
+                                        backdropFilter: `blur(${classicCardBlur}px)`,
+                                        WebkitBackdropFilter: `blur(${classicCardBlur}px)`,
+                                    } : {}),
+                                    ...(classicHasCard ? {
+                                        borderTop: `${classicCardBorderWidth}px solid ${classicCardBorderColor}`,
+                                        borderLeft: `${classicCardBorderWidth}px solid ${classicCardBorderColor}`,
+                                        borderRight: `${classicCardBorderWidth}px solid ${classicCardBorderColor}`,
+                                    } : {}),
                                 }}>
                                     {/* Profile Image */}
                                     {showImg && imgSrc && (
@@ -2614,30 +2643,40 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             if (isHeroLayout) return null;
 
                             const cardStyleType = bio.cardStyle || 'none';
+                            const mergeWithHeaderCard = cardStyleType !== 'none';
                             const cardBgColor = bio.cardBackgroundColor || '#ffffff';
                             const cardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
                             const cardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
                             const maxW = bio.maxWidth || 566;
+                            const cardPaddingBase = bio.cardPadding || 36;
+                            const cardPaddingX = bio.cardPadding ? Math.round(bio.cardPadding * 0.75) : 28;
+                            const cardPaddingTop = Math.max(10, Math.round(cardPaddingBase * 0.28));
                             const r = parseInt(cardBgColor.replace('#', '').substr(0, 2), 16) || 255;
                             const g = parseInt(cardBgColor.replace('#', '').substr(2, 2), 16) || 255;
                             const b = parseInt(cardBgColor.replace('#', '').substr(4, 2), 16) || 255;
                             const alpha = cardOpacity / 100;
+                            const cardBorderRadius = bio.cardBorderRadius || 24;
+                            const cardBorderWidth = bio.cardBorderWidth || 1;
+                            const cardBorderColor = bio.cardBorderColor || 'rgba(0,0,0,0.08)';
 
                             const cardStyle: React.CSSProperties = cardStyleType !== 'none' ? {
                                 backgroundColor: `rgba(${r}, ${g}, ${b}, ${alpha})`,
-                                borderRadius: `${bio.cardBorderRadius || 24}px`,
-                                padding: `${bio.cardPadding || 36}px ${bio.cardPadding ? Math.round(bio.cardPadding * 0.75) : 28}px`,
-                                boxShadow: bio.cardShadow || '0 8px 32px rgba(0,0,0,0.12)',
+                                borderRadius: mergeWithHeaderCard ? `0 0 ${cardBorderRadius}px ${cardBorderRadius}px` : `${cardBorderRadius}px`,
+                                padding: `${cardPaddingTop}px ${cardPaddingX}px ${cardPaddingBase}px`,
+                                boxShadow: mergeWithHeaderCard ? 'none' : (bio.cardShadow || '0 8px 32px rgba(0,0,0,0.12)'),
                                 transition: 'box-shadow 0.3s ease',
                                 ...(cardStyleType === 'frosted' ? {
                                     backdropFilter: `blur(${cardBlur}px)`,
                                     WebkitBackdropFilter: `blur(${cardBlur}px)`,
                                     border: '1px solid rgba(255,255,255,0.1)',
                                 } : {}),
-                                ...(bio.cardBorderWidth ? {
-                                    borderWidth: `${bio.cardBorderWidth}px`,
+                                ...(cardBorderWidth ? {
+                                    borderWidth: `${cardBorderWidth}px`,
                                     borderStyle: 'solid',
-                                    borderColor: bio.cardBorderColor || 'rgba(0,0,0,0.08)',
+                                    borderColor: cardBorderColor,
+                                } : {}),
+                                ...(mergeWithHeaderCard ? {
+                                    borderTop: 'none',
                                 } : {}),
                             } : {};
 
@@ -2645,7 +2684,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                 <div style={{
                                     width: '100%',
                                     maxWidth: `${maxW}px`,
-                                    margin: '0 auto',
+                                    margin: mergeWithHeaderCard ? '0 auto 0 auto' : '-8px auto 0 auto',
                                     ...cardStyle,
                                 }}>
                                     {/* Mini Navbar Tabs — classic layout */}

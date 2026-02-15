@@ -230,11 +230,12 @@ export class InstagramService {
     }
     const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
-      "instagram_business_basic",
-      "instagram_business_manage_comments",
-      "instagram_business_manage_messages",
-      "instagram_business_content_publish",
-      "instagram_business_manage_insights",
+      "instagram_basic",
+      "instagram_content_publish",
+      "instagram_manage_comments",
+      "instagram_manage_messages",
+      "pages_show_list",
+      "pages_read_engagement",
     ];
     const params = new URLSearchParams({
       client_id: this.clientId,
@@ -242,7 +243,7 @@ export class InstagramService {
       response_type: "code",
       scope: scopes.join(","),
     });
-    const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+    const url = `https://www.facebook.com/${this.graphVersion}/dialog/oauth?${params.toString()}`;
     console.log("[Instagram OAuth][service][integration] Built auth URL", {
       redirectUri: resolvedRedirectUri,
       clientIdPreview: this.maskValue(this.clientId, 6),
@@ -415,6 +416,101 @@ export class InstagramService {
       redirectUriCandidates,
     });
 
+    const businessExchangeErrors: Array<{ redirectUri: string; error: any }> = [];
+    for (const candidateRedirectUri of redirectUriCandidates) {
+      try {
+        console.log("[Instagram OAuth][service][integration] Trying Facebook Business exchange", {
+          candidateRedirectUri,
+        });
+
+        const fbTokenResponse = await axios.get(
+          `https://graph.facebook.com/${this.graphVersion}/oauth/access_token`,
+          {
+            params: {
+              client_id: this.clientId,
+              client_secret: this.clientSecret,
+              redirect_uri: candidateRedirectUri,
+              code: cleanCode,
+            },
+          }
+        );
+
+        const facebookUserAccessToken = fbTokenResponse.data?.access_token as string | undefined;
+        const expiresIn = fbTokenResponse.data?.expires_in as number | undefined;
+
+        if (!facebookUserAccessToken) {
+          throw new Error("Missing Facebook user access token");
+        }
+
+        const pagesResponse = await axios.get(
+          `https://graph.facebook.com/${this.graphVersion}/me/accounts`,
+          {
+            params: {
+              fields: "id,name,access_token,instagram_business_account{id,username}",
+              access_token: facebookUserAccessToken,
+            },
+          }
+        );
+
+        const pages = Array.isArray(pagesResponse.data?.data) ? pagesResponse.data.data : [];
+        const pageWithInstagram = pages.find((page: any) => {
+          const igAccountId = page?.instagram_business_account?.id || page?.instagram_business_account;
+          return Boolean(igAccountId && page?.access_token);
+        });
+
+        if (!pageWithInstagram) {
+          throw new Error("No Facebook Page with instagram_business_account found");
+        }
+
+        const instagramBusinessAccountId = String(
+          pageWithInstagram.instagram_business_account?.id || pageWithInstagram.instagram_business_account
+        );
+        const instagramUsername =
+          pageWithInstagram.instagram_business_account?.username ||
+          pageWithInstagram.username ||
+          null;
+        const pageAccessToken = String(pageWithInstagram.access_token || "").trim();
+
+        if (!instagramBusinessAccountId || !pageAccessToken) {
+          throw new Error("Invalid Instagram Business account mapping from Facebook page");
+        }
+
+        logger.info("Instagram Business OAuth exchange succeeded", {
+          redirectUriUsed: candidateRedirectUri,
+          pageId: pageWithInstagram.id,
+          pageName: pageWithInstagram.name,
+          instagramBusinessAccountId,
+          instagramUsername,
+        });
+
+        return {
+          accessToken: pageAccessToken,
+          userToken: facebookUserAccessToken,
+          userId: instagramBusinessAccountId,
+          instagramBusinessAccountId,
+          instagramUsername,
+          pageId: String(pageWithInstagram.id || ""),
+          pageName: pageWithInstagram.name || null,
+          expiresIn,
+        };
+      } catch (businessError: any) {
+        const normalizedError = businessError?.response?.data || businessError?.message || businessError;
+        console.log("[Instagram OAuth][service][integration] Facebook Business exchange failed", {
+          candidateRedirectUri,
+          error: normalizedError,
+        });
+        businessExchangeErrors.push({
+          redirectUri: candidateRedirectUri,
+          error: normalizedError,
+        });
+      }
+    }
+
+    logger.warn("Instagram Business OAuth exchange failed for all redirect URIs, falling back to legacy Instagram exchange", {
+      candidatesTried: redirectUriCandidates,
+      businessExchangeErrors,
+    });
+
     try {
       let userAccessToken: string | null = null;
       let userId: string | null = null;
@@ -524,20 +620,44 @@ export class InstagramService {
       try {
         console.log("[Instagram OAuth][service][integration] Buscando perfil do usuário...");
 
-        const profileResponse = await axios.get("https://graph.instagram.com/me", {
-          params: {
-            fields: "id,username",
-            access_token: userAccessToken,
-          },
-        });
+        const profileCandidates: Array<{ url: string; fields: string }> = [
+          { url: `https://graph.instagram.com/${this.graphVersion}/me`, fields: "id,username" },
+          { url: "https://graph.instagram.com/me", fields: "id,username" },
+          { url: `https://graph.instagram.com/${this.graphVersion}/me`, fields: "user_id,username" },
+          { url: "https://graph.instagram.com/me", fields: "user_id,username" },
+        ];
 
-        instagramUserId = profileResponse.data?.id ? String(profileResponse.data.id) : userId;
-        instagramUsername = profileResponse.data?.username || null;
+        let profilePayload: any = null;
+        for (const candidate of profileCandidates) {
+          try {
+            const profileResponse = await axios.get(candidate.url, {
+              params: {
+                fields: candidate.fields,
+                access_token: userAccessToken,
+              },
+            });
+            profilePayload = profileResponse.data;
+            if (profilePayload) break;
+          } catch (candidateError: any) {
+            const candidateErr = candidateError?.response?.data;
+            const candidateErrMsg = typeof candidateErr === "object"
+              ? JSON.stringify(candidateErr)
+              : (candidateErr || candidateError?.message);
+            logger.warn(`[Instagram OAuth][service][integration] Profile candidate failed | url=${candidate.url} fields=${candidate.fields} error=${candidateErrMsg}`);
+          }
+        }
 
-        console.log("[Instagram OAuth][service][integration] Profile resolved", {
-          profileId: instagramUserId,
-          profileUsername: instagramUsername,
-        });
+        if (profilePayload) {
+          instagramUserId = profilePayload?.id
+            ? String(profilePayload.id)
+            : (profilePayload?.user_id ? String(profilePayload.user_id) : userId);
+          instagramUsername = profilePayload?.username || null;
+
+          console.log("[Instagram OAuth][service][integration] Profile resolved", {
+            profileId: instagramUserId,
+            profileUsername: instagramUsername,
+          });
+        }
       } catch (profileError: any) {
         const errorDetails = profileError?.response?.data
           ? JSON.stringify(profileError.response.data)
@@ -697,6 +817,18 @@ export class InstagramService {
     }
 
     const prefersInstagramGraph = normalizedAccessToken.startsWith("IG");
+
+    if (prefersInstagramGraph) {
+      logger.info("Skipping Instagram subscribed_apps for IG token that is not webhook-capable", {
+        instagramBusinessAccountId,
+      });
+      return {
+        success: false,
+        subscribedFields: fields,
+        error: "Token type does not support subscribed_apps",
+      };
+    }
+
     const graphCandidates = prefersInstagramGraph
       ? [
           `https://graph.instagram.com/${this.graphVersion}`,
@@ -853,18 +985,20 @@ export class InstagramService {
     instagramBusinessAccountId: string;
     accessToken: string;
     baseUrl: string;
+    provider?: "instagram" | "threads";
   }) {
     const { instagramBusinessAccountId, accessToken, baseUrl } = params;
+    const provider = params.provider === "threads" ? "threads" : "instagram";
     const accountId = String(instagramBusinessAccountId || "").trim();
     const normalizedAccessToken = String(accessToken || "").trim();
 
-    if (!accountId || !normalizedAccessToken) {
+    if (!normalizedAccessToken) {
       return [];
     }
 
     const cacheSlug = `account:${accountId}`;
-    const CACHE_KEY_POSTS = `instagram:posts:${cacheSlug}`;
-    const CACHE_KEY_LAST_UPDATED = `instagram:last_updated:${cacheSlug}`;
+    const CACHE_KEY_POSTS = `${provider}:posts:${cacheSlug}`;
+    const CACHE_KEY_LAST_UPDATED = `${provider}:last_updated:${cacheSlug}`;
     const CACHE_WINDOW_MS = 12 * 60 * 60 * 1000;
 
     let cachedPostsStr: string | null = null;
@@ -883,17 +1017,47 @@ export class InstagramService {
         return JSON.parse(cachedPostsStr);
       }
 
-      const graphCandidates = [
-        `https://graph.instagram.com/${this.graphVersion}`,
-        `https://graph.facebook.com/${this.graphVersion}`,
-      ];
-
       let mediaItems: any[] = [];
-      for (const graphBase of graphCandidates) {
-        try {
-          const response = await axios.get(`${graphBase}/${accountId}/media`, {
-            params: {
+
+      const feedCandidates = provider === "threads"
+        ? [
+            {
+              url: `https://graph.threads.net/v1.0/${accountId}/threads`,
+              fields: "id,text,media_type,media_url,thumbnail_url,permalink,timestamp",
+            },
+            {
+              url: `https://graph.threads.net/${this.graphVersion}/${accountId}/threads`,
+              fields: "id,text,media_type,media_url,thumbnail_url,permalink,timestamp",
+            },
+          ]
+        : [
+            {
+              url: `https://graph.instagram.com/${this.graphVersion}/me/media`,
               fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+            },
+            {
+              url: "https://graph.instagram.com/me/media",
+              fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+            },
+            ...(accountId
+              ? [
+                  {
+                    url: `https://graph.instagram.com/${this.graphVersion}/${accountId}/media`,
+                    fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+                  },
+                  {
+                    url: `https://graph.facebook.com/${this.graphVersion}/${accountId}/media`,
+                    fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+                  },
+                ]
+              : []),
+          ];
+
+      for (const candidate of feedCandidates) {
+        try {
+          const response = await axios.get(candidate.url, {
+            params: {
+              fields: candidate.fields,
               limit: 9,
               access_token: normalizedAccessToken,
             },
@@ -906,7 +1070,7 @@ export class InstagramService {
         } catch (candidateError: any) {
           const errData = candidateError?.response?.data;
           const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || candidateError?.message);
-          logger.warn(`Instagram media candidate failed | base=${graphBase} accountId=${accountId} status=${candidateError?.response?.status} error=${errMsg}`);
+          logger.warn(`${provider} media candidate failed | url=${candidate.url} accountId=${accountId || "me"} status=${candidateError?.response?.status} error=${errMsg}`);
         }
       }
 
@@ -922,7 +1086,7 @@ export class InstagramService {
             id: item?.id,
             url: item?.permalink || "#",
             originalImageUrl: mediaUrl,
-            caption: item?.caption || "",
+            caption: item?.caption || item?.text || "",
           };
         })
         .filter((post) => post.id && post.originalImageUrl);
@@ -934,10 +1098,10 @@ export class InstagramService {
         return [];
       }
 
-      const processedPosts = await this.processAndCachePosts(rawPosts, cacheSlug, baseUrl);
+      const processedPosts = await this.processAndCachePosts(rawPosts, cacheSlug, baseUrl, provider);
       return processedPosts;
     } catch (error: any) {
-      logger.error("Instagram connected feed fetch failed", {
+      logger.error(`${provider} connected feed fetch failed`, {
         accountId,
         error: error?.response?.data || error?.message,
       });
@@ -1041,9 +1205,14 @@ export class InstagramService {
     }
   }
 
-  private async processAndCachePosts(posts: any[], username: string, baseUrl: string) {
-      const CACHE_KEY_POSTS = `instagram:posts:${username}`;
-      const CACHE_KEY_LAST_UPDATED = `instagram:last_updated:${username}`;
+  private async processAndCachePosts(
+    posts: any[],
+    username: string,
+    baseUrl: string,
+    provider: "instagram" | "threads" = "instagram"
+  ) {
+      const CACHE_KEY_POSTS = `${provider}:posts:${username}`;
+      const CACHE_KEY_LAST_UPDATED = `${provider}:last_updated:${username}`;
       const IMAGE_TTL = 30 * 24 * 60 * 60; // 30 days
       const POSTS_TTL = 7 * 24 * 60 * 60; // 7 days (posts structure)
 

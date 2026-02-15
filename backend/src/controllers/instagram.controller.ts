@@ -735,6 +735,7 @@ export const getLatestPosts = async (req: Request, res: Response, next: NextFunc
       instagramBusinessAccountId: refreshedIntegration.account_id || "",
       accessToken: refreshedIntegration.accessToken || "",
       baseUrl,
+      provider: integrationProvider,
     });
 
     return res.status(200).json(Array.isArray(posts) ? posts : []);
@@ -789,6 +790,7 @@ export const getLatestPostsByBioId = async (req: Request, res: Response, next: N
       instagramBusinessAccountId: activeIntegration.account_id || "",
       accessToken: activeIntegration.accessToken || "",
       baseUrl,
+      provider: integrationProvider,
     });
 
     return res.status(200).json(Array.isArray(posts) ? posts : []);
@@ -1119,6 +1121,13 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         ? await instagramService.exchangeThreadsCodeForToken(code, redirectUri || getThreadsRedirectUri())
         : await instagramService.exchangeCodeForToken(code, redirectUri);
 
+      const normalizedIntegrationAccessToken = typeof tokenData.accessToken === "string"
+        ? tokenData.accessToken.trim()
+        : "";
+      const tokenTypeDetected = normalizedIntegrationAccessToken.startsWith("EAA")
+        ? "business"
+        : (normalizedIntegrationAccessToken.startsWith("IG") ? "legacy" : "unknown");
+
       console.log("[Instagram OAuth][callback][integration] Token data received", {
         userId: tokenData.userId,
         instagramBusinessAccountId: tokenData.instagramBusinessAccountId,
@@ -1126,6 +1135,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         accessTokenLength: tokenData.accessToken?.length || 0,
         accessTokenPreview: maskValue(tokenData.accessToken, 12),
         expiresIn: tokenData.expiresIn,
+        tokenTypeDetected,
       });
 
       const bioId = (statePayload as any).bioId as string | undefined;
@@ -1195,6 +1205,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         accountId: integration.account_id,
         integrationName: integration.name,
         tokenExpiresAt: integration.accessTokenExpiresAt,
+        tokenTypeDetected,
       });
 
       res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=${integrationProvider}_connected`);

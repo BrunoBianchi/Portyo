@@ -1618,6 +1618,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const cardBorderWidth = typeof bio.cardBorderWidth === 'number' ? Math.max(0, bio.cardBorderWidth) : 1;
   const cardBorderRadius = typeof bio.cardBorderRadius === 'number' ? Math.max(0, bio.cardBorderRadius) : 24;
   const cardPadding = typeof bio.cardPadding === 'number' ? Math.max(0, bio.cardPadding) : 32;
+  const cardPaddingTop = Math.max(10, Math.round(cardPadding * 0.35));
   const cardShadow = bio.cardShadow || 'lg';
 
   const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
@@ -1676,7 +1677,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   let cardCss = '';
   if (cardStyleType !== 'none') {
     cardCss += `background-color: ${withCardOpacity(cardBgColor, cardOpacity)}; `;
-    cardCss += `border-radius: ${cardBorderRadius}px; padding: ${cardPadding}px 24px; `;
+    cardCss += `border-radius: ${cardBorderRadius}px; padding: ${cardPaddingTop}px 24px ${cardPadding}px; `;
     cardCss += `box-shadow: ${getCardShadowCss(cardShadow)}; `;
     cardCss += cardBorderWidth > 0
       ? `border: ${cardBorderWidth}px solid ${cardBorderColor}; `

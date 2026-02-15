@@ -245,6 +245,36 @@ export default function DashboardIntegrations() {
     }
   }, [searchParams, bio?.id]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
+    const gaStatus = searchParams.get("google_analytics");
+    const hasOauthResult = Boolean(success || error || gaStatus);
+
+    if (!hasOauthResult) return;
+    if (!window.opener || window.opener.closed) return;
+
+    try {
+      window.opener.postMessage(
+        {
+          type: "PORTYO_OAUTH_RESULT",
+          success: success || undefined,
+          error: error || undefined,
+          gaStatus: gaStatus || undefined,
+        },
+        window.location.origin
+      );
+
+      window.setTimeout(() => {
+        window.close();
+      }, 120);
+    } catch {
+      // noop
+    }
+  }, [searchParams]);
+
   const checkStripeStatus = async () => {
     if (!bio?.id) return;
     try {
