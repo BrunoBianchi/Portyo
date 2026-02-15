@@ -226,8 +226,8 @@ export class InstagramService {
   }
 
   public getAuthUrl(redirectUri?: string) {
-    if (!this.facebookAppId) {
-      throw new ApiError(APIErrors.internalServerError, "Facebook App ID not configured", 500);
+    if (!this.clientId) {
+      throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
     }
     const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
@@ -239,15 +239,15 @@ export class InstagramService {
       "pages_read_engagement",
     ];
     const params = new URLSearchParams({
-      client_id: this.facebookAppId,
+      client_id: this.clientId,
       redirect_uri: resolvedRedirectUri,
       response_type: "code",
       scope: scopes.join(","),
     });
-    const url = `https://www.facebook.com/${this.graphVersion}/dialog/oauth?${params.toString()}`;
+    const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
     console.log("[Instagram OAuth][service][integration] Built auth URL", {
       redirectUri: resolvedRedirectUri,
-      clientIdPreview: this.maskValue(this.facebookAppId, 6),
+      clientIdPreview: this.maskValue(this.clientId, 6),
       scopes,
       url,
     });
