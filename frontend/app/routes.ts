@@ -130,6 +130,8 @@ const nonLocalizedRoutes: RouteConfig = [
     { path: '/robot.txt', file: "routes/robots.ts", id: "robot-txt" },
     { path: '/sitemap.xml', file: "routes/sitemap.ts", id: "sitemap-xml" },
     { path: '/sitemap', file: "routes/sitemap.ts", id: "sitemap" },
+    { path: '/sitemap-index.xml', file: "routes/sitemap-index.ts", id: "sitemap-index-xml" },
+    { path: '/sitemap-index', file: "routes/sitemap-index.ts", id: "sitemap-index" },
     { path: '/p/:username/robots.txt', file: "routes/robots.ts", id: "bio-robots" },
     { path: '/p/:username/sitemap.xml', file: "routes/sitemap.ts", id: "bio-sitemap" },
     { path: '/claim-bio', file: "routes/claim-bio.tsx", id: "claim-bio-direct" },

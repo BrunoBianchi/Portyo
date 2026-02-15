@@ -4,8 +4,8 @@ import { LayoutGrid, Settings, Globe, Bot, Palette, ChevronLeft, ChevronRight } 
 import { Link, useLocation } from "react-router";
 
 interface EditorNavProps {
-    activeTab: "links" | "settings" | "customDomains";
-    onChangeTab: (tab: "links" | "settings" | "customDomains") => void;
+    activeTab: "links" | "settings" | "customDomains" | "design";
+    onChangeTab: (tab: "links" | "settings" | "customDomains" | "design") => void;
 }
 
 export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
@@ -36,16 +36,15 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             shortLabel: isPt ? "Domínios" : "Domains",
             icon: Globe,
         },
-    ];
-
-    const navLinks = [
         {
             id: "design" as const,
-            to: "/dashboard/design",
             label: t("nav.design", { defaultValue: isPt ? "Design" : "Design" }),
             shortLabel: "Design",
             icon: Palette,
         },
+    ];
+
+    const navLinks = [
         {
             id: "automation" as const,
             to: "/dashboard/automation",
@@ -57,13 +56,13 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
 
     const itemBaseClass = `
         snap-start relative flex items-center justify-center gap-1.5
-        px-2.5 sm:px-3 md:px-3 lg:px-3.5
+        px-2.5 sm:px-3.5 md:px-3.5 lg:px-4
         py-2 sm:py-2.5
         rounded-lg sm:rounded-full
-        font-bold text-[11px] sm:text-xs
+        font-semibold text-[11px] sm:text-xs
         transition-all duration-200 ease-out
         whitespace-nowrap flex-shrink-0
-        min-w-[78px] sm:min-w-[92px]
+        min-w-[84px] sm:min-w-[102px]
         touch-manipulation
     `;
 
@@ -117,14 +116,14 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
         <div className="relative w-full max-w-full">
             {/* Gradiente esquerdo - aparece quando pode scrollar */}
             {canScrollLeft && (
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
             )}
 
             {canScrollLeft && (
                 <button
                     type="button"
                     onClick={() => scrollNav("left")}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
+                    className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
                     aria-label={t("editor.tabs.scrollLeft", { defaultValue: "Scroll tabs left" })}
                 >
                     <ChevronLeft className="w-3.5 h-3.5" />
@@ -134,7 +133,7 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
             {/* Container principal com scroll */}
             <nav
                 ref={scrollRef}
-                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-lg shadow-black/5 w-full max-w-full overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pl-2 pr-2 sm:pl-8 sm:pr-8"
+                className="flex items-center gap-1 p-1 bg-white/90 backdrop-blur-md border border-black/10 rounded-full md:rounded-xl shadow-md shadow-black/5 w-full max-w-full overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pl-12 pr-12 sm:pl-14 sm:pr-14"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {tabs.map((tab) => {
@@ -218,14 +217,14 @@ export function EditorNav({ activeTab, onChangeTab }: EditorNavProps) {
 
             {/* Gradiente direito - aparece quando pode scrollar */}
             {canScrollRight && (
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
             )}
 
             {canScrollRight && (
                 <button
                     type="button"
                     onClick={() => scrollNav("right")}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
+                    className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white border border-black/10 text-gray-700 shadow-sm hover:bg-gray-50"
                     aria-label={t("editor.tabs.scrollRight", { defaultValue: "Scroll tabs right" })}
                 >
                     <ChevronRight className="w-3.5 h-3.5" />

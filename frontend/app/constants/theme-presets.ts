@@ -236,6 +236,11 @@ export const THEME_PRESETS: ThemePreset[] = [
         features: ["Nature", "Adventure", "Green"], colors: ["#14532d", "#bbf7d0", "#166534"],
         styles: { bgType: "gradient", bgColor: "#14532d", bgSecondaryColor: "#166534", cardStyle: "frosted", cardBackgroundColor: "rgba(34,197,94,0.12)", cardBorderColor: "#4ade80", cardBorderWidth: 1, cardBorderRadius: 12, cardShadow: "lg", cardPadding: 28, cardOpacity: 85, cardBlur: 18, usernameColor: "#bbf7d0", font: "Cabin", maxWidth: 500, imageStyle: "circle", enableParallax: true, parallaxIntensity: 35, parallaxDepth: 45, floatingElements: true, floatingElementsType: "leaves", floatingElementsColor: "#4ade80", floatingElementsDensity: 10, floatingElementsSize: 28, floatingElementsSpeed: 18, floatingElementsOpacity: 0.18, floatingElementsBlur: 2 }, sampleBlocks },
 
+    // ============ RETRO ============
+    { name: "Metro", description: "Bold metro collage with green grid and pop accents", category: "art", tier: "standard", emoji: "🧩",
+        features: ["Retro Collage", "Grid", "Bold Contrast"], colors: ["#0D6B45", "#FF2A2A", "#FFE14D"],
+        styles: { bgType: "grid", bgColor: "#0B5B3F", bgSecondaryColor: "#1F7A58", cardStyle: "solid", cardBackgroundColor: "#FFE14D", cardBorderColor: "#FF2A2A", cardBorderWidth: 3, cardBorderRadius: 8, cardShadow: "xl", cardPadding: 28, cardOpacity: 96, cardBlur: 0, usernameColor: "#1A1A1A", font: "Bebas Neue", maxWidth: 500, imageStyle: "rounded", enableParallax: false, parallaxIntensity: 0, parallaxDepth: 0, floatingElements: true, floatingElementsType: "confetti", floatingElementsColor: "#FFE14D", floatingElementsDensity: 8, floatingElementsSize: 16, floatingElementsSpeed: 14, floatingElementsOpacity: 0.2, floatingElementsBlur: 0, buttonStyle: "brutalist", buttonColor: "#FF2A2A", buttonTextColor: "#FFE14D" }, sampleBlocks },
+
     // ============ CUSTOM BACKGROUNDS FROM /public/themes ============
     { name: "Ocean Wave", description: "Cool blue-green aquatic gradient", category: "art", tier: "pro", emoji: "🌊",
         features: ["Blue-Green", "Aquatic", "Gradient", "Image Background"], colors: ["#1a4d5c", "#2d8a9f", "#4ecdc4"],

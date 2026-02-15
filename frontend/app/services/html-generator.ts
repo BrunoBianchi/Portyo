@@ -1,5 +1,7 @@
 import { type BioBlock } from "~/contexts/bio.context";
 import { isValidUrl, normalizeExternalUrl } from "~/utils/security";
+import { normalizeSocialProfileUrl } from "~/utils/social-links";
+import { BUTTON_GRID_ICON_FALLBACKS } from "~/constants/button-grid-icons";
 
 const escapeHtml = (value = "") =>
   value
@@ -269,7 +271,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
 
   if (block.type === "button") {
-    const bg = block.blockBackground || block.accent || bio.buttonColor || "#111827";
+    const bg = block.blockBackground || bio.buttonColor || block.accent || "#111827";
     const color = block.textColor || bio.buttonTextColor || "#ffffff";
     const style = block.buttonStyle || bio.buttonStyle || "solid";
     const shape = block.buttonShape || (bio.buttonRadius === "square"
@@ -459,6 +461,8 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
     const icons = Object.entries(links).map(([platform, url]) => {
       if (!url) return "";
+      const normalizedSocialUrl = normalizeSocialProfileUrl(platform, String(url));
+      const safeUrl = isValidUrl(normalizedSocialUrl) ? normalizedSocialUrl : '#';
       
       // SVG paths for icons
       const svgPaths: Record<string, string> = {
@@ -508,7 +512,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
           behance: 'Veja no Behance',
           dribbble: 'Veja no Dribbble'
         };
-        return `<a href="${escapeHtml(isValidUrl(url) ? url : '#')}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:white; border:1.5px solid rgba(0,0,0,0.08); border-radius:12px; text-decoration:none; transition:all 0.2s; width:100%;" onmouseover="this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'>
+        return `<a href="${escapeHtml(safeUrl)}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:white; border:1.5px solid rgba(0,0,0,0.08); border-radius:12px; text-decoration:none; transition:all 0.2s; width:100%;" onmouseover="this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'>
           <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border-radius:8px;">${iconSvg}</div>
           <div style="flex:1; text-align:left;">
             <div style="font-weight:700; color:#1f2937; text-transform:capitalize;">${platform}</div>
@@ -519,7 +523,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
       
       // Floating buttons - will be positioned fixed
       if (variation === "floating-buttons") {
-        return `<a href="${escapeHtml(isValidUrl(url) ? url : '#')}" aria-label="${escapeHtml(platform)}" style="display:flex; align-items:center; justify-content:center; width:48px; height:48px; background:white; border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:50%; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 280ms ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${iconSvg}</a>`;
+        return `<a href="${escapeHtml(safeUrl)}" aria-label="${escapeHtml(platform)}" style="display:flex; align-items:center; justify-content:center; width:48px; height:48px; background:white; border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:50%; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 280ms ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${iconSvg}</a>`;
       }
       
       // Icon grid (default)
@@ -528,7 +532,6 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
         ? `display:flex; align-items:center; justify-content:center; padding:12px 16px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; font-weight:700; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`
         : `display:inline-flex; align-items:center; justify-content:center; padding:12px; background:linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); border:1.5px solid rgba(0,0,0,0.08); color:#374151; text-decoration:none; border-radius:12px; width:${layout === 'column' ? '100%' : 'auto'}; transition:all 280ms ease; cursor:pointer;`;
 
-      const safeUrl = isValidUrl(url) ? url : '#';
       return `<a href="${escapeHtml(safeUrl)}" aria-label="${escapeHtml(platform)}" style="${style}">${iconSvg}${label}</a>`;
     }).join("");
 
@@ -952,8 +955,9 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
     }
 
     const gridHtml = items.map(item => {
-      const bgImg = item.image || item.icon || "";
-      const iconImg = item.icon || "";
+      const bgImg = item.image || "";
+      const iconKey = item.icon || "";
+      const iconText = BUTTON_GRID_ICON_FALLBACKS[iconKey] || iconKey;
       const title = item.title || "";
       const normalized = normalizeExternalUrl(item.url);
       const url = isValidUrl(normalized) ? normalized : "#";
@@ -966,7 +970,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
           </div>
           
           <div style="position:absolute; inset:0; padding:12px; display:flex; flex-direction:column; justify-content:space-between; color:white;">
-            ${iconImg ? `<div style="width:32px; height:32px; border-radius:50%; background:white; padding:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;"><img src="${escapeHtml(iconImg)}" style="width:100%; height:100%; object-fit:contain;" /></div>` : '<div style="height:32px;"></div>'}
+            ${iconKey ? `<div style="width:32px; height:32px; border-radius:50%; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; font-size:15px; line-height:1;">${escapeHtml(iconText)}</div>` : '<div style="height:32px;"></div>'}
             ${title ? `<span style="font-size:14px; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,0.5); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center;">${escapeHtml(title)}</span>` : ''}
           </div>
         </a>
@@ -1416,8 +1420,8 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const profileImageSrc = normalizeProfileImageSrc(bio.profileImage, user?.id, baseUrl);
   const titleLogoSrc = bio.favicon || bio.ogImage || profileImageSrc;
 
-  const classicImageSize = profileImageSize === 'large' ? 160 : 120;
-  const heroImageHeight = profileImageSize === 'large' ? 220 : 160;
+  const classicImageSize = profileImageSize === 'large' ? 190 : 150;
+  const heroImageHeight = profileImageSize === 'large' ? 280 : 210;
 
   const profileImageHtml = displayProfileImage ? (profileImageLayout === 'hero'
     ? `
@@ -1480,18 +1484,7 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const socialLinksHtml = Object.entries(socials)
     .filter(([key, value]) => value && socialIcons[key])
     .map(([key, value]) => {
-      let url = value as string;
-      if (key === 'email') {
-          if (!url.startsWith('mailto:')) url = `mailto:${url}`;
-      } else if (key === 'whatsapp') {
-          const cleanNum = url.replace(/\D/g, '');
-          url = `https://wa.me/${cleanNum}`;
-      } else if (key === 'telegram') {
-          if (url.startsWith('@')) url = `https://t.me/${url.slice(1)}`;
-          else if (!url.startsWith('http')) url = `https://t.me/${url}`;
-      } else {
-          url = normalizeExternalUrl(url);
-      }
+      let url = normalizeSocialProfileUrl(key, String(value));
       
       if (!isValidUrl(url)) url = '#';
       
@@ -1552,24 +1545,79 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   const cardBgColor = bio.cardBackgroundColor || '#ffffff';
   const cardOpacity = bio.cardOpacity !== undefined ? bio.cardOpacity : 100;
   const cardBlur = bio.cardBlur !== undefined ? bio.cardBlur : 10;
+  const cardBorderColor = bio.cardBorderColor || 'rgba(0,0,0,0.06)';
+  const cardBorderWidth = typeof bio.cardBorderWidth === 'number' ? Math.max(0, bio.cardBorderWidth) : 1;
+  const cardBorderRadius = typeof bio.cardBorderRadius === 'number' ? Math.max(0, bio.cardBorderRadius) : 24;
+  const cardPadding = typeof bio.cardPadding === 'number' ? Math.max(0, bio.cardPadding) : 32;
+  const cardShadow = bio.cardShadow || 'lg';
+
+  const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+  const withCardOpacity = (color: string, opacityPercent: number) => {
+    const alpha = clamp01(opacityPercent / 100);
+    if (!color) return `rgba(255, 255, 255, ${alpha})`;
+
+    const hexMatch = color.trim().match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+    if (hexMatch) {
+      let hex = hexMatch[1];
+      if (hex.length === 3) {
+        hex = hex.split('').map((char) => char + char).join('');
+      }
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    const rgbMatch = color.trim().match(/^rgba?\(([^)]+)\)$/i);
+    if (rgbMatch) {
+      const parts = rgbMatch[1].split(',').map((part) => part.trim());
+      if (parts.length >= 3) {
+        const r = Number(parts[0]);
+        const g = Number(parts[1]);
+        const b = Number(parts[2]);
+        const currentAlpha = parts.length >= 4 ? Number(parts[3]) : 1;
+        const mergedAlpha = clamp01((Number.isFinite(currentAlpha) ? currentAlpha : 1) * alpha);
+        if ([r, g, b].every(Number.isFinite)) {
+          return `rgba(${r}, ${g}, ${b}, ${mergedAlpha})`;
+        }
+      }
+    }
+
+    return color;
+  };
+
+  const getCardShadowCss = (shadow: string) => {
+    switch (shadow) {
+      case 'none':
+        return 'none';
+      case 'sm':
+        return '0 1px 2px rgba(0,0,0,0.10)';
+      case 'md':
+        return '0 6px 14px -6px rgba(0,0,0,0.22), 0 2px 6px -2px rgba(0,0,0,0.14)';
+      case 'xl':
+        return '0 22px 44px -18px rgba(0,0,0,0.40), 0 10px 22px -10px rgba(0,0,0,0.24)';
+      case '2xl':
+        return '0 28px 60px -24px rgba(0,0,0,0.52), 0 14px 30px -12px rgba(0,0,0,0.28)';
+      case 'lg':
+      default:
+        return '0 14px 30px -12px rgba(0,0,0,0.30), 0 6px 14px -6px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)';
+    }
+  };
   
   let cardCss = '';
   if (cardStyleType !== 'none') {
-    // Convert hex to rgb for rgba
-    const r = parseInt(cardBgColor.substr(1, 2), 16);
-    const g = parseInt(cardBgColor.substr(3, 2), 16);
-    const b = parseInt(cardBgColor.substr(5, 2), 16);
-    // Ensure minimum opacity for visibility
-    const alpha = Math.max(cardOpacity / 100, 0.85);
-    
-    cardCss += `background-color: rgba(${r}, ${g}, ${b}, ${alpha}); `;
-    cardCss += `border-radius: 24px; padding: 32px 24px; `;
-    cardCss += `box-shadow: 0 8px 32px -8px rgba(0,0,0,0.15), 0 4px 16px -4px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06); `;
-    cardCss += `border: 1px solid rgba(0,0,0,0.06); `;
+    cardCss += `background-color: ${withCardOpacity(cardBgColor, cardOpacity)}; `;
+    cardCss += `border-radius: ${cardBorderRadius}px; padding: ${cardPadding}px 24px; `;
+    cardCss += `box-shadow: ${getCardShadowCss(cardShadow)}; `;
+    cardCss += cardBorderWidth > 0
+      ? `border: ${cardBorderWidth}px solid ${cardBorderColor}; `
+      : 'border: none; ';
     
     if (cardStyleType === 'frosted' || cardStyleType === 'glass') {
         cardCss += `backdrop-filter: blur(${Math.max(cardBlur, 12)}px); -webkit-backdrop-filter: blur(${Math.max(cardBlur, 12)}px); `;
-        cardCss += `border: 1px solid rgba(255,255,255,0.25); `;
+        cardCss += cardBorderWidth > 0
+          ? `border: ${cardBorderWidth}px solid ${cardBorderColor}; `
+          : `border: 1px solid rgba(255,255,255,0.25); `;
         cardCss += `box-shadow: 0 8px 32px -8px rgba(0,0,0,0.18), 0 4px 16px -4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3); `;
     }
   }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon, X, GripVertical, Plus, LayoutGrid, List, Rows3 } from "lucide-react";
@@ -19,6 +19,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { usePortfolio } from "~/hooks/use-block-integration";
 import { PortfolioSelector } from "./portfolio-selector";
 import type { PortfolioItem } from "~/services/block-integration.service";
 
@@ -117,6 +118,12 @@ export function PortfolioGallerySelector({
 }: PortfolioGallerySelectorProps) {
   const { t } = useTranslation("dashboard");
   const [showSelector, setShowSelector] = useState(false);
+  const { items: portfolioItems, isLoading: isPortfolioLoading } = usePortfolio({
+    bioId,
+    enabled: Boolean(bioId),
+  });
+  const didInitializeSelectionRef = useRef(false);
+  const hasSeenLoadingRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -125,16 +132,69 @@ export function PortfolioGallerySelector({
     })
   );
 
+  const portfolioItemsById = useMemo(
+    () => new Map(portfolioItems.map((item) => [item.id, item])),
+    [portfolioItems]
+  );
+
+  const selectedPortfolioItems = useMemo(
+    () =>
+      config.itemIds
+        .map((id) => portfolioItemsById.get(id))
+        .filter((item): item is PortfolioItem => Boolean(item)),
+    [config.itemIds, portfolioItemsById]
+  );
+
+  const missingSelectedIds = useMemo(
+    () => config.itemIds.filter((id) => !portfolioItemsById.has(id)),
+    [config.itemIds, portfolioItemsById]
+  );
+
+  useEffect(() => {
+    didInitializeSelectionRef.current = false;
+    hasSeenLoadingRef.current = false;
+  }, [bioId]);
+
+  useEffect(() => {
+    if (isPortfolioLoading) {
+      hasSeenLoadingRef.current = true;
+    }
+  }, [isPortfolioLoading]);
+
+  useEffect(() => {
+    if (didInitializeSelectionRef.current) return;
+    if (!bioId) return;
+    if (!hasSeenLoadingRef.current && portfolioItems.length === 0) return;
+    if (isPortfolioLoading) return;
+
+    didInitializeSelectionRef.current = true;
+
+    if (config.itemIds.length === 0 && portfolioItems.length > 0) {
+      onChange({
+        ...config,
+        itemIds: portfolioItems.map((item) => item.id),
+      });
+    }
+  }, [config, isPortfolioLoading, onChange, portfolioItems]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = config.itemIds.indexOf(active.id as string);
-      const newIndex = config.itemIds.indexOf(over.id as string);
+      const currentSortableIds = selectedPortfolioItems.map((item) => item.id);
+      const oldIndex = currentSortableIds.indexOf(active.id as string);
+      const newIndex = currentSortableIds.indexOf(over.id as string);
+
+      if (oldIndex < 0 || newIndex < 0) {
+        return;
+      }
+
+      const reorderedResolvedIds = arrayMove(currentSortableIds, oldIndex, newIndex);
+      const unresolvedIds = config.itemIds.filter((id) => !portfolioItemsById.has(id));
 
       onChange({
         ...config,
-        itemIds: arrayMove(config.itemIds, oldIndex, newIndex),
+        itemIds: [...reorderedResolvedIds, ...unresolvedIds],
       });
     }
   };
@@ -269,17 +329,25 @@ export function PortfolioGallerySelector({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={config.itemIds}
+              items={selectedPortfolioItems.map((item) => item.id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-2">
-                {config.itemIds.map((id) => (
+                {selectedPortfolioItems.map((item) => (
+                  <SortablePortfolioItem
+                    key={item.id}
+                    item={item}
+                    onRemove={() => handleRemove(item.id)}
+                  />
+                ))}
+
+                {missingSelectedIds.map((id) => (
                   <div
                     key={id}
                     className="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-gray-200"
                   >
                     <div className="p-1">
-                      <GripVertical className="w-4 h-4 text-gray-400" />
+                      <GripVertical className="w-4 h-4 text-gray-300" />
                     </div>
                     <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <ImageIcon className="w-6 h-6 text-gray-400" />

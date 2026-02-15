@@ -1952,7 +1952,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                             const imgLayout = bio.profileImageLayout || 'classic';
                             const showImg = bio.displayProfileImage !== false;
                             const imgSrc = bio.profileImage || headerImageSrc;
-                            const imgSize = bio.profileImageSize === 'large' ? 110 : 90;
+                            const imgSize = bio.profileImageSize === 'large' ? 150 : 120;
                             const handle = bio.sufix || subdomain || '';
                             const maxW = bio.maxWidth || 566;
 
@@ -1981,7 +1981,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                         {/* Hero image */}
                                         <div style={{
                                             width: '100%',
-                                            height: imgSize === 110 ? 480 : 420,
+                                            height: imgSize === 150 ? 520 : 460,
                                             background: '#0f172a',
                                             position: 'relative',
                                         }}>
@@ -2337,8 +2337,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                     {/* Profile Image */}
                                     {showImg && imgSrc && (
                                         <div style={{
-                                            width: imgSize === 110 ? 130 : 110,
-                                            height: imgSize === 110 ? 130 : 110,
+                                            width: imgSize === 150 ? 180 : 150,
+                                            height: imgSize === 150 ? 180 : 150,
                                             borderRadius: bio.imageStyle === 'square' ? '18px' : bio.imageStyle === 'rounded-square' ? '28px' : '50%',
                                             overflow: 'hidden',
                                             marginBottom: '18px',
@@ -2354,8 +2354,8 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                     )}
                                     {!showImg || !imgSrc ? (
                                         <div style={{
-                                            width: imgSize === 110 ? 130 : 110,
-                                            height: imgSize === 110 ? 130 : 110,
+                                            width: imgSize === 150 ? 180 : 150,
+                                            height: imgSize === 150 ? 180 : 150,
                                             borderRadius: '50%',
                                             background: 'linear-gradient(135deg, #667eea, #764ba2)',
                                             display: 'flex',

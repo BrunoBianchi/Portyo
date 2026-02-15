@@ -1,7 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, X, GripVertical, ChevronUp, ChevronDown, Link2, Type, Image } from "lucide-react";
+import { Plus, X, GripVertical, ChevronUp, ChevronDown, Link2, Type } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import type { BioBlock } from "~/contexts/bio.context";
+import { ImageUpload } from "../image-upload";
+import { BUTTON_GRID_ICON_OPTIONS, BUTTON_GRID_ICON_FALLBACKS } from "~/constants/button-grid-icons";
 
 interface GridItem {
   id: string;
@@ -20,6 +23,13 @@ const makeId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2, 9);
+
+const resolveLucideIcon = (iconName?: string): ComponentType<{ className?: string }> | null => {
+  if (!iconName) return null;
+  const iconMap = LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>;
+  const icon = iconMap[iconName];
+  return icon || null;
+};
 
 export function ButtonGridBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
@@ -84,7 +94,10 @@ export function ButtonGridBlockEditor({ block, onChange }: Props) {
         </div>
       )}
 
-      {items.map((item, index) => (
+      {items.map((item, index) => {
+        const IconComponent = resolveLucideIcon(item.icon);
+
+        return (
         <div
           key={item.id}
           className="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors"
@@ -105,7 +118,11 @@ export function ButtonGridBlockEditor({ block, onChange }: Props) {
               />
             ) : (
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-sm">{item.icon || "🔗"}</span>
+                {IconComponent ? (
+                  <IconComponent className="w-4 h-4 text-gray-600" />
+                ) : (
+                  <span className="text-sm">{item.icon || "🔗"}</span>
+                )}
               </div>
             )}
 
@@ -178,33 +195,59 @@ export function ButtonGridBlockEditor({ block, onChange }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-wider mb-1 text-black/40">
-                    Ícone (emoji)
+                    Ícone
                   </label>
-                  <input
-                    type="text"
-                    value={item.icon || ""}
-                    onChange={(e) => updateItem(item.id, "icon", e.target.value)}
-                    className="w-full p-2.5 bg-white border-2 border-gray-200 rounded-xl font-medium text-sm focus:border-black outline-none transition-all placeholder:text-black/20"
-                    placeholder="🔗"
-                  />
+                  <div className="relative">
+                    <select
+                      value={item.icon || ""}
+                      onChange={(e) => updateItem(item.id, "icon", e.target.value)}
+                      className="w-full p-2.5 pr-10 bg-white border-2 border-gray-200 rounded-xl font-medium text-sm focus:border-black outline-none transition-all appearance-none"
+                    >
+                      <option value="">Sem ícone</option>
+                      {BUTTON_GRID_ICON_OPTIONS.map((iconOption) => (
+                        <option key={iconOption.value} value={iconOption.value}>
+                          {`${iconOption.fallback} ${iconOption.label}`}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
+                      ▾
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-wider mb-1 text-black/40">
-                    Imagem URL
+                    Ícone selecionado
                   </label>
-                  <input
-                    type="text"
-                    value={item.image || ""}
-                    onChange={(e) => updateItem(item.id, "image", e.target.value)}
-                    className="w-full p-2.5 bg-white border-2 border-gray-200 rounded-xl font-mono font-medium text-sm focus:border-black outline-none transition-all placeholder:text-black/20"
-                    placeholder="https://..."
-                  />
+                  <div className="w-full h-[44px] px-3 bg-white border-2 border-gray-200 rounded-xl flex items-center gap-2.5">
+                    {IconComponent ? (
+                      <IconComponent className="w-4 h-4 text-gray-700" />
+                    ) : (
+                      <span className="text-sm">{BUTTON_GRID_ICON_FALLBACKS[item.icon || ""] || "🔗"}</span>
+                    )}
+                    <span className="text-xs font-semibold text-gray-500 truncate">
+                      {item.icon || "Sem ícone"}
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider mb-1 text-black/40">
+                  Imagem
+                </label>
+                <ImageUpload
+                  value={item.image || ""}
+                  onChange={(url) => updateItem(item.id, "image", url)}
+                  endpoint="/user/upload-block-image"
+                  placeholder="Upload ou URL"
+                />
               </div>
             </div>
           )}
         </div>
-      ))}
+      );
+      })}
 
       {/* Add button */}
       <button

@@ -54,7 +54,7 @@ async function generateSitemap() {
 
     sitemap += '</urlset>';
 
-    const outputPath = path.join(__dirname, '../../frontend/public/sitemap.xml');
+    const outputPath = path.join(__dirname, '../../frontend/public/sitemap-static.xml');
     
     // Ensure directory exists
     const dir = path.dirname(outputPath);

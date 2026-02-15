@@ -1,10 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Camera, Upload, User, Paintbrush, Image as ImageIcon, Type, Columns2, Palette, Sparkles, ChevronRight, Check, Play, Grid3X3, Footprints, Pencil, X, Smartphone, Eye } from "lucide-react";
+import { Camera, Upload, User, Paintbrush, Image as ImageIcon, Type, Columns2, Palette, Sparkles, ChevronRight, Check, Play, Grid3X3, Footprints, Pencil, X, Smartphone, Eye, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { api } from "~/services/api";
 import BioContext from "~/contexts/bio.context";
 import AuthContext from "~/contexts/auth.context";
 import { useContext } from "react";
+import { useLocation } from "react-router";
 import type { Bio } from "../types/bio";
 import { blocksToHtml } from "~/services/html-generator";
 import { VerificationRequestModal } from "~/components/dashboard/verification-request-modal";
@@ -235,10 +236,73 @@ const RangeField = memo(function RangeField({
   );
 });
 
-// Preview card component
-const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
-  const { t } = useTranslation("dashboard");
+const getPreviewBackgroundStyle = (bio: Bio | null): React.CSSProperties => {
+  const bgType = bio?.bgType || "color";
   const bgColor = bio?.bgColor || "#ECEEF1";
+  const bgSecondaryColor = bio?.bgSecondaryColor || "#000000";
+
+  if (bgType === "image" && bio?.bgImage) {
+    const fit = bio?.bgImageFit || "cover";
+    return {
+      backgroundImage: `url(${bio.bgImage})`,
+      backgroundPosition: "center",
+      backgroundSize: fit === "repeat" ? "auto" : fit,
+      backgroundRepeat: fit === "repeat" ? "repeat" : "no-repeat",
+      backgroundColor: bgColor,
+    };
+  }
+
+  if (bgType === "gradient") {
+    const directionMap: Record<string, string> = {
+      "to-r": "to right",
+      "to-l": "to left",
+      "to-b": "to bottom",
+      "to-t": "to top",
+      "to-br": "to bottom right",
+      "to-bl": "to bottom left",
+      "to-tr": "to top right",
+      "to-tl": "to top left",
+    };
+    const cssDirection = directionMap[bio?.gradientDirection || "to-br"] || "to bottom right";
+    return {
+      background: `linear-gradient(${cssDirection}, ${bgColor}, ${bgSecondaryColor})`,
+    };
+  }
+
+  if (bgType === "dots" || bgType === "grid" || bgType === "stripes" || bgType === "waves") {
+    const patternType = bgType;
+    const patternColor = bio?.patternColor || "#000000";
+    const alpha = "22";
+
+    if (patternType === "grid") {
+      return {
+        backgroundColor: bgColor,
+        backgroundImage: `linear-gradient(${patternColor}${alpha} 1px, transparent 1px), linear-gradient(90deg, ${patternColor}${alpha} 1px, transparent 1px)`,
+        backgroundSize: "20px 20px",
+      };
+    }
+
+    if (patternType === "stripes") {
+      return {
+        backgroundColor: bgColor,
+        backgroundImage: `repeating-linear-gradient(45deg, ${patternColor}${alpha} 0px, ${patternColor}${alpha} 2px, transparent 2px, transparent 10px)`,
+      };
+    }
+
+    return {
+      backgroundColor: bgColor,
+      backgroundImage: `radial-gradient(circle at 2px 2px, ${patternColor}${alpha} 2px, transparent 0)`,
+      backgroundSize: "14px 14px",
+    };
+  }
+
+  return { background: bgColor };
+};
+
+// Preview card component
+const PreviewCard = memo(function PreviewCard({ bio, embedded = false }: { bio: Bio | null; embedded?: boolean }) {
+  const { t } = useTranslation("dashboard");
+  const previewBackgroundStyle = getPreviewBackgroundStyle(bio);
   const buttonStyle = bio?.buttonStyle || "solid";
   const buttonRadius = bio?.buttonRadius || "rounder";
   const buttonColor = bio?.buttonColor || "#FFFFFF";
@@ -273,9 +337,9 @@ const PreviewCard = memo(function PreviewCard({ bio }: { bio: Bio | null }) {
 
   return (
     <div className="sticky top-8">
-      <div className="w-[280px] rounded-[32px] bg-[#f5f5f5] p-6 shadow-xl border border-gray-200">
-        <div className="w-full h-[480px] rounded-[24px] border border-gray-200 bg-white overflow-hidden">
-          <div className="h-full w-full" style={{ background: bgColor }}>
+      <div className={`w-[280px] rounded-[32px] p-6 ${embedded ? "bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" : "bg-[#f5f5f5] border border-gray-200 shadow-xl"}`}>
+        <div className={`w-full h-[480px] rounded-[24px] bg-white overflow-hidden ${embedded ? "border-2 border-black" : "border border-gray-200"}`}>
+          <div className="h-full w-full" style={previewBackgroundStyle}>
             <div className="p-6 flex flex-col items-center gap-4">
               {/* Profile */}
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -330,7 +394,9 @@ const ThemeCard = memo(function ThemeCard({
     bgColor: string;
     textColor: string;
     accentColor?: string;
+    bgSecondaryColor?: string;
     pattern?: 'dots' | 'grid' | 'stripes' | 'waves';
+    patternColor?: string;
     style?: 'minimal' | 'bold' | 'gradient' | 'dark' | 'typography';
     isPro?: boolean;
     gradient?: string;
@@ -341,13 +407,14 @@ const ThemeCard = memo(function ThemeCard({
   onClick: () => void;
 }) {
   const getPatternStyle = (): React.CSSProperties => {
+    const patternTone = theme.patternColor || theme.bgSecondaryColor || theme.textColor;
     switch (theme.pattern) {
       case 'dots':
-        return { backgroundImage: `radial-gradient(circle at 2px 2px, ${theme.textColor}20 2px, transparent 0)`, backgroundSize: '14px 14px' };
+        return { backgroundImage: `radial-gradient(circle at 2px 2px, ${patternTone}20 2px, transparent 0)`, backgroundSize: '14px 14px' };
       case 'grid':
-        return { backgroundImage: `linear-gradient(${theme.textColor}10 1px, transparent 1px), linear-gradient(90deg, ${theme.textColor}10 1px, transparent 1px)`, backgroundSize: '20px 20px' };
+        return { backgroundImage: `linear-gradient(${patternTone}10 1px, transparent 1px), linear-gradient(90deg, ${patternTone}10 1px, transparent 1px)`, backgroundSize: '20px 20px' };
       case 'stripes':
-        return { backgroundImage: `repeating-linear-gradient(45deg, ${theme.textColor}08 0px, ${theme.textColor}08 2px, transparent 2px, transparent 10px)` };
+        return { backgroundImage: `repeating-linear-gradient(45deg, ${patternTone}08 0px, ${patternTone}08 2px, transparent 2px, transparent 10px)` };
       default:
         return {};
     }
@@ -362,7 +429,7 @@ const ThemeCard = memo(function ThemeCard({
   return (
     <button
       onClick={onClick}
-      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all group hover:shadow-xl hover:-translate-y-1 ${isActive ? "border-[#c8e600] ring-4 ring-[#c8e600]/20 shadow-lg" : "border-gray-200 hover:border-gray-300"
+      className={`relative aspect-[4/5] sm:aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all group hover:shadow-lg hover:-translate-y-0.5 ${isActive ? "border-[#c8e600] ring-2 sm:ring-4 ring-[#c8e600]/20 shadow-md" : "border-gray-200 hover:border-gray-300"
         }`}
       style={bgStyle}
     >
@@ -381,14 +448,14 @@ const ThemeCard = memo(function ThemeCard({
       )}
 
       {/* Preview content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-2 sm:p-3">
         {theme.style === 'minimal' ? (
-          <div className="w-10 h-10 rounded-full border-2 border-dashed" style={{ borderColor: theme.textColor + '40' }} />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-dashed" style={{ borderColor: theme.textColor + '40' }} />
         ) : (
           <>
             {/* Typography sample */}
             <div
-              className="text-4xl font-bold transition-transform group-hover:scale-110"
+              className="text-3xl sm:text-4xl font-bold transition-transform group-hover:scale-105"
               style={{ color: theme.textColor }}
             >
               Aa
@@ -396,7 +463,7 @@ const ThemeCard = memo(function ThemeCard({
             {/* Accent bar */}
             {theme.accentColor && (
               <div
-                className="w-14 h-4 rounded-full mt-3 shadow-sm"
+                className="w-10 sm:w-14 h-3 sm:h-4 rounded-full mt-2 sm:mt-3 shadow-sm"
                 style={{ background: theme.accentColor }}
               />
             )}
@@ -405,9 +472,9 @@ const ThemeCard = memo(function ThemeCard({
       </div>
 
       {/* Name label */}
-      <div className="absolute bottom-0 left-0 right-0 py-2.5 px-3 text-center bg-gradient-to-t from-black/20 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 py-2 sm:py-2.5 px-2 sm:px-3 text-center bg-gradient-to-t from-black/20 to-transparent">
         <span
-          className="text-xs font-semibold"
+          className="text-[11px] sm:text-xs font-semibold block truncate"
           style={{ color: theme.textColor }}
         >
           {theme.name}
@@ -418,18 +485,24 @@ const ThemeCard = memo(function ThemeCard({
 });
 
 
-export default function DashboardDesign() {
+export default function DashboardDesign({ embedded = false }: { embedded?: boolean } = {}) {
+  const location = useLocation();
+  const isEmbedded = embedded || location.pathname.includes("/dashboard/editor");
   const { bio: contextBio, updateBio } = useContext(BioContext);
   const { user, canAccessFeature } = useContext(AuthContext);
   const canUseFooter = canAccessFeature('standard');
   const { t } = useTranslation("dashboard");
   const [activeSection, setActiveSection] = useState("header");
+  const [activeThemeTab, setActiveThemeTab] = useState<"customizable" | "curated">("customizable");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [wallpaperPopup, setWallpaperPopup] = useState<string | null>(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [canScrollSectionsLeft, setCanScrollSectionsLeft] = useState(false);
+  const [canScrollSectionsRight, setCanScrollSectionsRight] = useState(false);
   const [draftBio, setDraftBio] = useState<Bio | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  const sectionScrollRef = useRef<HTMLDivElement | null>(null);
   const pendingPayloadRef = useRef<Partial<Bio>>({});
   const pendingBioRef = useRef<Bio | null>(null);
   const bio = draftBio ?? contextBio;
@@ -509,6 +582,43 @@ export default function DashboardDesign() {
     };
   }, []);
 
+  const updateSectionScrollState = useCallback(() => {
+    const el = sectionScrollRef.current;
+    if (!el || !isEmbedded) {
+      setCanScrollSectionsLeft(false);
+      setCanScrollSectionsRight(false);
+      return;
+    }
+    setCanScrollSectionsLeft(el.scrollLeft > 2);
+    setCanScrollSectionsRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, [isEmbedded]);
+
+  const scrollSections = useCallback((direction: "left" | "right") => {
+    const el = sectionScrollRef.current;
+    if (!el) return;
+    const amount = Math.max(120, Math.round(el.clientWidth * 0.45));
+    el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    updateSectionScrollState();
+    const el = sectionScrollRef.current;
+    if (!el || !isEmbedded) return;
+
+    const onResize = () => updateSectionScrollState();
+    el.addEventListener("scroll", updateSectionScrollState);
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      el.removeEventListener("scroll", updateSectionScrollState);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [isEmbedded, updateSectionScrollState]);
+
+  useEffect(() => {
+    updateSectionScrollState();
+  }, [activeSection, updateSectionScrollState]);
+
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !contextBio) return;
@@ -554,36 +664,46 @@ export default function DashboardDesign() {
     bgColor: string;
     textColor: string;
     accentColor?: string;
+    bgSecondaryColor?: string;
     pattern?: 'dots' | 'grid' | 'stripes' | 'waves';
+    patternColor?: string;
     style?: 'minimal' | 'bold' | 'gradient' | 'dark' | 'typography';
     isPro?: boolean;
     gradient?: string;
     bgType?: Bio["bgType"];
     bgImage?: string;
+    cardBackgroundColor?: string;
+    navTabColor?: string;
+    navTabTextColor?: string;
+    buttonStyle?: Bio["buttonStyle"];
+    buttonRadius?: Bio["buttonRadius"];
+    buttonShadow?: Bio["buttonShadow"];
+    buttonColor?: string;
+    buttonTextColor?: string;
   };
 
   const themes: ThemePreset[] = [
     { id: "custom", name: "Custom", bgColor: "#ffffff", textColor: "#000000", style: 'minimal' as const },
     { id: "agate", name: "Agate", bgColor: "#10b981", textColor: "#ffffff", accentColor: "#c8e600", gradient: "linear-gradient(135deg, #10b981 0%, #c8e600 100%)", isPro: true },
-    { id: "air", name: "Air", bgColor: "#ffffff", textColor: "#1a1a1a", pattern: 'dots' as const },
-    { id: "astrid", name: "Astrid", bgColor: "#1a1a1a", textColor: "#ffffff", pattern: 'grid' as const },
+    { id: "air", name: "Air", bgColor: "#ffffff", bgSecondaryColor: "#cbd5e1", textColor: "#1a1a1a", pattern: 'dots' as const, patternColor: "#cbd5e1" },
+    { id: "astrid", name: "Astrid", bgColor: "#1a1a1a", bgSecondaryColor: "#4b5563", textColor: "#ffffff", pattern: 'grid' as const, patternColor: "#4b5563" },
     { id: "aura", name: "Aura", bgColor: "#f5f5f4", textColor: "#44403c", gradient: "linear-gradient(180deg, #ffffff 0%, #e7e5e4 100%)" },
     { id: "bliss", name: "Bliss", bgColor: "#fef3c7", textColor: "#92400e", accentColor: "#f59e0b", gradient: "linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%)" },
     { id: "blocks", name: "Blocks", bgColor: "#fce7f3", textColor: "#9d174d", accentColor: "#ec4899", gradient: "linear-gradient(135deg, #fce7f3 0%, #f9a8d4 50%, #ec4899 100%)" },
     { id: "bloom", name: "Bloom", bgColor: "#eef2ff", textColor: "#4338ca", accentColor: "#6366f1", gradient: "linear-gradient(135deg, #eef2ff 0%, #c7d2fe 50%, #818cf8 100%)" },
     { id: "breeze", name: "Breeze", bgColor: "#ecfeff", textColor: "#0e7490", accentColor: "#06b6d4", gradient: "linear-gradient(135deg, #ecfeff 0%, #a5f3fc 100%)" },
     { id: "encore", name: "Encore", bgColor: "#fff7ed", textColor: "#9a3412", accentColor: "#f97316", gradient: "linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #fb923c 100%)" },
-    { id: "grid", name: "Grid", bgColor: "#18181b", textColor: "#fafafa", pattern: 'grid' as const },
+    { id: "grid", name: "Grid", bgColor: "#18181b", bgSecondaryColor: "#3f3f46", textColor: "#fafafa", pattern: 'grid' as const, patternColor: "#3f3f46" },
     { id: "groove", name: "Groove", bgColor: "#450a0a", textColor: "#fecaca", accentColor: "#ef4444", gradient: "linear-gradient(135deg, #7f1d1d 0%, #450a0a 50%, #1f2937 100%)" },
     { id: "noir-noise", name: "Noir Noise", bgColor: "#0f0f12", textColor: "#f8fafc", accentColor: "#9ca3af", bgType: "noise" },
     { id: "studio-concrete", name: "Studio Concrete", bgColor: "#9ca3af", textColor: "#111827", accentColor: "#e5e7eb", bgType: "concrete" },
     { id: "aurora-pro", name: "Aurora Pro", bgColor: "#0f172a", textColor: "#e2e8f0", accentColor: "#22d3ee", bgType: "aurora" },
     { id: "mesh-violet", name: "Mesh Violet", bgColor: "#7c3aed", textColor: "#f8fafc", accentColor: "#f472b6", bgType: "mesh-gradient" },
     { id: "marble-classic", name: "Marble", bgColor: "#f5f5f5", textColor: "#111827", accentColor: "#e2e8f0", bgType: "marble" },
-    { id: "blueprint", name: "Blueprint", bgColor: "#1e3a5f", textColor: "#e2e8f0", accentColor: "#38bdf8", bgType: "blueprint" },
-    { id: "confetti", name: "Confetti", bgColor: "#fff7ed", textColor: "#7c2d12", accentColor: "#f97316", bgType: "confetti" },
-    { id: "starfield", name: "Starfield", bgColor: "#0b1020", textColor: "#e5e7eb", accentColor: "#93c5fd", bgType: "starfield" },
-    { id: "wheat", name: "Wheat", bgColor: "#fef3c7", textColor: "#92400e", accentColor: "#f59e0b", bgType: "wheat" },
+    { id: "blueprint", name: "Blueprint", bgColor: "#1e3a5f", bgSecondaryColor: "#3b82f6", textColor: "#e2e8f0", accentColor: "#38bdf8", bgType: "blueprint" },
+    { id: "confetti", name: "Confetti", bgColor: "#fff7ed", bgSecondaryColor: "#fb923c", textColor: "#7c2d12", accentColor: "#f97316", bgType: "confetti" },
+    { id: "starfield", name: "Starfield", bgColor: "#0b1020", bgSecondaryColor: "#1f2a44", textColor: "#e5e7eb", accentColor: "#93c5fd", bgType: "starfield" },
+    { id: "wheat", name: "Wheat", bgColor: "#fef3c7", bgSecondaryColor: "#f4c25f", textColor: "#92400e", accentColor: "#f59e0b", bgType: "wheat" },
     // New themes with image backgrounds from /public/themes
     { id: "ocean-wave", name: "Ocean Wave", bgColor: "#1a4d5c", textColor: "#ffffff", accentColor: "#4ecdc4", bgType: "image", bgImage: "/themes/blue-green.png", isPro: true },
     { id: "deep-blue", name: "Deep Blue", bgColor: "#0a2f5c", textColor: "#ffffff", accentColor: "#2d6cb3", bgType: "image", bgImage: "/themes/blue.png", isPro: true },
@@ -591,7 +711,109 @@ export default function DashboardDesign() {
     { id: "geometric-orange", name: "Geometric Orange", bgColor: "#d65c28", textColor: "#d65c28", accentColor: "#e87a45", bgType: "image", bgImage: "/themes/quadricular-orange.png", isPro: true },
     { id: "sunset-glow", name: "Sunset Glow", bgColor: "#e84855", textColor: "#ffffff", accentColor: "#f5a961", bgType: "image", bgImage: "/themes/red-pink-orange.png", isPro: true },
     { id: "light-spectrum", name: "Light Spectrum", bgColor: "#f0f5fa", textColor: "#2a4a66", accentColor: "#5a8db8", bgType: "image", bgImage: "/themes/white-blue-orange.jpg", isPro: true },
+
+    // Curated niche themes
+    {
+      id: "samba",
+      name: "Samba",
+      bgColor: "#0B3D2E",
+      textColor: "#FFF8E7",
+      accentColor: "#FFD23F",
+      gradient: "linear-gradient(135deg, #0B3D2E 0%, #1E7F5C 60%, #FFD23F 100%)",
+      bgType: "confetti",
+      cardBackgroundColor: "rgba(255, 248, 231, 0.14)",
+      navTabColor: "#0B3D2E",
+      navTabTextColor: "#FFF8E7",
+      buttonStyle: "gradient",
+      buttonRadius: "full",
+      buttonShadow: "soft",
+      buttonColor: "#1E7F5C",
+      buttonTextColor: "#FFF8E7",
+    },
+    {
+      id: "bossa-lounge",
+      name: "Bossa Lounge",
+      bgColor: "#1F3A5F",
+      textColor: "#F8FAFC",
+      accentColor: "#7DD3FC",
+      gradient: "linear-gradient(135deg, #1F3A5F 0%, #2D5B8A 55%, #7DD3FC 100%)",
+      cardBackgroundColor: "rgba(15, 23, 42, 0.3)",
+      navTabColor: "#1F3A5F",
+      navTabTextColor: "#F8FAFC",
+      buttonStyle: "glass",
+      buttonRadius: "rounder",
+      buttonShadow: "soft",
+      buttonColor: "#7DD3FC",
+      buttonTextColor: "#F8FAFC",
+    },
+    {
+      id: "pagode-vibes",
+      name: "Pagode Vibes",
+      bgColor: "#4A2C2A",
+      textColor: "#FFF7ED",
+      accentColor: "#F59E0B",
+      gradient: "linear-gradient(135deg, #4A2C2A 0%, #8B5E34 55%, #F59E0B 100%)",
+      cardBackgroundColor: "rgba(255, 247, 237, 0.12)",
+      navTabColor: "#4A2C2A",
+      navTabTextColor: "#FFF7ED",
+      buttonStyle: "solid",
+      buttonRadius: "rounder",
+      buttonShadow: "strong",
+      buttonColor: "#F59E0B",
+      buttonTextColor: "#1C1917",
+    },
+    {
+      id: "carnaval-neon",
+      name: "Carnaval Neon",
+      bgColor: "#2A0A4A",
+      textColor: "#F8FAFC",
+      accentColor: "#E94E77",
+      gradient: "linear-gradient(135deg, #2A0A4A 0%, #6A1B9A 50%, #E94E77 100%)",
+      bgType: "mesh-gradient",
+      cardBackgroundColor: "rgba(30, 10, 56, 0.35)",
+      navTabColor: "#2A0A4A",
+      navTabTextColor: "#F8FAFC",
+      buttonStyle: "neon",
+      buttonRadius: "round",
+      buttonShadow: "strong",
+      buttonColor: "#E94E77",
+      buttonTextColor: "#F8FAFC",
+    },
+    {
+      id: "retro",
+      name: "Metro",
+      bgColor: "#0B5B3F",
+      bgSecondaryColor: "#1F7A58",
+      textColor: "#FFE14D",
+      accentColor: "#FF2A2A",
+      pattern: "grid",
+      patternColor: "#1F7A58",
+      bgType: "grid",
+      cardBackgroundColor: "#FFE14D",
+      navTabColor: "#0B5A3A",
+      navTabTextColor: "#FFE14D",
+      buttonStyle: "brutalist",
+      buttonRadius: "square",
+      buttonShadow: "hard",
+      buttonColor: "#FF2A2A",
+      buttonTextColor: "#FFE14D",
+    },
   ];
+
+  const curatedThemeIds = useMemo(
+    () => new Set(["samba", "bossa-lounge", "pagode-vibes", "carnaval-neon", "retro"]),
+    []
+  );
+
+  const customizableThemes = useMemo(
+    () => themes.filter((theme) => !curatedThemeIds.has(theme.id)),
+    [themes, curatedThemeIds]
+  );
+
+  const curatedThemes = useMemo(
+    () => themes.filter((theme) => curatedThemeIds.has(theme.id)),
+    [themes, curatedThemeIds]
+  );
 
 
   // Button style options with visual previews
@@ -714,22 +936,57 @@ export default function DashboardDesign() {
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-[#F7F6F2]">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
-          <h1 className="text-xl md:text-2xl font-black text-gray-900">{t("design.pageTitle")}</h1>
-          <button className="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-bold hover:bg-gray-50 transition-colors touch-manipulation">
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">{t("design.enhance")}</span>
-          </button>
-        </div>
+  const surfaceCardClass = isEmbedded
+    ? "bg-white border-2 border-black rounded-[24px] p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+    : "bg-white border border-gray-200 rounded-2xl p-6";
 
-        <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr_320px] gap-4 lg:gap-8 min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)]">
+  const sidebarClass = isEmbedded
+    ? "bg-white border border-black/10 rounded-2xl p-1.5 sm:p-2 shrink-0"
+    : "bg-white border border-gray-200 rounded-2xl p-2 lg:p-4 lg:h-fit lg:sticky lg:top-8 shrink-0";
+
+  return (
+    <div className={isEmbedded ? "bg-transparent" : "min-h-screen bg-[#F7F6F2]"}>
+      <div className={isEmbedded ? "w-full px-2 sm:px-3 py-1" : "max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8"}>
+        {!isEmbedded && (
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h1 className="text-xl md:text-2xl font-black text-gray-900">{t("design.pageTitle")}</h1>
+            <button className="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-bold hover:bg-gray-50 transition-colors touch-manipulation">
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden sm:inline">{t("design.enhance")}</span>
+            </button>
+          </div>
+        )}
+
+        <div className={`flex flex-col ${isEmbedded ? "gap-4" : "lg:grid lg:grid-cols-[200px_1fr_320px] gap-4 lg:gap-8 min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)]"}`}>
           {/* Sidebar - horizontal scroll on mobile, vertical on desktop */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-2 lg:p-4 lg:h-fit lg:sticky lg:top-8 shrink-0">
-            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
+          <div className={sidebarClass}>
+            <div className={isEmbedded ? "relative" : ""}>
+              {isEmbedded && canScrollSectionsLeft && (
+                <button
+                  type="button"
+                  onClick={() => scrollSections("left")}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full border border-black/10 bg-white text-gray-600 shadow-sm"
+                  aria-label={t("editor.tabs.scrollLeft", { defaultValue: "Scroll left" })}
+                >
+                  <ChevronLeft className="w-4 h-4 mx-auto" />
+                </button>
+              )}
+
+              {isEmbedded && canScrollSectionsRight && (
+                <button
+                  type="button"
+                  onClick={() => scrollSections("right")}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full border border-black/10 bg-white text-gray-600 shadow-sm"
+                  aria-label={t("editor.tabs.scrollRight", { defaultValue: "Scroll right" })}
+                >
+                  <ChevronRightIcon className="w-4 h-4 mx-auto" />
+                </button>
+              )}
+
+              <div
+                ref={sectionScrollRef}
+                className={isEmbedded ? "flex flex-nowrap items-center gap-1 overflow-x-auto scrollbar-hide px-8 py-0.5" : "flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide"}
+              >
               {sections.map((section) => {
                 const Icon = section.icon;
                 const active = activeSection === section.key;
@@ -737,24 +994,25 @@ export default function DashboardDesign() {
                   <button
                     key={section.key}
                     onClick={() => setActiveSection(section.key)}
-                    className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-xs lg:text-sm font-medium transition-all whitespace-nowrap touch-manipulation ${active
-                      ? "bg-[#c8e600]/15 text-gray-900 lg:border-l-2 lg:border-[#c8e600] lg:-ml-0.5"
-                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                    className={`flex items-center gap-2 ${isEmbedded ? "px-3 py-1.5 text-sm" : "lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm"} rounded-full font-medium transition-colors whitespace-nowrap touch-manipulation ${active
+                      ? "text-gray-900 bg-black/5 border border-black/10"
+                      : "text-gray-500 border border-transparent hover:text-gray-900 hover:bg-gray-50"
                       }`}
                   >
-                    <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
+                    <Icon className={isEmbedded ? "w-4 h-4" : "w-4 h-4 lg:w-5 lg:h-5"} />
                     {section.label}
                   </button>
                 );
               })}
+              </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="space-y-6 overflow-y-auto overflow-x-hidden pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          <div className={isEmbedded ? "space-y-6 overflow-x-hidden" : "space-y-6 overflow-y-auto overflow-x-hidden pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"}>
             {/* Header Section */}
             {activeSection === "header" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.header.title")}</h2>
 
                 {/* Profile Image with Edit Button */}
@@ -994,41 +1252,74 @@ export default function DashboardDesign() {
 
             {/* Theme Section */}
             {activeSection === "theme" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-2">{t("design.theme.title")}</h2>
 
                 <div className="flex gap-4 mb-6">
-                  <button className="px-4 py-2 text-sm font-bold text-gray-900 border-b-2 border-gray-900">
+                  <button
+                    type="button"
+                    onClick={() => setActiveThemeTab("customizable")}
+                    className={`px-4 py-2 text-sm border-b-2 transition-colors ${
+                      activeThemeTab === "customizable"
+                        ? "font-bold text-gray-900 border-gray-900"
+                        : "font-medium text-gray-400 border-transparent hover:text-gray-600"
+                    }`}
+                  >
                     {t("design.theme.customizable")}
                   </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600">
+                  <button
+                    type="button"
+                    onClick={() => setActiveThemeTab("curated")}
+                    className={`px-4 py-2 text-sm border-b-2 transition-colors ${
+                      activeThemeTab === "curated"
+                        ? "font-bold text-gray-900 border-gray-900"
+                        : "font-medium text-gray-400 border-transparent hover:text-gray-600"
+                    }`}
+                  >
                     {t("design.theme.curated")}
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
-                  {themes.map((theme) => (
+                <div className={`grid ${isEmbedded ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"} gap-2 sm:gap-3`}>
+                  {(activeThemeTab === "customizable" ? customizableThemes : curatedThemes).map((theme) => (
                     <ThemeCard
                       key={theme.id}
                       theme={theme}
-                      isActive={bio?.bgColor === theme.bgColor}
+                      isActive={bio?.theme === theme.id || (bio?.bgColor === theme.bgColor && !bio?.theme)}
                       onClick={() => {
+                        const fallbackAccent = theme.accentColor || theme.textColor;
+                        const fallbackButtonColor = theme.buttonColor || fallbackAccent;
+                        const fallbackButtonTextColor =
+                          theme.buttonTextColor ||
+                          (theme.id === "pagode-vibes" ? "#1C1917" : theme.textColor);
                         const nextBgType: Bio["bgType"] = theme.bgType
                           ? theme.bgType
-                          : theme.gradient
-                            ? "gradient"
-                            : theme.pattern
-                              ? theme.pattern
-                              : (bio?.bgType || "color");
+                          : theme.bgImage
+                            ? "image"
+                            : theme.gradient
+                              ? "gradient"
+                              : theme.pattern
+                                ? theme.pattern
+                                : "color";
 
                         updateFields({
                           theme: theme.id,
                           bgColor: theme.bgColor,
                           bgType: nextBgType,
-                          bgSecondaryColor: theme.accentColor || bio?.bgSecondaryColor,
+                          bgSecondaryColor: theme.bgSecondaryColor || theme.accentColor || bio?.bgSecondaryColor,
+                          patternType: theme.pattern || bio?.patternType,
+                          patternColor: theme.patternColor || theme.bgSecondaryColor || theme.textColor || bio?.patternColor,
                           usernameColor: theme.textColor,
-                          cardBackgroundColor: theme.accentColor || bio?.cardBackgroundColor,
-                          ...(theme.bgImage && { bgImage: theme.bgImage }),
+                          cardBackgroundColor: theme.cardBackgroundColor || theme.accentColor || bio?.cardBackgroundColor,
+                          navTabColor: theme.navTabColor || theme.bgColor || bio?.navTabColor,
+                          navTabTextColor: theme.navTabTextColor || theme.textColor || bio?.navTabTextColor,
+                          buttonStyle: theme.buttonStyle || bio?.buttonStyle || "solid",
+                          buttonRadius: theme.buttonRadius || bio?.buttonRadius || "rounder",
+                          buttonShadow: theme.buttonShadow || bio?.buttonShadow || "none",
+                          buttonColor: fallbackButtonColor,
+                          buttonTextColor: fallbackButtonTextColor,
+                          bgImage: theme.bgImage || undefined,
+                          bgVideo: undefined,
                         });
                       }}
                     />
@@ -1039,7 +1330,7 @@ export default function DashboardDesign() {
 
             {/* Wallpaper Section */}
             {activeSection === "wallpaper" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.wallpaper.title")}</h2>
 
                 {/* Wallpaper Style Grid */}
@@ -1309,7 +1600,7 @@ export default function DashboardDesign() {
 
             {/* Text Section */}
             {activeSection === "text" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.text.title")}</h2>
 
                 <div className="space-y-6">
@@ -1344,7 +1635,7 @@ export default function DashboardDesign() {
 
             {/* Buttons Section */}
             {activeSection === "buttons" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.buttons.title")}</h2>
 
                 <div className="space-y-8">
@@ -1389,7 +1680,7 @@ export default function DashboardDesign() {
 
             {/* Colors Section */}
             {activeSection === "colors" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.colors.title")}</h2>
 
                 <div className="space-y-6">
@@ -1428,7 +1719,7 @@ export default function DashboardDesign() {
 
             {/* Footer Section */}
             {activeSection === "footer" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <div className={surfaceCardClass}>
                 <h2 className="text-lg font-bold text-gray-900 mb-6">{t("design.footer.title")}</h2>
 
                 <div className="space-y-6">
@@ -1549,23 +1840,27 @@ export default function DashboardDesign() {
           </div>
 
           {/* Preview */}
-          <div className="hidden lg:block sticky top-8 h-fit">
-            <PreviewCard bio={bio} />
-          </div>
+          {!isEmbedded && (
+            <div className="hidden lg:block sticky top-8 h-fit">
+              <PreviewCard bio={bio} embedded={isEmbedded} />
+            </div>
+          )}
         </div>
 
         {/* Mobile Preview FAB */}
-        <button
-          onClick={() => setShowMobilePreview(true)}
-          className="fixed bottom-6 right-6 z-40 lg:hidden w-14 h-14 bg-black text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-800 transition-colors touch-manipulation"
-          aria-label="Preview"
-        >
-          <Smartphone className="w-5 h-5" />
-        </button>
+        {!isEmbedded && (
+          <button
+            onClick={() => setShowMobilePreview(true)}
+            className="fixed bottom-6 right-6 z-40 lg:hidden w-14 h-14 bg-black text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-800 transition-colors touch-manipulation"
+            aria-label="Preview"
+          >
+            <Smartphone className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Mobile Preview Overlay */}
         <AnimatePresence>
-          {showMobilePreview && (
+          {!isEmbedded && showMobilePreview && (
             <motion.div
               initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
@@ -1583,7 +1878,7 @@ export default function DashboardDesign() {
                 </button>
               </div>
               <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
-                <PreviewCard bio={bio} />
+                <PreviewCard bio={bio} embedded={isEmbedded} />
               </div>
             </motion.div>
           )}

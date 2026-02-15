@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 import { env } from "./env";
 import { logger } from "../shared/utils/logger";
+import { existsSync } from "fs";
 
 // Redis enabled by default; can be turned off with DISABLE_REDIS=true if needed.
 const redisEnabled = process.env.DISABLE_REDIS !== "true";
@@ -28,8 +29,13 @@ const createMockRedis = () => {
 let redisClient: any;
 
 if (redisEnabled) {
+  const runningInDocker = existsSync("/.dockerenv");
+  const resolvedRedisHost = !runningInDocker && env.REDIS_HOST === "redis"
+    ? "localhost"
+    : env.REDIS_HOST;
+
   const redisOptions: any = {
-    host: env.REDIS_HOST || "localhost",
+    host: resolvedRedisHost || "localhost",
     port: env.REDIS_PORT || 6379,
     retryStrategy: (times: number) => {
       const delay = Math.min(times * 50, 2000);

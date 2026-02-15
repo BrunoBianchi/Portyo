@@ -553,125 +553,114 @@ function ThemesPage() {
                 isApplying={isApplying}
             />
 
-            <div className="min-h-screen bg-white text-[#1A1A1A] pb-24">
-                {/* Hero / Header Section */}
-                <div className="bg-[#F3F3F1] pt-20 pb-16 px-6 md:px-12 border-b border-[#1A1A1A]/10">
-                    <div className="max-w-7xl mx-auto text-center space-y-6">
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
+            <div className="min-h-screen bg-[#F3F3F1] text-[#1A1A1A] pb-20">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-14 md:pt-20">
+                    <div className="text-center space-y-4">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-[#1A1A1A]" style={{ fontFamily: 'var(--font-display)' }}>
                             {t("themes.title", "Designs que convertem")}
                         </h1>
-                        <p className="text-lg md:text-xl text-[#1A1A1A]/70 font-medium max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-base md:text-lg text-[#1A1A1A]/60 font-medium max-w-2xl mx-auto">
                             {t("themes.subtitle", { count: THEME_PRESETS.length })}
                         </p>
+                    </div>
 
-                        <div className="max-w-xl mx-auto mt-8 flex gap-3">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#1A1A1A]/40" />
-                                <input
-                                    type="text"
-                                    placeholder={t("themes.searchPlaceholder", "Buscar estilo...")}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-14 pr-6 py-4 bg-white border-2 border-transparent focus:border-[#1A1A1A] rounded-full focus:outline-none transition-all text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 font-bold shadow-sm"
-                                />
-                            </div>
+                    <div className="max-w-xl mx-auto mt-8">
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1A1A1A]/40" />
+                            <input
+                                type="text"
+                                placeholder={t("themes.searchPlaceholder", "Buscar estilo...")}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#1A1A1A]/15 focus:border-[#1A1A1A]/50 rounded-full focus:outline-none transition-all text-[#1A1A1A] placeholder:text-[#1A1A1A]/40"
+                            />
                         </div>
                     </div>
-                </div>
 
-                <div className="max-w-[1600px] mx-auto px-4 md:px-8 -mt-8">
-                    {/* Filters - Scrollable Row */}
-                    <div className="flex overflow-x-auto pb-8 pt-2 gap-3 no-scrollbar justify-start lg:justify-center md:px-4">
+                    <div className="flex overflow-x-auto pt-8 gap-2.5 no-scrollbar justify-start lg:justify-center">
                         {displayedCategories.map((category) => (
                             <button
                                 key={category.id}
                                 onClick={() => setSelectedCategory(category.id)}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all duration-200 border-2 ${selectedCategory === category.id
-                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-lg transform scale-105"
-                                    : "bg-white text-[#1A1A1A] border-[#1A1A1A]/10 hover:border-[#1A1A1A]"
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 border ${selectedCategory === category.id
+                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                                    : "bg-white text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/35"
                                     }`}
                             >
-                                <span className={selectedCategory === category.id ? "grayscale-0" : "grayscale opacity-80"}>{category.emoji}</span>
+                                <span className={selectedCategory === category.id ? "grayscale-0" : "grayscale opacity-75"}>{category.emoji}</span>
                                 <span>{t(`themes.categories.${category.id}`, { defaultValue: category.name })}</span>
                             </button>
                         ))}
                         <button
                             onClick={() => setShowAllCategories((prev) => !prev)}
-                            className="flex items-center gap-2 px-4 py-3 rounded-full text-base font-bold bg-white text-[#1A1A1A] border-2 border-[#1A1A1A]/10 hover:border-[#1A1A1A] transition-all"
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-full text-sm font-semibold bg-white text-[#1A1A1A] border border-[#1A1A1A]/15 hover:border-[#1A1A1A]/35 transition-all"
                         >
                             {showAllCategories ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                         </button>
                     </div>
 
-                    {/* Theme Grid - Portrait Mode (Mobile Style) */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10 px-2 md:px-0">
+                    <div className="flex items-center justify-center gap-2 mt-4 mb-8">
+                        {(["all", "free", "standard", "pro"] as const).map((tier) => (
+                            <button
+                                key={tier}
+                                onClick={() => setSelectedPlanFilter(tier)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors ${selectedPlanFilter === tier
+                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                                    : "bg-white text-[#1A1A1A]/70 border-[#1A1A1A]/15 hover:border-[#1A1A1A]/35"
+                                    }`}
+                            >
+                                {tier === "all" ? t("themes.filters.all", "All") : t(`themes.badges.${tier}`)}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-6 md:gap-x-6 md:gap-y-8">
                         {filteredThemes.map((theme) => {
                             const hasAccess = canAccessTheme(theme);
+                            const cardTextColor = theme.styles.usernameColor || "#1A1A1A";
+                            const cardAccentColor = theme.styles.buttonColor || theme.styles.cardBorderColor || "#D2E823";
+                            const cardBackground = theme.styles.bgType === "gradient"
+                                ? { background: theme.styles.bgColor }
+                                : { backgroundColor: theme.styles.bgColor };
+
                             return (
                                 <div
                                     key={`${theme.category}-${theme.name}`}
-                                    className="group flex flex-col gap-3 cursor-pointer"
+                                    className="group flex flex-col gap-2.5 cursor-pointer"
                                     onClick={() => handlePreview(theme)}
                                 >
-                                    {/* Phone Preview Card */}
-                                    <div className="aspect-[9/19] w-full relative rounded-[2rem] overflow-hidden border-[6px] border-[#1A1A1A] bg-[#1A1A1A] shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group-hover:scale-[1.02]">
-                                        {/* Status Bar Mock */}
-                                        <div className="absolute top-0 left-0 right-0 h-6 bg-black z-20 flex justify-between px-3 items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <div className="text-[8px] text-white font-medium">9:41</div>
-                                            <div className="flex gap-1">
-                                                <div className="w-3 h-2 bg-white rounded-[1px]"></div>
+                                    <div
+                                        className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-[#1A1A1A]/15 hover:border-[#1A1A1A]/35"
+                                        style={cardBackground}
+                                    >
+                                        {theme.tier === "pro" && (
+                                            <div className="absolute top-2 right-2 w-6 h-6 bg-[#D2E823] rounded-full flex items-center justify-center z-20 shadow-md border border-black/10">
+                                                <Sparkles className="w-3.5 h-3.5 text-black" />
                                             </div>
-                                        </div>
+                                        )}
 
-                                        {/* The "Screen" Content */}
                                         <div
-                                            className="w-full h-full relative flex flex-col items-center pt-8 px-4"
+                                            className="w-full h-full relative flex flex-col items-center justify-center p-4"
                                             style={{
-                                                backgroundColor: theme.styles.bgColor,
-                                                backgroundImage: theme.styles.bgType === "gradient" ? theme.styles.bgColor : "none"
-                                                // Note: Ideally we'd map bgType properly to gradient syntaxes, but let's assume valid CSS color/gradient in bgColor for now or implement a helper like in specific renderers.
-                                                // For themes, bgColor usually holds the CSS value.
+                                                backgroundImage: `radial-gradient(circle at 2px 2px, ${cardTextColor}14 1.5px, transparent 0)`,
+                                                backgroundSize: "14px 14px"
                                             }}
                                         >
-                                            {/* Profile Pic Placeholder */}
                                             <div
-                                                className="w-16 h-16 mb-3 shrink-0"
-                                                style={{
-                                                    borderRadius: theme.styles.cardBorderRadius + 'px',
-                                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                                    border: '1px solid rgba(255,255,255,0.3)'
-                                                }}
-                                            />
-
-                                            {/* Name Lines */}
-                                            <div className="w-20 h-2 rounded-full mb-1 shrink-0" style={{ backgroundColor: theme.styles.usernameColor || '#fff', opacity: 0.6 }} />
-                                            <div className="w-12 h-1.5 rounded-full mb-6 shrink-0" style={{ backgroundColor: theme.styles.usernameColor || '#fff', opacity: 0.3 }} />
-
-                                            {/* Button Mocks */}
-                                            <div className="w-full space-y-2.5">
-                                                {[1, 2, 3].map(i => (
-                                                    <div
-                                                        key={i}
-                                                        className="h-10 w-full flex items-center justify-center text-[8px] font-bold tracking-wider"
-                                                        style={{
-                                                            backgroundColor: theme.styles.cardBackgroundColor,
-                                                            borderWidth: (theme.styles.cardBorderWidth || 0) + 'px',
-                                                            borderColor: theme.styles.cardBorderColor,
-                                                            borderRadius: (theme.styles.cardBorderRadius || 0) + 'px',
-                                                            color: theme.styles.usernameColor,
-                                                            opacity: 0.9,
-                                                            boxShadow: theme.styles.cardShadow === 'soft' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-                                                        }}
-                                                    >
-                                                        LINK {i}
-                                                    </div>
-                                                ))}
+                                                className="text-4xl font-bold transition-transform group-hover:scale-110"
+                                                style={{ color: cardTextColor }}
+                                            >
+                                                Aa
                                             </div>
+
+                                            <div
+                                                className="w-14 h-4 rounded-full mt-3 shadow-sm"
+                                                style={{ background: cardAccentColor }}
+                                            />
 
                                             {/* Floating Elements (Visual Decoration Only) */}
                                             {theme.styles.floatingElements && (
                                                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                                                    {/* We can just render a couple of representative shapes */}
                                                     <div className="absolute top-[10%] left-[-10%] w-20 h-20 rounded-full blur-xl opacity-30" style={{ backgroundColor: theme.styles.floatingElementsColor }}></div>
                                                     <div className="absolute bottom-[20%] right-[-10%] w-24 h-24 rounded-full blur-xl opacity-30" style={{ backgroundColor: theme.styles.floatingElementsColor }}></div>
                                                 </div>
@@ -687,22 +676,20 @@ function ThemesPage() {
                                                 </div>
                                             )}
 
-                                            {/* Hover Action Overlay */}
-                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center justify-center">
-                                                <div className="bg-white text-black px-4 py-2 rounded-full font-bold text-xs shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
-                                                    {t("themes.actions.preview", "Visualizar")}
-                                                </div>
+                                            <div className="absolute bottom-0 left-0 right-0 py-2.5 px-3 text-center bg-gradient-to-t from-black/20 to-transparent">
+                                                <span className="text-xs font-semibold" style={{ color: cardTextColor }}>
+                                                    {theme.name}
+                                                </span>
                                             </div>
+
                                         </div>
                                     </div>
 
-                                    {/* Info Footer */}
                                     <div className="text-center">
-                                        <h3 className="font-bold text-[#1A1A1A] text-sm md:text-base leading-tight">{theme.name}</h3>
-                                        <div className="flex gap-2 justify-center mt-1">
-                                            {theme.tier === "pro" && <span className="text-[9px] font-black bg-black text-white px-1.5 py-0.5 rounded uppercase">PRO</span>}
-                                            {theme.tier === "standard" && <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase">STANDARD</span>}
-                                            {theme.tier === "free" && <span className="text-[9px] font-black bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded uppercase">FREE</span>}
+                                        <div className="flex gap-1.5 justify-center mt-1">
+                                            {theme.tier === "pro" && <span className="text-[9px] font-black bg-black text-white px-1.5 py-0.5 rounded-full uppercase">PRO</span>}
+                                            {theme.tier === "standard" && <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full uppercase">STANDARD</span>}
+                                            {theme.tier === "free" && <span className="text-[9px] font-black bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full uppercase">FREE</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -710,7 +697,6 @@ function ThemesPage() {
                         })}
                     </div>
 
-                    {/* Empty State */}
                     {filteredThemes.length === 0 && (
                         <div className="text-center py-32">
                             <div className="bg-[#F3F3F1] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">

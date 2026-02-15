@@ -8,6 +8,30 @@ import { ApiError, APIErrors } from "../shared/errors/api-error";
 const sitePostRepository = AppDataSource.getRepository(SitePostEntity);
 const userRepository = AppDataSource.getRepository(UserEntity);
 
+const toSlug = (value: string): string => {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+};
+
+const getCanonicalSlug = (post: SitePostEntity, lang: string): string => {
+    const isPt = lang === "pt";
+    const localizedTitle = isPt
+        ? (post.titlePt || post.titleEn || post.title)
+        : (post.titleEn || post.titlePt || post.title);
+
+    const slug = localizedTitle ? toSlug(localizedTitle) : "";
+    if (slug) return slug;
+
+    return `post-${post.id.slice(0, 8)}`;
+};
+
 export const createSitePost = async (req: Request, res: Response) => {
     try {
         const {
@@ -156,6 +180,7 @@ export const getPublicSitePosts = async (req: Request, res: Response) => {
                 const title = isPt ? post.titlePt : post.titleEn ?? post.title;
                 const content = isPt ? post.contentPt : post.contentEn ?? post.content;
                 const keywords = isPt ? post.keywordsPt : post.keywordsEn ?? post.keywords;
+                const slug = getCanonicalSlug(post, lang);
 
                 if (!title || !content) return null;
 
@@ -164,6 +189,7 @@ export const getPublicSitePosts = async (req: Request, res: Response) => {
                     title,
                     content,
                     keywords,
+                    slug,
                 };
             })
             .filter(Boolean);
@@ -179,12 +205,27 @@ export const getPublicSitePost = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const lang = req.query.lang as string || 'en';
-        const post = await sitePostRepository.findOne({
+
+        let post = await sitePostRepository.findOne({
             where: {
                 id,
                 status: "published"
             }
         });
+
+        if (!post) {
+            const publishedPosts = await sitePostRepository.find({
+                where: { status: "published" },
+                order: { createdAt: "DESC" }
+            });
+
+            const now = new Date();
+            post = publishedPosts.find((candidate) => {
+                if (candidate.scheduledAt && candidate.scheduledAt > now) return false;
+                const canonicalSlug = getCanonicalSlug(candidate, lang);
+                return canonicalSlug === id;
+            }) || null;
+        }
 
         if (!post) {
             throw new ApiError(APIErrors.notFoundError, "Post not found", 404);
@@ -208,6 +249,7 @@ export const getPublicSitePost = async (req: Request, res: Response) => {
             title,
             content,
             keywords,
+            slug: getCanonicalSlug(post, lang),
             views,
         });
     } catch (error) {

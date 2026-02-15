@@ -152,6 +152,21 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     const description = bio.seoDescription || bio.description || `Check out ${bio.fullName || username}'s bio page on Portyo.`;
     const keywords = bio.seoKeywords || `${username}, bio, portfolio, links`;
     const favicon = bio.favicon;
+    const normalizedFavicon = typeof favicon === "string" ? favicon.trim() : "";
+    const faviconExt = normalizedFavicon.split("?")[0].toLowerCase();
+    const faviconType = faviconExt.endsWith(".svg")
+        ? "image/svg+xml"
+        : faviconExt.endsWith(".png")
+            ? "image/png"
+            : undefined;
+    const faviconLinks = normalizedFavicon
+        ? [{ tagName: "link", rel: "icon", ...(faviconType ? { type: faviconType } : {}), href: normalizedFavicon }]
+        : [
+            { tagName: "link", rel: "icon", type: "image/png", sizes: "48x48", href: "/favicons/48x48.png" },
+            { tagName: "link", rel: "icon", type: "image/png", sizes: "96x96", href: "/favicons/96x96.png" },
+            { tagName: "link", rel: "icon", type: "image/png", sizes: "192x192", href: "/favicons/192x192.png" },
+            { tagName: "link", rel: "apple-touch-icon", type: "image/png", sizes: "192x192", href: "/favicons/192x192.png" },
+        ];
     const safeOrigin = origin || "https://portyo.me";
     const url = `${safeOrigin}/p/${username}`;
     const ogImage = bio.ogImage || bio.profileImage || "https://portyo.me/favicons/192x192.png";
@@ -331,7 +346,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
         { tagName: "link", rel: "canonical", href: url },
 
         // Favicon
-        ...(favicon ? [{ tagName: "link", rel: "icon", href: favicon }] : []),
+        ...faviconLinks,
 
         // Google Site Verification (if set)
         ...(bio.googleSearchConsoleId ? [{ name: "google-site-verification", content: bio.googleSearchConsoleId }] : []),

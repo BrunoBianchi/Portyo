@@ -40,10 +40,16 @@ import { SocialPlannerPostEntity } from "./entity/social-planner-post-entity"
 import { ShortUrlEntity } from "./entity/short-url-entity"
 import { PollEntity } from "./entity/poll-entity"
 import { PollVoteEntity } from "./entity/poll-vote-entity"
+import { existsSync } from "fs"
+
+const runningInDocker = existsSync("/.dockerenv")
+const resolvedDbHost = !runningInDocker && env.DB_HOST === "postgres"
+    ? "localhost"
+    : env.DB_HOST
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: env.DB_HOST,
+    host: resolvedDbHost,
     port: parseInt(env.DB_PORT),
     username: env.DB_USERNAME,
     password: env.DB_PASSWORD,

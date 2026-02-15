@@ -149,12 +149,10 @@ export const links: Route.LinksFunction = () => [
 
   // Manifest e favicons
   { rel: "manifest", href: "/manifest.json" },
-  { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
   { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicons/48x48.png" },
   { rel: "icon", type: "image/png", sizes: "96x96", href: "/favicons/96x96.png" },
   { rel: "icon", type: "image/png", sizes: "192x192", href: "/favicons/192x192.png" },
-  { rel: "apple-touch-icon", sizes: "180x180", href: "/favicons/180x180.png" },
-  { rel: "mask-icon", href: "/favicons/safari-pinned-tab.svg", color: "#bbff00" },
+  { rel: "apple-touch-icon", type: "image/png", sizes: "192x192", href: "/favicons/192x192.png" },
 
   // Note: Hreflang tags are dynamically generated in Layout component based on current route
 ];

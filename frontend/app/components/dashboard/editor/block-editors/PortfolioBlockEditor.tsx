@@ -1,6 +1,7 @@
+import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { PortfolioGallerySelector } from "../integration-selectors";
-import type { BioBlock } from "~/contexts/bio.context";
+import BioContext, { type BioBlock } from "~/contexts/bio.context";
 
 interface Props {
   block: BioBlock;
@@ -17,6 +18,9 @@ interface PortfolioConfig {
 
 export function PortfolioBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
+  const { bio } = useContext(BioContext);
+
+  const effectiveBioId = block.bioId || bio?.id || null;
   
   const config: PortfolioConfig = {
     itemIds: block.portfolioItemIds || [],
@@ -40,7 +44,7 @@ export function PortfolioBlockEditor({ block, onChange }: Props) {
     <div className="space-y-6">
       {/* Portfolio Gallery Selector */}
       <PortfolioGallerySelector
-        bioId={block.bioId}
+        bioId={effectiveBioId}
         config={config}
         onChange={handleConfigChange}
       />

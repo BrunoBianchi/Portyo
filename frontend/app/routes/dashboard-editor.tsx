@@ -1,6 +1,6 @@
 import {
   Eye, X, ChevronLeftIcon, ExternalLinkIcon,
-  Undo2, Share2, Smartphone
+  Undo2, Smartphone
 } from 'lucide-react';
 import { useContext, useEffect, useState, useCallback, memo, useRef } from "react";
 import type { MetaFunction } from "react-router";
@@ -20,7 +20,7 @@ import { useHtmlGenerator } from "~/hooks/use-html-generator";
 // Componentes
 import { EditorNav } from "~/components/dashboard/editor/editor-nav";
 import { BlockEditorDrawer } from "~/components/dashboard/editor/block-editor-drawer";
-import { LinksTab, SettingsTab } from "~/components/dashboard/editor/tabs";
+import { LinksTab, SettingsTab, DesignTab } from "~/components/dashboard/editor/tabs";
 import type { BioBlock } from "~/contexts/bio.context";
 import DashboardCustomDomains from "~/routes/dashboard-custom-domains";
 
@@ -37,16 +37,14 @@ const EditorHeader = memo(function EditorHeader({
   onTabChange,
   history,
   onUndo,
-  onShare,
   bioSuffix,
   showMobilePreview,
   onToggleMobilePreview,
 }: {
-  activeTab: "links" | "settings" | "customDomains";
-  onTabChange: (tab: "links" | "settings" | "customDomains") => void;
+  activeTab: "links" | "settings" | "customDomains" | "design";
+  onTabChange: (tab: "links" | "settings" | "customDomains" | "design") => void;
   history: BioBlock[][];
   onUndo: () => void;
-  onShare: () => void;
   bioSuffix?: string;
   showMobilePreview: boolean;
   onToggleMobilePreview: () => void;
@@ -57,6 +55,7 @@ const EditorHeader = memo(function EditorHeader({
     links: t("editor.tabs.links"),
     settings: t("editor.tabs.settings"),
     customDomains: t("nav.customDomains", { defaultValue: "Custom Domains" }),
+    design: t("nav.design", { defaultValue: "Design" }),
   };
 
   return (
@@ -93,7 +92,6 @@ const EditorHeader = memo(function EditorHeader({
         <div className="flex items-center gap-1 lg:gap-2 shrink-0 min-w-0 justify-end">
 
           <UndoButton onClick={onUndo} disabled={history.length === 0} />
-          <ShareButton onClick={onShare} />
 
           {bioSuffix && (
             <a
@@ -124,13 +122,6 @@ const EditorHeader = memo(function EditorHeader({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={onShare}
-              className="p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-
             <button
               onClick={onToggleMobilePreview}
               className="p-2 bg-black text-white rounded-full shadow-lg touch-manipulation"
@@ -167,21 +158,6 @@ const UndoButton = memo(function UndoButton({
     >
       <Undo2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
       <span className="hidden lg:inline">{t("top.undo")}</span>
-    </button>
-  );
-});
-
-const ShareButton = memo(function ShareButton({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation("dashboard");
-
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-1.5 px-1.5 sm:px-2 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-      title={t("top.share")}
-    >
-      <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-      <span className="hidden sm:inline lg:hidden xl:inline">{t("top.share")}</span>
     </button>
   );
 });
@@ -279,10 +255,9 @@ export default function DashboardEditor() {
   const { user } = useContext(AuthContext);
   const { t } = useTranslation("dashboard");
 
-  const [activeTab, setActiveTab] = useState<"links" | "settings" | "customDomains">("links");
+  const [activeTab, setActiveTab] = useState<"links" | "settings" | "customDomains" | "design">("links");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BioBlock | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const lastSavedBlocksRef = useRef<string>("");
   const designSaveTimeoutRef = useRef<number | null>(null);
 
@@ -395,12 +370,6 @@ export default function DashboardEditor() {
     toast.success(t("editor.undoSuccess"));
   }, [undo, t]);
 
-  const handleCopyLink = useCallback(() => {
-    if (!bio) return;
-    navigator.clipboard.writeText(`https://portyo.me/p/${bio.sufix}`);
-    toast.success(t("editor.linkCopied"));
-  }, [bio, t]);
-
   const handleAddBlock = useCallback((type: BioBlock["type"], variation?: string) => {
     const newBlock = addBlock(type, undefined, variation);
     setEditingBlock(newBlock);
@@ -422,31 +391,6 @@ export default function DashboardEditor() {
       });
     }
   }, [replaceBlock, blocks, bio, updateBio, html]);
-
-  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !bio) return;
-
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await api.post(`/bios/${bio.id}/profile-image`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      if (response.data.profileImage) {
-        await updateBio(bio.id, { profileImage: response.data.profileImage });
-        toast.success(t("editor.design.imageUploadSuccess"));
-      }
-    } catch (error) {
-      console.error('Image upload failed:', error);
-      toast.error(t("editor.design.imageUploadError"));
-    } finally {
-      setUploadingImage(false);
-    }
-  }, [bio, updateBio, t]);
 
   const handleDesignUpdate = useCallback((payload: Parameters<typeof updateBio>[1]) => {
     if (!bio) return;
@@ -512,7 +456,7 @@ export default function DashboardEditor() {
     setSeoState(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const isEditorContentTab = activeTab === 'links' || activeTab === 'settings';
+  const isEditorContentTab = activeTab === 'links' || activeTab === 'settings' || activeTab === 'design';
 
   return (
     <AuthorizationGuard>
@@ -522,7 +466,6 @@ export default function DashboardEditor() {
           onTabChange={setActiveTab}
           history={history}
           onUndo={handleUndo}
-          onShare={handleCopyLink}
           bioSuffix={bio?.sufix}
           showMobilePreview={showMobilePreview}
           onToggleMobilePreview={() => setShowMobilePreview(!showMobilePreview)}
@@ -532,7 +475,7 @@ export default function DashboardEditor() {
           {/* Main Content Area */}
           <main className="flex-1 flex flex-col min-w-0 bg-[#F3F3F1]">
             <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 lg:p-8 custom-scrollbar">
-              <div className={`${isEditorContentTab ? 'max-w-xl lg:max-w-2xl' : 'max-w-6xl'} mx-auto w-full pb-20 sm:pb-24`}>
+              <div className={`${activeTab === 'design' ? 'max-w-3xl lg:max-w-5xl' : isEditorContentTab ? 'max-w-xl lg:max-w-2xl' : 'max-w-6xl'} mx-auto w-full pb-20 sm:pb-24`}>
                 {activeTab === 'links' && (
                   <LinksTab
                     bio={bio}
@@ -567,6 +510,10 @@ export default function DashboardEditor() {
                     onGenerateSeo={generateSeoWithAI}
                     onSaveSeo={handleSaveSeo}
                   />
+                )}
+
+                {activeTab === 'design' && (
+                  <DesignTab />
                 )}
 
                 {activeTab === 'customDomains' && (

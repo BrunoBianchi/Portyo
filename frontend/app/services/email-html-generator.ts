@@ -1,3 +1,5 @@
+import { normalizeSocialProfileUrl } from "~/utils/social-links";
+
 export interface EmailBlock {
   id: string;
   type: 'text' | 'image' | 'button' | 'spacer' | 'divider' | 'heading' | 'social' | 'footer' | 'columns';
@@ -115,8 +117,9 @@ export const generateEmailHtml = (blocks: EmailBlock[], config: EmailTemplateCon
           .filter(([_, url]) => url)
           .map(([platform, url]) => {
             const { color } = socialIcons[platform] || { color: '#000' };
+            const normalizedUrl = normalizeSocialProfileUrl(platform, String(url));
             return `
-              <a href="${url}" style="display: inline-block; width: 40px; height: 40px; line-height: 40px; text-align: center; background-color: ${style.iconBackground || color}; color: ${style.iconColor || '#ffffff'}; border-radius: ${style.iconRadius || '50%'}; text-decoration: none; margin: 0 6px; font-size: 16px; font-family: ${fontFamily};">
+              <a href="${normalizedUrl}" style="display: inline-block; width: 40px; height: 40px; line-height: 40px; text-align: center; background-color: ${style.iconBackground || color}; color: ${style.iconColor || '#ffffff'}; border-radius: ${style.iconRadius || '50%'}; text-decoration: none; margin: 0 6px; font-size: 16px; font-family: ${fontFamily};">
                 ${platform.charAt(0).toUpperCase()}
               </a>
             `;

@@ -4,9 +4,11 @@
  * icon circles, and bottom-aligned title text.
  */
 import React from 'react';
+import * as LucideIcons from 'lucide-react';
 import type { BlockComponentProps } from './types';
 import { BlockWrapper } from './BlockWrapper';
 import { normalizeExternalUrl } from '~/utils/security';
+import { BUTTON_GRID_ICON_FALLBACKS } from '~/constants/button-grid-icons';
 
 /** Gradient palette for cards without images */
 const FALLBACK_GRADIENTS = [
@@ -24,6 +26,12 @@ export const ButtonGridBlock: React.FC<BlockComponentProps> = ({ block }) => {
     const gridItems = block.gridItems || [];
     if (gridItems.length === 0) return null;
 
+    const getLucideIcon = (iconName?: string) => {
+        if (!iconName) return null;
+        const iconMap = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+        return iconMap[iconName] || null;
+    };
+
     return (
         <BlockWrapper block={block}>
             <div style={{
@@ -35,6 +43,7 @@ export const ButtonGridBlock: React.FC<BlockComponentProps> = ({ block }) => {
                 {gridItems.map((item: any, index: number) => {
                     const hasImage = !!item.image;
                     const fallbackGradient = FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length];
+                    const IconComponent = getLucideIcon(item.icon);
 
                     return (
                         <a
@@ -118,7 +127,11 @@ export const ButtonGridBlock: React.FC<BlockComponentProps> = ({ block }) => {
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                                     zIndex: 2,
                                 }}>
-                                    {item.icon}
+                                    {IconComponent ? (
+                                        <IconComponent className="w-4 h-4 text-gray-700" />
+                                    ) : (
+                                        BUTTON_GRID_ICON_FALLBACKS[item.icon] || item.icon
+                                    )}
                                 </div>
                             )}
 

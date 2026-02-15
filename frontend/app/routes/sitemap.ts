@@ -3,6 +3,15 @@ import type { LoaderFunctionArgs } from "react-router";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);
+  if (url.pathname === "/sitemap") {
+    return new Response(null, {
+      status: 301,
+      headers: {
+        Location: "/sitemap.xml",
+        "Cache-Control": "public, max-age=3600"
+      }
+    });
+  }
   const host = url.host;
   const origin = `${url.protocol}//${host}`;
   const hostname = host.split(':')[0];
@@ -46,6 +55,34 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ...paths.map(p => `/pt${p}`)
   ];
   const supportedLangs = ["en", "pt"];
+
+  const toSlug = (value: string): string => {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
+
+  const getPostSlug = (
+    post: { id: string | number; slug?: string; title?: string; titleEn?: string; titlePt?: string },
+    lang: "en" | "pt"
+  ): string => {
+    if (post.slug && post.slug.trim()) return post.slug.trim();
+
+    const preferredTitle = lang === "pt"
+      ? (post.titlePt || post.title || post.titleEn || "")
+      : (post.titleEn || post.title || post.titlePt || "");
+
+    const derivedSlug = toSlug(preferredTitle);
+    if (derivedSlug) return derivedSlug;
+
+    return `post-${String(post.id).slice(0, 8)}`;
+  };
 
     if (bioIdentifier) {
       // User Specific Sitemap
@@ -139,19 +176,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           ]);
 
           if (resEn.ok) {
-            const posts: { id: string | number; slug?: string; updatedAt?: string }[] = await resEn.json();
+            const posts: { id: string | number; slug?: string; title?: string; titleEn?: string; titlePt?: string; updatedAt?: string }[] = await resEn.json();
             posts.forEach((post) => {
               const lastmod = post.updatedAt;
-              const postSlug = post.slug || post.id;
+              const postSlug = getPostSlug(post, "en");
               addUrl(`${siteBase}/en/blog/${postSlug}`, lastmod, 'weekly', 0.7);
             });
           }
 
           if (resPt.ok) {
-            const posts: { id: string | number; slug?: string; updatedAt?: string }[] = await resPt.json();
+            const posts: { id: string | number; slug?: string; title?: string; titleEn?: string; titlePt?: string; updatedAt?: string }[] = await resPt.json();
             posts.forEach((post) => {
               const lastmod = post.updatedAt;
-              const postSlug = post.slug || post.id;
+              const postSlug = getPostSlug(post, "pt");
               addUrl(`${siteBase}/pt/blog/${postSlug}`, lastmod, 'weekly', 0.7);
             });
           }
@@ -213,9 +250,8 @@ ${urls.join('')}
   return new Response(sitemap, {
     status: 200,
     headers: {
-      "Content-Type": "application/xml",
-      "xml-version": "1.0",
-      "encoding": "UTF-8",
+      "Content-Type": "application/xml; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
       "Cache-Control": "public, max-age=3600"
     },
   });

@@ -158,7 +158,8 @@ router.get("/", async (req, res) => {
     try {
         const sitemap = await generateSitemap();
         
-        res.setHeader("Content-Type", "application/xml");
+        res.setHeader("Content-Type", "application/xml; charset=utf-8");
+        res.setHeader("X-Content-Type-Options", "nosniff");
         res.setHeader("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
         res.send(sitemap);
     } catch (error) {

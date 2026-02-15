@@ -34,6 +34,25 @@ function getExcerpt(content: string, maxChars = 140): string {
     return `${textOnly.slice(0, maxChars).trimEnd()}...`;
 }
 
+function toSlug(value: string): string {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+
+function getCanonicalPostSlug(post: SitePost): string {
+    if (post.slug && post.slug.trim()) return post.slug.trim();
+    const derived = toSlug(post.title || "");
+    if (derived) return derived;
+    return `post-${post.id.slice(0, 8)}`;
+}
+
 export default function BlogIndex() {
     const { t, i18n } = useTranslation("blogPage");
     const [posts, setPosts] = useState<SitePost[]>([]);
@@ -87,7 +106,7 @@ export default function BlogIndex() {
                         {/* Featured Post */}
                         {featuredPost && (
                             <Link
-                                to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${featuredPost.slug || featuredPost.id}`}
+                                to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${getCanonicalPostSlug(featuredPost)}`}
                                 className="group block relative"
                             >
                                 <article className="grid lg:grid-cols-12 gap-0 border-2 border-[#1A1A1A] bg-white shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] hover:md:shadow-[12px_12px_0px_0px_rgba(210,232,35,1)] hover:-translate-y-1 transition-all duration-300">
@@ -150,7 +169,7 @@ export default function BlogIndex() {
                                 return (
                                     <Link
                                         key={post.id}
-                                        to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${post.slug || post.id}`}
+                                        to={`/${i18n.resolvedLanguage?.startsWith("pt") ? "pt" : "en"}/blog/${getCanonicalPostSlug(post)}`}
                                         className="group flex flex-col h-full bg-white border-2 border-[#1A1A1A] shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] md:shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:md:shadow-[8px_8px_0px_0px_rgba(0,71,255,1)] hover:-translate-y-1 transition-all duration-300"
                                     >
                                         {/* Image */}

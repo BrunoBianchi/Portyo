@@ -14,7 +14,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     const [isOpen, setIsOpen] = useState(false);
     const [recentColors, setRecentColors] = useState<string[]>([]);
     const [savedPalette, setSavedPalette] = useState<string[]>([]);
-    const [coords, setCoords] = useState({ top: 0, left: 0, openUp: false });
+    const [pickerColor, setPickerColor] = useState("#000000");
+    const [coords, setCoords] = useState({ top: 0, left: 0, openUp: false, width: 272, maxHeight: 520 });
     const triggerRef = useRef<HTMLButtonElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
 
@@ -29,8 +30,36 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         }
     }, []);
 
+    const isTransparentValue = (color: string) => {
+        const normalized = (color || "").trim().toLowerCase();
+        return normalized === "transparent" || normalized === "#00000000" || normalized === "rgba(0,0,0,0)" || normalized === "rgba(0, 0, 0, 0)";
+    };
+
+    const normalizeHex = (color: string) => {
+        const raw = (color || "").trim();
+        if (/^#[0-9a-f]{6}$/i.test(raw)) return raw;
+        if (/^#[0-9a-f]{3}$/i.test(raw)) {
+            const c = raw.slice(1);
+            return `#${c[0]}${c[0]}${c[1]}${c[1]}${c[2]}${c[2]}`;
+        }
+        return null;
+    };
+
+    useEffect(() => {
+        const normalizedHex = normalizeHex(value);
+        if (normalizedHex) {
+            setPickerColor(normalizedHex);
+        }
+    }, [value]);
+
     const handleColorSelect = (color: string) => {
+        setPickerColor(color);
         onChange(color);
+    };
+
+    const handleTransparentSelect = () => {
+        onChange("transparent");
+        addToRecent("transparent");
     };
 
     const handleInteractionEnd = () => {
@@ -68,10 +97,19 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     const updatePosition = useCallback(() => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
-        const popupHeight = 420;
-        const popupWidth = 272;
         const viewportH = window.innerHeight;
         const viewportW = window.innerWidth;
+        const isMobile = viewportW < 640;
+        const popupWidth = isMobile ? Math.min(viewportW - 16, 360) : 272;
+        const popupHeight = 520;
+        const maxHeight = Math.min(viewportH - 24, popupHeight);
+
+        if (isMobile) {
+            const left = Math.max(8, (viewportW - popupWidth) / 2);
+            const top = Math.max(12, (viewportH - maxHeight) / 2);
+            setCoords({ top, left, openUp: false, width: popupWidth, maxHeight });
+            return;
+        }
 
         const spaceBelow = viewportH - rect.bottom;
         const openUp = spaceBelow < popupHeight && rect.top > spaceBelow;
@@ -85,7 +123,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         if (top < 12) top = 12;
         if (top + popupHeight > viewportH - 12) top = viewportH - popupHeight - 12;
 
-        setCoords({ top, left, openUp });
+        setCoords({ top, left, openUp, width: popupWidth, maxHeight });
     }, []);
 
     const togglePicker = () => {
@@ -122,13 +160,33 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
     // Determine if color is light to pick contrasting check
     const isLightColor = (hex: string) => {
         try {
+            if (isTransparentValue(hex)) return true;
             const c = hex.replace('#', '');
+            if (c.length < 6) return true;
             const r = parseInt(c.substring(0, 2), 16);
             const g = parseInt(c.substring(2, 4), 16);
             const b = parseInt(c.substring(4, 6), 16);
+            if ([r, g, b].some((v) => Number.isNaN(v))) return true;
             return (r * 299 + g * 587 + b * 114) / 1000 > 150;
         } catch { return true; }
     };
+
+    const getSwatchStyle = (color: string): React.CSSProperties => {
+        if (isTransparentValue(color)) {
+            return {
+                backgroundColor: "#ffffff",
+                backgroundImage:
+                    "linear-gradient(45deg, #d1d5db 25%, transparent 25%), linear-gradient(-45deg, #d1d5db 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d1d5db 75%), linear-gradient(-45deg, transparent 75%, #d1d5db 75%)",
+                backgroundSize: "10px 10px",
+                backgroundPosition: "0 0, 0 5px, 5px -5px, -5px 0px",
+            };
+        }
+        return { backgroundColor: color };
+    };
+
+    const selectedColorLabel = isTransparentValue(value)
+        ? "TRANSPARENTE"
+        : (value || "#000000").toUpperCase();
 
     return (
         <div className={`relative ${className}`}>
@@ -145,7 +203,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     type="button"
                     onClick={togglePicker}
                     className="h-full w-11 border-r-2 border-gray-200 p-0 cursor-pointer transition-opacity flex items-center justify-center relative group shrink-0"
-                    style={{ backgroundColor: value }}
+                    style={getSwatchStyle(value)}
                 >
                     <Pipette className={`w-3.5 h-3.5 opacity-0 group-hover:opacity-80 transition-opacity ${isLightColor(value) ? 'text-black/60' : 'text-white/80'}`} />
                 </button>
@@ -159,7 +217,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                     onFocus={(e) => e.target.select()}
                     className="flex-1 w-full h-full px-3 text-xs font-mono uppercase text-gray-700 border-0 focus:ring-0 outline-none bg-transparent placeholder:text-gray-300"
                     placeholder="#000000"
-                    maxLength={9}
+                    maxLength={24}
                 />
             </div>
 
@@ -171,29 +229,44 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
 
                     <div
                         ref={popupRef}
-                        className={`fixed z-[9999] w-[272px] bg-white rounded-2xl shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)] p-0 overflow-hidden ${
+                        className={`fixed z-[9999] bg-white rounded-2xl shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)] p-0 overflow-y-auto overscroll-contain ${
                             coords.openUp
                                 ? 'animate-in fade-in slide-in-from-bottom-2'
                                 : 'animate-in fade-in slide-in-from-top-2'
                         } duration-200`}
-                        style={{ top: coords.top, left: coords.left }}
+                        style={{ top: coords.top, left: coords.left, width: coords.width, maxHeight: coords.maxHeight }}
                     >
                         {/* Header with current color preview */}
-                        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-                            <div
-                                className="w-9 h-9 rounded-xl border-2 border-gray-200 shadow-inner shrink-0"
-                                style={{ backgroundColor: value }}
-                            />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Cor selecionada</p>
-                                <p className="text-sm font-bold font-mono text-gray-800 uppercase">{value}</p>
+                        <div className="px-4 pt-4 pb-3 border-b border-gray-100 space-y-2.5">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-9 h-9 rounded-xl border-2 border-gray-200 shadow-inner shrink-0"
+                                    style={getSwatchStyle(value)}
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 mb-0.5">Cor selecionada</p>
+                                    <p className="text-sm font-bold font-mono text-gray-800 uppercase truncate">{selectedColorLabel}</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsOpen(false)}
+                                    className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    <XIcon className="w-3.5 h-3.5" />
+                                </button>
                             </div>
+
                             <button
                                 type="button"
-                                onClick={() => setIsOpen(false)}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                onClick={handleTransparentSelect}
+                                className={`w-full h-8 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-colors flex items-center justify-center gap-2 ${
+                                    isTransparentValue(value)
+                                        ? "bg-black text-white border-black"
+                                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                                }`}
                             >
-                                <XIcon className="w-3.5 h-3.5" />
+                                <span className="w-3.5 h-3.5 rounded border border-gray-300" style={getSwatchStyle("transparent")} />
+                                Usar transparente
                             </button>
                         </div>
 
@@ -204,9 +277,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                             onTouchEnd={handleInteractionEnd}
                         >
                             <HexColorPicker
-                                color={value}
+                                color={pickerColor}
                                 onChange={handleColorSelect}
-                                style={{ width: '100%', height: '152px' }}
+                                style={{ width: '100%', height: coords.width < 320 ? '136px' : '152px' }}
                             />
                         </div>
 
@@ -223,7 +296,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                                             className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
                                                 value === c ? 'border-black shadow-sm scale-110' : 'border-gray-200 hover:border-gray-300'
                                             }`}
-                                            style={{ backgroundColor: c }}
+                                            style={getSwatchStyle(c)}
                                             title={c}
                                         />
                                     ))}
@@ -258,7 +331,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
                                             className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 relative group ${
                                                 value === c ? 'border-black shadow-sm scale-110' : 'border-gray-200 hover:border-gray-300'
                                             }`}
-                                            style={{ backgroundColor: c }}
+                                            style={getSwatchStyle(c)}
                                             title={c}
                                         >
                                             <div
