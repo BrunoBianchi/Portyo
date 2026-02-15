@@ -18,7 +18,7 @@ import {
   SpotifyIcon,
   ProductHuntIcon
 } from "~/components/shared/icons";
-import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2 } from "lucide-react";
+import { Check, Plus, ExternalLink, AlertCircle, CreditCard, Loader2, AtSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDriverTour, useIsMobile } from "~/utils/driver";
 import type { DriveStep } from "driver.js";
@@ -39,7 +39,7 @@ interface Integration {
   category: "social" | "marketing" | "analytics" | "content";
 }
 
-const buildIntegrations = (t: (key: string) => string): Integration[] => [
+const buildIntegrations = (t: (key: string, options?: any) => string): Integration[] => [
   {
     id: "stripe",
     name: "Stripe",
@@ -53,6 +53,14 @@ const buildIntegrations = (t: (key: string) => string): Integration[] => [
     name: "Instagram",
     description: t("dashboard.integrations.items.instagram"),
     icon: <InstagramIcon className="w-8 h-8 text-[#E1306C]" />,
+    status: "disconnected",
+    category: "social"
+  },
+  {
+    id: "threads",
+    name: "Threads",
+    description: t("dashboard.integrations.items.threads", { defaultValue: "Connect Threads to schedule and publish from Social Planner." }),
+    icon: <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white"><AtSign className="w-4 h-4" /></div>,
     status: "disconnected",
     category: "social"
   },
@@ -112,7 +120,7 @@ export default function DashboardIntegrations() {
   const { startTour } = useDriverTour({ primaryColor: tourPrimaryColor, storageKey: "portyo:integrations-tour-done" });
 
   const [filter, setFilter] = useState<"all" | "social" | "marketing" | "analytics" | "content">("all");
-  const connectableProviders = useMemo(() => new Set(["stripe", "instagram", "google-analytics"]), []);
+  const connectableProviders = useMemo(() => new Set(["stripe", "instagram", "threads", "google-analytics"]), []);
   const integrationApiUrl = typeof window !== "undefined" && window.location.hostname.includes("localhost")
     ? "http://localhost:3000"
     : "https://portyo.me";
@@ -221,6 +229,10 @@ export default function DashboardIntegrations() {
         toast.success("Instagram connected successfully.");
         fetchIntegrations();
       }
+      if (successParam === "threads_connected") {
+        toast.success("Threads connected successfully.");
+        fetchIntegrations();
+      }
 
       const gaStatus = searchParams.get("google_analytics");
       if (gaStatus === "connected") {
@@ -301,6 +313,19 @@ export default function DashboardIntegrations() {
     }
   };
 
+  const handleConnectThreads = async () => {
+    if (!bio?.id) return;
+    try {
+      setPendingAction("threads-connect");
+      const returnTo = typeof window !== "undefined" ? window.location.origin : "";
+      window.location.href = `${integrationApiUrl}/api/threads/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
+    } catch (error) {
+      console.error("Failed to connect threads", error);
+      toast.error("Unable to start Threads connection.");
+      setPendingAction(null);
+    }
+  };
+
   const handleDisconnect = async (provider: string) => {
     if (!bio?.id) return;
     try {
@@ -339,6 +364,10 @@ export default function DashboardIntegrations() {
     }
     if (id === "instagram") {
       handleConnectInstagram();
+      return;
+    }
+    if (id === "threads") {
+      handleConnectThreads();
       return;
     }
   };

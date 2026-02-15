@@ -8,6 +8,7 @@ import { WhatsAppBlockEditor } from "./whatsapp-editor";
 import { YouTubeBlockEditor } from "./youtube-editor";
 import { SpotifyBlockEditor } from "./spotify-editor";
 import { InstagramBlockEditor } from "./instagram-editor";
+import { ThreadsBlockEditor } from "./threads-editor.tsx";
 import { QRCodeBlockEditor } from "./qrcode-editor";
 import { TourBlockEditor } from "./tour-editor";
 import { ExperienceBlockEditor } from "./experience-editor";
@@ -42,6 +43,7 @@ export const BlockEditors: Record<string, React.ComponentType<BlockEditorProps>>
   youtube: YouTubeBlockEditor,
   spotify: SpotifyBlockEditor,
   instagram: InstagramBlockEditor,
+  threads: ThreadsBlockEditor,
   qrcode: QRCodeBlockEditor,
   tour: TourBlockEditor,
   experience: ExperienceBlockEditor,
@@ -75,6 +77,7 @@ export * from "./whatsapp-editor";
 export * from "./youtube-editor";
 export * from "./spotify-editor";
 export * from "./instagram-editor";
+export * from "./threads-editor.tsx";
 export * from "./qrcode-editor";
 export * from "./tour-editor";
 export * from "./experience-editor";

@@ -449,6 +449,16 @@ export function useBlockEditor(options: UseBlockEditorOptions = {}): UseBlockEdi
             instagramShowText: true,
             instagramVariation: variation as any || "grid-shop",
           };
+        case "threads":
+          return {
+            ...baseBlock,
+            threadsUsername: "",
+            threadsDisplayType: "grid",
+            threadsTextColor: "#111111",
+            threadsTextPosition: "bottom",
+            threadsShowText: true,
+            threadsVariation: variation as any || "thread-grid",
+          };
         default:
           return {
             ...baseBlock,

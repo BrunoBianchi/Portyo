@@ -106,6 +106,7 @@ const parseQueueResponse = (raw: any): PlannedQueuePost[] => {
 
 const channelWeight = (channel: SocialChannel) => {
     if (channel === "instagram") return 1.2;
+    if (channel === "threads") return 1.15;
     if (channel === "linkedin") return 1.1;
     if (channel === "facebook") return 1.0;
     return 0.9;
@@ -247,7 +248,7 @@ export const generateSocialPlannerQueuePlan = async (
             schema: {
                 queue: [
                     {
-                        channel: "instagram|facebook|linkedin|twitter",
+                        channel: "instagram|threads|facebook|linkedin|twitter",
                         title: "short title",
                         content: "post copy",
                         hashtags: ["tag1", "tag2"],

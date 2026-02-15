@@ -418,14 +418,14 @@ export function useShortLinks({
 }
 
 // Hook for Instagram Preview (debounced)
-export function useInstagramPreview(username: string, enabled = true) {
+export function useInstagramPreview(bioId: string | null, enabled = true) {
   const [posts, setPosts] = useState<InstagramPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    if (!enabled || !username || username.length < 2) {
+    if (!enabled || !bioId) {
       setPosts([]);
       return;
     }
@@ -437,7 +437,7 @@ export function useInstagramPreview(username: string, enabled = true) {
 
     timerRef.current = setTimeout(async () => {
       try {
-        const data = await BlockIntegrationService.getInstagramPosts(username);
+        const data = await BlockIntegrationService.getInstagramPostsByBioId(bioId);
         setPosts(data);
       } catch (err) {
         setError(err as Error);
@@ -450,7 +450,44 @@ export function useInstagramPreview(username: string, enabled = true) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [username, enabled]);
+  }, [bioId, enabled]);
+
+  return { posts, isLoading, error };
+}
+
+export function useThreadsPreview(bioId: string | null, enabled = true) {
+  const [posts, setPosts] = useState<InstagramPost[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (!enabled || !bioId) {
+      setPosts([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const data = await BlockIntegrationService.getThreadsPostsByBioId(bioId);
+        setPosts(data);
+      } catch (err) {
+        setError(err as Error);
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 600);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [bioId, enabled]);
 
   return { posts, isLoading, error };
 }

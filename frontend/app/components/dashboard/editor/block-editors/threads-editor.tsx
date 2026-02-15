@@ -3,14 +3,14 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import type { BioBlock } from "~/contexts/bio.context";
 import BioContext from "~/contexts/bio.context";
 import { api } from "~/services/api";
-import { InstagramPreview } from "../integration-selectors/instagram-preview";
+import { ThreadsPreview } from "../integration-selectors/threads-preview";
 
 interface Props {
   block: BioBlock;
   onChange: (updates: Partial<BioBlock>) => void;
 }
 
-export function InstagramBlockEditor({ block, onChange }: Props) {
+export function ThreadsBlockEditor({ block, onChange }: Props) {
   const { t } = useTranslation("dashboard");
   const { bio } = useContext(BioContext);
   const [connectedUsername, setConnectedUsername] = useState("");
@@ -19,7 +19,7 @@ export function InstagramBlockEditor({ block, onChange }: Props) {
   const effectiveBioId = block.bioId || bio?.id || null;
 
   useEffect(() => {
-    const loadInstagramIntegration = async () => {
+    const loadThreadsIntegration = async () => {
       if (!effectiveBioId) {
         setConnectedUsername("");
         return;
@@ -29,57 +29,57 @@ export function InstagramBlockEditor({ block, onChange }: Props) {
       try {
         const response = await api.get(`/integration`, { params: { bioId: effectiveBioId } });
         const integrations = Array.isArray(response.data) ? response.data : [];
-        const instagramIntegration = integrations.find((item: any) => {
+        const threadsIntegration = integrations.find((item: any) => {
           const provider = String(item?.provider || "").toLowerCase();
           const name = String(item?.name || "").toLowerCase();
-          return provider === "instagram" || name.includes("instagram");
+          return provider === "threads" || name.includes("threads");
         });
 
-        const resolvedUsername = String(instagramIntegration?.name || "")
+        const resolvedUsername = String(threadsIntegration?.name || "")
           .replace(/^@+/, "")
           .trim();
 
         setConnectedUsername(resolvedUsername);
 
-        if (resolvedUsername && block.instagramUsername !== resolvedUsername) {
-          onChange({ instagramUsername: resolvedUsername });
+        if (resolvedUsername && block.threadsUsername !== resolvedUsername) {
+          onChange({ threadsUsername: resolvedUsername });
         }
       } catch (error) {
-        console.error("Failed to load instagram integration", error);
+        console.error("Failed to load threads integration", error);
         setConnectedUsername("");
       } finally {
         setCheckingIntegration(false);
       }
     };
 
-    loadInstagramIntegration();
+    loadThreadsIntegration();
   }, [effectiveBioId]);
 
   const isConnected = useMemo(() => connectedUsername.length > 0, [connectedUsername]);
 
-  const openInstagramConnectPopup = () => {
+  const openThreadsConnectPopup = () => {
     if (!effectiveBioId) return;
     const returnTo = window.location.origin;
-    const authUrl = `/api/instagram/auth?bioId=${encodeURIComponent(effectiveBioId)}&returnTo=${encodeURIComponent(returnTo)}`;
-    window.open(authUrl, "instagram-connect", "width=620,height=780,noopener,noreferrer");
+    const authUrl = `/api/threads/auth?bioId=${encodeURIComponent(effectiveBioId)}&returnTo=${encodeURIComponent(returnTo)}`;
+    window.open(authUrl, "threads-connect", "width=620,height=780,noopener,noreferrer");
   };
 
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <label className="block text-xs font-black uppercase tracking-wider ml-1">
-          {t("editor.editDrawer.fields.instagramUsernameLabel")}
+          {t("editor.editDrawer.fields.instagramUsernameLabel", { defaultValue: "Username" })}
         </label>
 
         <div className="w-full p-4 bg-white border-2 border-black rounded-xl">
           {checkingIntegration ? (
-            <p className="text-sm font-medium text-gray-500">Verificando conexão do Instagram...</p>
+            <p className="text-sm font-medium text-gray-500">Verificando conexão do Threads...</p>
           ) : isConnected ? (
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-black">Conta conectada: @{connectedUsername}</p>
               <button
                 type="button"
-                onClick={openInstagramConnectPopup}
+                onClick={openThreadsConnectPopup}
                 className="px-3 py-2 border-2 border-black rounded-lg text-xs font-black bg-white hover:bg-gray-50"
               >
                 Reconectar
@@ -88,22 +88,21 @@ export function InstagramBlockEditor({ block, onChange }: Props) {
           ) : (
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-medium text-gray-500">
-                Conecte seu Instagram para carregar o feed oficial da API.
+                Conecte seu Threads para carregar o feed oficial da API.
               </p>
               <button
                 type="button"
-                onClick={openInstagramConnectPopup}
-                className="px-3 py-2 border-2 border-black rounded-lg text-xs font-black bg-[#C6F035] text-black"
+                onClick={openThreadsConnectPopup}
+                className="px-3 py-2 border-2 border-black rounded-lg text-xs font-black bg-black text-white hover:bg-gray-900"
               >
-                Conectar Instagram
+                Conectar Threads
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Live Preview */}
-      <InstagramPreview bioId={effectiveBioId} username={connectedUsername || block.instagramUsername} />
+      <ThreadsPreview bioId={effectiveBioId} username={connectedUsername || block.threadsUsername} />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { generateSocialPlannerQueuePlan } from "../../../services/social-planner
 
 const router = Router();
 
-const CHANNELS = ["instagram", "facebook", "linkedin", "twitter"] as const;
+const CHANNELS = ["instagram", "facebook", "linkedin", "twitter", "threads"] as const;
 const STATUSES = ["draft", "scheduled", "published", "failed", "cancelled"] as const;
 
 const ScheduledAtSchema = z.coerce.date();
@@ -48,7 +48,7 @@ const AutoQueuePlanSchema = z.object({
     apply: z.boolean().optional().default(false),
     options: z.object({
         timezone: z.string().optional(),
-        channels: z.array(z.enum(CHANNELS)).min(1).max(4).optional(),
+        channels: z.array(z.enum(CHANNELS)).min(1).max(5).optional(),
         postsCount: z.number().int().min(1).max(60).optional(),
         horizonDays: z.number().int().min(3).max(120).optional(),
         preferredWeekdays: z.array(z.number().int().min(0).max(6)).optional(),

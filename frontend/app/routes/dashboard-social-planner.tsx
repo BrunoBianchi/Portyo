@@ -1,7 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { addMonths, addWeeks, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks, eachDayOfInterval } from "date-fns";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, isBefore, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks, eachDayOfInterval } from "date-fns";
 import {
     Calendar,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     ArrowUp,
@@ -24,7 +25,7 @@ import { AuthorizationGuard } from "~/contexts/guard.context";
 import BioContext from "~/contexts/bio.context";
 import { api } from "~/services/api";
 
-type PlannerChannel = "instagram" | "facebook" | "linkedin" | "twitter";
+type PlannerChannel = "instagram" | "facebook" | "linkedin" | "twitter" | "threads";
 type PlannerStatus = "draft" | "scheduled" | "published" | "failed" | "cancelled";
 type CalendarViewMode = "weekly" | "monthly";
 
@@ -66,7 +67,7 @@ interface AIQueueSuggestion {
     confidence: number;
 }
 
-const CHANNELS: PlannerChannel[] = ["instagram", "facebook", "linkedin", "twitter"];
+const CHANNELS: PlannerChannel[] = ["instagram", "threads", "facebook", "linkedin", "twitter"];
 
 const statusClassMap: Record<PlannerStatus, string> = {
     draft: "bg-gray-100 text-gray-700 border-gray-200",
@@ -86,6 +87,7 @@ export default function DashboardSocialPlanner() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>("weekly");
     const [selectedChannel, setSelectedChannel] = useState<PlannerChannel | "all">("all");
+    const [connectedChannels, setConnectedChannels] = useState<PlannerChannel[]>([]);
     const [posts, setPosts] = useState<SocialPlannerPost[]>([]);
     const [summary, setSummary] = useState<PlannerSummary | null>(null);
     const [loading, setLoading] = useState(true);
@@ -93,6 +95,8 @@ export default function DashboardSocialPlanner() {
     const [reschedulingPostId, setReschedulingPostId] = useState<string | null>(null);
     const [draggingPostId, setDraggingPostId] = useState<string | null>(null);
     const [dropTargetDateKey, setDropTargetDateKey] = useState<string | null>(null);
+    const [suppressPostClick, setSuppressPostClick] = useState(false);
+    const suppressPostClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [composerOpen, setComposerOpen] = useState(false);
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
     const [uploadingMedia, setUploadingMedia] = useState(false);
@@ -117,11 +121,29 @@ export default function DashboardSocialPlanner() {
         mediaUrls: [] as string[],
         scheduledAt: "",
     });
+    const [channelMenuOpen, setChannelMenuOpen] = useState(false);
+
+    const mapIntegrationToChannel = useCallback((value?: string | null): PlannerChannel | null => {
+        if (!value) return null;
+        const normalized = value.toLowerCase().replace(/[^a-z]/g, "");
+        if (normalized.includes("instagram")) return "instagram";
+        if (normalized.includes("threads")) return "threads";
+        if (normalized.includes("facebook")) return "facebook";
+        if (normalized.includes("linkedin")) return "linkedin";
+        if (normalized === "x" || normalized.includes("twitter")) return "twitter";
+        return null;
+    }, []);
 
     const plannerTimezone = useMemo(
         () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
         []
     );
+
+    const todayStart = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return now;
+    }, []);
 
     const objectiveOptions = useMemo(
         () => [
@@ -163,14 +185,15 @@ export default function DashboardSocialPlanner() {
         [calendarStart, calendarEnd]
     );
 
-    const weeklyStart = useMemo(
-        () => startOfWeek(selectedDate, { weekStartsOn: 0 }),
-        [selectedDate]
-    );
+    const weeklyStart = useMemo(() => {
+        const selected = new Date(selectedDate);
+        selected.setHours(0, 0, 0, 0);
+        return selected < todayStart ? todayStart : selected;
+    }, [selectedDate, todayStart]);
 
     const weeklyEnd = useMemo(
-        () => endOfWeek(selectedDate, { weekStartsOn: 0 }),
-        [selectedDate]
+        () => addDays(weeklyStart, 6),
+        [weeklyStart]
     );
 
     const weeklyDays = useMemo(
@@ -187,6 +210,18 @@ export default function DashboardSocialPlanner() {
         () => (calendarViewMode === "weekly" ? weeklyEnd : calendarEnd),
         [calendarViewMode, weeklyEnd, calendarEnd]
     );
+
+    const visibleMonthDays = useMemo(() => {
+        return calendarDays.filter((day) => isSameMonth(day, currentMonth) && !isBefore(day, todayStart));
+    }, [calendarDays, currentMonth, todayStart]);
+
+    const canGoPreviousWeek = useMemo(() => weeklyStart > todayStart, [weeklyStart, todayStart]);
+
+    const canGoPreviousMonth = useMemo(() => {
+        const monthStart = startOfMonth(currentMonth);
+        const todayMonthStart = startOfMonth(todayStart);
+        return monthStart > todayMonthStart;
+    }, [currentMonth, todayStart]);
 
     const loadData = useCallback(async () => {
         if (!bio?.id) {
@@ -222,6 +257,42 @@ export default function DashboardSocialPlanner() {
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    useEffect(() => {
+        const loadConnectedChannels = async () => {
+            if (!bio?.id) {
+                setConnectedChannels([]);
+                return;
+            }
+
+            try {
+                const response = await api.get(`/integration?bioId=${bio.id}`);
+                const integrations = Array.isArray(response.data) ? response.data : [];
+                const channels = new Set<PlannerChannel>();
+
+                for (const integration of integrations) {
+                    const providerChannel = mapIntegrationToChannel(integration?.provider);
+                    const nameChannel = mapIntegrationToChannel(integration?.name);
+                    if (providerChannel) channels.add(providerChannel);
+                    if (nameChannel) channels.add(nameChannel);
+                }
+
+                setConnectedChannels(CHANNELS.filter((channel) => channels.has(channel)));
+            } catch (error) {
+                console.error("Failed to load connected integrations", error);
+                setConnectedChannels([]);
+            }
+        };
+
+        loadConnectedChannels();
+    }, [bio?.id, mapIntegrationToChannel]);
+
+    useEffect(() => {
+        if (connectedChannels.length === 0) return;
+        if (!connectedChannels.includes(formData.channel)) {
+            setFormData((prev) => ({ ...prev, channel: connectedChannels[0] }));
+        }
+    }, [connectedChannels, formData.channel]);
 
     const queuePosts = useMemo(() => {
         return [...posts]
@@ -286,6 +357,8 @@ export default function DashboardSocialPlanner() {
         switch (channel) {
             case "instagram":
                 return "bg-pink-50 text-pink-700 border-pink-200";
+            case "threads":
+                return "bg-gray-100 text-gray-800 border-gray-300";
             case "facebook":
                 return "bg-blue-50 text-blue-700 border-blue-200";
             case "linkedin":
@@ -300,22 +373,43 @@ export default function DashboardSocialPlanner() {
     const resetComposer = () => {
         setEditingPostId(null);
         setFormData({
-            channel: "instagram",
+            channel: connectedChannels[0] || "instagram",
             title: "",
             content: "",
             hashtags: "",
             mediaUrls: [],
             scheduledAt: "",
         });
+        setChannelMenuOpen(false);
     };
 
-    const openCreateComposer = () => {
+    const getDefaultScheduleForDate = (day: Date) => {
+        const preferredHour = Math.max(0, Math.min(23, aiPlanOptions.preferredHourStart || 9));
+        const candidate = new Date(day);
+        candidate.setHours(preferredHour, 0, 0, 0);
+
+        const now = new Date();
+        const minCandidate = new Date(now);
+        minCandidate.setMinutes(0, 0, 0);
+        minCandidate.setHours(minCandidate.getHours() + 1);
+
+        return format(candidate < minCandidate ? minCandidate : candidate, "yyyy-MM-dd'T'HH:mm");
+    };
+
+    const openCreateComposer = (day?: Date) => {
         resetComposer();
+        const targetDay = day || selectedDate;
+        setSelectedDate(targetDay);
+        setFormData((prev) => ({
+            ...prev,
+            scheduledAt: getDefaultScheduleForDate(targetDay),
+        }));
         setComposerOpen(true);
     };
 
     const openEditComposer = (post: SocialPlannerPost) => {
         setEditingPostId(post.id);
+        setChannelMenuOpen(false);
         setFormData({
             channel: post.channel,
             title: post.title || "",
@@ -329,6 +423,16 @@ export default function DashboardSocialPlanner() {
 
     const handleSavePost = async () => {
         if (!bio?.id || !formData.content.trim()) return;
+
+        if (connectedChannels.length === 0) {
+            alert(t("dashboard.socialPlanner.errors.noIntegrations", { defaultValue: "Connect at least one social integration before creating a post." }));
+            return;
+        }
+
+        if (!connectedChannels.includes(formData.channel)) {
+            alert(t("dashboard.socialPlanner.errors.channelNotConnected", { defaultValue: "Selected channel is not connected." }));
+            return;
+        }
 
         if (!formData.scheduledAt) {
             alert(t("dashboard.socialPlanner.errors.scheduleRequired", { defaultValue: "Choose a schedule date/time to create this post." }));
@@ -520,6 +624,11 @@ export default function DashboardSocialPlanner() {
     };
 
     const handlePostDragStart = (event: React.DragEvent<HTMLElement>, postId: string) => {
+        if (suppressPostClickTimerRef.current) {
+            clearTimeout(suppressPostClickTimerRef.current);
+            suppressPostClickTimerRef.current = null;
+        }
+        setSuppressPostClick(true);
         setDraggingPostId(postId);
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", postId);
@@ -528,7 +637,30 @@ export default function DashboardSocialPlanner() {
     const resetDragState = () => {
         setDraggingPostId(null);
         setDropTargetDateKey(null);
+        if (suppressPostClickTimerRef.current) {
+            clearTimeout(suppressPostClickTimerRef.current);
+        }
+        suppressPostClickTimerRef.current = setTimeout(() => {
+            setSuppressPostClick(false);
+            suppressPostClickTimerRef.current = null;
+        }, 180);
     };
+
+    const handlePostCardClick = (event: React.MouseEvent<HTMLElement>, post: SocialPlannerPost) => {
+        event.stopPropagation();
+        if (suppressPostClick || draggingPostId) {
+            return;
+        }
+        openEditComposer(post);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (suppressPostClickTimerRef.current) {
+                clearTimeout(suppressPostClickTimerRef.current);
+            }
+        };
+    }, []);
 
     const handleDayDragOver = (event: React.DragEvent<HTMLElement>, dateKey: string) => {
         if (!draggingPostId) return;
@@ -651,189 +783,8 @@ export default function DashboardSocialPlanner() {
                             ))}
                         </div>
 
-                        <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-5 space-y-4">
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                                <div>
-                                    <div className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-1 rounded-full border border-black/15 bg-[#F8F8F8] text-gray-700">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#C6F035]" />
-                                        BAML + TOON
-                                    </div>
-                                    <h2 className="text-lg font-black text-[#1A1A1A] mt-2">
-                                        {t("dashboard.socialPlanner.aiQueue.title", { defaultValue: "AI Queue Planner (BAML + TOON)" })}
-                                    </h2>
-                                    <p className="text-xs sm:text-sm text-gray-600 font-medium mt-1">
-                                        {t("dashboard.socialPlanner.aiQueue.subtitle", { defaultValue: "Generate an automatic posting queue optimized for best day/time windows and keep everything customizable." })}
-                                    </p>
-                                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
-                                            {aiPlanOptions.postsCount} {t("dashboard.socialPlanner.aiQueue.postsCount", { defaultValue: "Posts" })}
-                                        </span>
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
-                                            {aiPlanOptions.horizonDays}d
-                                        </span>
-                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-wide px-2 py-1 rounded-lg border border-black/10 bg-white text-gray-700">
-                                            {selectedObjectiveLabel}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        onClick={() => handleGenerateAIQueue(false)}
-                                        disabled={aiPlanning}
-                                        className="px-3 py-2 border-2 border-black rounded-xl font-black text-sm bg-white"
-                                    >
-                                        {aiPlanning ? (
-                                            <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{t("dashboard.socialPlanner.aiQueue.generating", { defaultValue: "Generating..." })}</span>
-                                        ) : (
-                                            t("dashboard.socialPlanner.aiQueue.preview", { defaultValue: "Generate preview" })
-                                        )}
-                                    </button>
-                                    <button
-                                        onClick={() => handleGenerateAIQueue(true)}
-                                        disabled={aiPlanning}
-                                        className="px-3 py-2 border-2 border-black rounded-xl font-black text-sm bg-[#C6F035]"
-                                    >
-                                        {t("dashboard.socialPlanner.aiQueue.apply", { defaultValue: "Generate and add to queue" })}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2.5">
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.postsCount", { defaultValue: "Posts" })}</label>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={60}
-                                        value={aiPlanOptions.postsCount}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, postsCount: Math.max(1, Math.min(60, Number(e.target.value) || 1)) }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.horizonDays", { defaultValue: "Horizon (days)" })}</label>
-                                    <input
-                                        type="number"
-                                        min={3}
-                                        max={120}
-                                        value={aiPlanOptions.horizonDays}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, horizonDays: Math.max(3, Math.min(120, Number(e.target.value) || 28)) }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.objective", { defaultValue: "Objective" })}</label>
-                                    <select
-                                        value={aiPlanOptions.objective}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, objective: e.target.value as typeof prev.objective }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    >
-                                        {objectiveOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.hourStart", { defaultValue: "Start hour" })}</label>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={23}
-                                        value={aiPlanOptions.preferredHourStart}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, preferredHourStart: Math.max(0, Math.min(23, Number(e.target.value) || 0)) }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.hourEnd", { defaultValue: "End hour" })}</label>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={23}
-                                        value={aiPlanOptions.preferredHourEnd}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, preferredHourEnd: Math.max(0, Math.min(23, Number(e.target.value) || 23)) }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider font-black text-gray-500 block mb-1">{t("dashboard.socialPlanner.aiQueue.minGap", { defaultValue: "Min gap (h)" })}</label>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={72}
-                                        value={aiPlanOptions.minGapHours}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, minGapHours: Math.max(1, Math.min(72, Number(e.target.value) || 12)) }))}
-                                        className="w-full border-2 border-black rounded-lg px-2.5 py-2 text-sm font-bold"
-                                    />
-                                </div>
-
-                                <label className="inline-flex items-center gap-2 mt-5 text-xs font-bold text-gray-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={aiPlanOptions.avoidWeekends}
-                                        onChange={(e) => setAiPlanOptions((prev) => ({ ...prev, avoidWeekends: e.target.checked }))}
-                                    />
-                                    {t("dashboard.socialPlanner.aiQueue.avoidWeekends", { defaultValue: "Avoid weekends" })}
-                                </label>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2">
-                                    {t("dashboard.socialPlanner.aiQueue.helper.window", {
-                                        defaultValue: "Time window: {{start}}h–{{end}}h",
-                                        start: aiPlanOptions.preferredHourStart,
-                                        end: aiPlanOptions.preferredHourEnd,
-                                    })}
-                                </div>
-                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2">
-                                    {t("dashboard.socialPlanner.aiQueue.helper.gap", {
-                                        defaultValue: "Minimum gap: {{hours}}h",
-                                        hours: aiPlanOptions.minGapHours,
-                                    })}
-                                </div>
-                                <div className="text-[11px] font-semibold text-gray-600 bg-[#F7F7F7] border border-black/10 rounded-lg px-2.5 py-2 truncate">
-                                    {t("dashboard.socialPlanner.aiQueue.helper.timezone", {
-                                        defaultValue: "Timezone: {{timezone}}",
-                                        timezone: plannerTimezone,
-                                    })}
-                                </div>
-                            </div>
-
-                            {aiSuggestions.length > 0 && (
-                                <div className="space-y-2 pt-1">
-                                    <p className="text-xs font-black uppercase tracking-wider text-gray-500">{t("dashboard.socialPlanner.aiQueue.previewList", { defaultValue: "Suggested queue" })}</p>
-                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                                        {aiSuggestions.map((item, index) => (
-                                            <article key={`${item.channel}-${item.scheduledAt}-${index}`} className="border-2 border-black rounded-xl p-3 bg-[#FCFCFC]">
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <div className="inline-flex items-center gap-2">
-                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black uppercase ${getChannelBadgeClass(item.channel)}`}>
-                                                            {item.channel}
-                                                        </span>
-                                                        <span className="text-xs font-bold text-gray-600">{format(new Date(item.scheduledAt), "dd/MM/yyyy HH:mm")}</span>
-                                                    </div>
-                                                    <span className="text-[10px] font-black uppercase tracking-wide text-gray-500">{t("dashboard.socialPlanner.aiQueue.confidence", { defaultValue: "Confidence" })} {Math.round(item.confidence)}%</span>
-                                                </div>
-                                                <div className="mt-2 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-                                                    <div className="h-full bg-[#C6F035] transition-all" style={{ width: `${Math.max(0, Math.min(100, Math.round(item.confidence)))}%` }} />
-                                                </div>
-                                                <p className="text-sm font-bold text-[#1A1A1A] mt-1 line-clamp-2">{item.title || item.content}</p>
-                                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.reason}</p>
-                                            </article>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
                         <div className="grid grid-cols-1 gap-6">
-                            <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 md:p-6">
+                            <div className="bg-white border-2 border-black rounded-[24px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4">
                                 <div className="flex flex-col gap-3 mb-4">
                                     <h2 className="text-lg font-black text-[#1A1A1A] flex items-center gap-2">
                                         <Calendar className="w-5 h-5" />
@@ -860,14 +811,17 @@ export default function DashboardSocialPlanner() {
                                             <button
                                                 onClick={() => {
                                                     if (calendarViewMode === "weekly") {
+                                                        if (!canGoPreviousWeek) return;
                                                         const nextDate = subWeeks(selectedDate, 1);
                                                         setSelectedDate(nextDate);
                                                         setCurrentMonth(nextDate);
                                                     } else {
+                                                        if (!canGoPreviousMonth) return;
                                                         setCurrentMonth(subMonths(currentMonth, 1));
                                                     }
                                                 }}
-                                                className="p-2 border-2 border-black rounded-lg hover:bg-gray-50"
+                                                disabled={calendarViewMode === "weekly" ? !canGoPreviousWeek : !canGoPreviousMonth}
+                                                className="p-2 border-2 border-black rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                                             >
                                                 <ChevronLeft className="w-4 h-4" />
                                             </button>
@@ -898,11 +852,14 @@ export default function DashboardSocialPlanner() {
                                     <p className="text-xs text-gray-500 font-semibold">
                                         {t("dashboard.socialPlanner.dragHint", { defaultValue: "Drag and drop posts between days to quickly reschedule." })}
                                     </p>
+                                    <p className="text-[11px] text-gray-500 font-semibold">
+                                        {t("dashboard.socialPlanner.clickHint", { defaultValue: "Click a date to view scheduled posts. Hover + to add a new post." })}
+                                    </p>
                                 </div>
 
                                 {calendarViewMode === "weekly" ? (
                                     <div className="overflow-x-auto pb-2">
-                                        <div className="grid grid-cols-7 gap-3 min-w-[1220px] xl:min-w-0">
+                                        <div className="grid grid-cols-7 gap-2 min-w-[960px] xl:min-w-0">
                                             {weeklyDays.map((day) => {
                                                 const key = format(day, "yyyy-MM-dd");
                                                 const dayPosts = postsGroupedByDay.get(key) || [];
@@ -911,10 +868,23 @@ export default function DashboardSocialPlanner() {
                                                 return (
                                                     <div
                                                         key={key}
+                                                        onClick={() => setSelectedDate(day)}
                                                         onDragOver={(event) => handleDayDragOver(event, key)}
                                                         onDrop={(event) => handlePostDropOnDay(event, day)}
-                                                        className={`rounded-2xl border-2 min-h-[240px] md:min-h-[340px] p-3 transition-colors ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"} ${dropTargetDateKey === key ? "ring-2 ring-[#C6F035] ring-offset-1 border-black bg-[#C6F035]/10" : ""}`}
+                                                        className={`group relative rounded-2xl border-2 min-h-[180px] md:min-h-[230px] p-2.5 transition-colors cursor-pointer ${isTodaySelected ? "border-black bg-[#d2e823]/15" : "border-gray-200 bg-[#FCFCFC]"} ${dropTargetDateKey === key ? "ring-2 ring-[#C6F035] ring-offset-1 border-black bg-[#C6F035]/10" : ""}`}
                                                     >
+                                                        <button
+                                                            type="button"
+                                                            onClick={(event) => {
+                                                                event.stopPropagation();
+                                                                openCreateComposer(day);
+                                                            }}
+                                                            className="absolute top-2 right-2 w-7 h-7 rounded-full border-2 border-black bg-white text-black inline-flex items-center justify-center font-black text-sm opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity hover:bg-black hover:text-white"
+                                                            aria-label={t("dashboard.socialPlanner.actions.newForDate", { defaultValue: "New on this date" })}
+                                                        >
+                                                            +
+                                                        </button>
+
                                                         <button
                                                             onClick={() => setSelectedDate(day)}
                                                             className="w-full text-left mb-2"
@@ -924,17 +894,18 @@ export default function DashboardSocialPlanner() {
                                                         </button>
 
                                                         {dayPosts.length === 0 ? (
-                                                            <div className="mt-6 md:mt-8 text-center text-[11px] text-gray-400 font-semibold">
+                                                            <div className="mt-4 md:mt-6 text-center text-[11px] text-gray-400 font-semibold">
                                                                 {t("dashboard.socialPlanner.emptyDay", { defaultValue: "No posts" })}
                                                             </div>
                                                         ) : (
-                                                            <div className="space-y-2 max-h-[170px] md:max-h-[260px] overflow-y-auto pr-1">
+                                                            <div className="space-y-2 max-h-[120px] md:max-h-[160px] overflow-y-auto pr-1">
                                                                 {dayPosts.map((post) => (
                                                                     <div
                                                                         key={post.id}
                                                                         draggable={canDragPost(post)}
                                                                         onDragStart={(event) => handlePostDragStart(event, post.id)}
                                                                         onDragEnd={resetDragState}
+                                                                        onClick={(event) => handlePostCardClick(event, post)}
                                                                         className={`rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm overflow-hidden transition-opacity ${canDragPost(post) ? "cursor-grab active:cursor-grabbing" : "cursor-default"} ${draggingPostId === post.id ? "opacity-60" : "opacity-100"}`}
                                                                     >
                                                                         <div className="flex flex-wrap items-center gap-1.5 mb-1.5 min-w-0">
@@ -971,26 +942,37 @@ export default function DashboardSocialPlanner() {
                                             </div>
 
                                             <div className="grid grid-cols-7 gap-1.5">
-                                                {calendarDays.map((day) => {
+                                                {visibleMonthDays.map((day) => {
                                                     const key = format(day, "yyyy-MM-dd");
                                                     const count = postsByDay.get(key) || 0;
                                                     const isSelected = isSameDay(day, selectedDate);
 
                                                     return (
-                                                        <button
+                                                        <div
                                                             key={key}
                                                             onClick={() => setSelectedDate(day)}
                                                             onDragOver={(event) => handleDayDragOver(event, key)}
                                                             onDrop={(event) => handlePostDropOnDay(event, day)}
-                                                            className={`h-20 rounded-xl border-2 p-2 text-left transition-all ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${!isSameMonth(day, currentMonth) ? "opacity-40" : ""} ${dropTargetDateKey === key ? "ring-2 ring-[#C6F035] ring-offset-1 border-black bg-[#C6F035]/20" : ""}`}
+                                                            className={`group relative h-16 rounded-xl border-2 p-2 text-left transition-all cursor-pointer ${isSelected ? "border-black bg-[#d2e823]/40" : "border-gray-200 bg-white hover:border-black"} ${dropTargetDateKey === key ? "ring-2 ring-[#C6F035] ring-offset-1 border-black bg-[#C6F035]/20" : ""}`}
                                                         >
+                                                            <button
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    openCreateComposer(day);
+                                                                }}
+                                                                className="absolute top-1 right-1 w-5 h-5 rounded-full border border-black bg-white text-black inline-flex items-center justify-center font-black text-[11px] leading-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity hover:bg-black hover:text-white"
+                                                                aria-label={t("dashboard.socialPlanner.actions.newForDate", { defaultValue: "New on this date" })}
+                                                            >
+                                                                +
+                                                            </button>
                                                             <div className="text-xs font-black text-[#1A1A1A]">{format(day, "d")}</div>
                                                             {count > 0 && (
                                                                 <div className="mt-2 inline-flex px-1.5 py-0.5 rounded-md bg-black text-white text-[10px] font-black">
                                                                     {count}
                                                                 </div>
                                                             )}
-                                                        </button>
+                                                        </div>
                                                     );
                                                 })}
                                             </div>
@@ -999,9 +981,17 @@ export default function DashboardSocialPlanner() {
                                 )}
 
                                 <div className="mt-5">
-                                    <h3 className="text-sm font-black text-[#1A1A1A] mb-2">
+                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                        <h3 className="text-sm font-black text-[#1A1A1A]">
                                         {t("dashboard.socialPlanner.dayPosts", { defaultValue: "Posts on selected day" })}
-                                    </h3>
+                                        </h3>
+                                        <button
+                                            onClick={() => openCreateComposer(selectedDate)}
+                                            className="px-2.5 py-1.5 border-2 border-black rounded-lg text-[11px] font-black bg-white hover:bg-gray-50"
+                                        >
+                                            {t("dashboard.socialPlanner.actions.newForDate", { defaultValue: "New on this date" })}
+                                        </button>
+                                    </div>
                                     {selectedDatePosts.length === 0 ? (
                                         <p className="text-sm text-gray-500">{t("dashboard.socialPlanner.emptyDay", { defaultValue: "No scheduled posts on this day." })}</p>
                                     ) : (
@@ -1012,6 +1002,7 @@ export default function DashboardSocialPlanner() {
                                                     draggable={canDragPost(post)}
                                                     onDragStart={(event) => handlePostDragStart(event, post.id)}
                                                     onDragEnd={resetDragState}
+                                                    onClick={(event) => handlePostCardClick(event, post)}
                                                     className={`p-3 border-2 border-black rounded-xl bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 transition-opacity ${canDragPost(post) ? "cursor-grab active:cursor-grabbing" : "cursor-default"} ${draggingPostId === post.id ? "opacity-60" : "opacity-100"}`}
                                                 >
                                                     <div>
@@ -1057,17 +1048,43 @@ export default function DashboardSocialPlanner() {
                                     <label className="text-xs font-black uppercase tracking-wider text-gray-500 mb-2 block">
                                         {t("dashboard.socialPlanner.fields.channel", { defaultValue: "Channel" })}
                                     </label>
-                                    <select
-                                        value={formData.channel}
-                                        onChange={(e) => setFormData((prev) => ({ ...prev, channel: e.target.value as PlannerChannel }))}
-                                        className="w-full border-2 border-black rounded-xl px-3 py-2.5 font-bold"
-                                    >
-                                        {CHANNELS.map((channel) => (
-                                            <option key={channel} value={channel}>
-                                                {t(`dashboard.socialPlanner.channels.${channel}`, { defaultValue: channel })}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => connectedChannels.length > 0 && setChannelMenuOpen((prev) => !prev)}
+                                            disabled={connectedChannels.length === 0}
+                                            className="w-full border-2 border-black rounded-xl px-3 py-2.5 font-bold bg-white flex items-center justify-between disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            <span className="capitalize">
+                                                {t(`dashboard.socialPlanner.channels.${formData.channel}`, { defaultValue: formData.channel })}
+                                            </span>
+                                            <ChevronDown className={`w-4 h-4 transition-transform ${channelMenuOpen ? "rotate-180" : ""}`} />
+                                        </button>
+
+                                        {channelMenuOpen && connectedChannels.length > 0 && (
+                                            <div className="absolute z-20 mt-2 w-full bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                                                {connectedChannels.map((channel) => (
+                                                    <button
+                                                        key={channel}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData((prev) => ({ ...prev, channel }));
+                                                            setChannelMenuOpen(false);
+                                                        }}
+                                                        className={`w-full px-3 py-2.5 text-left font-bold capitalize transition-colors ${formData.channel === channel ? "bg-black text-white" : "bg-white text-black hover:bg-gray-50"}`}
+                                                    >
+                                                        {t(`dashboard.socialPlanner.channels.${channel}`, { defaultValue: channel })}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {connectedChannels.length === 0 && (
+                                        <p className="mt-2 text-xs text-red-600 font-semibold">
+                                            {t("dashboard.socialPlanner.noConnectedChannels", { defaultValue: "No connected social integrations found." })}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>

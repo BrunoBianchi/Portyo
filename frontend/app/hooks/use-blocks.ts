@@ -63,6 +63,10 @@ const getDefaultBlockData = (type: BioBlock["type"]): Partial<BioBlock> => {
     instagram: {
       instagramUsername: "",
     },
+    threads: {
+      threadsUsername: "",
+      threadsVariation: "thread-grid",
+    },
     whatsapp: {
       whatsappNumber: "",
       whatsappMessage: "Olá! Quero falar com você.",
@@ -171,6 +175,8 @@ export function useBlocks(options: UseBlocksOptions = {}): UseBlocksReturn {
       console.log(`[DEBUG] Adding block type=${type} with variation=${variation}`);
       if (type === "instagram") {
         newBlock.instagramVariation = variation as any;
+      } else if (type === "threads") {
+        newBlock.threadsVariation = variation as any;
       } else if (type === "youtube") {
         newBlock.youtubeVariation = variation as any;
       } else if (type === "spotify") {

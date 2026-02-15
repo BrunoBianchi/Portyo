@@ -408,9 +408,9 @@ export const BlockIntegrationService = {
   },
 
   // Instagram Posts
-  async getInstagramPosts(username: string): Promise<InstagramPost[]> {
+  async getInstagramPostsByBioId(bioId: string): Promise<InstagramPost[]> {
     try {
-      const response = await api.get(`/public/instagram/${encodeURIComponent(username)}`);
+      const response = await api.get(`/public/instagram/feed/${encodeURIComponent(bioId)}`);
       const data = response.data;
       const items = Array.isArray(data) ? data : data?.posts || [];
       return items.slice(0, 3).map((post: any) => ({
@@ -420,6 +420,22 @@ export const BlockIntegrationService = {
       }));
     } catch (error) {
       console.error("Failed to fetch Instagram posts:", error);
+      return [];
+    }
+  },
+
+  async getThreadsPostsByBioId(bioId: string): Promise<InstagramPost[]> {
+    try {
+      const response = await api.get(`/public/threads/feed/${encodeURIComponent(bioId)}`);
+      const data = response.data;
+      const items = Array.isArray(data) ? data : data?.posts || [];
+      return items.slice(0, 3).map((post: any) => ({
+        id: post.id || post.shortcode,
+        url: post.url,
+        imageUrl: post.imageUrl,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch Threads posts:", error);
       return [];
     }
   },

@@ -1029,6 +1029,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
   if (block.type === "instagram") {
     const username = block.instagramUsername || "instagram";
+    const instagramBioId = block.bioId || bio?.id || "";
     const url = `https://instagram.com/${username}`;
     const displayType = block.instagramDisplayType || "grid";
     const variation = block.instagramVariation || "grid-shop";
@@ -1093,7 +1094,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
       return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
         ${textPosition === 'top' ? textHtml : ''}
-        <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+        <div id="${uniqueId}" class="custom-instagram-feed" data-bio-id="${escapeHtml(String(instagramBioId))}" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
           ${placeholders}
         </div>
         ${textPosition === 'bottom' ? textHtml : ''}
@@ -1130,7 +1131,7 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
       return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
         ${textPosition === 'top' ? textHtml : ''}
-        <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:16px; overflow:hidden;">
+        <div id="${uniqueId}" class="custom-instagram-feed" data-bio-id="${escapeHtml(String(instagramBioId))}" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:16px; overflow:hidden;">
           ${placeholders}
         </div>
         ${textPosition === 'bottom' ? textHtml : ''}
@@ -1165,7 +1166,75 @@ export const blockToHtml = (block: BioBlock, bio: any, extraData?: HtmlGenerator
 
     return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
       ${textPosition === 'top' ? textHtml : ''}
-      <div id="${uniqueId}" class="custom-instagram-feed" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+      <div id="${uniqueId}" class="custom-instagram-feed" data-bio-id="${escapeHtml(String(instagramBioId))}" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
+        ${placeholders}
+      </div>
+      ${textPosition === 'bottom' ? textHtml : ''}
+    </section>`);
+  }
+
+  if (block.type === "threads") {
+    const username = block.threadsUsername || "threads";
+    const threadsBioId = block.bioId || bio?.id || "";
+    const url = `https://threads.net/@${username}`;
+    const displayType = block.threadsDisplayType || "grid";
+    const variation = block.threadsVariation || "thread-grid";
+    const uniqueId = `threads-${block.id}`;
+    const showText = block.threadsShowText !== false;
+    const textPosition = block.threadsTextPosition || "bottom";
+    const textColor = block.threadsTextColor || "#111111";
+
+    if (variation === "simple-link") {
+      const buttonStyle = `
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:12px 24px;
+        background:#111111;
+        color:white;
+        text-decoration:none;
+        border-radius:12px;
+        font-weight:700;
+        font-size:14px;
+        transition:transform 0.2s;
+      `;
+
+      return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; text-align:center; ${animationStyle}">
+        <a href="${escapeHtml(url)}" target="_blank" style="${buttonStyle}" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          <span style="font-weight:900; font-size:16px; line-height:1;">@</span>
+          Siga @${escapeHtml(username)} no Threads
+        </a>
+      </section>`);
+    }
+
+    const gridStyle = displayType === 'grid'
+      ? "display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;"
+      : "display:flex; flex-direction:column; gap:10px;";
+
+    const imageStyle = displayType === 'grid'
+      ? "aspect-ratio:1; width:100%;"
+      : "aspect-ratio:1; width:100%; max-height:400px;";
+
+    const placeholders = [1, 2, 3].map(() => `
+      <div style="position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:10px;">
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+           <div style="width:22px; height:22px; border:2px solid #d1d5db; border-top-color:#111111; border-radius:50%; animation:spin 1s linear infinite;"></div>
+        </div>
+      </div>
+    `).join('');
+
+    const textHtml = showText ? `
+      <div style="text-align:center; ${textPosition === 'top' ? 'margin-bottom:10px;' : 'margin-top:10px;'}">
+        <a href="${escapeHtml(url)}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:${textColor}; text-decoration:none; padding:6px 12px; background:rgba(17,17,17,0.06); border-radius:999px;">
+          <span style="font-weight:900; font-size:14px; line-height:1;">@</span>
+          @${escapeHtml(username)}
+        </a>
+      </div>
+    ` : '';
+
+    return wrap(`\n${extraHtml}<section class="${animationClass}" style="padding:12px 0; ${animationStyle}">
+      ${textPosition === 'top' ? textHtml : ''}
+      <div id="${uniqueId}" class="custom-threads-feed" data-bio-id="${escapeHtml(String(threadsBioId))}" data-username="${escapeHtml(username)}" data-display-type="${displayType}" data-variation="${variation}" style="${gridStyle} border-radius:12px; overflow:hidden;">
         ${placeholders}
       </div>
       ${textPosition === 'bottom' ? textHtml : ''}
@@ -1676,7 +1745,9 @@ export const blocksToHtml = (blocks: BioBlock[], user: any, bio: any, baseUrl: s
   if (bio.bgType === 'color') {
     bgStyle = `background:${bgColor};`;
   } else if (bio.bgType === 'image' && bio.bgImage) {
-    bgStyle = `background:url('${bio.bgImage}') no-repeat center center fixed; background-size:cover;`;
+    const fit = bio.bgImageFit || 'contain';
+    const repeat = fit === 'repeat';
+    bgStyle = `background-image:url('${bio.bgImage}'); background-position:center top; background-size:${repeat ? 'auto' : fit}; background-repeat:${repeat ? 'repeat' : 'no-repeat'}; background-attachment:scroll; background-color:${bgColor};`;
   } else if (bio.bgType === 'video' && bio.bgVideo) {
     bgStyle = 'background:transparent; position:relative; overflow:hidden;';
   } else if (bio.bgType === 'grid') {

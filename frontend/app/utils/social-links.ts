@@ -34,7 +34,7 @@ export const normalizeSocialProfileUrl = (platform: string, rawValue: string | u
         return normalizeExternalUrl(value);
     }
 
-    if (hasProtocol(value) || looksLikeDomain(value)) {
+    if ((hasProtocol(value) || looksLikeDomain(value)) && key !== "instagram") {
         return normalizeExternalUrl(value);
     }
 
@@ -43,7 +43,34 @@ export const normalizeSocialProfileUrl = (platform: string, rawValue: string | u
 
     switch (key) {
         case "instagram":
-            return `https://instagram.com/${username}`;
+            if (hasProtocol(value) || looksLikeDomain(value)) {
+                try {
+                    const normalized = normalizeExternalUrl(value);
+                    const parsed = new URL(normalized);
+                    const host = parsed.hostname.toLowerCase();
+
+                    if (host.includes("instagram.com") || host.includes("instagr.am")) {
+                        const handleFromPath = stripAt(parsed.pathname.split("/").filter(Boolean)[0] || "");
+                        if (handleFromPath) {
+                            return `https://instagram.com/${handleFromPath}`;
+                        }
+                    }
+                } catch {
+                    // fall through to username normalization
+                }
+            }
+
+            {
+                const usernameCandidate = stripAt(
+                    value
+                        .replace(/^https?:\/\//i, "")
+                        .replace(/^www\./i, "")
+                        .replace(/\/.*$/, "")
+                );
+
+                if (!usernameCandidate) return "#";
+                return `https://instagram.com/${usernameCandidate}`;
+            }
         case "twitter":
         case "x":
             return `https://x.com/${username}`;

@@ -242,10 +242,10 @@ const getPreviewBackgroundStyle = (bio: Bio | null): React.CSSProperties => {
   const bgSecondaryColor = bio?.bgSecondaryColor || "#000000";
 
   if (bgType === "image" && bio?.bgImage) {
-    const fit = bio?.bgImageFit || "cover";
+    const fit = bio?.bgImageFit || "contain";
     return {
       backgroundImage: `url(${bio.bgImage})`,
-      backgroundPosition: "center",
+      backgroundPosition: "center top",
       backgroundSize: fit === "repeat" ? "auto" : fit,
       backgroundRepeat: fit === "repeat" ? "repeat" : "no-repeat",
       backgroundColor: bgColor,
@@ -1526,7 +1526,7 @@ export default function DashboardDesign({ embedded = false }: { embedded?: boole
                           />
                           <SelectField
                             label={t("design.wallpaper.imageFit")}
-                            value={bio?.bgImageFit || "cover"}
+                            value={bio?.bgImageFit || "contain"}
                             onChange={(value) => updateField("bgImageFit", value as Bio["bgImageFit"])}
                             options={[
                               { value: "cover", label: t("design.wallpaper.coverFill") },

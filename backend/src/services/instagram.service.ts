@@ -740,6 +740,107 @@ export class InstagramService {
     }
   }
 
+  public async getLatestPostsByConnectedAccount(params: {
+    instagramBusinessAccountId: string;
+    accessToken: string;
+    baseUrl: string;
+  }) {
+    const { instagramBusinessAccountId, accessToken, baseUrl } = params;
+    const accountId = String(instagramBusinessAccountId || "").trim();
+    const normalizedAccessToken = String(accessToken || "").trim();
+
+    if (!accountId || !normalizedAccessToken) {
+      return [];
+    }
+
+    const cacheSlug = `account:${accountId}`;
+    const CACHE_KEY_POSTS = `instagram:posts:${cacheSlug}`;
+    const CACHE_KEY_LAST_UPDATED = `instagram:last_updated:${cacheSlug}`;
+    const CACHE_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+    let cachedPostsStr: string | null = null;
+    let lastUpdatedStr: string | null = null;
+
+    try {
+      [cachedPostsStr, lastUpdatedStr] = await Promise.all([
+        redisClient.get(CACHE_KEY_POSTS),
+        redisClient.get(CACHE_KEY_LAST_UPDATED),
+      ]);
+
+      const lastUpdated = lastUpdatedStr ? parseInt(lastUpdatedStr, 10) : 0;
+      const isStale = Date.now() - lastUpdated > CACHE_WINDOW_MS;
+
+      if (cachedPostsStr && !isStale) {
+        return JSON.parse(cachedPostsStr);
+      }
+
+      const graphCandidates = [
+        `https://graph.instagram.com/${this.graphVersion}`,
+        `https://graph.facebook.com/${this.graphVersion}`,
+      ];
+
+      let mediaItems: any[] = [];
+      for (const graphBase of graphCandidates) {
+        try {
+          const response = await axios.get(`${graphBase}/${accountId}/media`, {
+            params: {
+              fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp",
+              limit: 9,
+              access_token: normalizedAccessToken,
+            },
+          });
+
+          mediaItems = Array.isArray(response.data?.data) ? response.data.data : [];
+          if (mediaItems.length > 0) {
+            break;
+          }
+        } catch (candidateError: any) {
+          const errData = candidateError?.response?.data;
+          const errMsg = typeof errData === "object" ? JSON.stringify(errData) : (errData || candidateError?.message);
+          logger.warn(`Instagram media candidate failed | base=${graphBase} accountId=${accountId} status=${candidateError?.response?.status} error=${errMsg}`);
+        }
+      }
+
+      const rawPosts = mediaItems
+        .filter((item) => {
+          const mediaType = String(item?.media_type || "").toUpperCase();
+          return mediaType === "IMAGE" || mediaType === "CAROUSEL_ALBUM" || mediaType === "VIDEO";
+        })
+        .slice(0, 3)
+        .map((item) => {
+          const mediaUrl = item?.thumbnail_url || item?.media_url;
+          return {
+            id: item?.id,
+            url: item?.permalink || "#",
+            originalImageUrl: mediaUrl,
+            caption: item?.caption || "",
+          };
+        })
+        .filter((post) => post.id && post.originalImageUrl);
+
+      if (rawPosts.length === 0) {
+        if (cachedPostsStr) {
+          return JSON.parse(cachedPostsStr);
+        }
+        return [];
+      }
+
+      const processedPosts = await this.processAndCachePosts(rawPosts, cacheSlug, baseUrl);
+      return processedPosts;
+    } catch (error: any) {
+      logger.error("Instagram connected feed fetch failed", {
+        accountId,
+        error: error?.response?.data || error?.message,
+      });
+
+      if (cachedPostsStr) {
+        return JSON.parse(cachedPostsStr);
+      }
+
+      throw error;
+    }
+  }
+
   public async getLatestPosts(username: string, baseUrl: string) {
     const CACHE_KEY_POSTS = `instagram:posts:${username}`;
     const CACHE_KEY_LAST_UPDATED = `instagram:last_updated:${username}`;

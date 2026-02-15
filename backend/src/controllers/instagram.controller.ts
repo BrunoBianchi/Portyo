@@ -260,6 +260,23 @@ const getInstagramWebhookCallbackUrl = (req: Request): string => {
   return `${proto}://${host}/api/instagram/webhook`;
 };
 
+const resolveIntegrationProviderFromRequest = (
+  req: Request,
+  queryValue?: unknown,
+): "instagram" | "threads" => {
+  const fromQuery = String(queryValue || "").toLowerCase();
+  if (fromQuery === "threads") {
+    return "threads";
+  }
+
+  const routePath = `${req.baseUrl || ""} ${req.path || ""} ${req.originalUrl || ""}`.toLowerCase();
+  if (routePath.includes("/threads")) {
+    return "threads";
+  }
+
+  return "instagram";
+};
+
 const AUTOREPLY_TEMPLATE_KEY = "instagram_auto_reply";
 
 type PlanTier = "free" | "standard" | "pro";
@@ -665,6 +682,7 @@ const findBioIdByInstagramAccountIds = async (accountIds: Array<string | undefin
 };
 
 export const getLatestPosts = async (req: Request, res: Response, next: NextFunction) => {
+  const integrationProvider = resolveIntegrationProviderFromRequest(req, req.query.provider);
   const rawUsername = req.params.username;
   if (!rawUsername) {
         next(new ApiError(APIErrors.badRequestError, "Username required", 400));
@@ -681,18 +699,95 @@ export const getLatestPosts = async (req: Request, res: Response, next: NextFunc
     return res.status(200).json([]);
   }
 
-    try {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const posts = await instagramService.getLatestPosts(username, baseUrl);
+  try {
+    const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
+    const integration = await integrationRepository.findOne({
+      where: [
+        { provider: integrationProvider, name: username },
+        { provider: integrationProvider, name: `@${username}` },
+      ],
+    });
+
+    if (!integration?.account_id || !integration?.accessToken) {
+      return res.status(200).json([]);
+    }
+
+    const refreshedIntegration = await instagramService.ensureFreshIntegrationAccessToken(
+      integration,
+      integrationRepository
+    );
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const posts = await instagramService.getLatestPostsByConnectedAccount({
+      instagramBusinessAccountId: refreshedIntegration.account_id || "",
+      accessToken: refreshedIntegration.accessToken || "",
+      baseUrl,
+    });
+
     return res.status(200).json(Array.isArray(posts) ? posts : []);
-    } catch (error) {
-    logger.warn("Instagram public fetch fallback (returning empty list)", {
+  } catch (error) {
+    logger.warn("Instagram public fetch by username failed", {
+      provider: integrationProvider,
       username,
       error: (error as any)?.message,
     });
     return res.status(200).json([]);
-    }
+  }
 }
+
+export const getLatestPostsByBioId = async (req: Request, res: Response, next: NextFunction) => {
+  const integrationProvider = resolveIntegrationProviderFromRequest(req, req.query.provider);
+  const bioId = String(req.params.bioId || "").trim();
+  if (!bioId) {
+    next(new ApiError(APIErrors.badRequestError, "Bio ID required", 400));
+    return;
+  }
+
+  try {
+    const integrationRepository = AppDataSource.getRepository(IntegrationEntity);
+    const integration = await integrationRepository.findOne({
+      where: {
+        bio: { id: bioId },
+        provider: integrationProvider,
+      },
+      relations: ["bio"],
+    });
+
+    if (!integration?.account_id || !integration?.accessToken) {
+      return res.status(200).json([]);
+    }
+
+    let activeIntegration = integration;
+    try {
+      activeIntegration = await instagramService.ensureFreshIntegrationAccessToken(
+        integration,
+        integrationRepository
+      );
+    } catch (refreshError) {
+      logger.warn("Instagram token refresh failed for public feed", {
+        bioId,
+        provider: integrationProvider,
+        error: (refreshError as any)?.message,
+      });
+    }
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const posts = await instagramService.getLatestPostsByConnectedAccount({
+      instagramBusinessAccountId: activeIntegration.account_id || "",
+      accessToken: activeIntegration.accessToken || "",
+      baseUrl,
+    });
+
+    return res.status(200).json(Array.isArray(posts) ? posts : []);
+  } catch (error) {
+    logger.warn("Instagram public feed by bioId failed", {
+      bioId,
+      provider: integrationProvider,
+      error: (error as any)?.message,
+    });
+    return res.status(200).json([]);
+  }
+};
 
 export const getProxyImage = async (req: Request, res: Response, next: NextFunction) => {
     const { url } = req.query;
@@ -746,12 +841,14 @@ export const getImage = async (req: Request, res: Response, next: NextFunction) 
 export const initiateAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const mode = req.query.mode === "login" ? "login" : "integration";
+  const integrationProvider = resolveIntegrationProviderFromRequest(req, req.query.integrationProvider);
       const redirectUri = getInstagramRedirectUri();
       const frontendBaseUrl = normalizeFrontendBaseUrl(typeof req.query.returnTo === "string" ? req.query.returnTo : undefined)
         || getFrontendBaseUrl(req, undefined, redirectUri);
 
       console.log("[Instagram OAuth][initiateAuth] Incoming request", {
         mode,
+        integrationProvider,
         bioId: req.query.bioId,
         returnTo: req.query.returnTo,
         redirectUri,
@@ -810,6 +907,7 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
         id: req.user.id,
         bioId: bio.id,
         provider: "instagram",
+        integrationProvider,
         type: "integration-state",
         mode: "integration",
         redirectUri,
@@ -858,6 +956,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       const statePayload = await decryptToken(state);
       const mode = (statePayload as any).mode as "login" | "integration" | undefined;
       const provider = (statePayload as any).provider as string | undefined;
+      const integrationProvider = (statePayload as any).integrationProvider === "threads" ? "threads" : "instagram";
       const redirectUri = typeof (statePayload as any).redirectUri === "string"
         ? (statePayload as any).redirectUri
         : undefined;
@@ -869,6 +968,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       console.log("[Instagram OAuth][callback] State decoded", {
         mode,
         provider,
+        integrationProvider,
         redirectUri,
         frontendBaseUrl,
       });
@@ -882,7 +982,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         if (mode === "login") {
           return res.redirect(`${frontendBaseUrl}/login?error=instagram_auth_failed`);
         }
-        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?error=instagram_auth_failed`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?error=${integrationProvider}_auth_failed`);
       }
 
       if (!code || typeof code !== "string") {
@@ -893,14 +993,14 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         logger.info("Instagram callback duplicate detected, skipping code reprocessing", {
           mode,
         });
-        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=${integrationProvider}_connected`);
       }
 
       if (mode === "integration" && isProcessingInstagramCode(code)) {
         logger.info("Instagram callback duplicate in-flight detected, skipping code reprocessing", {
           mode,
         });
-        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
+        return res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=${integrationProvider}_connected`);
       }
 
       if (mode === "integration") {
@@ -1027,18 +1127,18 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       let integration = await integrationRepository.findOne({
         where: {
           bio: { id: bio.id },
-          provider: "instagram",
+          provider: integrationProvider,
         },
       });
 
       if (!integration) {
         integration = new IntegrationEntity();
         integration.bio = bio;
-        integration.provider = "instagram";
+        integration.provider = integrationProvider;
       }
 
       integration.account_id = tokenData.instagramBusinessAccountId;
-      integration.name = tokenData.instagramUsername || tokenData.pageName || "Instagram";
+      integration.name = tokenData.instagramUsername || tokenData.pageName || (integrationProvider === "threads" ? "Threads" : "Instagram");
       integration.accessToken = typeof tokenData.accessToken === "string"
         ? tokenData.accessToken.trim()
         : (tokenData.accessToken ?? undefined);
@@ -1053,18 +1153,20 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       
       await integrationRepository.save(integration);
 
-      const webhookSubscriptionResult = await instagramService.subscribeAppToInstagramWebhooks({
-        instagramBusinessAccountId: tokenData.instagramBusinessAccountId,
-        accessToken: integration.accessToken || "",
-      });
+      if (integrationProvider === "instagram") {
+        const webhookSubscriptionResult = await instagramService.subscribeAppToInstagramWebhooks({
+          instagramBusinessAccountId: tokenData.instagramBusinessAccountId,
+          accessToken: integration.accessToken || "",
+        });
 
-      console.log("[Instagram OAuth][callback][integration] subscribed_apps result", {
-        bioId: bio.id,
-        accountId: tokenData.instagramBusinessAccountId,
-        success: webhookSubscriptionResult.success,
-        subscribedFields: webhookSubscriptionResult.subscribedFields,
-        error: webhookSubscriptionResult.success ? undefined : webhookSubscriptionResult.error,
-      });
+        console.log("[Instagram OAuth][callback][integration] subscribed_apps result", {
+          bioId: bio.id,
+          accountId: tokenData.instagramBusinessAccountId,
+          success: webhookSubscriptionResult.success,
+          subscribedFields: webhookSubscriptionResult.subscribedFields,
+          error: webhookSubscriptionResult.success ? undefined : webhookSubscriptionResult.error,
+        });
+      }
 
       markProcessedInstagramCode(code);
 
@@ -1076,13 +1178,14 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         tokenExpiresAt: integration.accessTokenExpiresAt,
       });
 
-      res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=instagram_connected`);
+      res.redirect(`${frontendBaseUrl}/dashboard/integrations?success=${integrationProvider}_connected`);
     } catch (error) {
       if (typeof req.query.code === "string") {
         unmarkProcessingInstagramCode(req.query.code);
       }
       logger.error("Instagram callback failed", error);
       let callbackMode: "login" | "integration" = "integration";
+      let integrationProvider: "instagram" | "threads" = "instagram";
       let frontendBaseUrl = getFrontendBaseUrl(req);
       const state = req.query.state;
       if (typeof state === "string") {
@@ -1095,6 +1198,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
             ? (payload as any).redirectUri
             : undefined;
           frontendBaseUrl = getFrontendBaseUrl(req, frontendBaseUrlFromState, redirectUri);
+          integrationProvider = (payload as any)?.integrationProvider === "threads" ? "threads" : "instagram";
           if ((payload as any)?.mode === "login") {
             callbackMode = "login";
           }
@@ -1106,7 +1210,7 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
       if (callbackMode === "login") {
         return res.redirect(`${frontendBaseUrl}/login?error=instagram_callback_failed`);
       }
-      return res.redirect(`${frontendBaseUrl}/dashboard/integrations?error=instagram_callback_failed`);
+      return res.redirect(`${frontendBaseUrl}/dashboard/integrations?error=${integrationProvider}_callback_failed`);
     }
 }
 

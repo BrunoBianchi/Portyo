@@ -55,6 +55,10 @@ interface LinkManagerProps {
     onUpdateBlocks: (blocks: BioBlock[]) => void;
     onEditBlock: (block: BioBlock) => void;
     onAddBlock: (type: BioBlock['type']) => void;
+    instagramConnected?: boolean;
+    onInstagramConnectRequired?: () => void;
+    threadsConnected?: boolean;
+    onThreadsConnectRequired?: () => void;
 }
 
 const BLOCK_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -86,7 +90,16 @@ const BLOCK_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
     experience: Gem,
 };
 
-export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }: LinkManagerProps) {
+export function LinkManager({
+    blocks,
+    onUpdateBlocks,
+    onEditBlock,
+    onAddBlock,
+    instagramConnected = false,
+    onInstagramConnectRequired,
+    threadsConnected = false,
+    onThreadsConnectRequired,
+}: LinkManagerProps) {
     const { t } = useTranslation("dashboard");
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -168,6 +181,10 @@ export function LinkManager({ blocks, onUpdateBlocks, onEditBlock, onAddBlock }:
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 onAdd={onAddBlock}
+                instagramConnected={instagramConnected}
+                onInstagramConnectRequired={onInstagramConnectRequired}
+                threadsConnected={threadsConnected}
+                onThreadsConnectRequired={onThreadsConnectRequired}
             />
 
             {/* Blocks List */}
@@ -351,6 +368,9 @@ function getBlockPreview(block: BioBlock, t: any): string {
         case 'instagram':
             const instagramVariationText = block.instagramVariation ? ` - ${block.instagramVariation === 'grid-shop' ? 'Grid' : block.instagramVariation === 'visual-gallery' ? 'Galeria' : 'Link'}` : '';
             return block.instagramUsername ? `@${block.instagramUsername}${instagramVariationText}` : safeT(t, "editor.preview.noInstagram");
+        case 'threads':
+            const threadsVariationText = block.threadsVariation ? ` - ${block.threadsVariation === 'thread-grid' ? 'Grid' : block.threadsVariation === 'spotlight-cards' ? 'Cards' : 'Link'}` : '';
+            return block.threadsUsername ? `@${block.threadsUsername}${threadsVariationText}` : 'No Threads account';
         case 'map':
             return block.mapTitle || block.mapAddress || safeT(t, "editor.preview.mapFallback");
         case 'calendar':

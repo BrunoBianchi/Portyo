@@ -1,7 +1,7 @@
 import { Column, Entity } from "typeorm";
 import { BaseEntity } from "./base-entity";
 
-export type SocialChannel = "instagram" | "facebook" | "linkedin" | "twitter";
+export type SocialChannel = "instagram" | "facebook" | "linkedin" | "twitter" | "threads";
 export type SocialPlannerStatus = "draft" | "scheduled" | "published" | "failed" | "cancelled";
 
 @Entity()

@@ -4,7 +4,7 @@ import AuthContext from "~/contexts/auth.context";
 
 export type BioBlock = {
     id: string;
-    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "poll" | "portfolio" | "marketing" | "whatsapp" | "experience" | "sponsored_links";
+    type: "heading" | "text" | "button" | "image" | "divider" | "socials" | "video" | "blog" | "product" | "calendar" | "map" | "featured" | "affiliate" | "event" | "instagram" | "threads" | "youtube" | "tour" | "spotify" | "qrcode" | "button_grid" | "form" | "poll" | "portfolio" | "marketing" | "whatsapp" | "experience" | "sponsored_links";
     title?: string;
     body?: string;
     // Form specific
@@ -153,6 +153,14 @@ export type BioBlock = {
     instagramTextPosition?: "top" | "bottom";
     instagramShowText?: boolean;
     instagramVariation?: "grid-shop" | "visual-gallery" | "simple-link";
+    // Threads specific
+    threadsUsername?: string;
+    threadsTitle?: string;
+    threadsDisplayType?: "grid" | "list";
+    threadsTextColor?: string;
+    threadsTextPosition?: "top" | "bottom";
+    threadsShowText?: boolean;
+    threadsVariation?: "thread-grid" | "spotlight-cards" | "simple-link";
     // Youtube specific
     youtubeUrl?: string;
     // QR Code specific

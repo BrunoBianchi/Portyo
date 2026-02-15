@@ -19,6 +19,8 @@ interface LinksTabProps {
   onEditBlock: (block: BioBlock) => void;
   onAddBlock: (type: BioBlock["type"]) => void;
   onUpdateBio: (payload: Partial<Bio>) => void;
+  onInstagramConnectRequired?: () => void;
+  onThreadsConnectRequired?: () => void;
 }
 
 const platformIcons: Record<string, React.ReactNode> = {
@@ -483,7 +485,21 @@ export const LinksTab = memo(function LinksTab({
   onEditBlock,
   onAddBlock,
   onUpdateBio,
+  onInstagramConnectRequired,
+  onThreadsConnectRequired,
 }: LinksTabProps) {
+  const instagramConnected = Boolean(
+    bio?.integrations?.some((integration: any) =>
+      String(integration?.provider || integration?.name || "").toLowerCase().includes("instagram")
+    )
+  );
+
+  const threadsConnected = Boolean(
+    bio?.integrations?.some((integration: any) =>
+      String(integration?.provider || integration?.name || "").toLowerCase().includes("threads")
+    )
+  );
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <ProfileHeader bio={bio} user={user} onUpdateBio={onUpdateBio} />
@@ -492,6 +508,10 @@ export const LinksTab = memo(function LinksTab({
         onUpdateBlocks={onUpdateBlocks}
         onEditBlock={onEditBlock}
         onAddBlock={onAddBlock}
+        instagramConnected={instagramConnected}
+        onInstagramConnectRequired={onInstagramConnectRequired}
+        threadsConnected={threadsConnected}
+        onThreadsConnectRequired={onThreadsConnectRequired}
       />
     </div>
   );

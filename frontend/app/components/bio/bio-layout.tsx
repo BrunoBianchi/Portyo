@@ -11,6 +11,7 @@ const MarketingWidget = React.lazy(() => import("./marketing-widget").then(modul
 import { BlogPostView } from "./blog-post-view";
 
 import { normalizeExternalUrl, sanitizeHtml } from "~/utils/security";
+import { normalizeSocialProfileUrl } from "~/utils/social-links";
 
 import { useBioScripts } from "~/hooks/use-bio-scripts";
 import { useBioTracking } from "~/hooks/use-bio-tracking";
@@ -460,11 +461,12 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                 if (feed.hasAttribute('data-initialized')) return;
                 feed.setAttribute('data-initialized', 'true');
 
-                const username = feed.getAttribute('data-username');
+                const username = feed.getAttribute('data-username') || 'instagram';
+                const bioId = feed.getAttribute('data-bio-id');
                 const displayType = feed.getAttribute('data-display-type') || 'grid';
                 const variation = feed.getAttribute('data-variation') || 'grid-shop';
 
-                if (!username || username === 'instagram') return;
+                if (!bioId) return;
 
                 // Add spinner styles if not present
                 if (!document.getElementById('instagram-styles')) {
@@ -478,7 +480,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     ? "aspect-ratio:1; width:100%;"
                     : "aspect-ratio:1; width:100%; max-height:400px;";
 
-                api.get(`/public/instagram/${username}`)
+                api.get(`/public/instagram/feed/${encodeURIComponent(bioId)}`)
                     .then(res => res.data)
                     .then(posts => {
                         if (!posts || !Array.isArray(posts) || posts.length === 0) {
@@ -548,6 +550,77 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                     })
                     .catch(err => {
                         console.error("Instagram fetch error:", err);
+                        feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#ef4444; font-size:12px;">Error loading posts</div>';
+                    });
+            });
+        };
+
+        const initThreadsFeeds = () => {
+            const root = containerRef.current;
+            if (!root) return;
+
+            const feeds = root.querySelectorAll('.custom-threads-feed');
+            feeds.forEach(feed => {
+                if (feed.hasAttribute('data-initialized')) return;
+                feed.setAttribute('data-initialized', 'true');
+
+                const username = feed.getAttribute('data-username') || 'threads';
+                const bioId = feed.getAttribute('data-bio-id');
+                const displayType = feed.getAttribute('data-display-type') || 'grid';
+                const variation = feed.getAttribute('data-variation') || 'thread-grid';
+
+                if (!bioId) return;
+
+                if (!document.getElementById('threads-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'threads-styles';
+                    style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                    document.head.appendChild(style);
+                }
+
+                const imageStyle = displayType === 'grid'
+                    ? "aspect-ratio:1; width:100%;"
+                    : "aspect-ratio:1; width:100%; max-height:400px;";
+
+                api.get(`/public/threads/feed/${encodeURIComponent(bioId)}`)
+                    .then(res => res.data)
+                    .then(posts => {
+                        if (!posts || !Array.isArray(posts) || posts.length === 0) {
+                            feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#6b7280; font-size:12px;">No posts found</div>';
+                            return;
+                        }
+
+                        let html = '';
+                        if (variation === 'thread-cards') {
+                            posts.slice(0, 3).forEach((post: any, index: number) => {
+                                html += `<a href="${post.url}" target="_blank" aria-label="View Threads post" data-post-index="${index}" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#111111; border-radius:12px; transition:transform 0.2s;">
+                                    <img src="${post.imageUrl}" alt="Threads post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
+                                </a>`;
+                            });
+                        } else {
+                            posts.slice(0, 3).forEach((post: any) => {
+                                html += `<a href="${post.url}" target="_blank" aria-label="View Threads post" style="display:block; position:relative; ${imageStyle} overflow:hidden; background:#f3f4f6; border-radius:10px;">
+                                    <img src="${post.imageUrl}" alt="Threads post by ${username}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity 0.3s;" onload="this.style.opacity=1" onerror="this.style.display='none'" />
+                                </a>`;
+                            });
+                        }
+
+                        feed.innerHTML = html;
+
+                        if (variation === 'thread-cards') {
+                            const links = feed.querySelectorAll('a[data-post-index]');
+                            links.forEach((link) => {
+                                link.addEventListener('mouseenter', () => {
+                                    (link as HTMLElement).style.transform = 'translateY(-2px)';
+                                });
+                                link.addEventListener('mouseleave', () => {
+                                    (link as HTMLElement).style.transform = 'translateY(0)';
+                                });
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Threads fetch error:", err);
                         feed.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#ef4444; font-size:12px;">Error loading posts</div>';
                     });
             });
@@ -1273,6 +1346,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
             const timers = containerRef.current?.querySelectorAll('.countdown-timer');
             timers?.forEach(startTimer);
             initInstagramFeeds();
+            initThreadsFeeds();
             initYoutubeFeeds();
             initBlogFeeds();
             initShareModal();
@@ -2057,7 +2131,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                             const rawUrl = String(url);
                                                             const href = platform === 'email'
                                                                 ? (rawUrl.startsWith('mailto:') ? rawUrl : `mailto:${rawUrl}`)
-                                                                : normalizeExternalUrl(rawUrl);
+                                                                : normalizeSocialProfileUrl(platform, rawUrl);
                                                             const platformData = SOCIAL_PLATFORMS[platform];
                                                             const brandColor = platformData?.color || '#999';
                                                             return (
@@ -2443,7 +2517,7 @@ export const BioLayout: React.FC<BioLayoutProps> = ({ bio, subdomain, isPreview 
                                                 const rawUrl = String(url);
                                                 const href = platform === 'email'
                                                     ? (rawUrl.startsWith('mailto:') ? rawUrl : `mailto:${rawUrl}`)
-                                                    : normalizeExternalUrl(rawUrl);
+                                                    : normalizeSocialProfileUrl(platform, rawUrl);
                                                 const platformData = SOCIAL_PLATFORMS[platform];
                                                 const brandColor = platformData?.color || '#666';
                                                 return (

@@ -49,13 +49,29 @@ interface AddBlockModalProps {
     isOpen: boolean;
     onClose: () => void;
     onAdd: (type: BioBlock['type'], variation?: string) => void;
+    instagramConnected?: boolean;
+    onInstagramConnectRequired?: () => void;
+    threadsConnected?: boolean;
+    onThreadsConnectRequired?: () => void;
 }
 
-export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
+export function AddBlockModal({
+    isOpen,
+    onClose,
+    onAdd,
+    instagramConnected = false,
+    onInstagramConnectRequired,
+    threadsConnected = false,
+    onThreadsConnectRequired,
+}: AddBlockModalProps) {
     const { t } = useTranslation("dashboard");
     const [search, setSearch] = useState("");
     const [activeCategory, setActiveCategory] = useState("suggested");
     const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set());
+    const [showInstagramRequirementModal, setShowInstagramRequirementModal] = useState(false);
+    const [pendingInstagramSelection, setPendingInstagramSelection] = useState<{ type: BioBlock['type']; variation?: string } | null>(null);
+    const [showThreadsRequirementModal, setShowThreadsRequirementModal] = useState(false);
+    const [pendingThreadsSelection, setPendingThreadsSelection] = useState<{ type: BioBlock['type']; variation?: string } | null>(null);
 
     // Toggle block expansion
     const toggleBlockExpansion = (blockType: string) => {
@@ -86,6 +102,11 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             { type: "instagram", label: "Replique seu Instagram grid e adicione links", description: "Exiba seu Instagram e adicione links aos produtos, eventos e artigos para que seguidores possam navegar e comprar no seu grid do Instagram.", icon: LayoutGrid, color: "#E1306C", variation: "grid-shop" },
             { type: "instagram", label: "Compartilhe visualmente seus últimos Posts ou Reels", description: "Exiba seus Posts ou Reels em galeria para enviar visitantes diretamente ao seu perfil para explorar e seguir seu conteúdo social.", icon: ImageIcon, color: "#E1306C", variation: "visual-gallery" },
             { type: "instagram", label: "Adicione seu perfil do Instagram como um link simples", description: "Direcione visitantes ao seu perfil do Instagram com um link clássico do Linktree listado na sua página, depois reordene para ajustar.", icon: LinkIcon, color: "#E1306C", variation: "simple-link" },
+        ],
+        threads: [
+            { type: "threads", label: "Feed visual do Threads com posts recentes", description: "Mostre os threads mais recentes em grid com visual forte e convidativo para clique.", icon: LayoutGrid, color: "#111111", variation: "thread-grid" },
+            { type: "threads", label: "Cards destaque estilo editorial", description: "Exiba seus melhores threads em cards com foco em leitura e autoridade.", icon: FileText, color: "#111111", variation: "spotlight-cards" },
+            { type: "threads", label: "Link simples para seu perfil", description: "Adicione um botão simples para levar seu público direto ao seu perfil no Threads.", icon: LinkIcon, color: "#111111", variation: "simple-link" },
         ],
         youtube: [
             { type: "youtube", label: "Canal completo do YouTube", description: "Mostre seu canal completo com últimos vídeos publicados e estatísticas do canal.", icon: Play, color: "#DC2626", variation: "full-channel" },
@@ -159,6 +180,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             icon: Lightbulb,
             items: [
                 { type: "instagram", label: "Instagram", description: "Exiba seus posts e reels", icon: Instagram, color: "#E1306C" },
+                { type: "threads", label: "Threads", description: "Exiba seus últimos threads", icon: Share2, color: "#111111" },
                 { type: "youtube", label: "YouTube", description: "Compartilhe vídeos do YouTube", icon: Youtube, color: "#DC2626" },
                 { type: "spotify", label: "Spotify", description: "Compartilhe suas músicas favoritas", icon: Music, color: "#1DB954" },
                 { type: "socials", label: "Redes Sociais", description: "Liste todos os seus perfis", icon: Share2, color: "#14B8A6" },
@@ -189,6 +211,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
             items: [
                 { type: "socials", label: "Redes Sociais", description: "Liste seus perfis", icon: Share2, color: "#14B8A6" },
                 { type: "instagram", label: "Instagram", description: "Feed do Instagram", icon: Instagram, color: "#E1306C" },
+                { type: "threads", label: "Threads", description: "Feed do Threads", icon: Share2, color: "#111111" },
                 { type: "whatsapp", label: "WhatsApp", description: "Botão WhatsApp", icon: MessageCircle, color: "#25D366" },
             ]
         },
@@ -254,6 +277,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                 { type: "button_grid", label: "Grid de Botões", description: "Grade de links", icon: LayoutGrid, color: "#6366F1" },
                 { type: "socials", label: "Redes Sociais", description: "Liste seus perfis", icon: Share2, color: "#14B8A6" },
                 { type: "instagram", label: "Instagram", description: "Feed do Instagram", icon: Instagram, color: "#E1306C" },
+                { type: "threads", label: "Threads", description: "Feed do Threads", icon: Share2, color: "#111111" },
                 { type: "youtube", label: "YouTube", description: "Canal ou vídeos", icon: Youtube, color: "#DC2626" },
                 { type: "spotify", label: "Spotify", description: "Música ou podcast", icon: Music, color: "#1DB954" },
                 { type: "product", label: "Produtos", description: "Catálogo de produtos", icon: ShoppingBag, color: "#F97316" },
@@ -312,12 +336,69 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
     useEffect(() => {
         if (!isOpen) {
             setExpandedBlocks(new Set());
+            setShowInstagramRequirementModal(false);
+            setPendingInstagramSelection(null);
+            setShowThreadsRequirementModal(false);
+            setPendingThreadsSelection(null);
         }
     }, [isOpen]);
 
     useEffect(() => {
         setExpandedBlocks(new Set());
     }, [activeCategory, search]);
+
+    const handleAddSelection = (type: BioBlock['type'], variation?: string) => {
+        const isInstagramFeed = type === "instagram" && variation !== "simple-link";
+        if (isInstagramFeed && !instagramConnected) {
+            setPendingInstagramSelection({ type, variation });
+            setShowInstagramRequirementModal(true);
+            return;
+        }
+
+        const isThreadsFeed = type === "threads" && variation !== "simple-link";
+        if (isThreadsFeed && !threadsConnected) {
+            setPendingThreadsSelection({ type, variation });
+            setShowThreadsRequirementModal(true);
+            return;
+        }
+
+        onAdd(type, variation);
+        onClose();
+    };
+
+    const handleContinueInstagramConnect = () => {
+        const pendingSelection = pendingInstagramSelection;
+        setShowInstagramRequirementModal(false);
+        setPendingInstagramSelection(null);
+        onInstagramConnectRequired?.();
+
+        if (pendingSelection) {
+            onAdd(pendingSelection.type, pendingSelection.variation);
+            onClose();
+        }
+    };
+
+    const handleCancelInstagramConnect = () => {
+        setShowInstagramRequirementModal(false);
+        setPendingInstagramSelection(null);
+    };
+
+    const handleContinueThreadsConnect = () => {
+        const pendingSelection = pendingThreadsSelection;
+        setShowThreadsRequirementModal(false);
+        setPendingThreadsSelection(null);
+        onThreadsConnectRequired?.();
+
+        if (pendingSelection) {
+            onAdd(pendingSelection.type, pendingSelection.variation);
+            onClose();
+        }
+    };
+
+    const handleCancelThreadsConnect = () => {
+        setShowThreadsRequirementModal(false);
+        setPendingThreadsSelection(null);
+    };
 
     const modalContent = (
         <AnimatePresence>
@@ -412,8 +493,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                                 <button
                                                     key={idx}
                                                     onClick={() => {
-                                                        onAdd(item.type as BioBlock['type'], item.variation);
-                                                        onClose();
+                                                        handleAddSelection(item.type as BioBlock['type'], item.variation);
                                                     }}
                                                     className="flex flex-col items-center p-4 bg-gray-50 hover:bg-[#c8e600]/10 border border-gray-100 hover:border-[#c8e600]/30 rounded-xl transition-all group"
                                                 >
@@ -447,8 +527,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                                             if (hasVariations) {
                                                                 toggleBlockExpansion(item.type);
                                                             } else {
-                                                                onAdd(item.type as BioBlock['type']);
-                                                                onClose();
+                                                                handleAddSelection(item.type as BioBlock['type']);
                                                             }
                                                         }}
                                                         className="w-full flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all group text-left"
@@ -495,8 +574,7 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                                                                 <button
                                                                     key={vIdx}
                                                                     onClick={() => {
-                                                                        onAdd(variation.type as BioBlock['type'], variation.variation);
-                                                                        onClose();
+                                                                        handleAddSelection(variation.type as BioBlock['type'], variation.variation);
                                                                     }}
                                                                     className="w-full flex items-start md:items-center gap-2.5 md:gap-3 p-2.5 md:p-3 bg-white hover:bg-gradient-to-r hover:from-[#c8e600]/5 hover:to-transparent border border-gray-100 hover:border-[#c8e600]/30 rounded-lg transition-all group text-left"
                                                                 >
@@ -540,6 +618,102 @@ export function AddBlockModal({ isOpen, onClose, onAdd }: AddBlockModalProps) {
                             </div>
                         </motion.div>
                     </motion.div>
+
+                    {showInstagramRequirementModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[10000] bg-black/55 backdrop-blur-[1px] flex items-center justify-center p-4"
+                            onClick={handleCancelInstagramConnect}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.96, opacity: 0, y: 12 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.96, opacity: 0, y: 12 }}
+                                transition={{ duration: 0.18 }}
+                                onClick={(event) => event.stopPropagation()}
+                                className="w-full max-w-md rounded-2xl border-2 border-black bg-white p-6 shadow-2xl"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E1306C]/10">
+                                        <Instagram className="h-5 w-5 text-[#E1306C]" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-base font-black text-black">Conecte sua conta do Instagram</h3>
+                                        <p className="mt-1 text-sm text-gray-600">
+                                            Essa funcionalidade de feed requer login com Instagram para carregar os posts oficiais pela API.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelInstagramConnect}
+                                        className="rounded-xl border-2 border-black bg-white px-4 py-2 text-sm font-black text-black hover:bg-gray-50"
+                                    >
+                                        Agora não
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleContinueInstagramConnect}
+                                        className="rounded-xl border-2 border-black bg-[#C6F035] px-4 py-2 text-sm font-black text-black hover:brightness-95"
+                                    >
+                                        Continuar
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+
+                    {showThreadsRequirementModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[10000] bg-black/55 backdrop-blur-[1px] flex items-center justify-center p-4"
+                            onClick={handleCancelThreadsConnect}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.96, opacity: 0, y: 12 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.96, opacity: 0, y: 12 }}
+                                transition={{ duration: 0.18 }}
+                                onClick={(event) => event.stopPropagation()}
+                                className="w-full max-w-md rounded-2xl border-2 border-black bg-white p-6 shadow-2xl"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
+                                        <Share2 className="h-5 w-5" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-base font-black text-black">Conecte sua conta do Threads</h3>
+                                        <p className="mt-1 text-sm text-gray-600">
+                                            Essa funcionalidade de feed requer login com Threads para carregar posts oficiais pela API.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelThreadsConnect}
+                                        className="rounded-xl border-2 border-black bg-white px-4 py-2 text-sm font-black text-black hover:bg-gray-50"
+                                    >
+                                        Agora não
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleContinueThreadsConnect}
+                                        className="rounded-xl border-2 border-black bg-black px-4 py-2 text-sm font-black text-white hover:bg-gray-900"
+                                    >
+                                        Continuar
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
                 </>
             )}
         </AnimatePresence>

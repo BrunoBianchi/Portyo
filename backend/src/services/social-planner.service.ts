@@ -18,6 +18,7 @@ const channelProviderMap: Record<string, string> = {
     facebook: "facebook",
     linkedin: "linkedin",
     twitter: "twitter",
+    threads: "threads",
 };
 
 const SOCIAL_PLANNER_QUEUE_KEY = "social-planner:publish:queue";

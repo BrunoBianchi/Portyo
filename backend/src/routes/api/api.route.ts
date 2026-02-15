@@ -4,6 +4,7 @@ import bioRoute from "./bio/bio.route"
 import blogRoute from "./blog/blog.route"
 import publicBioRoute from "./public/bio.public.route"
 import instagramRoute from "./instagram/instagram.route"
+import threadsRoute from "./threads/threads.route"
 import youtubeRoute from "./youtube/youtube.route"
 import publicEmailRoute from "./public/email.public.route"
 import publicBlogRoute from "./public/blog.public.route"
@@ -57,6 +58,8 @@ router.use('/public/bio', publicBioRoute)
 router.use('/public/bios', publicBiosRoute)
 router.use('/instagram', instagramRoute)
 router.use('/public/instagram', instagramRoute)
+router.use('/threads', threadsRoute)
+router.use('/public/threads', threadsRoute)
 router.use('/public/youtube', youtubeRoute)
 router.use('/public/email', publicEmailRoute)
 router.use('/public/blog', publicBlogRoute)

@@ -20,9 +20,18 @@ export function computeBgStyle(bio: any): React.CSSProperties {
         case 'color':
             return { background: bgColor };
         case 'image':
-            return bio.bgImage
-                ? { background: `url('${bio.bgImage}') no-repeat center center fixed`, backgroundSize: 'cover' }
-                : { background: bgColor };
+            if (!bio.bgImage) return { background: bgColor };
+
+            const fit = bio.bgImageFit || 'contain';
+            const repeat = fit === 'repeat';
+            return {
+                backgroundImage: `url('${bio.bgImage}')`,
+                backgroundPosition: 'center top',
+                backgroundSize: repeat ? 'auto' : fit,
+                backgroundRepeat: repeat ? 'repeat' : 'no-repeat',
+                backgroundAttachment: 'scroll',
+                backgroundColor: bgColor,
+            };
         case 'video':
             return { background: 'transparent', position: 'relative', overflow: 'hidden' };
         case 'dynamic-blur':

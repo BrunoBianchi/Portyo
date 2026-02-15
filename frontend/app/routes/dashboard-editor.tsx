@@ -375,6 +375,20 @@ export default function DashboardEditor() {
     setEditingBlock(newBlock);
   }, [addBlock]);
 
+  const handleInstagramConnectRequired = useCallback(() => {
+    if (!bio?.id || typeof window === "undefined") return;
+    const returnTo = window.location.origin;
+    const authUrl = `/api/instagram/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
+    window.open(authUrl, "instagram-connect", "width=620,height=780,noopener,noreferrer");
+  }, [bio?.id]);
+
+  const handleThreadsConnectRequired = useCallback(() => {
+    if (!bio?.id || typeof window === "undefined") return;
+    const returnTo = window.location.origin;
+    const authUrl = `/api/threads/auth?bioId=${encodeURIComponent(bio.id)}&returnTo=${encodeURIComponent(returnTo)}`;
+    window.open(authUrl, "threads-connect", "width=620,height=780,noopener,noreferrer");
+  }, [bio?.id]);
+
   const handleUpdateBlocks = useCallback(async (newBlocks: BioBlock[]) => {
     reorderBlocks(newBlocks);
     if (bio) {
@@ -485,6 +499,8 @@ export default function DashboardEditor() {
                     onEditBlock={setEditingBlock}
                     onAddBlock={handleAddBlock}
                     onUpdateBio={handleDesignUpdate}
+                    onInstagramConnectRequired={handleInstagramConnectRequired}
+                    onThreadsConnectRequired={handleThreadsConnectRequired}
                   />
                 )}
 

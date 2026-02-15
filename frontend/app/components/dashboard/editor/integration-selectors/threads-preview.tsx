@@ -1,17 +1,17 @@
-import { useInstagramPreview } from "~/hooks/use-block-integration";
+import { useThreadsPreview } from "~/hooks/use-block-integration";
 
-interface InstagramPreviewProps {
+interface ThreadsPreviewProps {
   bioId: string | null;
   username?: string;
   className?: string;
 }
 
-export function InstagramPreview({
+export function ThreadsPreview({
   bioId,
   username,
   className = "",
-}: InstagramPreviewProps) {
-  const { posts, isLoading, error } = useInstagramPreview(bioId);
+}: ThreadsPreviewProps) {
+  const { posts, isLoading, error } = useThreadsPreview(bioId);
 
   if (!bioId) {
     return null;
@@ -25,10 +25,7 @@ export function InstagramPreview({
         </p>
         <div className="grid grid-cols-3 gap-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-square bg-gray-100 rounded-lg animate-pulse"
-            />
+            <div key={i} className="aspect-square bg-gray-100 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -45,9 +42,7 @@ export function InstagramPreview({
           <p className="text-xs text-gray-400">
             {error ? "Não foi possível carregar os posts" : "Nenhum post encontrado"}
           </p>
-          <p className="text-[10px] text-gray-300 mt-1">
-            Verifique o nome de usuário
-          </p>
+          <p className="text-[10px] text-gray-300 mt-1">Verifique a conexão do Threads</p>
         </div>
       </div>
     );
@@ -56,7 +51,7 @@ export function InstagramPreview({
   return (
     <div className={`${className}`}>
       <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2 ml-0.5 font-bold">
-        Preview — últimos posts
+        Preview — últimos threads
       </p>
       <div className="grid grid-cols-3 gap-1.5">
         {posts.map((post, i) => (
@@ -69,7 +64,7 @@ export function InstagramPreview({
           >
             <img
               src={post.imageUrl}
-              alt={`Post ${i + 1}`}
+              alt={`Thread ${i + 1}`}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
               loading="lazy"
             />

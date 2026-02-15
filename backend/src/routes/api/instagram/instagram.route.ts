@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getLatestPosts, getProxyImage, getImage, initiateAuth, handleCallback, verifyWebhook, receiveWebhook, getAutoReplyConfig, saveAutoReplyConfig, publishAutoReplyConfig, getInstagramPostIdeas, getWebhookConfig, getLastWebhookEvent, getInstagramAnalytics } from "../../../controllers/instagram.controller";
+import { getLatestPosts, getLatestPostsByBioId, getProxyImage, getImage, initiateAuth, handleCallback, verifyWebhook, receiveWebhook, getAutoReplyConfig, saveAutoReplyConfig, publishAutoReplyConfig, getInstagramPostIdeas, getWebhookConfig, getLastWebhookEvent, getInstagramAnalytics } from "../../../controllers/instagram.controller";
 import { requireAuth } from "../../../middlewares/auth.middleware";
 
 const router: Router = Router();
@@ -22,6 +22,7 @@ router.get("/post-ideas/:bioId", requireAuth, getInstagramPostIdeas);
 router.get("/analytics/:bioId", requireAuth, getInstagramAnalytics);
 router.get("/proxy", getProxyImage);
 router.get("/image/:shortcode", getImage);
+router.get("/feed/:bioId", getLatestPostsByBioId);
 router.get("/:username", getLatestPosts);
 
 export default router;
