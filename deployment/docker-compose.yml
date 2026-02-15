@@ -28,6 +28,7 @@ services:
       - MAILGUN_FROM_EMAIL=${MAILGUN_FROM_EMAIL}
       - FRONTEND_URL=${FRONTEND_URL:-https://portyo.me}
       - BACKEND_URL=${BACKEND_URL:-https://api.portyo.me}
+      - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
       - THREADS_CLIENT_ID=${THREADS_CLIENT_ID}
       - THREADS_CLIENT_SECRET=${THREADS_CLIENT_SECRET}
       - THREADS_REDIRECT_URI=${THREADS_REDIRECT_URI:-https://portyo.me/api/threads/auth}

@@ -8,6 +8,7 @@ import { IntegrationEntity } from "../database/entity/integration-entity";
 import { Repository } from "typeorm";
 
 export class InstagramService {
+  private readonly facebookAppId = env.FACEBOOK_APP_ID || env.INSTAGRAM_CLIENT_ID;
   private readonly clientId = env.INSTAGRAM_CLIENT_ID;
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
   private readonly threadsClientId = env.THREADS_CLIENT_ID || env.INSTAGRAM_CLIENT_ID;
@@ -225,8 +226,8 @@ export class InstagramService {
   }
 
   public getAuthUrl(redirectUri?: string) {
-    if (!this.clientId) {
-      throw new ApiError(APIErrors.internalServerError, "Instagram Client ID not configured", 500);
+    if (!this.facebookAppId) {
+      throw new ApiError(APIErrors.internalServerError, "Facebook App ID not configured", 500);
     }
     const resolvedRedirectUri = redirectUri || this.getDefaultRedirectUri();
     const scopes = [
@@ -238,7 +239,7 @@ export class InstagramService {
       "pages_read_engagement",
     ];
     const params = new URLSearchParams({
-      client_id: this.clientId,
+      client_id: this.facebookAppId,
       redirect_uri: resolvedRedirectUri,
       response_type: "code",
       scope: scopes.join(","),
@@ -246,7 +247,7 @@ export class InstagramService {
     const url = `https://www.facebook.com/${this.graphVersion}/dialog/oauth?${params.toString()}`;
     console.log("[Instagram OAuth][service][integration] Built auth URL", {
       redirectUri: resolvedRedirectUri,
-      clientIdPreview: this.maskValue(this.clientId, 6),
+      clientIdPreview: this.maskValue(this.facebookAppId, 6),
       scopes,
       url,
     });
@@ -427,7 +428,7 @@ export class InstagramService {
           `https://graph.facebook.com/${this.graphVersion}/oauth/access_token`,
           {
             params: {
-              client_id: this.clientId,
+              client_id: this.facebookAppId,
               client_secret: this.clientSecret,
               redirect_uri: candidateRedirectUri,
               code: cleanCode,

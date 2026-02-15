@@ -89,6 +89,7 @@ const envSchema = z.object({
   GROQ_MODEL: z.string().default("moonshotai/kimi-k2-instruct-0905"),
 
   // Instagram
+  FACEBOOK_APP_ID: z.string().optional(),
   INSTAGRAM_CLIENT_ID: z.string().optional(),
   INSTAGRAM_CLIENT_SECRET: z.string().optional(),
   INSTAGRAM_REDIRECT_URI: z.string().optional(),
