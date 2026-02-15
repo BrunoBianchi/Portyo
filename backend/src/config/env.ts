@@ -93,6 +93,12 @@ const envSchema = z.object({
   INSTAGRAM_CLIENT_SECRET: z.string().optional(),
   INSTAGRAM_REDIRECT_URI: z.string().optional(),
   INSTAGRAM_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
+
+  // Threads
+  THREADS_CLIENT_ID: z.string().optional(),
+  THREADS_CLIENT_SECRET: z.string().optional(),
+  THREADS_REDIRECT_URI: z.string().optional(),
+  THREADS_OAUTH_SCOPES: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

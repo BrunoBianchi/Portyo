@@ -239,6 +239,19 @@ const getInstagramRedirectUri = (): string => {
   }
 };
 
+const getThreadsRedirectUri = (): string => {
+  if (env.THREADS_REDIRECT_URI) {
+    return env.THREADS_REDIRECT_URI;
+  }
+
+  try {
+    const frontendOrigin = new URL(env.FRONTEND_URL).origin;
+    return `${frontendOrigin}/api/threads/auth`;
+  } catch {
+    return "https://portyo.me/api/threads/auth";
+  }
+};
+
 const getInstagramWebhookVerifyToken = (): string => {
   if (env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN) {
     return env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN;
@@ -842,7 +855,9 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
     try {
       const mode = req.query.mode === "login" ? "login" : "integration";
   const integrationProvider = resolveIntegrationProviderFromRequest(req, req.query.integrationProvider);
-      const redirectUri = getInstagramRedirectUri();
+      const redirectUri = integrationProvider === "threads"
+        ? getThreadsRedirectUri()
+        : getInstagramRedirectUri();
       const frontendBaseUrl = normalizeFrontendBaseUrl(typeof req.query.returnTo === "string" ? req.query.returnTo : undefined)
         || getFrontendBaseUrl(req, undefined, redirectUri);
 
@@ -914,7 +929,9 @@ export const initiateAuth = async (req: Request, res: Response, next: NextFuncti
         frontendBaseUrl,
       });
       
-      const authUrl = instagramService.getAuthUrl(redirectUri);
+      const authUrl = integrationProvider === "threads"
+        ? instagramService.getThreadsAuthUrl(redirectUri)
+        : instagramService.getAuthUrl(redirectUri);
       const authUrlWithState = `${authUrl}&state=${encodeURIComponent(state)}`;
 
       console.log("[Instagram OAuth][initiateAuth][integration] Generated auth URL", {
@@ -1098,7 +1115,9 @@ export const handleCallback = async (req: Request, res: Response, next: NextFunc
         return res.redirect(`${frontendBaseUrl}/login?${params.toString()}`);
       }
 
-      const tokenData = await instagramService.exchangeCodeForToken(code, redirectUri);
+      const tokenData = integrationProvider === "threads"
+        ? await instagramService.exchangeThreadsCodeForToken(code, redirectUri || getThreadsRedirectUri())
+        : await instagramService.exchangeCodeForToken(code, redirectUri);
 
       console.log("[Instagram OAuth][callback][integration] Token data received", {
         userId: tokenData.userId,

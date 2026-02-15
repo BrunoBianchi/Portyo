@@ -10,6 +10,10 @@ import { Repository } from "typeorm";
 export class InstagramService {
   private readonly clientId = env.INSTAGRAM_CLIENT_ID;
   private readonly clientSecret = env.INSTAGRAM_CLIENT_SECRET;
+  private readonly threadsClientId = env.THREADS_CLIENT_ID || env.INSTAGRAM_CLIENT_ID;
+  private readonly threadsClientSecret = env.THREADS_CLIENT_SECRET || env.INSTAGRAM_CLIENT_SECRET;
+  private readonly threadsOAuthScopes =
+    env.THREADS_OAUTH_SCOPES || "threads_basic,threads_content_publish,threads_delete";
   private readonly graphVersion = "v21.0";
   private readonly tokenExchangeBaseUrl = "https://graph.instagram.com";
 
@@ -266,6 +270,29 @@ export class InstagramService {
       redirectUri: resolvedRedirectUri,
       clientIdPreview: this.maskValue(this.clientId, 6),
       scope: "user_profile,user_media",
+      url,
+    });
+
+    return url;
+  }
+
+  public getThreadsAuthUrl(redirectUri: string) {
+    if (!this.threadsClientId) {
+      throw new ApiError(APIErrors.internalServerError, "Threads Client ID not configured", 500);
+    }
+
+    const params = new URLSearchParams({
+      client_id: this.threadsClientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: this.threadsOAuthScopes,
+    });
+
+    const url = `https://threads.net/oauth/authorize?${params.toString()}`;
+    console.log("[Threads OAuth][service][integration] Built auth URL", {
+      redirectUri,
+      clientIdPreview: this.maskValue(this.threadsClientId, 6),
+      scopes: this.threadsOAuthScopes,
       url,
     });
 
@@ -551,6 +578,88 @@ export class InstagramService {
         redirectUriCandidates,
       });
       throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Instagram", 400);
+    }
+  }
+
+  public async exchangeThreadsCodeForToken(code: string, redirectUri: string) {
+    if (!this.threadsClientId || !this.threadsClientSecret) {
+      throw new ApiError(APIErrors.internalServerError, "Threads credentials not configured", 500);
+    }
+
+    const cleanCode = code.replace(/#_$/, "").replace(/#$/, "").trim();
+
+    try {
+      const tokenBody = new URLSearchParams({
+        client_id: this.threadsClientId,
+        client_secret: this.threadsClientSecret,
+        grant_type: "authorization_code",
+        redirect_uri: redirectUri,
+        code: cleanCode,
+      });
+
+      const tokenResponse = await axios.post(
+        "https://graph.threads.net/oauth/access_token",
+        tokenBody.toString(),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      const tokenPayload = Array.isArray(tokenResponse.data?.data)
+        ? tokenResponse.data.data[0]
+        : tokenResponse.data;
+
+      const accessToken = tokenPayload?.access_token as string | undefined;
+      const expiresIn = tokenPayload?.expires_in as number | undefined;
+
+      if (!accessToken) {
+        throw new ApiError(APIErrors.badRequestError, "Missing access token from Threads OAuth", 400);
+      }
+
+      let threadsUserId: string | null = tokenPayload?.user_id ? String(tokenPayload.user_id) : null;
+      let threadsUsername: string | null = null;
+
+      try {
+        const profileResponse = await axios.get("https://graph.threads.net/v1.0/me", {
+          params: {
+            fields: "id,username",
+            access_token: accessToken,
+          },
+        });
+
+        threadsUserId = profileResponse.data?.id ? String(profileResponse.data.id) : threadsUserId;
+        threadsUsername = profileResponse.data?.username || null;
+      } catch (profileError: any) {
+        logger.warn("Threads profile fetch failed after OAuth", {
+          error: profileError?.response?.data || profileError?.message,
+        });
+      }
+
+      if (!threadsUserId) {
+        throw new ApiError(APIErrors.badRequestError, "Could not resolve Threads account ID", 400);
+      }
+
+      return {
+        accessToken,
+        userToken: accessToken,
+        userId: threadsUserId,
+        instagramBusinessAccountId: threadsUserId,
+        instagramUsername: threadsUsername,
+        pageId: null,
+        pageName: null,
+        expiresIn,
+      };
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      logger.error("Threads OAuth exchange failed", {
+        error: error?.response?.data || error?.message,
+      });
+      throw new ApiError(APIErrors.badRequestError, "Failed to authenticate with Threads", 400);
     }
   }
 
