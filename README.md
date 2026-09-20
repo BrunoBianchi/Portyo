@@ -1,12 +1,21 @@
 # Portyo
 
-**Multi-tenant link-in-bio platform with custom domains and an AI content engine.**
+Multi-tenant link-in-bio SaaS with automated custom domains (DNS + SSL) and an AI engine for scheduled SEO/GEO/AEO posts.
 
-Portyo lets a user build a public "bio" page, point their own domain at it, and keep it alive with scheduled, AI-generated posts. Two pieces make it more than a CRUD app: automated custom-domain provisioning (DNS verification + SSL issuance, no manual steps) and an auto-post engine that writes and publishes content on a schedule, scoring every post for SEO, GEO and AEO.
+## Problem
 
-> ⚠️ Portfolio project — the public deployment is currently offline. This README documents the architecture and the decisions behind it.
+Creators and small businesses need a public bio page on their own domain, plus a way to keep publishing without living in a CMS. Manual SSL for every customer domain and one-off blog posts do not scale. Portyo automates both: domain provisioning and scheduled, scored content generation.
 
----
+> Portfolio project — the public deployment is currently offline. This README documents the architecture and the decisions behind it.
+
+## Features
+
+- Public bio pages with links, portfolio and booking-oriented surfaces
+- Custom domains for Pro users: DNS verification, catch-all Nginx routing and Certbot/Let's Encrypt certificates
+- AI auto-post schedules (daily / weekly / biweekly / monthly) driven by bio context
+- Post scoring on SEO, GEO and AEO axes (0–100)
+- Preview generation that does not consume monthly plan caps
+- JWT auth, Helmet and rate limiting on the API
 
 ## Stack
 
@@ -15,116 +24,43 @@ Portyo lets a user build a public "bio" page, point their own domain at it, and 
 | Frontend | React Router, TypeScript, CSS |
 | Backend | Node.js, Express, TypeScript, TypeORM |
 | Database | PostgreSQL |
-| AI | Groq (llama-3.3-70b) |
+| AI | Groq (llama-3.3-70b), BAML prompts |
 | Infrastructure | Docker Compose, Nginx, Certbot / Let's Encrypt |
-| Security | JWT auth middleware, Helmet, rate limiting |
 | Tooling | pnpm workspaces |
 
 ```
 backend/      Express API, TypeORM entities, services, cron jobs
-frontend/     React Router app, dashboard and public bio pages
+frontend/     React Router app — dashboard and public bio pages
 deployment/   Nginx config, Docker Compose, domain + SSL scripts
 ```
 
----
+## Architecture notes
 
-## Custom domains
+**Custom domains.** A wildcard certificate cannot cover domains the platform does not own. Each customer domain gets its own certificate. Nginx uses a catch-all `default_server`; tenancy is resolved in Express from the `Host` header (`customDomainMiddleware`), so adding a customer never means editing Nginx.
 
-A user on the Pro plan can attach their own domain to their bio page. The flow is fully automated:
+**Auto-post engine.** A cron job picks due schedules, summarises the bio (cached ~30 days), generates Markdown via Groq, publishes, recomputes `nextPostDate` and writes an audit log with metrics. Monthly caps are enforced per plan; previews are unlimited.
 
-1. The user points DNS at the server (A record, or CNAME to `portyo.me`).
-2. The domain is registered through `POST /api/custom-domains`, creating a `CustomDomainEntity` with status `pending`.
-3. Nginx receives the request on a catch-all `default_server` block and proxies to the backend, preserving the original `Host` header.
-4. `customDomainMiddleware` resolves the host to the right bio and serves it — the visitor never sees a slug in the URL.
-5. Certbot issues and renews the TLS certificate; the entity tracks `sslActive`, `sslExpiresAt`, `dnsVerifiedAt` and `isHealthy`.
+Further detail: [`CUSTOM_DOMAINS_GUIDE.md`](./CUSTOM_DOMAINS_GUIDE.md), [`AGENTS.md`](./AGENTS.md), [`SECURITY_GUIDE.md`](./SECURITY_GUIDE.md).
 
-```
-Custom domain ──▶ Nginx (default_server) ──▶ Express backend
-                        │                          │
-                     Certbot                  PostgreSQL
-                   (auto SSL)             (CustomDomainEntity)
-```
-
-Shell scripts in `deployment/` wrap the operational side: add, remove, list and renew certificates in bulk.
-
-**Why it was built this way:** a wildcard certificate can't cover domains the platform doesn't own, so each customer domain needs its own certificate. Routing everything through one catch-all Nginx block and resolving tenancy at the application layer keeps the server config static — adding a customer never means editing Nginx.
-
----
-
-## AI auto-post engine
-
-Each bio can have a posting schedule. A cron job picks up due schedules and generates a post from the user's own profile context.
-
-- **Bio analysis** — the user's bio is summarised once into expertise, tone, industry and an audience persona, then cached for 30 days.
-- **Generation** — Groq produces a Markdown post from that summary plus the schedule's topics, keywords, target audience, tone and length.
-- **Publishing** — the post is stored, `nextPostDate` is recomputed from the frequency (daily / weekly / biweekly / monthly at a preferred time), and every run is written to an audit log with its metrics.
-- **Limits** — monthly post caps are enforced per plan; previews are unlimited and don't count.
-
-Every generated post is scored 0–100 on three axes:
-
-| | What it measures |
-| :--- | :--- |
-| **SEO** | title and meta quality, keyword density, readability, structure, alt text, slug |
-| **GEO** | how well generative engines can parse it — entities, structured data, answer potential |
-| **AEO** | answer-engine fit — direct 40–60 word answers, question headers, voice-search phrasing |
-
----
-
-## API
-
-```http
-POST   /api/auto-post                  # create or update a schedule
-GET    /api/auto-post/:bioId           # read a schedule
-PATCH  /api/auto-post/toggle           # activate / deactivate
-DELETE /api/auto-post/:bioId           # remove a schedule
-GET    /api/auto-post/:bioId/stats     # stats and recent run logs
-POST   /api/auto-post/preview          # generate a preview post
-
-GET    /api/custom-domains             # list the user's domains
-POST   /api/custom-domains             # attach a domain (Pro)
-GET    /api/custom-domains/check       # public domain status lookup
-POST   /api/custom-domains/:id/verify  # force re-verification
-DELETE /api/custom-domains/:id         # detach a domain
-```
-
-All routes are behind `authMiddleware`; Pro-only routes add `isUserPro`. Ownership of the bio is verified on every operation, so a user can only ever reach their own resources.
-
----
-
-## Running locally
+## Getting started
 
 ```bash
 pnpm install
-
-# backend + database + nginx
 docker compose up -d
 
-# first-time setup for custom domain support
+# first-time custom-domain support
 cd deployment && ./setup-custom-domains.sh
 ```
 
-Required environment variables:
+Required environment variables (see backend config):
 
 ```bash
-GROQ_API_KEY=                 # AI content generation
+GROQ_API_KEY=
 DB_HOST= DB_PORT= DB_USERNAME= DB_PASSWORD=
-MAX_POSTS_PER_MONTH=10        # optional, defaults to 10
+MAX_POSTS_PER_MONTH=10   # optional
 ```
-
-Further documentation lives in [`CUSTOM_DOMAINS_GUIDE.md`](./CUSTOM_DOMAINS_GUIDE.md), [`AGENTS.md`](./AGENTS.md) and [`SECURITY_GUIDE.md`](./SECURITY_GUIDE.md).
-
----
-
-## What I'd do next
-
-- Automated health-check cron for attached domains, with email alerts before certificates expire
-- `www` → apex redirects and per-domain analytics
-- Test coverage on the scheduling logic, which is currently the most fragile part
-- Tidy the repository root — a few scratch files from development are still committed
-
----
 
 ## Author
 
-**Bruno Bianchi** — Full-Stack Developer
-[brunobianchi.dev](https://brunobianchi.dev) · [LinkedIn](https://www.linkedin.com/in/brunorbianchi)
+**Bruno Bianchi** — Full-Stack Developer  
+[github.com/BrunoBianchi](https://github.com/BrunoBianchi) · [brunobianchi.dev](https://brunobianchi.dev)
