@@ -11,6 +11,16 @@ export const MapBlock: React.FC<BlockComponentProps> = ({ block }) => {
 
     const encodedAddress = encodeURIComponent(address);
 
+    // The Maps Embed API key comes from the environment (VITE_GOOGLE_MAPS_EMBED_KEY).
+    // Without a key, fall back to the keyless embed used by the HTML generator.
+    const mapsEmbedKey =
+        typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined'
+            ? (import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY as string | undefined)
+            : undefined;
+    const mapSrc = mapsEmbedKey
+        ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(mapsEmbedKey)}&q=${encodedAddress}`
+        : `https://maps.google.com/maps?q=${encodedAddress}&t=m&z=15&output=embed&iwloc=near`;
+
     return (
         <BlockWrapper block={block}>
             {block.mapTitle && (
@@ -20,7 +30,7 @@ export const MapBlock: React.FC<BlockComponentProps> = ({ block }) => {
             )}
             <div style={{ borderRadius: '12px', overflow: 'hidden', width: '100%', height: '300px' }}>
                 <iframe
-                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}`}
+                    src={mapSrc}
                     width="100%"
                     height="100%"
                     style={{ border: 'none' }}

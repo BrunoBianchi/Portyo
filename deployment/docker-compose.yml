@@ -50,6 +50,7 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-https://api.portyo.me}
         - VITE_ONBOARDING_VIDEO_URL=${VITE_ONBOARDING_VIDEO_URL:-}
+        - VITE_GOOGLE_MAPS_EMBED_KEY=${VITE_GOOGLE_MAPS_EMBED_KEY:-}
     command: ["pnpm", "run", "start", "--host", "0.0.0.0", "--port", "3000"]
     restart: always
     env_file:
@@ -60,6 +61,7 @@ services:
       - API_URL=${API_URL:-https://api.portyo.me/api}
       - VITE_API_URL=${VITE_API_URL:-https://api.portyo.me}
       - VITE_ONBOARDING_VIDEO_URL=${VITE_ONBOARDING_VIDEO_URL:-}
+      - VITE_GOOGLE_MAPS_EMBED_KEY=${VITE_GOOGLE_MAPS_EMBED_KEY:-}
     networks:
       - app-network
 
